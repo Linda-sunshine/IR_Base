@@ -179,7 +179,15 @@ public class ETBIR extends LDA_Variational {
 
     protected void updateStats4Doc(_Doc4ETBIR doc){
         // update m_word_topic_stats for updating beta
-        collectStats(doc);
+        _SparseFeature[] fv = doc.getSparse();
+        int wid;
+        double v;
+        for(int n=0; n<fv.length; n++) {
+            wid = fv[n].getIndex();
+            v = fv[n].getValue();
+            for(int i=0; i<number_of_topics; i++)
+                word_topic_sstat[i][wid] += v*doc.m_phi[n][i];
+        }
 
         // update m_thetaStats for updating rho
         for(int k = 0; k < number_of_topics; k++)
@@ -233,15 +241,23 @@ public class ETBIR extends LDA_Variational {
             init();
             
             totalLikelihood = 0.0;
-            for (_Doc d:m_corpus.getCollection()) 
+            int docNum = 0, userNum = 0, itemNum = 0;
+            for (_Doc d:m_corpus.getCollection()) {
+                infoWriter.write("---- doc: " + docNum + "\n");
+                docNum++;
                 totalLikelihood += calculate_E_step(d);
+            }
 
             for (_User4ETBIR user:m_users) {
+                infoWriter.write("---- user: " + userNum + "\n");
+                userNum++;
             	totalLikelihood += varInference4User(user);
                 updateStats4User(user);
             }
 
             for (_Product4ETBIR item : m_items) {
+                infoWriter.write("---- item: " + itemNum + "\n");
+                itemNum++;
             	totalLikelihood += varInference4Item(item);
                 updateStats4Item(item);
             }
@@ -254,6 +270,9 @@ public class ETBIR extends LDA_Variational {
             last = totalLikelihood;
             if(converge < m_varConverge)
                 break;
+            infoWriter.write(String.format("---- stats: m_pStat-%.5f, m_thetaStats-%.5f, " +
+                            "m_eta_p_Stats-%.5f, m_eta_mean_Stats-%.5f \n",
+                    m_pStats, m_thetaStats, m_eta_p_Stats, m_eta_mean_Stats) );
         }while(iter++ < m_varMaxIter);
 
         return totalLikelihood;
@@ -275,6 +294,7 @@ public class ETBIR extends LDA_Variational {
             
             last = current;
 //            System.out.println("-- varInferencePerUser cur: " + current + "; converge: " + converge);
+
         } while(++iter < m_varMaxIter && Math.abs(converge) > m_varConverge);
 
         return current;
@@ -296,15 +316,21 @@ public class ETBIR extends LDA_Variational {
             for(int k = 0; k < number_of_topics; k++){
                 for(int j = 0; j < number_of_topics; j++){
                     m_pNuStates[k] += user.m_nuP[j][k] * doc.m_mu[j];
+                }
 
-                    for(int l = 0; l < number_of_topics; l++){
-                        m_pSumStates[k][l] += user.m_nuP[j][k] * user.m_nuP[j][l] + user.m_SigmaP[j][l][k];
+                for(int l = 0; l < number_of_topics; l++){
+                    for (int j = 0; j < number_of_topics; j++){
+                        m_pSumStates[k][l] += user.m_SigmaP[j][l][k] + user.m_nuP[j][k] * user.m_nuP[j][l];
                     }
                 }
             }
         }
 
         do{
+//            infoWriter.write("\t varIter: " + iter + "\n");
+//            infoWriter.write("\t -- eta: " + Arrays.toString(i.m_eta) + "\n");
+//            infoWriter.write("\t -- likelihood: " + String.valueOf(current) + "\n");
+
             update_eta(i);
 
             current = calc_log_likelihood_per_item(i);
@@ -315,7 +341,11 @@ public class ETBIR extends LDA_Variational {
 
             last = current;
 //            System.out.println("-- varInferencePerItem cur: " + current + "; converge: " + converge);
+
         } while (++iter < m_varMaxIter && Math.abs(converge) > m_varConverge);
+//        infoWriter.write("\t varIter: " + iter + "\n");
+//        infoWriter.write("\t -- eta: " + Arrays.toString(i.m_eta) + "\n");
+//        infoWriter.write("\t -- likelihood: " + String.valueOf(current) + "\n");
 
         return current;
     }
@@ -324,9 +354,8 @@ public class ETBIR extends LDA_Variational {
         double current = 0.0, last = 1.0, converge = 0.0;
         int iter = 0;
 
-        infoWriter.write("---- doc " + d.getName() + "\n");
         do {
-            infoWriter.write("\t iter: " + iter);
+            infoWriter.write("\t varIter: " + iter + "\n");
             infoWriter.write("\t -- mu: " + Arrays.toString(d.m_mu) + "\n");
             infoWriter.write("\t -- sigma: " + Arrays.toString(d.m_Sigma) + "\n");
             infoWriter.write("\t -- likelihood: " + String.valueOf(current) + "\n");
@@ -345,8 +374,13 @@ public class ETBIR extends LDA_Variational {
                 converge = 1.0;
             
             last = current;
+
 //            System.out.println("-- varInferencePerDoc cur: " + current + "; converge: " + converge);
         } while (++iter < m_varMaxIter && Math.abs(converge) > m_varConverge);
+        infoWriter.write("\t final varIter: " + iter + "\n");
+        infoWriter.write("\t -- mu: " + Arrays.toString(d.m_mu) + "\n");
+        infoWriter.write("\t -- sigma: " + Arrays.toString(d.m_Sigma) + "\n");
+        infoWriter.write("\t -- likelihood: " + String.valueOf(current) + "\n");
 
         return current;
     }
@@ -412,13 +446,18 @@ public class ETBIR extends LDA_Variational {
 
     void update_SigmaTheta(_Doc4ETBIR d){
         double fValue = 1.0, lastFValue = 1.0, cvg = 1e-4, diff, iterMax = 20, iter = 0;
-        double stepsize = 1e-2, moment, sigma, SigmaG; // gradient for Sigma
+        double stepsize = 1e-3, moment, sigma;
+        double[] SigmaG = new double[number_of_topics]; // gradient for Sigma
         int N = d.getTotalDocLength();
 
         for(int k=0; k < number_of_topics; k++)
             d.m_sigmaSqrt[k] = Math.sqrt(d.m_Sigma[k]);
 
         do {
+
+            infoWriter.write("\t ---- sigmaSqrt: " + Arrays.toString(d.m_sigmaSqrt) + "\n");
+            infoWriter.write("\t ---- sigmaThetaG: " + Arrays.toString(SigmaG) + "\n");
+
             //update gradient of sigma
             lastFValue = fValue;
             fValue = 0.0;
@@ -426,14 +465,17 @@ public class ETBIR extends LDA_Variational {
             for (int k = 0; k < number_of_topics; k++) {
                 sigma = d.m_sigmaSqrt[k] * d.m_sigmaSqrt[k];
                 moment = Math.exp(d.m_mu[k] + 0.5 * sigma);
-                SigmaG = -m_rho * d.m_sigmaSqrt[k] - N * d.m_sigmaSqrt[k] * moment / d.m_zeta + 1.0 / d.m_sigmaSqrt[k]; //-1 because LBFGS is minimization
+                SigmaG[k] = -m_rho * d.m_sigmaSqrt[k] - N * d.m_sigmaSqrt[k] * moment / d.m_zeta
+                        + 1.0 / d.m_sigmaSqrt[k]; //-1 because LBFGS is minimization
                 fValue += -0.5 * m_rho * sigma - N * moment / d.m_zeta + 0.5 * Math.log(sigma);
                 
-                d.m_sigmaSqrt[k] += stepsize * SigmaG;//fixed stepsize
+                d.m_sigmaSqrt[k] += stepsize * SigmaG[k];//fixed stepsize
             }
 
             diff = (lastFValue - fValue) / lastFValue;
         } while(iter++ < iterMax && Math.abs(diff) > cvg);
+        infoWriter.write("\t ---- sigmaSqrt: " + Arrays.toString(d.m_sigmaSqrt) + "\n");
+        infoWriter.write("\t ---- sigmaThetaG: " + Arrays.toString(SigmaG) + "\n");
 
         for(int k=0; k < number_of_topics; k++)
             d.m_Sigma[k] = d.m_sigmaSqrt[k] * d.m_sigmaSqrt[k];
@@ -582,7 +624,7 @@ public class ETBIR extends LDA_Variational {
     void update_eta(_Product4ETBIR i){
 
         double fValue = 1.0, lastFValue, cvg = 1e-4, diff, iterMax = 20, iter = 0;
-        double stepsize=1e-2;
+        double stepsize=1e-3;
 
         double[] etaG = new double[number_of_topics];
         double[] eta_log = new double[number_of_topics];
@@ -638,6 +680,7 @@ public class ETBIR extends LDA_Variational {
             diff = (lastFValue - fValue) / lastFValue;
         }while(iter++ < iterMax && Math.abs(diff) > cvg);
 
+        infoWriter.write("\t -- etaG: " + Arrays.toString(etaG) + "\n");
         for(int k=0;k<number_of_topics;k++){
             i.m_eta[k] = eta_temp[k];
         }
@@ -745,6 +788,8 @@ public class ETBIR extends LDA_Variational {
     @Override
 	public void calculate_M_step(int iter) {
     	super.calculate_M_step(iter);
+        infoWriter.write("-- M step: " + "\n");
+
         //maximize likelihood for \rho of p(\theta|P\gamma, \rho)
 //        m_rho = number_of_topics / (m_thetaStats + m_eta_p_Stats - 2 * m_eta_mean_Stats);
 
@@ -942,9 +987,14 @@ public class ETBIR extends LDA_Variational {
         }while(iter < number_of_iteration && (converge < 0 || converge > m_converge));
     }
 
-    public void printEta(String etafile){
+    @Override
+    public void printParameterAggregation(int k, String folderName, String topicmodel){
+        super.printParameterAggregation(k, folderName, topicmodel);
+
+        String etaFile = folderName + topicmodel + "_eta4Item.txt";
+        String pFile = folderName + topicmodel + "_p4User.txt";
         try{
-            PrintWriter etaWriter = new PrintWriter(new File(etafile));
+            PrintWriter etaWriter = new PrintWriter(new File(etaFile));
 
             for(int idx = 0; idx < m_items.size(); idx++) {
                 etaWriter.write("item " + idx + "*************\n");
@@ -959,19 +1009,17 @@ public class ETBIR extends LDA_Variational {
         } catch(Exception ex){
             System.err.print("File Not Found");
         }
-    }
 
-    public void printP(String pfile){
         try{
-            PrintWriter pWriter = new PrintWriter(new File(pfile));
+            PrintWriter pWriter = new PrintWriter(new File(pFile));
 
             for(int idx = 0; idx < m_users.size(); idx++) {
                 pWriter.write("user " + idx + "*************\n");
                 _User4ETBIR user = (_User4ETBIR) m_users.get(idx);
                 for (int i = 0; i < number_of_topics; i++) {
                     pWriter.format("-- mu " + i + ": \n");
-                    for(int k = 0; k < number_of_topics; k++) {
-                        pWriter.format("%.5f\t", user.m_nuP[i][k]);
+                    for(int j = 0; j < number_of_topics; j++) {
+                        pWriter.format("%.5f\t", user.m_nuP[i][j]);
                     }
                     pWriter.write("\n");
                 }
