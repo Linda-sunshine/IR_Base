@@ -971,17 +971,17 @@ public class ETBIR extends LDA_Variational {
                 converge = 1.0;
 
             if(converge < 0){
-                m_varMaxIter += 10;
+//                m_varMaxIter += 10;
                 System.out.println("! E_step not converge...");
-            }else{
-            	calculate_M_step(iter);
-                lastAllLikelihood = currentAllLikelihood;
-                System.out.format("%s step: likelihood is %.3f, converge to %f...\n",
-                        iter, currentAllLikelihood, converge);
-                iter++;
-                if(converge < m_converge)
-                    break;
             }
+            calculate_M_step(iter);
+            lastAllLikelihood = currentAllLikelihood;
+            System.out.format("%s step: likelihood is %.3f, converge to %f...\n",
+                    iter, currentAllLikelihood, converge);
+            iter++;
+            if(converge < m_converge)
+                break;
+
             System.out.println("sigma: " + m_sigma + "; rho: " + m_rho);
             System.out.println(Utils.sumOfArray(word_topic_sstat[0]));
         }while(iter < number_of_iteration && (converge < 0 || converge > m_converge));
