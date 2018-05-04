@@ -1,7 +1,6 @@
 package topicmodels.embeddingModel;
 
-import java.io.File;
-import java.io.PrintWriter;
+import java.io.*;
 import java.util.*;
 
 import org.apache.commons.math3.linear.LUDecomposition;
@@ -331,7 +330,7 @@ public class ETBIR extends LDA_Variational {
 //            infoWriter.write("\t -- eta: " + Arrays.toString(i.m_eta) + "\n");
 //            infoWriter.write("\t -- likelihood: " + String.valueOf(current) + "\n");
 
-            update_eta(i);
+//            update_eta(i);
 
             current = calc_log_likelihood_per_item(i);
             if (iter > 0)
@@ -957,6 +956,8 @@ public class ETBIR extends LDA_Variational {
         System.out.println("Initializing model...");
         initialize_probability(m_corpus.getCollection(), m_users, m_items);
 
+        loadPara("./myData/yelp/byUser_40_50_12/output/feature0_new/LDA_Variational_gammaByUser.txt");
+
         int iter = 0;
         double lastAllLikelihood = 1.0;
         double currentAllLikelihood;
@@ -1060,5 +1061,27 @@ public class ETBIR extends LDA_Variational {
         }
     }
 
+    public void loadPara(String filename){
+        try {
+            BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(filename), "UTF-8"));
+            String line;
+
+            String itemID = "";
+            int idx = 0;
+            while ((line = reader.readLine()) != null) {
+                if(line.startsWith("ID")){
+                    itemID = line.split("\t")[1];
+                    idx = 0;
+                }else if(line.startsWith("-")){
+                    m_items.get(m_itemsIndex.get(itemID)).m_eta[idx++] = Double.parseDouble(
+                            line.split(":")[0].split("\\(")[1].split("\\)")[0]);
+                }
+            }
+            reader.close();
+            System.out.format("Loading eta from %s\n", filename);
+        } catch(IOException e){
+            System.err.format("[Error]Failed to open file %s!!", filename);
+        }
+    }
 
 }

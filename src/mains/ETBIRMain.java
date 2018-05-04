@@ -26,7 +26,7 @@ public class ETBIRMain {
         int lengthThreshold = 5; //Document length threshold
         String tokenModel = "./data/Model/en-token.bin";
 
-        String trainset = "byItem";
+        String trainset = "byUser_40_50_12";
         String source = "yelp";
         String dataset = "./myData/" + source + "/" + trainset + "/";
 
@@ -66,7 +66,7 @@ public class ETBIRMain {
         int fvFile_point = 0;
 
         String reviewFolder = dataset + "data/";
-        String outputFolder = dataset + "output/feature_" + fvFile_point + "/";
+        String outputFolder = dataset + "output/feature_" + fvFile_point + "_fixEta/";
         String suffix = ".json";
         String topicmodel = "ETBIR"; // pLSA, LDA_Gibbs, LDA_Variational, ETBIR
 
@@ -78,17 +78,16 @@ public class ETBIRMain {
 
         int number_of_topics = 20;
 
-        int varMaxIter = 10;
-
+        int varMaxIter = 20;
         double varConverge = 1e-3;
 
-        int emMaxIter = 100;
+        int emMaxIter = 200;
         double emConverge = -1;
         double emConverge4ETBIR = 1e-5;
 
 
         double alpha = 1 + 1e-2, beta = 1 + 1e-3, lambda = 1 + 1e-3;//these two parameters must be larger than 1!!!
-        double  sigma = 1.0 + 1e-3, rho = 0.1;
+        double  sigma = 0.1 + 1e-3, rho = 0.1 + 1e-3;
 
         // LDA
         /*****parameters for the two-topic topic model*****/
