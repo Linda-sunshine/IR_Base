@@ -866,7 +866,7 @@ public class ETBIR extends LDA_Variational {
             }
             term4 += Math.log(m_rho * doc.m_Sigma[k]);
         }
-        part3 += -m_rho * (0.5 * term1 - term2 / eta0 + term3 / (eta0 * (eta0 + 1.0))) + number_of_topics/2.0
+        part3 += -m_rho * (0.5 * term1 - term2 / eta0 + 0.5 * term3 / (eta0 * (eta0 + 1.0))) + number_of_topics/2.0
                 + 0.5 * term4;
         log_likelihood += part3;
 

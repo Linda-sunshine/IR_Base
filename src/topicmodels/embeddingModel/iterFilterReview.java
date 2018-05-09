@@ -438,8 +438,8 @@ public class iterFilterReview {
 
     public static void main(String[] args) throws FileNotFoundException {
 
-        int userMinCount = 30;
-        int itemMinCount = 40;
+        int userMinCount = 20;
+        int itemMinCount = 30;
         int filtIterNum = 10;
 
         //yelp
@@ -458,12 +458,12 @@ public class iterFilterReview {
 //        preprocessor.clusterDataByUser(denseFileName, "../myData/yelp/byUser_" + userMinCount + "_" + itemMinCount + "_" + filtIterNum + "/data/");
 
         //amazon
-        String dataFileName = "../myData/amazon_electronic/reviews_Electronics.json";
-        String denseFileName = "../myData/amazon_electronic/denseReview_" + userMinCount + "_" + itemMinCount + "_" + filtIterNum + ".json";
+        String dataFileName = "./myData/amazon_electronic/reviews_Electronics.json";
+        String denseFileName = "./myData/amazon_electronic/denseReview_" + userMinCount + "_" + itemMinCount + "_" + filtIterNum + ".json";
         iterFilterReview preprocessor = new iterFilterReview();
         preprocessor.setDataSource("amazon");
         preprocessor.iterFiltering(dataFileName, userMinCount, itemMinCount, filtIterNum);
         preprocessor.saveFilterdData(dataFileName, denseFileName);
-        preprocessor.clusterDataByUser(denseFileName, "../myData/amazon_electronic/data/byUser_" + userMinCount + "_" + itemMinCount + "_" + filtIterNum + "/");
+        preprocessor.clusterDataByUser(denseFileName, "./myData/amazon_electronic/data/byUser_" + userMinCount + "_" + itemMinCount + "_" + filtIterNum + "/");
     }
 }
