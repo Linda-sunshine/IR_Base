@@ -1,5 +1,7 @@
 package structures;
 
+import utils.Utils;
+
 import java.util.Arrays;
 import java.util.Random;
 
@@ -17,11 +19,9 @@ public class _Product4ETBIR extends _Product {
   	public void setTopics4Variational(int k, double eta) {
   		m_eta = new double[k];
 
-        long seed = k * 100000;
         for(int i = 0; i < k; i++){
-            Random r = new Random(seed);
-            m_eta[i] = r.nextDouble() + eta;
-            seed -= 130;
+            m_eta[i] = eta - 1 + Math.random() * 0.5 * eta;
         }
+        Utils.L1Normalization(m_eta);
   	}
 }
