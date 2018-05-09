@@ -28,22 +28,22 @@ public class ETBIRMain {
 
         String trainset = "byUser_40_50_12";
         String source = "amazon_movie";
-        String dataset = "../myData/" + source + "/" + trainset + "/";
+        String dataset = "./myData/" + source + "/" + trainset + "/";
 
         /**
          * model training
          */
         String[] fvFiles = new String[3];
-        fvFiles[0] = "../data/Features/fv_2gram_IG_yelp_byUser_30_50_25.txt";
-        fvFiles[1] = "../data/Features/fv_2gram_IG_amazon_movie_byUser_40_50_12.txt";
-        fvFiles[2] = "../data/Features/yelp_features.txt";
+        fvFiles[0] = "./data/Features/fv_2gram_IG_yelp_byUser_30_50_25.txt";
+        fvFiles[1] = "./data/Features/fv_2gram_IG_amazon_movie_byUser_40_50_12.txt";
+        fvFiles[2] = "./data/Features/yelp_features.txt";
         int fvFile_point = 0;
         if(source.equals("amazon_movie")){
             fvFile_point = 1;
         }
 
         String reviewFolder = dataset + "data/";
-        String outputFolder = dataset + "output/feature_" + fvFile_point + "/";
+        String outputFolder = dataset + "output/featureDebug1_" + fvFile_point + "/";
         String suffix = ".json";
         String topicmodel = "ETBIR"; // pLSA, LDA_Gibbs, LDA_Variational, ETBIR
 
@@ -64,7 +64,7 @@ public class ETBIRMain {
 
 
         double alpha = 1.0 + 1e-2, beta = 1 + 1e-3, lambda = 1 + 1e-3;//these two parameters must be larger than 1!!!
-        double  sigma = 0.001 + 1e-3, rho = 0.001 + 1e-3;
+        double  sigma = 1.0 + 1e-3, rho = 1.0 + 1e-3;
 
         // LDA
         /*****parameters for the two-topic topic model*****/

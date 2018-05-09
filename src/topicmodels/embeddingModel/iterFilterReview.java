@@ -438,9 +438,9 @@ public class iterFilterReview {
 
     public static void main(String[] args) throws FileNotFoundException {
 
-        int userMinCount = 30;
-        int itemMinCount = 40;
-        int filtIterNum = 10;
+        int userMinCount = 20;
+        int itemMinCount = 20;
+        int filtIterNum = 5;
 
         //yelp
 //        String itemFileName = "../myData/yelp/business.json";

@@ -789,8 +789,43 @@ public class ETBIR extends LDA_Variational {
 
     @Override
 	public void calculate_M_step(int iter) {
-    	super.calculate_M_step(iter);
-//        infoWriter.write("-- M step: " + "\n");
+        //        infoWriter.write("-- M step: " + "\n");
+        //maximum likelihood estimation of p(w|z,\beta)
+        for(int i=0; i<number_of_topics; i++) {
+            double sum = Utils.sumOfArray(word_topic_sstat[i]);
+            for(int v=0; v<vocabulary_size; v++) //will be in the log scale!!
+                topic_term_probabilty[i][v] = Math.log(word_topic_sstat[i][v]/sum);
+        }
+
+        if (iter%5!=4)//no need to estimate \alpha very often
+            return;
+
+        //we need to estimate p(\theta|\alpha) as well later on
+        int itemSize = m_items.size(), i = 0;
+        double alphaSum, diAlphaSum, z, c, c1, c2, diff, deltaAlpha;
+        do {
+            alphaSum = Utils.sumOfArray(m_alpha);
+            diAlphaSum = Utils.digamma(alphaSum);
+            z = itemSize * Utils.trigamma(alphaSum);
+
+            c1 = 0; c2 = 0;
+            for(int k=0; k<number_of_topics; k++) {
+                m_alphaG[k] = itemSize * (diAlphaSum - Utils.digamma(m_alpha[k])) + m_alphaStat[k];
+                m_alphaH[k] = -itemSize * Utils.trigamma(m_alpha[k]);
+
+                c1 +=  m_alphaG[k] / m_alphaH[k];
+                c2 += 1.0 / m_alphaH[k];
+            }
+            c = c1 / (1.0/z + c2);
+
+            diff = 0;
+            for(int k=0; k<number_of_topics; k++) {
+                deltaAlpha = (m_alphaG[k]-c) / m_alphaH[k];
+                m_alpha[k] -= deltaAlpha;
+                diff += deltaAlpha * deltaAlpha;
+            }
+            diff /= number_of_topics;
+        } while(++i<m_varMaxIter && diff>m_varConverge);
 
         //maximize likelihood for \rho of p(\theta|P\gamma, \rho)
 //        m_rho = number_of_topics / (m_thetaStats + m_eta_p_Stats - 2 * m_eta_mean_Stats);
@@ -866,7 +901,7 @@ public class ETBIR extends LDA_Variational {
             }
             term4 += Math.log(m_rho * doc.m_Sigma[k]);
         }
-        part3 += -m_rho * (0.5 * term1 - term2 / eta0 + term3 / (eta0 * (eta0 + 1.0))) + number_of_topics/2.0
+        part3 += -m_rho * (0.5 * term1 - term2 / eta0 + 0.5 * term3 / (eta0 * (eta0 + 1.0))) + number_of_topics/2.0
                 + 0.5 * term4;
         log_likelihood += part3;
 
