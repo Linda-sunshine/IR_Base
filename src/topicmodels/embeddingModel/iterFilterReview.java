@@ -104,7 +104,7 @@ public class iterFilterReview {
                 System.out.println("maintain " + userIDMap.size() + " users; " + itemIDMap.size() + " items; " + reviewNum + " reviews;");
             }
         } catch (Exception e) {
-            System.out.print("! FAIL to load " + object + " json file...");
+            System.out.print("! FAIL to load " + fileName + " json file...");
         }
     }
 
@@ -146,7 +146,7 @@ public class iterFilterReview {
                 int[] value = {entry.getValue()[0], 0};
                 entry.setValue(value);
             }
-            System.out.print("-- after " + i + " iterations: ");
+            System.out.println("-- after " + i + " iterations: ");
             loadData(dataFileName,1 ,"amazon_update");
         }
 
@@ -438,32 +438,32 @@ public class iterFilterReview {
 
     public static void main(String[] args) throws FileNotFoundException {
 
-        int userMinCount = 40;
-        int itemMinCount = 50;
-        int filtIterNum = 13;
+        int userMinCount = 30;
+        int itemMinCount = 40;
+        int filtIterNum = 10;
 
         //yelp
-        String itemFileName = "../myData/yelp/business.json";
-        String userFileName = "../myData/yelp/user.json";
-        String reviewFileName = "../myData/yelp/review.json";
-        String denseFileName = "../myData/yelp/denseReview_" + userMinCount + "_" + itemMinCount + ".json";
-
-        System.out.println(String.format("Thresholds: user %d, item %d, iterNum %d", userMinCount, itemMinCount, filtIterNum));
-        iterFilterReview preprocessor = new iterFilterReview();
-        preprocessor.setDataSource("yelp");
-        preprocessor.iterFiltering(userFileName, itemFileName, reviewFileName,
-                userMinCount, itemMinCount, filtIterNum);
-        preprocessor.saveFilterdData(reviewFileName, denseFileName);
-
-        preprocessor.clusterDataByUser(denseFileName, "../myData/yelp/byUser_" + userMinCount + "_" + itemMinCount + "_" + filtIterNum + "/data/");
+//        String itemFileName = "../myData/yelp/business.json";
+//        String userFileName = "../myData/yelp/user.json";
+//        String reviewFileName = "../myData/yelp/review.json";
+//        String denseFileName = "../myData/yelp/denseReview_" + userMinCount + "_" + itemMinCount + ".json";
+//
+//        System.out.println(String.format("Thresholds: user %d, item %d, iterNum %d", userMinCount, itemMinCount, filtIterNum));
+//        iterFilterReview preprocessor = new iterFilterReview();
+//        preprocessor.setDataSource("yelp");
+//        preprocessor.iterFiltering(userFileName, itemFileName, reviewFileName,
+//                userMinCount, itemMinCount, filtIterNum);
+//        preprocessor.saveFilterdData(reviewFileName, denseFileName);
+//
+//        preprocessor.clusterDataByUser(denseFileName, "../myData/yelp/byUser_" + userMinCount + "_" + itemMinCount + "_" + filtIterNum + "/data/");
 
         //amazon
-//        String dataFileName = "../myData/amazon/reviews_Movies_and_TV.json";
-//        String denseFileName = "../myData/amazon/denseReview_" + userMinCount + "_" + itemMinCount + "_" + filtIterNum + ".json";
-//        iterFilterReview preprocessor = new iterFilterReview();
-//        preprocessor.setDataSource("amazon");
-//        preprocessor.iterFiltering(dataFileName, userMinCount, itemMinCount, filtIterNum);
-//        preprocessor.saveFilterdData(dataFileName, denseFileName);
-//        preprocessor.clusterDataByUser(denseFileName, "../myData/amazon/byUser_" + userMinCount + "_" + itemMinCount + "_" + filtIterNum + "/");
+        String dataFileName = "../myData/amazon_electronic/reviews_Electronics.json";
+        String denseFileName = "../myData/amazon_electronic/denseReview_" + userMinCount + "_" + itemMinCount + "_" + filtIterNum + ".json";
+        iterFilterReview preprocessor = new iterFilterReview();
+        preprocessor.setDataSource("amazon");
+        preprocessor.iterFiltering(dataFileName, userMinCount, itemMinCount, filtIterNum);
+        preprocessor.saveFilterdData(dataFileName, denseFileName);
+        preprocessor.clusterDataByUser(denseFileName, "../myData/amazon_electronic/data/byUser_" + userMinCount + "_" + itemMinCount + "_" + filtIterNum + "/");
     }
 }

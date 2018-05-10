@@ -31,39 +31,16 @@ public class ETBIRMain {
         String dataset = "./myData/" + source + "/" + trainset + "/";
 
         /**
-         * generate vocabulary: too large.. ask Lin about it
-         */
-//        double startProb = 0.4; // Used in feature selection, the starting point of the features.
-//        double endProb = 0.999; // Used in feature selection, the ending point of the features.
-//        int maxDF = -1, minDF = 40; // Filter the features with DFs smaller than this threshold.
-//        String featureSelection = "IG";
-//
-
-//        String suffix = ".json";
-//        String stopwords = "./data/Model/stopwords.dat";
-//        String pattern = String.format("%dgram_%s", Ngram, featureSelection);
-//        String fvFile = String.format("data/Features/fv_%s_" + source + trainset + ".txt", pattern);
-//        String fvStatFile = String.format("data/Features/fv_stat_%s_" + source + trainset + ".txt", pattern);
-//        String vctFile = String.format("data/Fvs/vct_%s_" + source + trainset + ".dat", pattern);
-//
-////        /****Loading json files*****/
-//        ReviewAnalyzer analyzer = new ReviewAnalyzer(tokenModel, classNumber, null, Ngram, lengthThreshold, source);
-//        analyzer.LoadStopwords(stopwords);
-//        analyzer.LoadDirectory(folder, suffix); //Load all the documents as the data set.
-//
-////		/****Feature selection*****/
-//        System.out.println("Performing feature selection, wait...");
-//        analyzer.featureSelection(fvFile, featureSelection, startProb, endProb, maxDF, minDF); //Select the features.
-//        analyzer.SaveCVStat(fvStatFile);
-
-        /**
          * model training
          */
         String[] fvFiles = new String[3];
-        fvFiles[0] = "./data/Features/fv_2gram_IG1_byUser_30_50_25.txt";
-        fvFiles[1] = "./data/Features/fv_2gram_IG_byUser_40_50_12.txt";
+        fvFiles[0] = "./data/Features/fv_2gram_IG_yelp_byUser_30_50_25.txt";
+        fvFiles[1] = "./data/Features/fv_2gram_IG_amazon_movie_byUser_40_50_12.txt";
         fvFiles[2] = "./data/Features/yelp_features.txt";
         int fvFile_point = 0;
+        if(source.equals("amazon_movie")){
+            fvFile_point = 1;
+        }
 
         String reviewFolder = dataset + "data/";
         String outputFolder = dataset + "output/feature_" + fvFile_point + "_fixEta/";
@@ -79,9 +56,9 @@ public class ETBIRMain {
         int number_of_topics = 20;
 
         int varMaxIter = 20;
-        double varConverge = 1e-3;
+        double varConverge = 1e-4;
 
-        int emMaxIter = 200;
+        int emMaxIter = 250;
         double emConverge = -1;
         double emConverge4ETBIR = 1e-5;
 
@@ -113,12 +90,15 @@ public class ETBIRMain {
         tModel.setDisplayLap(1);
         new File(outputFolder).mkdirs();
         tModel.setInforWriter(outputFolder + topicmodel + "_info.txt");
+        if(topicmodel.equals("ETBIR")) {
+            ((ETBIR) tModel).analyzeCorpus();
+            tModel.initial();
+            ((ETBIR) tModel).printPara(outputFolder, "init", topicmodel);
+        }
         tModel.EMonCorpus();
         tModel.printTopWords(50, outputFolder + topicmodel + "_topWords.txt");
         tModel.printParameterAggregation(50, outputFolder, topicmodel);
         tModel.closeWriter();
 
-//        etbirModel.printEta(outputFolder + "eta.txt");
-//        etbirModel.printP(outputFolder + "P.txt");
     }
 }

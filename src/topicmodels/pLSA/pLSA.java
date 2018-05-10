@@ -137,7 +137,9 @@ public class pLSA extends twoTopic {
 		
 		calculate_M_step(0);
 	}
-	
+
+	public void initial(){}
+
 	protected void imposePrior() {		
 		if (word_topic_prior!=null) {//we have enforced that the topic size is at least as many as prior seed words
 			if (m_sentiAspectPrior) {
@@ -311,6 +313,61 @@ public class pLSA extends twoTopic {
 		}
 	}
 
+	//print all the quantities in real space
+	@Override
+	public void printTopWords(int k) {
+		Arrays.fill(m_sstat, 0);
+		for(_Doc d:m_trainSet) {
+			for(int i=0; i<number_of_topics; i++)
+				m_sstat[i] += m_logSpace?Math.exp(d.m_topics[i]):d.m_topics[i];
+		}
+		Utils.L1Normalization(m_sstat);
+
+		for(int i=0; i<topic_term_probabilty.length; i++) {
+			MyPriorityQueue<_RankItem> fVector = new MyPriorityQueue<_RankItem>(k);
+			for(int j = 0; j < vocabulary_size; j++)
+				fVector.add(new _RankItem(m_corpus.getFeature(j), topic_term_probabilty[i][j]));
+			System.out.format("Topic %d(%.5f):\t", i, m_sstat[i]);
+			for(_RankItem it:fVector)
+				System.out.format("%s(%.5f)\t", it.m_name, m_logSpace?Math.exp(it.m_value):it.m_value);
+			System.out.println();
+		}
+	}
+
+	public void printParameterAggregation(int k, String folderName, String topicmodel){
+		String gammaPathByUser = folderName + topicmodel + "_gammaByUser.txt";
+		String gammaPathByItem = folderName + topicmodel + "_gammaByItem.txt";
+		System.out.println("Gamma filePath: " + gammaPathByUser + "; " + gammaPathByItem);
+
+		//aggregate parameter \gamma by user/item
+		printTopWords(k, gammaPathByUser, getDocByUser());
+		printTopWords(k, gammaPathByItem, getDocByItem());
+	}
+
+	public HashMap<String, List<_Doc>> getDocByUser(){
+		HashMap<String, List<_Doc>> docByUser = new HashMap<>();
+		for(_Doc d:m_trainSet) {
+			String userName = d.getTitle();
+			if(!docByUser.containsKey(userName)){
+				docByUser.put(userName, new ArrayList<_Doc>());
+			}
+			docByUser.get(userName).add(d);
+		}
+		return docByUser;
+	}
+
+	public HashMap<String, List<_Doc>> getDocByItem(){
+		HashMap<String, List<_Doc>> docByItem = new HashMap<>();
+		for(_Doc d:m_trainSet) {
+			String itemName = d.getItemID();
+			if(!docByItem.containsKey(itemName)){
+				docByItem.put(itemName, new ArrayList<_Doc>());
+			}
+			docByItem.get(itemName).add(d);
+		}
+		return docByItem;
+	}
+
 	public void printTopWords(int k, String topWordPath, HashMap<String, List<_Doc>> docCluster) {
 		try{
 			PrintWriter topWordWriter = new PrintWriter(new File(topWordPath));
@@ -342,54 +399,4 @@ public class pLSA extends twoTopic {
 		}
 	}
 
-
-	public void printParameterAggregation(int k, String folderName, String topicmodel){
-		String gammaPathByUser = folderName + topicmodel + "_gammaByUser.txt";
-		String gammaPathByItem = folderName + topicmodel + "_gammaByItem.txt";
-		String phiPathByUser = folderName + "phiByUser.txt";
-		String phiPathByItem = folderName + "phiByItem.txt";
-		System.out.println("Gamma filePath: " + gammaPathByUser + "; " + gammaPathByItem);
-		System.out.println("Phi filePath: " + phiPathByUser + "; " + phiPathByItem);
-
-		// aggregate doc by user/item
-		HashMap<String, List<_Doc>> docByUser = new HashMap<>();
-		HashMap<String, List<_Doc>> docByItem = new HashMap<>();
-		for(_Doc d:m_trainSet) {
-			String userName = d.getTitle();
-			String itemName = d.getItemID();
-			if(!docByUser.containsKey(userName)){
-				docByUser.put(userName, new ArrayList<_Doc>());
-			}
-			if(!docByItem.containsKey(itemName)){
-				docByItem.put(itemName, new ArrayList<_Doc>());
-			}
-			docByUser.get(userName).add(d);
-			docByItem.get(itemName).add(d);
-		}
-
-		//aggregate parameter \gamma by user/item
-		printTopWords(k, gammaPathByUser, docByUser);
-		printTopWords(k, gammaPathByItem, docByItem);
-	}
-	
-	//print all the quantities in real space
-	@Override
-	public void printTopWords(int k) {
-		Arrays.fill(m_sstat, 0);
-		for(_Doc d:m_trainSet) {
-			for(int i=0; i<number_of_topics; i++)
-				m_sstat[i] += m_logSpace?Math.exp(d.m_topics[i]):d.m_topics[i];
-		}
-		Utils.L1Normalization(m_sstat);			
-		
-		for(int i=0; i<topic_term_probabilty.length; i++) {
-			MyPriorityQueue<_RankItem> fVector = new MyPriorityQueue<_RankItem>(k);
-			for(int j = 0; j < vocabulary_size; j++)
-				fVector.add(new _RankItem(m_corpus.getFeature(j), topic_term_probabilty[i][j]));
-			System.out.format("Topic %d(%.5f):\t", i, m_sstat[i]);
-			for(_RankItem it:fVector)
-				System.out.format("%s(%.5f)\t", it.m_name, m_logSpace?Math.exp(it.m_value):it.m_value);
-			System.out.println();
-		}
-	}
 }
