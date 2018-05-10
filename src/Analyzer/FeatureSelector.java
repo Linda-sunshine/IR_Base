@@ -106,7 +106,7 @@ public class FeatureSelector {
 						PrCitSum += PrCit[i] * Math.log(PrCit[i]);
 					}
 					if(PrCitNot[i] != 0){
-						PrCitNotSum += PrCitNot[i] * Math.log(PrCi[i]);
+						PrCitNotSum += PrCitNot[i] * Math.log(PrCitNot[i]);
 					}
 				}
 				Gt = PrCiSum + PrCitSum + PrCitNotSum;
