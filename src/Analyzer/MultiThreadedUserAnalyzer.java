@@ -15,13 +15,14 @@ import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.Set;
 
-import org.tartarus.snowball.SnowballStemmer;
-import org.tartarus.snowball.ext.englishStemmer;
-
 import opennlp.tools.tokenize.Tokenizer;
 import opennlp.tools.tokenize.TokenizerME;
 import opennlp.tools.tokenize.TokenizerModel;
 import opennlp.tools.util.InvalidFormatException;
+
+import org.tartarus.snowball.SnowballStemmer;
+import org.tartarus.snowball.ext.englishStemmer;
+
 import structures.TokenizeResult;
 import structures._Doc;
 import structures._Review;
@@ -121,7 +122,7 @@ public class MultiThreadedUserAnalyzer extends UserAnalyzer {
 	}
 	
 	// Load one file as a user here. 
-	private void loadUser(String filename, int core){
+	protected void loadUser(String filename, int core){
 		try {
 			File file = new File(filename);
 			BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(file), "UTF-8"));

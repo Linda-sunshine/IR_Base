@@ -28,26 +28,6 @@ import utils.Utils;
  */
 public class ETBIR extends LDA_Variational {
 
-    /**
-     * variables defined by base class
-     */
-//    protected int number_of_topics;
-//    protected double m_converge;//relative change in log-likelihood to terminate EM
-//    protected int vocabulary_size;
-//    protected int number_of_iteration;//number of iterations in inferencing testing document
-//    protected _Corpus m_corpus;
-//    protected double d_beta;
-//    protected double d_alpha; // smoothing of p(z|d)
-//    protected double[][] topic_term_probabilty ; /* p(w|z) */
-//
-//    protected int m_varMaxIter;
-//    protected double m_varConverge;
-//	
-//    protected double[] m_alpha; // we can estimate a vector of alphas as in p(\theta|\alpha)
-//    protected double[] m_alphaStat; // statistics for alpha estimation
-//    protected double[] m_alphaG; // gradient for alpha
-//    protected double[] m_alphaH; // Hessian for alpha	
-
     protected int number_of_users;
     protected int number_of_items;
 
@@ -68,9 +48,12 @@ public class ETBIR extends LDA_Variational {
     double m_thetaStats;
     double m_eta_p_Stats;
     double m_eta_mean_Stats;
-    
-    double d_mu = 1.0, d_sigma_theta = 0.1;
-    double d_nu = 1.0, d_sigma_P = 0.1;
+
+    double[] m_pNuStates;
+    double[][] m_pSumStates;
+
+    double d_mu = 0.5, d_sigma_theta = 0.001;
+    double d_nu = 0.5, d_sigma_P = 0.001;
     
     public ETBIR(int emMaxIter, double emConverge,
                  double beta, _Corpus corpus, double lambda,
@@ -82,6 +65,21 @@ public class ETBIR extends LDA_Variational {
 
         this.m_sigma = sigma;
         this.m_rho = rho;
+
+        this.m_pNuStates = new double[this.number_of_topics];
+        this.m_pSumStates = new double[this.number_of_topics][this.number_of_topics];
+    }
+
+    @Override
+    public String toString(){
+		return String.format("ETBIR[k:%d, alpha:%.2f, beta:%.2f, simga:%.2f,rho:%,2f, item~N(%.2f, %.2f), user~N(%.2f, %.2f)]\n", 
+				number_of_topics, d_alpha, d_beta, this.m_sigma, this.m_rho, d_mu, d_sigma_theta, d_nu, d_sigma_P);
+    }
+    
+    @Override
+    public void EMonCorpus() {
+        m_trainSet = m_corpus.getCollection();
+        EM();
     }
 
     public void analyzeCorpus(){
@@ -121,7 +119,9 @@ public class ETBIR extends LDA_Variational {
             m_mapByItem.get(iIdx).add(uIdx);
 
             m_reviewIndex.put(iIdx + "_" + uIdx, d);
-            if ( (100 * d/size) % 10 == 0 )
+            
+            //if ( (100 * d/size) % 10 == 0 )
+            if(d % (size/10) == 0)
             	System.out.print(".");//every 10%
         }
         System.out.println("Done!");//finish
@@ -130,8 +130,10 @@ public class ETBIR extends LDA_Variational {
         this.number_of_users = m_mapByUser.size();
         this.vocabulary_size = m_corpus.getFeatureSize();
 
-        System.out.format("-- vocabulary size: %d\n -- corpus size: %d\n -- item size: %d\n-- user number: %d\n", 
+        System.out.format("[Info]Vocabulary size: %d, corpus size: %d, item size: %d, user number: %d\n", 
         		vocabulary_size, size, number_of_items, number_of_users);
+        infoWriter.write(String.format("-- vocabulary size: %d\n -- corpus size: %d\n -- item size: %d\n-- user number: %d\n",
+                vocabulary_size, size, number_of_items, number_of_users));
     }
 
     @Override
@@ -142,6 +144,11 @@ public class ETBIR extends LDA_Variational {
         m_thetaStats = 0.0;
         m_eta_p_Stats = 0.0;
         m_eta_mean_Stats = 0.0;
+
+        Arrays.fill(m_pNuStates, 0.0);
+        for(int k = 0; k < number_of_topics; k++)
+            Arrays.fill(m_pSumStates[k], 0.0);
+
     }
 
     protected void updateStats4Item(_Product4ETBIR item){
@@ -161,12 +168,13 @@ public class ETBIR extends LDA_Variational {
     protected void updateStats4Doc(_Doc4ETBIR doc){
         // update m_word_topic_stats for updating beta
         _SparseFeature[] fv = doc.getSparse();
-        for(int k = 0; k < number_of_topics; k++){
-            for(int n = 0; n < fv.length; n++){
-                int wid = fv[n].getIndex();
-                double v = fv[n].getValue();
-                word_topic_sstat[k][wid] += v * doc.m_phi[n][k];
-            }
+        int wid;
+        double v;
+        for(int n=0; n<fv.length; n++) {
+            wid = fv[n].getIndex();
+            v = fv[n].getValue();
+            for(int i=0; i<number_of_topics; i++)
+                word_topic_sstat[i][wid] += v*doc.m_phi[n][i];
         }
 
         // update m_thetaStats for updating rho
@@ -217,23 +225,33 @@ public class ETBIR extends LDA_Variational {
         double totalLikelihood = 0.0, last = -1.0, converge = 0.0;
 
         do {
+//            infoWriter.write("-- E-step iter: " + iter + "\n");
             init();
             
             totalLikelihood = 0.0;
-            for (_Doc d:m_corpus.getCollection()) 
+            int docNum = 0, userNum = 0, itemNum = 0;
+            for (_Doc d:m_corpus.getCollection()) {
+//                infoWriter.write("---- doc: " + docNum + "\n");
+                docNum++;
                 totalLikelihood += calculate_E_step(d);
+            }
 
             for (_User4ETBIR user:m_users) {
+//                infoWriter.write("---- user: " + userNum + "\n");
+                userNum++;
             	totalLikelihood += varInference4User(user);
                 updateStats4User(user);
             }
 
             for (_Product4ETBIR item : m_items) {
+//                infoWriter.write("---- item: " + itemNum + "\n");
+                itemNum++;
+//                System.out.format("---Variational Inference for %d item.-------\n", itemNum);
             	totalLikelihood += varInference4Item(item);
                 updateStats4Item(item);
             }
 
-            if(iter > 0)
+             if(iter > 0)
                 converge = Math.abs((totalLikelihood - last) / last);
             else
                 converge = 1.0;
@@ -241,8 +259,13 @@ public class ETBIR extends LDA_Variational {
             last = totalLikelihood;
             if(converge < m_varConverge)
                 break;
-        }while(iter++ < m_varMaxIter);
+            infoWriter.write(String.format("---- stats: m_pStat-%.5f, m_thetaStats-%.5f, " +
+                            "m_eta_p_Stats-%.5f, m_eta_mean_Stats-%.5f \n",
+                    m_pStats, m_thetaStats, m_eta_p_Stats, m_eta_mean_Stats) );
+            System.out.print("---likelihood: " + last + "\n");
 
+        }while(iter++ < m_varMaxIter);
+        System.out.print(String.format("Current likelihood: %.4f", totalLikelihood));
         return totalLikelihood;
     }
 
@@ -262,6 +285,7 @@ public class ETBIR extends LDA_Variational {
             
             last = current;
 //            System.out.println("-- varInferencePerUser cur: " + current + "; converge: " + converge);
+
         } while(++iter < m_varMaxIter && Math.abs(converge) > m_varConverge);
 
         return current;
@@ -271,7 +295,33 @@ public class ETBIR extends LDA_Variational {
         double current = 0.0, last = 1.0, converge = 0.0;
         int iter = 0;
 
+        Arrays.fill(m_pNuStates, 0.0);
+        for(int k = 0; k < number_of_topics; k++)
+            Arrays.fill(m_pSumStates[k], 0.0);
+
+        ArrayList<Integer> Ui = m_mapByItem.get(m_itemsIndex.get(i.getID()));
+        for (Integer userIdx : Ui) {
+            _User4ETBIR user = m_users.get(userIdx);
+            _Doc4ETBIR doc = (_Doc4ETBIR) m_corpus.getCollection().get(m_reviewIndex.get(
+                    m_itemsIndex.get(i.getID()) + "_" + userIdx));
+            for(int k = 0; k < number_of_topics; k++){
+                for(int j = 0; j < number_of_topics; j++){
+                    m_pNuStates[k] += user.m_nuP[j][k] * doc.m_mu[j];
+                }
+
+                for(int l = 0; l < number_of_topics; l++){
+                    for (int j = 0; j < number_of_topics; j++){
+                        m_pSumStates[k][l] += user.m_SigmaP[j][l][k] + user.m_nuP[j][k] * user.m_nuP[j][l];
+                    }
+                }
+            }
+        }
+
         do{
+//            infoWriter.write("\t varIter: " + iter + "\n");
+//            infoWriter.write("\t -- eta: " + Arrays.toString(i.m_eta) + "\n");
+//            infoWriter.write("\t -- likelihood: " + String.valueOf(current) + "\n");
+
             update_eta(i);
 
             current = calc_log_likelihood_per_item(i);
@@ -282,7 +332,11 @@ public class ETBIR extends LDA_Variational {
 
             last = current;
 //            System.out.println("-- varInferencePerItem cur: " + current + "; converge: " + converge);
+
         } while (++iter < m_varMaxIter && Math.abs(converge) > m_varConverge);
+//        infoWriter.write("\t varIter: " + iter + "\n");
+//        infoWriter.write("\t -- eta: " + Arrays.toString(i.m_eta) + "\n");
+//        infoWriter.write("\t -- likelihood: " + String.valueOf(current) + "\n");
 
         return current;
     }
@@ -292,6 +346,11 @@ public class ETBIR extends LDA_Variational {
         int iter = 0;
 
         do {
+//            infoWriter.write("\t varIter: " + iter + "\n");
+//            infoWriter.write("\t -- mu: " + Arrays.toString(d.m_mu) + "\n");
+//            infoWriter.write("\t -- sigma: " + Arrays.toString(d.m_Sigma) + "\n");
+//            infoWriter.write("\t -- likelihood: " + String.valueOf(current) + "\n");
+
             update_phi(d);
             update_zeta(d);
             update_mu(d, u ,i);
@@ -306,8 +365,13 @@ public class ETBIR extends LDA_Variational {
                 converge = 1.0;
             
             last = current;
+
 //            System.out.println("-- varInferencePerDoc cur: " + current + "; converge: " + converge);
         } while (++iter < m_varMaxIter && Math.abs(converge) > m_varConverge);
+//        infoWriter.write("\t final varIter: " + iter + "\n");
+//        infoWriter.write("\t -- mu: " + Arrays.toString(d.m_mu) + "\n");
+//        infoWriter.write("\t -- sigma: " + Arrays.toString(d.m_Sigma) + "\n");
+//        infoWriter.write("\t -- likelihood: " + String.valueOf(current) + "\n");
 
         return current;
     }
@@ -343,7 +407,7 @@ public class ETBIR extends LDA_Variational {
 
     // alternative: line search / fixed-stepsize gradient descent
     void update_mu(_Doc4ETBIR doc, _User4ETBIR user, _Product4ETBIR item){
-        double fValue = 1.0, lastFValue = 1.0, cvg = 1e-4, diff, iterMax = 60, iter = 0;
+        double fValue = 1.0, lastFValue = 1.0, cvg = 1e-4, diff, iterMax = 30, iter = 0;
         double stepsize = 1e-2, muG; // gradient for mu
         int N = doc.getTotalDocLength();
 
@@ -358,13 +422,13 @@ public class ETBIR extends LDA_Variational {
                 moment = N * zeta_stat * Math.exp(doc.m_mu[k] + 0.5 * doc.m_Sigma[k]);
                 norm = Utils.dotProduct(item.m_eta, user.m_nuP[k]) / etaSum;
                 
-                muG = -(-m_rho * (doc.m_mu[k] - norm)
-                        + doc.m_phiStat[k] - moment);//-1 because LBFGS is minimization
+                muG = -m_rho * (doc.m_mu[k] - norm)
+                        + doc.m_phiStat[k] - moment;//-1 because LBFGS is minimization
 
-                fValue += -(-0.5 * m_rho * (doc.m_mu[k] * doc.m_mu[k] - 2 * doc.m_mu[k] * norm)
-                        + doc.m_mu[k] * doc.m_phiStat[k] - moment);
+                fValue += -0.5 * m_rho * (doc.m_mu[k] * doc.m_mu[k] - 2 * doc.m_mu[k] * norm)
+                        + doc.m_mu[k] * doc.m_phiStat[k] - moment;
                 
-                doc.m_mu[k] -= stepsize * muG;//fixed stepsize
+                doc.m_mu[k] += stepsize * muG;//fixed stepsize
             }                
             
             diff = (lastFValue - fValue) / lastFValue;
@@ -372,14 +436,19 @@ public class ETBIR extends LDA_Variational {
     }
 
     void update_SigmaTheta(_Doc4ETBIR d){
-        double fValue = 1.0, lastFValue = 1.0, cvg = 1e-6, diff, iterMax = 20, iter = 0;
-        double stepsize = 1e-2, moment, sigma, SigmaG; // gradient for Sigma
+        double fValue = 1.0, lastFValue = 1.0, cvg = 1e-4, diff, iterMax = 20, iter = 0;
+        double stepsize = 1e-3, moment, sigma;
+        double[] SigmaG = new double[number_of_topics]; // gradient for Sigma
         int N = d.getTotalDocLength();
 
         for(int k=0; k < number_of_topics; k++)
             d.m_sigmaSqrt[k] = Math.sqrt(d.m_Sigma[k]);
 
         do {
+
+//            infoWriter.write("\t ---- sigmaSqrt: " + Arrays.toString(d.m_sigmaSqrt) + "\n");
+//            infoWriter.write("\t ---- sigmaThetaG: " + Arrays.toString(SigmaG) + "\n");
+
             //update gradient of sigma
             lastFValue = fValue;
             fValue = 0.0;
@@ -387,14 +456,17 @@ public class ETBIR extends LDA_Variational {
             for (int k = 0; k < number_of_topics; k++) {
                 sigma = d.m_sigmaSqrt[k] * d.m_sigmaSqrt[k];
                 moment = Math.exp(d.m_mu[k] + 0.5 * sigma);
-                SigmaG = -(-m_rho * d.m_sigmaSqrt[k] - N * d.m_sigmaSqrt[k] * moment / d.m_zeta + 1.0 / d.m_sigmaSqrt[k]); //-1 because LBFGS is minimization
-                fValue += -(-0.5 * m_rho * sigma - N * moment / d.m_zeta + 0.5 * Math.log(sigma));
+                SigmaG[k] = -m_rho * d.m_sigmaSqrt[k] - N * d.m_sigmaSqrt[k] * moment / d.m_zeta
+                        + 1.0 / d.m_sigmaSqrt[k]; //-1 because LBFGS is minimization
+                fValue += -0.5 * m_rho * sigma - N * moment / d.m_zeta + 0.5 * Math.log(sigma);
                 
-                d.m_sigmaSqrt[k] -= stepsize * SigmaG;//fixed stepsize
+                d.m_sigmaSqrt[k] += stepsize * SigmaG[k];//fixed stepsize
             }
 
             diff = (lastFValue - fValue) / lastFValue;
         } while(iter++ < iterMax && Math.abs(diff) > cvg);
+//        infoWriter.write("\t ---- sigmaSqrt: " + Arrays.toString(d.m_sigmaSqrt) + "\n");
+//        infoWriter.write("\t ---- sigmaThetaG: " + Arrays.toString(SigmaG) + "\n");
 
         for(int k=0; k < number_of_topics; k++)
             d.m_Sigma[k] = d.m_sigmaSqrt[k] * d.m_sigmaSqrt[k];
@@ -448,7 +520,7 @@ public class ETBIR extends LDA_Variational {
         ArrayList<Integer> Ui = m_mapByItem.get(m_itemsIndex.get(i.getID()));
 
         double fValue = 1.0, lastFValue = 1.0, cvg = 1e-6, diff, iterMax = 20, iter = 0;
-        double stepsize = 1e3;
+        double stepsize = 1e-3;
         double[] etaG = new double[number_of_topics];
 
         do{
@@ -541,8 +613,6 @@ public class ETBIR extends LDA_Variational {
 
     // update eta with non-negative constraint using fix step graident descent
     void update_eta(_Product4ETBIR i){
-        ArrayList<Integer> Ui = m_mapByItem.get(m_itemsIndex.get(i.getID()));
-
         double fValue = 1.0, lastFValue, cvg = 1e-4, diff, iterMax = 20, iter = 0;
         double stepsize=1e-2;
 
@@ -551,9 +621,12 @@ public class ETBIR extends LDA_Variational {
         double[] eta_temp = new double[number_of_topics];
         for(int k = 0; k < number_of_topics; k++){
             eta_log[k] = Math.log(i.m_eta[k]);
+//            System.out.format("eta %d: %.3f ", k, i.m_eta[k]);
+//            if(k % 10 == 0)
+//            	System.out.println();
             eta_temp[k] = i.m_eta[k];
         }
-
+//        System.out.println();
         do{
             lastFValue = fValue;
             fValue = 0.0;
@@ -563,74 +636,65 @@ public class ETBIR extends LDA_Variational {
             double diGammaEta = Utils.digamma(eta0);
             double triGammaEta = Utils.trigamma(eta0);
             for(int k = 0; k < number_of_topics; k++) {
-                double gTerm1 = 0.0;
                 double gTerm2 = 0.0;
                 double gTerm3 = 0.0;
                 double gTerm4 = 0.0;
-                double term1 = 0.0;
-                double term2 = 0.0;
-                for (Integer userIdx : Ui) {
-                    _User4ETBIR user = m_users.get(userIdx);
-                    _Doc4ETBIR d = (_Doc4ETBIR) m_corpus.getCollection().get(m_reviewIndex.get(
-                            m_itemsIndex.get(i.getID()) + "_" + userIdx));
-
-                    for (int j = 0; j < number_of_topics; j++) {
-                        gTerm1 += user.m_nuP[j][k] * d.m_mu[j];
-                        term1 += eta_temp[k] * user.m_nuP[j][k] * d.m_mu[j];
-
-                        for (int l = 0; l < number_of_topics; l++) {
-                            gTerm2 += eta_temp[l] * user.m_nuP[j][l] * d.m_mu[j];
-
-                            gTerm3 += eta_temp[l] * (user.m_SigmaP[j][l][k]
-                                    + user.m_nuP[j][l] * user.m_nuP[j][k]);
-                            if (l == k) {
-                                gTerm3 += (eta_temp[l] + 1) * (user.m_SigmaP[j][l][k]
-                                        + user.m_nuP[j][l] * user.m_nuP[j][k]);
-                            }
-
-                            term2 += eta_temp[l] * eta_temp[k] * (user.m_SigmaP[j][l][k]
-                                    + user.m_nuP[j][l] * user.m_nuP[j][k]);
-                            if (l == k) {
-                                term2 += eta_temp[k] * (user.m_SigmaP[j][k][k]
-                                        + user.m_nuP[j][k] * user.m_nuP[j][k]);
-                            }
-
-                            for (int p = 0; p < number_of_topics; p++) {
-                                gTerm4 += eta_temp[l] * eta_temp[p] * (user.m_SigmaP[j][l][p]
-                                        + user.m_nuP[j][l] * user.m_nuP[j][p]);
-                                if (p == l) {
-                                    gTerm4 += eta_temp[p] * (user.m_SigmaP[j][l][p]
-                                            + user.m_nuP[j][l] * user.m_nuP[j][p]);
-                                }
-                            }
-                        }
-                    }
+                double term3 = 0.0;
+                for(int l = 0; l < number_of_topics; l++){
+                    gTerm2 += m_pNuStates[l] * eta_temp[l];
+                    gTerm3 += 2 * m_pSumStates[l][k] * eta_temp[l];
+                    for(int p = 0; p < number_of_topics; p++)
+                        gTerm4 += eta_temp[l] * eta_temp[p] * m_pSumStates[l][p];
+                    gTerm4 += eta_temp[l] * m_pSumStates[l][l];
+                    term3 += eta_temp[l] * m_pSumStates[l][k];
                 }
-                etaG[k] = -(Utils.trigamma(eta_temp[k]) * eta_temp[k] * (m_alpha[k] - eta_temp[k])
-                        - triGammaEta * eta_temp[k] * (Utils.sumOfArray(m_alpha) - eta0)
-                        + m_rho * eta_temp[k] * gTerm1 / eta0
-                        - m_rho * eta_temp[k] * gTerm2 / (eta0 * eta0)
-                        - m_rho * eta_temp[k] * gTerm3 / (2 * eta0 * (eta0 + 1.0))
-                        + m_rho * (2 * eta0 + 1.0) * eta_temp[k] * gTerm4 / (2 * eta0 * eta0
-                        * (eta0 + 1.0) * (eta0 + 1.0)));
+                gTerm3 += m_pSumStates[k][k];
+                term3 += m_pSumStates[k][k];
+                
+                
+                double v1 = Utils.trigamma(eta_temp[k]) * eta_temp[k] * (m_alpha[k] - eta_temp[k]);
+                double v2 = triGammaEta * eta_temp[k] * (Utils.sumOfArray(m_alpha) - eta0);
+                double v3 = m_rho * eta_temp[k] * m_pNuStates[k] / eta0;
+                double v4 = m_rho * eta_temp[k] * gTerm2 / (eta0 * eta0);
+                double v5 = m_rho * eta_temp[k] * gTerm3 / (2 * eta0 * (eta0 + 1.0));
+                double v6 = m_rho * (2 * eta0 + 1.0) * eta_temp[k] * gTerm4 / (2 * eta0 * eta0
+                        * (eta0 + 1.0) * (eta0 + 1.0));
+                etaG[k] = v1 - v2 + v3 - v4 - v5 + v6;
 
-                fValue += -((m_alpha[k] - eta_temp[k]) * (Utils.digamma(eta_temp[k]) - diGammaEta)
-                        -  lgGammaEta + Utils.lgamma(eta_temp[k])
-                        + m_rho * term1 / eta0 - m_rho * term2 / (2 * eta0 * (eta0 + 1.0)));
+//                etaG[k] = Utils.trigamma(eta_temp[k]) * eta_temp[k] * (m_alpha[k] - eta_temp[k])
+//                        - triGammaEta * eta_temp[k] * (Utils.sumOfArray(m_alpha) - eta0)
+//                        + m_rho * eta_temp[k] * m_pNuStates[k] / eta0
+//                        - m_rho * eta_temp[k] * gTerm2 / (eta0 * eta0)
+//                        - m_rho * eta_temp[k] * gTerm3 / (2 * eta0 * (eta0 + 1.0))
+//                        + m_rho * (2 * eta0 + 1.0) * eta_temp[k] * gTerm4 / (2 * eta0 * eta0
+//                        * (eta0 + 1.0) * (eta0 + 1.0));
 
+                fValue += (m_alpha[k] - eta_temp[k]) * (Utils.digamma(eta_temp[k]) - diGammaEta)
+                        + Utils.lgamma(eta_temp[k])
+                        + m_rho * eta_temp[k] * m_pNuStates[k] / eta0 - m_rho * eta_temp[k] * term3 / (2 * eta0 * (eta0 + 1.0));
+//                if( k == number_of_topics - 1){
+//                	System.out.format("gTerm2: %.1f, gTerm3: %.1f, gTerm4: %.1f\n", gTerm2, gTerm3, gTerm4);
+//                }
+            
             }
+            fValue -=  lgGammaEta;
             // fix stepsize
             for(int k = 0; k < number_of_topics; k++) {
-                eta_log[k] = eta_log[k] - stepsize * etaG[k];
+                eta_log[k] = eta_log[k] + stepsize * etaG[k];
                 eta_temp[k] = Math.exp(eta_log[k]);
             }
 
             diff = (lastFValue - fValue) / lastFValue;
         }while(iter++ < iterMax && Math.abs(diff) > cvg);
 
+//        infoWriter.write("\t -- etaG: " + Arrays.toString(etaG) + "\n");
         for(int k=0;k<number_of_topics;k++){
             i.m_eta[k] = eta_temp[k];
+//            if(k % 10 == 0)
+//            	System.out.println();
+//            System.out.format("eta_G %d: %.3f ", k, etaG[k]);
         }
+//        System.out.println();
     }
 
     // update eta with non-negative constraint using lbfgs
@@ -653,6 +717,9 @@ public class ETBIR extends LDA_Variational {
         try {
             do {
                 fValue = 0.0;
+                for(int k = 0; k < number_of_topics; k++){
+                    eta_temp[k] = Math.exp(eta_log[k]);
+                }
 
                 double eta0 = Utils.sumOfArray(eta_temp);
                 double lgGammaEta = Utils.lgamma(eta0);
@@ -677,10 +744,10 @@ public class ETBIR extends LDA_Variational {
                             for (int l = 0; l < number_of_topics; l++) {
                                 gTerm2 += eta_temp[l] * user.m_nuP[j][l] * d.m_mu[j];
 
-                                gTerm3 += eta_temp[l] * (user.m_SigmaP[j][l][k]
-                                        + user.m_nuP[j][l] * user.m_nuP[j][k]);
+                                gTerm3 += eta_temp[l] * (user.m_SigmaP[j][l][k] + user.m_SigmaP[j][k][l]
+                                        + 2 * user.m_nuP[j][l] * user.m_nuP[j][k]);
                                 if (l == k) {
-                                    gTerm3 += (eta_temp[l] + 1.0) * (user.m_SigmaP[j][l][k]
+                                    gTerm3 += (user.m_SigmaP[j][l][k]
                                             + user.m_nuP[j][l] * user.m_nuP[j][k]);
                                 }
 
@@ -712,10 +779,11 @@ public class ETBIR extends LDA_Variational {
                             * (eta0 + 1.0) * (eta0 + 1.0)));
 
                     fValue += -((m_alpha[k] - eta_temp[k]) * (Utils.digamma(eta_temp[k]) - diGammaEta)
-                            - lgGammaEta + Utils.lgamma(eta_temp[k])
+                            + Utils.lgamma(eta_temp[k])
                             + m_rho * term1 / eta0 - m_rho * term2 / (2 * eta0 * (eta0 + 1.0)));
 
                 }
+                fValue -= lgGammaEta;
                 LBFGS.lbfgs(number_of_topics, 4, eta_log, fValue, etaG, false, eta_diag, iprint, 1e-6, 1e-32, iflag);
 
             } while (iter++ < iterMax && iflag[0] != 0);
@@ -729,13 +797,44 @@ public class ETBIR extends LDA_Variational {
     }
 
     @Override
-	public void calculate_M_step(int iter) {
-    	super.calculate_M_step(iter);
-        //maximize likelihood for \rho of p(\theta|P\gamma, \rho)
-//        m_rho = number_of_topics / (m_thetaStats + m_eta_p_Stats - 2 * m_eta_mean_Stats);
+    public void calculate_M_step(int iter) {
+        //        infoWriter.write("-- M step: " + "\n");
+        //maximum likelihood estimation of p(w|z,\beta)
+        for(int i=0; i<number_of_topics; i++) {
+            double sum = Utils.sumOfArray(word_topic_sstat[i]);
+            for(int v=0; v<vocabulary_size; v++) //will be in the log scale!!
+                topic_term_probabilty[i][v] = Math.log(word_topic_sstat[i][v]/sum);
+        }
 
-        //maximize likelihood for \sigma
-//        m_sigma = number_of_topics / m_pStats;
+        if (iter%2!=4)//no need to estimate \alpha very often
+            return;
+
+        //we need to estimate p(\theta|\alpha) as well later on
+        int itemSize = m_items.size(), i = 0;
+        double alphaSum, diAlphaSum, z, c, c1, c2, diff, deltaAlpha;
+        do {
+            alphaSum = Utils.sumOfArray(m_alpha);
+            diAlphaSum = Utils.digamma(alphaSum);
+            z = itemSize * Utils.trigamma(alphaSum);
+
+            c1 = 0; c2 = 0;
+            for(int k=0; k<number_of_topics; k++) {
+                m_alphaG[k] = itemSize * (diAlphaSum - Utils.digamma(m_alpha[k])) + m_alphaStat[k];
+                m_alphaH[k] = -itemSize * Utils.trigamma(m_alpha[k]);
+
+                c1 +=  m_alphaG[k] / m_alphaH[k];
+                c2 += 1.0 / m_alphaH[k];
+            }
+            c = c1 / (1.0/z + c2);
+
+            diff = 0;
+            for(int k=0; k<number_of_topics; k++) {
+                deltaAlpha = (m_alphaG[k]-c) / m_alphaH[k];
+                m_alpha[k] -= deltaAlpha;
+                diff += deltaAlpha * deltaAlpha;
+            }
+            diff /= number_of_topics;
+        } while(++i<m_varMaxIter && diff>m_varConverge);
     }
     
     @Override
@@ -805,7 +904,7 @@ public class ETBIR extends LDA_Variational {
             }
             term4 += Math.log(m_rho * doc.m_Sigma[k]);
         }
-        part3 += -m_rho * (0.5 * term1 - term2 / eta0 + term3 / (eta0 * (eta0 + 1.0))) + number_of_topics/2.0
+        part3 += -m_rho * (0.5 * term1 - term2 / eta0 + term3 / (2 * eta0 * (eta0 + 1.0))) + number_of_topics/2.0
                 + 0.5 * term4;
         log_likelihood += part3;
 
@@ -855,14 +954,31 @@ public class ETBIR extends LDA_Variational {
         }
     }
 
+    protected void initialize_probability(List<_Doc> docs, List<_User4ETBIR> users, List<_Product4ETBIR> items) {
+        // initialize with all smoothing terms
+        init();
+
+        // initialize topic-word allocation, p(w|z)
+        for(_Doc d:docs) {
+            ((_Doc4ETBIR) d).setTopics4Variational(number_of_topics, d_alpha, d_mu, d_sigma_theta);//allocate memory and randomize it
+            updateStats4Doc((_Doc4ETBIR) d);
+        }
+
+        for(_User u:users) {
+            ((_User4ETBIR) u).setTopics4Variational(number_of_topics, d_nu, d_sigma_P);
+            updateStats4User((_User4ETBIR) u);
+        }
+
+        for(_Product i:items){
+            ((_Product4ETBIR) i).setTopics4Variational(number_of_topics, d_alpha+1);
+            updateStats4Item((_Product4ETBIR) i);
+        }
+
+        calculate_M_step(0);
+    }
+
     @Override
-    public void EM(){
-
-        System.out.println("Initializing model...");
-        initialize_probability(m_corpus.getCollection());
-
-//        initModel();
-
+    public void initial(){
         System.out.println("Initializing documents...");
         for(_Doc doc : m_corpus.getCollection())
             ((_Doc4ETBIR) doc).setTopics4Variational(number_of_topics, d_alpha, d_mu, d_sigma_theta);
@@ -875,14 +991,22 @@ public class ETBIR extends LDA_Variational {
 
         System.out.println("Initializing items...");
         for(_Product item : m_items)
-            ((_Product4ETBIR) item).setTopics4Variational(number_of_topics, d_alpha);
-        
+            ((_Product4ETBIR) item).setTopics4Variational(number_of_topics, d_alpha+1);
+
+        System.out.println("Initializing model...");
+        initialize_probability(m_corpus.getCollection(), m_users, m_items);
+    }
+
+    @Override
+    public void EM(){
 
         int iter = 0;
         double lastAllLikelihood = 1.0;
         double currentAllLikelihood;
         double converge = 0.0;
         do{
+        	System.out.format("==========\nStart E step %d....\n", iter);
+            infoWriter.write("EM iter: " + iter + "\n");
             currentAllLikelihood = E_step();
 
             if(iter > 0)
@@ -890,61 +1014,32 @@ public class ETBIR extends LDA_Variational {
             else
                 converge = 1.0;
 
-            if(converge < 0){
-                m_varMaxIter += 10;
-                System.out.println("! E_step not converge...");
-            }else{
-            	calculate_M_step(iter);
-                lastAllLikelihood = currentAllLikelihood;
-                System.out.format("%s step: likelihood is %.3f, converge to %f...\n",
-                        iter, currentAllLikelihood, converge);
-                iter++;
-                if(converge < m_converge)
-                    break;
-            }
-            System.out.println("sigma: " + m_sigma + "; rho: " + m_rho);
-            System.out.println(Utils.sumOfArray(word_topic_sstat[0]));
+//            if(converge < 0){
+//                m_varMaxIter += 10;
+//                System.out.println("! E_step not converge...");
+//            }else{
+//            	System.out.println("\nStart M step....\n========");
+//            	calculate_M_step(iter);
+//                lastAllLikelihood = currentAllLikelihood;
+//                System.out.format("%s step: likelihood is %.3f, converge to %f...\n",
+//                        iter, currentAllLikelihood, converge);
+//                iter++;
+//                if(converge < m_converge)
+//                    break;
+//
+//            }
+        	System.out.format("\n-------------\nStart M step %d....\n", iter);
+            calculate_M_step(iter);
+            lastAllLikelihood = currentAllLikelihood;
+            System.out.format("[Stat]%s step: likelihood is %.3f, converge to %f...\n",
+                    iter, currentAllLikelihood, converge);
+            infoWriter.write(String.format("%s step: likelihood is %.3f, converge to %f...\n",
+                    iter, currentAllLikelihood, converge));
+            iter++;
+            if(converge < m_converge)
+                break;
+
         }while(iter < number_of_iteration && (converge < 0 || converge > m_converge));
-    }
-
-    public void printEta(String etafile){
-        try{
-            PrintWriter etaWriter = new PrintWriter(new File(etafile));
-
-            for(int idx = 0; idx < m_items.size(); idx++) {
-                etaWriter.write("item " + idx + "*************\n");
-                _Product4ETBIR item = (_Product4ETBIR) m_items.get(idx);
-                etaWriter.format("-- eta: \n");
-                for (int i = 0; i < number_of_topics; i++) {
-                    etaWriter.format("%.8f\t", item.m_eta[i]);
-                }
-                etaWriter.write("\n");
-            }
-            etaWriter.close();
-        } catch(Exception ex){
-            System.err.print("File Not Found");
-        }
-    }
-
-    public void printP(String pfile){
-        try{
-            PrintWriter pWriter = new PrintWriter(new File(pfile));
-
-            for(int idx = 0; idx < m_users.size(); idx++) {
-                pWriter.write("user " + idx + "*************\n");
-                _User4ETBIR user = (_User4ETBIR) m_users.get(idx);
-                for (int i = 0; i < number_of_topics; i++) {
-                    pWriter.format("-- mu " + i + ": \n");
-                    for(int k = 0; k < number_of_topics; k++) {
-                        pWriter.format("%.5f\t", user.m_nuP[i][k]);
-                    }
-                    pWriter.write("\n");
-                }
-            }
-            pWriter.close();
-        } catch(Exception ex){
-            System.err.print("File Not Found");
-        }
     }
 
     @Override
@@ -953,8 +1048,12 @@ public class ETBIR extends LDA_Variational {
         Arrays.fill(m_sstat, 0);
         for(int d = 0; d < m_corpus.getCollection().size(); d++) {
             _Doc4ETBIR doc = (_Doc4ETBIR) m_corpus.getCollection().get(d);
+            double expSum = 0;
+            for(int i = 0; i < number_of_topics; i++){
+                expSum += Math.exp(doc.m_mu[i]);
+            }
             for(int i=0; i<number_of_topics; i++)
-                m_sstat[i] += Math.exp(doc.m_mu[i]);
+                m_sstat[i] += Math.exp(doc.m_mu[i]) / expSum;
         }
         Utils.L1Normalization(m_sstat);
 
@@ -977,5 +1076,141 @@ public class ETBIR extends LDA_Variational {
         }
     }
 
+    public void printPara(String folderName, String mode, String topicmodel){
+        String etaFile = folderName + topicmodel + "_" + mode + "_eta4Item.txt";
+        String pFile = folderName + topicmodel + "_" + mode + "_p4User.txt";
+        try{
+            PrintWriter etaWriter = new PrintWriter(new File(etaFile));
+
+            for(int idx = 0; idx < m_items.size(); idx++) {
+                etaWriter.write("item " + idx + "*************\n");
+                _Product4ETBIR item = (_Product4ETBIR) m_items.get(idx);
+                etaWriter.format("-- eta: \n");
+                for (int i = 0; i < number_of_topics; i++) {
+                    etaWriter.format("%.8f\t", item.m_eta[i]);
+                }
+                etaWriter.write("\n");
+            }
+            etaWriter.close();
+        } catch(Exception ex){
+            System.err.print("File Not Found");
+        }
+
+        try{
+            PrintWriter pWriter = new PrintWriter(new File(pFile));
+
+            for(int idx = 0; idx < m_users.size(); idx++) {
+                pWriter.write("user " + idx + "*************\n");
+                _User4ETBIR user = (_User4ETBIR) m_users.get(idx);
+                for (int i = 0; i < number_of_topics; i++) {
+                    pWriter.format("-- mu " + i + ": \n");
+                    for(int j = 0; j < number_of_topics; j++) {
+                        pWriter.format("%.5f\t", user.m_nuP[i][j]);
+                    }
+                    pWriter.write("\n");
+                }
+            }
+            pWriter.close();
+        } catch(Exception ex){
+            System.err.print("File Not Found");
+        }
+    }
+
+    public HashMap<String, List<_Doc>> getDocByUser(){
+        HashMap<String, List<_Doc>> docByUser = new HashMap<>();
+        for(Integer uIdx : m_mapByUser.keySet()) {
+            String userName = m_users.get(uIdx).getUserID();
+            List<_Doc> docs = new ArrayList<>();
+            for(Integer iIdx : m_mapByUser.get(uIdx)){
+                docs.add(m_corpus.getCollection().get(m_reviewIndex.get(iIdx + "_" + uIdx)));
+            }
+            docByUser.put(userName, docs);
+        }
+        return docByUser;
+    }
+
+    public HashMap<String, List<_Doc>> getDocByItem(){
+        HashMap<String, List<_Doc>> docByItem = new HashMap<>();
+        for(Integer iIdx : m_mapByItem.keySet()) {
+            String itemName = m_items.get(iIdx).getID();
+            List<_Doc> docs = new ArrayList<>();
+            for(Integer uIdx : m_mapByItem.get(iIdx)){
+                docs.add(m_corpus.getCollection().get(m_reviewIndex.get(iIdx + "_" + uIdx)));
+            }
+            docByItem.put(itemName, docs);
+        }
+        return docByItem;
+    }
+
+    public void printParameterAggregation(int k, String folderName, String topicmodel){
+    	   String gammaPathByUser = folderName + topicmodel + "_gammaByUser.txt";
+    	   String gammaPathByItem = folderName + topicmodel + "_gammaByItem.txt";
+    	   System.out.println("Gamma filePath: " + gammaPathByUser + "; " + gammaPathByItem);
+
+    	   //aggregate parameter \gamma by user/item
+    	   printTopWords(k, gammaPathByUser, getDocByUser());
+    	   printTopWords(k, gammaPathByItem, getDocByItem());
+    	   printPara(folderName, "final", topicmodel);
+    	}
+    public void printTopWords(int k, String topWordPath, HashMap<String, List<_Doc>> docCluster) {
+        try{
+            PrintWriter topWordWriter = new PrintWriter(new File(topWordPath));
+            PrintWriter topWordWriter2 = new PrintWriter(new File(topWordPath.replace(".txt","_est.txt")));
+
+            for(Map.Entry<String, List<_Doc>> entryU : docCluster.entrySet()) {
+                double[] gamma = new double[number_of_topics];
+                double[] gamma_est = new double[number_of_topics];
+                Arrays.fill(gamma, 0);
+                Arrays.fill(gamma, 0);
+                for(_Doc d:entryU.getValue()) {
+                    _Doc4ETBIR doc = (_Doc4ETBIR) d;
+                    double expSum = 0;
+                    for(int i = 0; i < number_of_topics; i++){
+                        expSum += Math.exp(doc.m_mu[i]);
+                    }
+                    for (int i = 0; i < number_of_topics; i++)
+                        gamma[i] += Math.exp(doc.m_mu[i]) / expSum;
+
+                    String userName = doc.getTitle();
+                    String itemName = doc.getItemID();
+                    _User4ETBIR user = m_users.get(m_usersIndex.get(userName));
+                    _Product4ETBIR item = m_items.get(m_itemsIndex.get(itemName));
+                    double[] theta = new double[number_of_topics];
+                    expSum = 0;
+                    for(int i = 0; i < number_of_topics; i++){
+                        theta[i] = Math.exp(Utils.dotProduct(user.m_nuP[i], item.m_eta));
+                        expSum += theta[i];
+                    }
+                    for(int i = 0; i < number_of_topics; i++){
+                        gamma_est[i] += theta[i] / expSum;
+                    }
+
+                }
+                Utils.L1Normalization(gamma);
+                Utils.L1Normalization(gamma_est);
+
+                topWordWriter.format("ID %s(%d reviews)\n", entryU.getKey(), entryU.getValue().size());
+                topWordWriter2.format("ID %s(%d reviews)\n", entryU.getKey(), entryU.getValue().size());
+                for (int i = 0; i < topic_term_probabilty.length; i++) {
+                    MyPriorityQueue<_RankItem> fVector = new MyPriorityQueue<_RankItem>(k);
+                    for (int j = 0; j < vocabulary_size; j++)
+                        fVector.add(new _RankItem(m_corpus.getFeature(j), topic_term_probabilty[i][j]));
+
+                    topWordWriter.format("-- Topic %d(%.5f):\t", i, gamma[i]);
+                    topWordWriter2.format("-- Topic %d(%.5f):\t", i, gamma_est[i]);
+                    for (_RankItem it : fVector) {
+                        topWordWriter.format("%s(%.5f)\t", it.m_name, m_logSpace ? Math.exp(it.m_value) : it.m_value);
+                        topWordWriter2.format("%s(%.5f)\t", it.m_name, m_logSpace ? Math.exp(it.m_value) : it.m_value);
+                    }
+                    topWordWriter.write("\n");
+                    topWordWriter2.write("\n");
+                }
+            }
+            topWordWriter.close();
+            topWordWriter2.close();
+        } catch(Exception ex){
+            System.err.println("File Not Found: " + topWordPath);
+        }
+    }
 
 }
