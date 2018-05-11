@@ -6,18 +6,23 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedList;
-
-import org.tartarus.snowball.SnowballStemmer;
-import org.tartarus.snowball.ext.englishStemmer;
+import java.util.Set;
 
 import opennlp.tools.tokenize.Tokenizer;
 import opennlp.tools.tokenize.TokenizerME;
 import opennlp.tools.tokenize.TokenizerModel;
 import opennlp.tools.util.InvalidFormatException;
+
+import org.tartarus.snowball.SnowballStemmer;
+import org.tartarus.snowball.ext.englishStemmer;
+
 import structures.TokenizeResult;
 import structures._Doc;
 import structures._Review;
@@ -116,9 +121,8 @@ public class MultiThreadedUserAnalyzer extends UserAnalyzer {
 		System.out.format("%d users are loaded from %s...\n", count, folder);
 	}
 	
-	HashMap<String, Integer> map = new HashMap<String, Integer>();
 	// Load one file as a user here. 
-	private void loadUser(String filename, int core){
+	protected void loadUser(String filename, int core){
 		try {
 			File file = new File(filename);
 			BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(file), "UTF-8"));
@@ -136,12 +140,6 @@ public class MultiThreadedUserAnalyzer extends UserAnalyzer {
 			long timestamp=0;
 			while((line = reader.readLine()) != null){
 				productID = line;
-				synchronized (m_allocReviewLock) {
-					if(map.containsKey(productID))
-						map.put(productID, map.get(productID)+1);
-					else
-						map.put(productID, 1);
-				}
 				source = reader.readLine(); // review content
 				category = reader.readLine(); // review category
 				ylabel = Integer.valueOf(reader.readLine());
@@ -167,24 +165,11 @@ public class MultiThreadedUserAnalyzer extends UserAnalyzer {
 					rollBack(Utils.revertSpVct(review.getSparse()), review.getYLabel());
 				}
 			}
+
 			reader.close();
 		} catch(IOException e){
 			e.printStackTrace();
 		}
-	}
-	
-	public void select(){
-		int max = 0;
-		String item = "";
-		for(String i: map.keySet()){
-			if(map.get(i) > max){
-				max = map.get(i);
-				item = i;
-			}
-		}
-		System.out.println(map.size());
-		System.out.println(item);
-		System.out.println(max);
 	}
 	
 	//Tokenizing input text string
@@ -352,11 +337,6 @@ public class MultiThreadedUserAnalyzer extends UserAnalyzer {
 		else
 			return m_stemmerPool[index];
 	}
-	// Added by Lin for constructing the bow profile for each user.
-	public void constructSparseVector4Users() {
-		for (_User u : m_users)
-			u.constructSparseVector();
-	}
 
 	protected HashMap<String, Integer> m_userIDIndex;
 	// Added by Lin. Load user weights from learned models to construct neighborhood.
@@ -444,7 +424,9 @@ public class MultiThreadedUserAnalyzer extends UserAnalyzer {
 	
 	/** Construct user network for analysis****/
 	// key: user id; value: friends array.
-	HashMap<String, String[]> m_neighborsMap = new HashMap<String, String[]>();
+	HashMap<String, String[]> m_trainMap = new HashMap<String, String[]>();
+	HashMap<String, String[]> m_testMap = new HashMap<String, String[]>();
+
 	public void buildFriendship(String filename){
 		try{
 			File file = new File(filename);
@@ -454,35 +436,274 @@ public class MultiThreadedUserAnalyzer extends UserAnalyzer {
 			while((line = reader.readLine()) != null){
 				users = line.trim().split("\t");
 				friends = Arrays.copyOfRange(users, 1, users.length);
-				m_neighborsMap.put(users[0], friends);
+				if(friends.length == 0){
+					continue;
+				}
+				m_trainMap.put(users[0], friends);
 			}
 			reader.close();
+			System.out.format("%d users have friends!", m_trainMap.size());
 			// map friends to users.
+			int count = 0;
 			for(_User u: m_users){
-				if(m_neighborsMap.containsKey(u.getUserID()))
-					u.setFriends(m_neighborsMap.get(u.getUserID()));
-				else
-					System.out.println("The user does not have any friends.");
+				if(m_trainMap.containsKey(u.getUserID())){
+					count++;
+					u.setFriends(m_trainMap.get(u.getUserID()));
+				}
 			}
+			System.out.format("%d users' friends are set!\n", count);
 		} catch(IOException e){
 			e.printStackTrace();
 		}
 	}
+	public void buildNonFriendship(String filename){
+		
+		System.out.println("[Info]Non-friendship file is loaded from " + filename);
+		HashMap<String, String[]> nonFriendMap = new HashMap<String, String[]>();
 
-	// return the friendship map
-	public HashMap<String, String[]> getFriendship(){
-		return m_neighborsMap;
+		try{
+			File file = new File(filename);
+			BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(file), "UTF-8"));
+			String line;
+			String[] users, nonFriends;
+			while((line = reader.readLine()) != null){
+				users = line.trim().split("\t");
+				nonFriends = Arrays.copyOfRange(users, 1, users.length);
+				if(nonFriends.length == 0){
+					continue;
+				}
+				nonFriendMap.put(users[0], nonFriends);
+			}
+			reader.close();
+			System.out.format("%d users have non-friends!\n", nonFriendMap.size());
+			// map friends to users.
+			int count = 0;
+			for(_User u: m_users){
+				if(nonFriendMap.containsKey(u.getUserID())){
+					count++;
+					u.setNonFriends(nonFriendMap.get(u.getUserID()));
+				}
+			}
+			System.out.format("%d users' non-friends are set!\n", count);
+		} catch(IOException e){
+			e.printStackTrace();
+		}
+	}
+	// load a friendship file 
+	public HashMap<String, String[]> loadFriendFile(String filename){
+		HashMap<String, String[]> neighborsMap = new HashMap<String, String[]>();
+		try{
+			File file = new File(filename);
+			BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(file), "UTF-8"));
+			String line;
+			String[] users, friends;
+			while((line = reader.readLine()) != null){
+				users = line.trim().split("\t");
+				friends = Arrays.copyOfRange(users, 1, users.length);
+				if(friends.length == 0){
+					continue;
+				}
+				neighborsMap.put(users[0], friends);
+			}
+			reader.close();
+			System.out.format("%d users' friends are loaded!\n", neighborsMap.size());
+		} catch(IOException e){
+			e.printStackTrace();
+		}
+		return neighborsMap;
 	}
 	
-	public void checkFriendship(){
-		double sum = 0, miss = 0;
-		for(String uid: m_neighborsMap.keySet()){
-			for(String frd: m_neighborsMap.get(uid)){
-				sum++;
-				if(!m_neighborsMap.containsKey(frd))
-					miss++;
+	// load the test user friends, for link prediction only
+	public void loadTestFriendship(String filename){
+		try{
+			m_testMap.clear();
+			File file = new File(filename);
+			BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(file), "UTF-8"));
+			String line;
+			String[] users, friends;
+			while((line = reader.readLine()) != null){
+				users = line.trim().split("\t");
+				friends = Arrays.copyOfRange(users, 1, users.length);
+				if(friends.length == 0){
+					continue;
+				}
+				m_testMap.put(users[0], friends);
+			}
+			reader.close();
+			// map friends to users.
+			for(_User u: m_users){
+				if(m_testMap.containsKey(u.getUserID()))
+					u.setTestFriends(m_testMap.get(u.getUserID()));
+			}
+			checkFriendSize();
+		} catch(IOException e){
+			e.printStackTrace();
+		}
+	}
+	
+	public HashMap<String, String[]>  getTrainMap(){
+		return m_trainMap;
+	}
+	
+	public HashMap<String, String[]> getTestMap(){
+		return m_testMap;
+	}
+	
+	// save the user-user pairs to graphlab for model training.
+	public void saveUserUserPairs(String dir){
+		int trainUser = 0, testUser = 0, trainPair = 0, testPair = 0;
+		try{
+			PrintWriter trainWriter = new PrintWriter(new File(dir+"train.csv"));
+			PrintWriter testWriter = new PrintWriter(new File(dir+"test.csv"));
+			trainWriter.write("user_id,item_id,rating\n");
+			testWriter.write("user_id,item_id,rating\n");
+			for(_User u: m_users){
+				if(u.getFriendSize() != 0){                
+					trainUser++;
+					for(String frd: u.getFriends()){
+						trainPair++;
+						trainWriter.write(String.format("%s,%s,%d\n", u.getUserID(), frd, 1));
+						trainWriter.write(String.format("%s,%s,%d\n", frd, u.getUserID(), 1));
+
+					}
+				}
+				// for test users, we also need to write out non-friends
+				if(u.getTestFriendSize() != 0){
+					testUser++;
+					for(_User nei: m_users){
+						String neiID = nei.getUserID();
+						if(u.hasFriend(neiID) || u.getUserID().equals(neiID))
+							continue;
+						else if(u.hasTestFriend(neiID)){
+							testPair++;
+							testWriter.write(String.format("%s,%s,%d\n", u.getUserID(), neiID, 1));
+							testWriter.write(String.format("%s,%s,%d\n", neiID, u.getUserID(), 1));
+						} else if(m_trainMap.containsKey(neiID)){
+							testPair++;
+							testWriter.write(String.format("%s,%s,%d\n", u.getUserID(), neiID, 0));
+							testWriter.write(String.format("%s,%s,%d\n", neiID, u.getUserID(), 0));
+						}
+					}
+				}
+			}
+			trainWriter.close();
+			testWriter.close();
+			System.out.format("[Info]Finish writing (%d,%d) training users/pairs, (%d,%d) testing users/pairs.\n", trainUser, trainPair, testUser, testPair);
+		} catch(IOException e){
+			e.printStackTrace();
+		}
+		
+	}
+	public void checkFriendSize(){
+		int train = 0, test = 0;
+		for(_User u: m_users){
+			if(u.getFriendSize() != 0)
+				train++;
+			if(u.getTestFriendSize() != 0)
+				test++;
+		}
+		System.out.format("[Check]%d users have train friends, %d users have test friends.\n", train, test);
+	}
+	
+	// filter the friends who are not in the list and return a neat hashmap
+	public HashMap<String, ArrayList<String>> filterFriends(HashMap<String, String[]> neighborsMap){
+		double sum = 0;
+		HashMap<String, _User> userMap = new HashMap<String, _User>();
+		for(_User u: m_users){
+			userMap.put(u.getUserID(), u);
+		}
+		HashMap<String, ArrayList<String>> frdMap = new HashMap<String, ArrayList<String>>();
+		for(String uid: neighborsMap.keySet()){
+			if(!userMap.containsKey(uid)){
+				System.out.println("The user does not exist in user set!");
+				continue;
+			}
+			ArrayList<String> frds = new ArrayList<>();
+			for(String frd: neighborsMap.get(uid)){
+				if(!neighborsMap.containsKey(frd))
+					continue;
+				if(contains(neighborsMap.get(frd), uid)){
+					frds.add(frd);
+				} else {
+					System.out.println("asymmetric");
+				}
+			}
+			if(frds.size() > 0){
+				frdMap.put(uid, frds);
+				sum += frds.size();
 			}
 		}
-		System.out.println("The avg friend size is: " + (sum-miss)/m_neighborsMap.size());
+		System.out.format("%d users' friends are recorded, avg friends: %.2f.\n", frdMap.size(), sum/frdMap.size());
+		return frdMap;
+	}
+	public boolean contains(String[] strs, String str){
+		if(strs == null || strs.length == 0)
+			return false;
+		for(String s: strs){
+			if(str.equals(s))
+				return true;
+		}
+		return false;
+	}
+
+	public void writeFriends(String filename, HashMap<String, ArrayList<String>> frdMap){
+		try{
+			PrintWriter writer = new PrintWriter(new File(filename));
+			for(String uid: frdMap.keySet()){
+				writer.write(uid+"\t");
+				ArrayList<String> frds = frdMap.get(uid);
+				for(int i=0; i<frds.size(); i++){
+					if(i != frds.size()-1){
+						writer.write(frds.get(i)+"\t");
+					} else
+						writer.write(frds.get(i)+"\n");
+				}
+			}
+			writer.close();
+		} catch(IOException e){
+			e.printStackTrace();
+		}
+	}
+	
+	public boolean hasFriend(String[] frds, String frd){
+		for(String f: frds){
+			if(f.equals(frd))
+				return true;
+		}
+		return false;
+	}
+	
+	public void rmMultipleReviews4OneItem(){
+		Set<String> items = new HashSet<String>();
+		ArrayList<Integer> indexes = new ArrayList<Integer>();
+		int uCount = 0, rCount = 0;
+		boolean flag = false;
+		for(_User u: m_users){
+			ArrayList<_Review> reviews = u.getReviews();
+			items.clear();
+			indexes.clear();
+			for(int i=0; i<reviews.size(); i++){
+				_Review r = reviews.get(i);
+				if(items.contains(r.getItemID())){
+					indexes.add(i);
+					rCount++;
+					flag = true;
+				} else {
+					items.add(r.getItemID());
+				}
+			}
+			// record the user number
+			if(flag){
+				uCount++;
+				flag = false;
+			}
+			// remove the reviews.
+			Collections.sort(indexes, Collections.reverseOrder());
+			for(int idx: indexes){
+				reviews.remove(idx);
+			}
+			u.constructTrainTestReviews();
+		}
+		System.out.format("%d users have %d duplicate reviews for items.\n", uCount, rCount);
 	}
 }
