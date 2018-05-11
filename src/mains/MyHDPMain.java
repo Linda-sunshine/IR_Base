@@ -76,7 +76,7 @@ public class MyHDPMain {
 		int number_of_topics = 30;
 		double alpha = 1.0 + 1e-2, beta = 1.0 + 1e-3, eta = 5.0;//these two parameters must be larger than 1!!!
 		double converge = -1, lambda = 0.7; // negative converge means do need to check likelihood convergency
-		int number_of_iteration = 100;
+		int number_of_iteration = 51;
 
 		analyzer.setFeatureValues("TF", 0);		
 		_Corpus c = analyzer.returnCorpus(fvStatFile); // Get the collection of all the documents.
@@ -96,11 +96,11 @@ public class MyHDPMain {
 			return;
 		}
 		
-		tModel.setDisplayLap(0);
+		tModel.setDisplayLap(1);
 //		tModel.setSentiAspectPrior(aspectSentiPrior);
 //		tModel.LoadPrior(aspectSentiPrior?aspectSentiList:aspectList, eta);
 		tModel.EMonCorpus();
-		tModel.printTopWords(50);
+		tModel.printTopWords(100);
 		
 //		/***Analyzer used for the sanity check of splitting the users.***/
 //		adaptRatio = 1; int k = 400;

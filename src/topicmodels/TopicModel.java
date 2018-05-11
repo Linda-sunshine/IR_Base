@@ -277,7 +277,7 @@ public abstract class TopicModel {
 					System.out.print(".");
 					if (displayCount > 6){
 						System.out.format("\t%d:%.3f\n", i, current);
-						infoWriter.format("\t%d:%.3f\n", i, current);
+//						infoWriter.format("\t%d:%.3f\n", i, current);
 					}
 					displayCount ++;
 				}

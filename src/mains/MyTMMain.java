@@ -16,9 +16,9 @@ public class MyTMMain {
 		String tokenModel = "./data/Model/en-token.bin"; // Token model.
 		
 		//int maxDF = -1, minDF = 20; // Filter the features with DFs smaller than this threshold.
-		String fs = "DF";//"IG_CHI"
-		int maxDF = -1, minDF = 5; // Filter the features with DFs smaller than this threshold.
-		String folder = "/home/lin/Downloads/yelp/train/";
+		String fs = "CHI";//"IG_CHI"
+		int maxDF = -1, minDF = 10; // Filter the features with DFs smaller than this threshold.
+		String folder = "/home/lin/Downloads/yelp/all/";
 
 		DocAnalyzer analyzer = new DocAnalyzer(tokenModel, classNumber, null, 1, 0); 
 		analyzer.LoadStopwords(stopwords);
