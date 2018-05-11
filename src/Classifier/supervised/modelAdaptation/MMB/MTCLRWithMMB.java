@@ -2,11 +2,11 @@ package Classifier.supervised.modelAdaptation.MMB;
 
 import java.util.HashMap;
 
+import Classifier.supervised.modelAdaptation._AdaptStruct;
 import structures._Doc;
 import structures._Review;
 import structures._SparseFeature;
 import utils.Utils;
-import Classifier.supervised.modelAdaptation._AdaptStruct;
 
 public class MTCLRWithMMB extends CLRWithMMB {
 	public static double[] m_supWeights; // newly learned global model

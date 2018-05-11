@@ -25,8 +25,8 @@ public class LDA_Variational extends pLSA {
 	
 	protected double[] m_alpha; // we can estimate a vector of alphas as in p(\theta|\alpha)
 	protected double[] m_alphaStat; // statistics for alpha estimation
-	double[] m_alphaG; // gradient for alpha
-	double[] m_alphaH; // Hessian for alpha
+	protected double[] m_alphaG; // gradient for alpha
+	protected double[] m_alphaH; // Hessian for alpha
 	
 	public LDA_Variational(int number_of_iteration, double converge,
 			double beta, _Corpus c, double lambda, 
@@ -166,7 +166,7 @@ public class LDA_Variational extends pLSA {
 			return;
 		
 		//we need to estimate p(\theta|\alpha) as well later on
-		int docSize = m_trainSet.size(), i = 0;
+		int docSize = getCorpusSize(), i = 0;
 		double alphaSum, diAlphaSum, z, c, c1, c2, diff, deltaAlpha;
 		do {
 			alphaSum = Utils.sumOfArray(m_alpha);
@@ -191,6 +191,10 @@ public class LDA_Variational extends pLSA {
 			}
 			diff /= number_of_topics;
 		} while(++i<m_varMaxIter && diff>m_varConverge);
+	}
+	
+	protected int getCorpusSize() {
+		return m_trainSet.size();
 	}
 	
 	@Override

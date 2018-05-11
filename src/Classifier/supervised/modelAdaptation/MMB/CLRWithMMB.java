@@ -28,6 +28,8 @@ import Classifier.supervised.modelAdaptation.HDP._HDPAdaptStruct;
 import cern.jet.random.tdouble.Beta;
 import cern.jet.random.tdouble.Gamma;
 import cern.jet.random.tfloat.FloatUniform;
+
+
 public class CLRWithMMB extends CLRWithHDP {
 	// sparsity parameter
 	protected double m_rho = 0.01; 

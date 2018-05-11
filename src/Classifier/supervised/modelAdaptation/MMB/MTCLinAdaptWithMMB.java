@@ -11,6 +11,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 
+import Classifier.supervised.modelAdaptation._AdaptStruct;
 import structures._Doc;
 import structures._HDPThetaStar;
 import structures._PerformanceStat;
@@ -19,7 +20,6 @@ import structures._Review;
 import structures._Review.rType;
 import structures._SparseFeature;
 import utils.Utils;
-import Classifier.supervised.modelAdaptation._AdaptStruct;
 
 public class MTCLinAdaptWithMMB extends CLinAdaptWithMMB {
 	protected int m_dimSup;

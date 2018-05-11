@@ -7,6 +7,11 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 
+import Classifier.supervised.modelAdaptation._AdaptStruct;
+import Classifier.supervised.modelAdaptation.DirichletProcess.CLRWithDP;
+import cern.jet.random.tdouble.Beta;
+import cern.jet.random.tdouble.Gamma;
+import cern.jet.random.tfloat.FloatUniform;
 import structures.MyPriorityQueue;
 import structures._Doc;
 import structures._HDPThetaStar;
@@ -16,11 +21,6 @@ import structures._Review.rType;
 import structures._SparseFeature;
 import structures._User;
 import utils.Utils;
-import Classifier.supervised.modelAdaptation._AdaptStruct;
-import Classifier.supervised.modelAdaptation.DirichletProcess.CLRWithDP;
-import cern.jet.random.tdouble.Beta;
-import cern.jet.random.tdouble.Gamma;
-import cern.jet.random.tfloat.FloatUniform;
 
 public class CLRWithHDP extends CLRWithDP {
 

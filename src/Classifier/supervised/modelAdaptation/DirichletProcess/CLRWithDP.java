@@ -7,6 +7,11 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 
+import Classifier.supervised.modelAdaptation._AdaptStruct;
+import Classifier.supervised.modelAdaptation.CoLinAdapt.LinAdapt;
+import LBFGS.LBFGS;
+import LBFGS.LBFGS.ExceptionWithIflag;
+import cern.jet.random.tfloat.FloatUniform;
 import structures.MyPriorityQueue;
 import structures._Doc;
 import structures._PerformanceStat.TestMode;
@@ -17,11 +22,6 @@ import structures._SparseFeature;
 import structures._User;
 import structures._thetaStar;
 import utils.Utils;
-import Classifier.supervised.modelAdaptation._AdaptStruct;
-import Classifier.supervised.modelAdaptation.CoLinAdapt.LinAdapt;
-import LBFGS.LBFGS;
-import LBFGS.LBFGS.ExceptionWithIflag;
-import cern.jet.random.tfloat.FloatUniform;
 
 public class CLRWithDP extends LinAdapt {
 	protected int m_M = 6, m_kBar = 0; // The number of auxiliary components.

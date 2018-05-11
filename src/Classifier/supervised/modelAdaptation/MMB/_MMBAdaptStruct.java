@@ -3,6 +3,8 @@ package Classifier.supervised.modelAdaptation.MMB;
 import java.util.Collection;
 import java.util.HashMap;
 
+import Classifier.supervised.modelAdaptation.DirichletProcess.CLRWithDP;
+import Classifier.supervised.modelAdaptation.HDP._HDPAdaptStruct;
 import structures._Doc;
 import structures._HDPThetaStar;
 import structures._MMBNeighbor;
@@ -10,8 +12,6 @@ import structures._Review;
 import structures._SparseFeature;
 import structures._User;
 import utils.Utils;
-import Classifier.supervised.modelAdaptation.DirichletProcess.CLRWithDP;
-import Classifier.supervised.modelAdaptation.HDP._HDPAdaptStruct;
 
 public class _MMBAdaptStruct extends _HDPAdaptStruct {
 	
