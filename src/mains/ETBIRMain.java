@@ -54,7 +54,7 @@ public class ETBIRMain {
         String reviewFolder = "./myData/byUser_1/";
         String suffix = ".json";
 
-        ReviewAnalyzer analyzer = new ReviewAnalyzer(tokenModel, classNumber, fvFile, Ngram, lengthThreshold);
+        ReviewAnalyzer analyzer = new ReviewAnalyzer(tokenModel, classNumber, fvFile, Ngram, lengthThreshold, true, "yelp");
         analyzer.LoadDirectory(reviewFolder, suffix);
 
         _Corpus corpus = analyzer.getCorpus();
