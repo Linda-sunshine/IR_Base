@@ -24,11 +24,11 @@ public class MyETBIRExecution {
 	    int numberOfCores = Runtime.getRuntime().availableProcessors();
 
 	    String tokenModel = "./data/Model/en-token.bin";
-	    String fvFile = String.format("%s/%s.txt", param.m_prefix, param.m_data);
-	    String reviewFolder = String.format("%s/%s/Users/", param.m_prefix, param.m_data);
+	    String fvFile = String.format("%s/%s.txt", param.m_prefix, param.m_source);
+	    String reviewFolder = String.format("%s/%s/data/", param.m_prefix, param.m_source);
 	        
 	    System.out.println("[Info] Start preprocess textual data...");
-	    MultiThreadedReviewAnalyzer analyzer = new MultiThreadedReviewAnalyzer(tokenModel, classNumber, fvFile, Ngram, lengthThreshold, numberOfCores, true, param.m_data);
+	    MultiThreadedReviewAnalyzer analyzer = new MultiThreadedReviewAnalyzer(tokenModel, classNumber, fvFile, Ngram, lengthThreshold, numberOfCores, true, param.m_source);
 	    analyzer.loadUserDir(reviewFolder);
 	    _Corpus corpus = analyzer.getCorpus();
 
@@ -36,7 +36,7 @@ public class MyETBIRExecution {
 	    long current = System.currentTimeMillis();
 	   
 	    // create result folder
-	    String resultDir = String.format("%s/result/ETBIR_%d/", param.m_output, current);
+	    String resultDir = String.format("%s/ETBIR_%d/", param.m_output, current);
 	    File resultFolder = new File(resultDir);
 	    if (!resultFolder.exists()) {
 	    	System.out.println("[Info]Create directory " + resultFolder);
@@ -65,7 +65,6 @@ public class MyETBIRExecution {
 	    tModel.setDisplayLap(10);
 	    tModel.EMonCorpus();
 	    tModel.printTopWords(param.m_topk);
-//	    tModel.closeWriter();
 	    ((ETBIR) tModel).printParameterAggregation(param.m_topk, resultDir, param.m_topicmodel);
 	}
 }

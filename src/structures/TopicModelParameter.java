@@ -3,8 +3,8 @@ package structures;
 
 public class TopicModelParameter {
 	
-	public String m_prefix = "/zf8/lg5bt/DataSigir";//"./data/CoLinAdapt"
-	public String m_data = "Yelp";
+	public String m_prefix = "/zf18/ll5fy/DataSet";//"./data/CoLinAdapt"
+	public String m_source = "Yelp"; // "Amazon_movie"
 	public String m_topicmodel = "ETBIR";
 
 	public double m_beta = 1.0 + 1e-3;
@@ -23,7 +23,7 @@ public class TopicModelParameter {
 	public double m_varConverge = 1e-5;
 	public double m_emConverge = 1e-9;
 	
-	public String m_output = "./data/";// output directory
+	public String m_output = String.format("%s/%s/output", m_prefix, m_source);// output directory
 		
 	public TopicModelParameter(String argv[]){
 		
@@ -37,8 +37,8 @@ public class TopicModelParameter {
 				System.exit(1);
 			else if (argv[i-1].equals("-prefix"))
 				m_prefix = argv[i];
-			else if (argv[i-1].equals("-data"))
-				m_data = argv[i];
+			else if (argv[i-1].equals("-source"))
+				m_source = argv[i];
 			else if(argv[i-1].equals("-topicmodel"))
 				m_topicmodel = argv[i];
 			
