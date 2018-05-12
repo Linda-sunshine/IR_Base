@@ -2,13 +2,17 @@ package topicmodels.embeddingModel;
 
 import java.io.File;
 import java.io.PrintWriter;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Random;
 
 import org.apache.commons.math3.linear.LUDecomposition;
 import org.apache.commons.math3.linear.MatrixUtils;
 import org.apache.commons.math3.linear.RealMatrix;
 
-import LBFGS.LBFGS;
 import structures.MyPriorityQueue;
 import structures._Corpus;
 import structures._Doc;
@@ -21,6 +25,7 @@ import structures._User;
 import structures._User4ETBIR;
 import topicmodels.LDA.LDA_Variational;
 import utils.Utils;
+import LBFGS.LBFGS;
 
 /**
  * @author Lu Lin
@@ -1014,20 +1019,6 @@ public class ETBIR extends LDA_Variational {
             else
                 converge = 1.0;
 
-//            if(converge < 0){
-//                m_varMaxIter += 10;
-//                System.out.println("! E_step not converge...");
-//            }else{
-//            	System.out.println("\nStart M step....\n========");
-//            	calculate_M_step(iter);
-//                lastAllLikelihood = currentAllLikelihood;
-//                System.out.format("%s step: likelihood is %.3f, converge to %f...\n",
-//                        iter, currentAllLikelihood, converge);
-//                iter++;
-//                if(converge < m_converge)
-//                    break;
-//
-//            }
         	System.out.format("\n-------------\nStart M step %d....\n", iter);
             calculate_M_step(iter);
             lastAllLikelihood = currentAllLikelihood;
@@ -1084,7 +1075,7 @@ public class ETBIR extends LDA_Variational {
 
             for(int idx = 0; idx < m_items.size(); idx++) {
                 etaWriter.write("item " + idx + "*************\n");
-                _Product4ETBIR item = (_Product4ETBIR) m_items.get(idx);
+                _Product4ETBIR item = m_items.get(idx);
                 etaWriter.format("-- eta: \n");
                 for (int i = 0; i < number_of_topics; i++) {
                     etaWriter.format("%.8f\t", item.m_eta[i]);
@@ -1101,7 +1092,7 @@ public class ETBIR extends LDA_Variational {
 
             for(int idx = 0; idx < m_users.size(); idx++) {
                 pWriter.write("user " + idx + "*************\n");
-                _User4ETBIR user = (_User4ETBIR) m_users.get(idx);
+                _User4ETBIR user = m_users.get(idx);
                 for (int i = 0; i < number_of_topics; i++) {
                     pWriter.format("-- mu " + i + ": \n");
                     for(int j = 0; j < number_of_topics; j++) {
@@ -1143,15 +1134,17 @@ public class ETBIR extends LDA_Variational {
     }
 
     public void printParameterAggregation(int k, String folderName, String topicmodel){
-    	   String gammaPathByUser = folderName + topicmodel + "_gammaByUser.txt";
-    	   String gammaPathByItem = folderName + topicmodel + "_gammaByItem.txt";
-    	   System.out.println("Gamma filePath: " + gammaPathByUser + "; " + gammaPathByItem);
+    	String gammaPathByUser = folderName + topicmodel + "_gammaByUser.txt";
+    	String gammaPathByItem = folderName + topicmodel + "_gammaByItem.txt";
+    	System.out.println("Gamma filePath: " + gammaPathByUser + "; " + gammaPathByItem);
 
-    	   //aggregate parameter \gamma by user/item
-    	   printTopWords(k, gammaPathByUser, getDocByUser());
-    	   printTopWords(k, gammaPathByItem, getDocByItem());
-    	   printPara(folderName, "final", topicmodel);
-    	}
+    	//aggregate parameter \gamma by user/item
+    	printTopWords(k, gammaPathByUser, getDocByUser());
+    	printTopWords(k, gammaPathByItem, getDocByItem());
+    	printPara(folderName, "_final", topicmodel);
+    	printTopWords(k, folderName + topicmodel + "_topWords.txt");
+    }
+    
     public void printTopWords(int k, String topWordPath, HashMap<String, List<_Doc>> docCluster) {
         try{
             PrintWriter topWordWriter = new PrintWriter(new File(topWordPath));
