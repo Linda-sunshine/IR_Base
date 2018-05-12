@@ -64,7 +64,7 @@ public class ETBIRExecution {
 
 	    tModel.setDisplayLap(10);
 	    tModel.EMonCorpus();
-	    tModel.printTopWords(param.m_topk);
+	    tModel.printTopWords(param.m_topk, resultDir + "_topwords.txt");
 	    ((ETBIR) tModel).printParameterAggregation(param.m_topk, resultDir, param.m_topicmodel);
 	}
 }
