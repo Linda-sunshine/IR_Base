@@ -24,26 +24,31 @@ public class ETBIRMain {
         String featureValue = "TF"; //The way of calculating the feature value, which can also be "TFIDF", "BM25"
         int norm = 0;//The way of normalization.(only 1 and 2)
         int lengthThreshold = 5; //Document length threshold
-        String tokenModel = "./data/Model/en-token.bin";
+        String tokenModel = "../data/Model/en-token.bin";
 
         String trainset = "byUser_40_50_12";
-        String source = "amazon_movie";
-        String dataset = "./myData/" + source + "/" + trainset + "/";
+        String source = "yelp";
+        String dataset = "../myData/" + source + "/" + trainset + "/";
 
         /**
          * model training
          */
-        String[] fvFiles = new String[3];
-        fvFiles[0] = "./data/Features/fv_2gram_IG_yelp_byUser_30_50_25.txt";
-        fvFiles[1] = "./data/Features/fv_2gram_IG_amazon_movie_byUser_40_50_12.txt";
-        fvFiles[2] = "./data/Features/yelp_features.txt";
+        String[] fvFiles = new String[4];
+        fvFiles[0] = "../data/Features/fv_2gram_IG_yelp_byUser_30_50_25.txt";
+        fvFiles[1] = "../data/Features/fv_2gram_IG_amazon_movie_byUser_40_50_12.txt";
+        fvFiles[2] = "../data/Features/fv_2gram_IG_amazon_electronic_byUser_20_20_5.txt";
+        fvFiles[3] = "../data/Features/fv_2gram_IG_amazon_book_byUser_40_50_12.txt";
         int fvFile_point = 0;
         if(source.equals("amazon_movie")){
             fvFile_point = 1;
+        }else if(source.equals("amazon_electronic")){
+            fvFile_point = 2;
+        }else if(source.equals("amazon_book")){
+            fvFile_point = 3;
         }
 
         String reviewFolder = dataset + "data/";
-        String outputFolder = dataset + "output/featureDebug1_" + fvFile_point + "/";
+        String outputFolder = dataset + "output/feature_PreEta_" + fvFile_point + "/";
         String suffix = ".json";
         String topicmodel = "ETBIR"; // pLSA, LDA_Gibbs, LDA_Variational, ETBIR
 
@@ -55,16 +60,16 @@ public class ETBIRMain {
 
         int number_of_topics = 20;
 
-        int varMaxIter = 20;
+        int varMaxIter = 30;
         double varConverge = 1e-4;
 
-        int emMaxIter = 250;
+        int emMaxIter = 100;
         double emConverge = -1;
         double emConverge4ETBIR = 1e-5;
 
 
-        double alpha = 1.0 + 1e-2, beta = 1 + 1e-3, lambda = 1 + 1e-3;//these two parameters must be larger than 1!!!
-        double  sigma = 1.0 + 1e-3, rho = 1.0 + 1e-3;
+        double alpha = 1e-2, beta = 1 + 1e-3, lambda = 1 + 1e-3;//these two parameters must be larger than 1!!!
+        double  sigma = 1e-2, rho = 1e-2;
 
         // LDA
         /*****parameters for the two-topic topic model*****/

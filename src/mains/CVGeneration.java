@@ -15,15 +15,15 @@ public class CVGeneration {
         String tokenModel = "./data/Model/en-token.bin";
 
         String trainset = "byUser_40_50_12";
-        String source = "amazon_movie";
+        String source = "amazon_book";
         String dataset = "./myData/" + source + "/" + trainset + "/";
 
         /**
          * generate vocabulary:
          */
-        double startProb = 0.4; // Used in feature selection, the starting point of the features.
+        double startProb = 0.2; // Used in feature selection, the starting point of the features.
         double endProb = 0.999; // Used in feature selection, the ending point of the features.
-        int maxDF = 6000, minDF = 60; // Filter the features with DFs smaller than this threshold.
+        int maxDF = 9000, minDF = 60; // Filter the features with DFs smaller than this threshold.
         String featureSelection = "IG";
 
 

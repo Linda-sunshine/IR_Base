@@ -72,8 +72,8 @@ public class ETBIR extends LDA_Variational {
     double[][] m_pSumStates;
 
     
-    double d_mu = 1.0, d_sigma_theta = 0.1;
-    double d_nu = 1.0, d_sigma_P = 0.1;
+    double d_mu = 0.5, d_sigma_theta = 0.01;
+    double d_nu = 0.5, d_sigma_P = 0.01;
     
     public ETBIR(int emMaxIter, double emConverge,
                  double beta, _Corpus corpus, double lambda,
@@ -966,7 +966,7 @@ public class ETBIR extends LDA_Variational {
         }
 
         for(_Product i:items){
-            ((_Product4ETBIR) i).setTopics4Variational(number_of_topics, d_alpha);
+            ((_Product4ETBIR) i).setTopics4Variational(number_of_topics, d_alpha+1);
             updateStats4Item((_Product4ETBIR) i);
         }
 
@@ -993,10 +993,12 @@ public class ETBIR extends LDA_Variational {
         initialize_probability(m_corpus.getCollection(), m_users, m_items);
     }
 
+
+
     @Override
     public void EM(){
 
-        loadPara("./myData/yelp/byUser_40_50_12/output/feature0_new/LDA_Variational_gammaByItem.txt");
+//        loadPara("./myData/yelp/byUser_40_50_12/output/feature_0/LDA_Variational_gammaByItem.txt");
 
         int iter = 0;
         double lastAllLikelihood = 1.0;
@@ -1004,7 +1006,10 @@ public class ETBIR extends LDA_Variational {
         double converge = 0.0;
         do{
             infoWriter.write("EM iter: " + iter + "\n");
-            currentAllLikelihood = E_step();
+            if(m_multithread)
+                currentAllLikelihood = multithread_E_step();
+            else
+                currentAllLikelihood = E_step();
 
             if(iter > 0)
                 converge = (lastAllLikelihood - currentAllLikelihood) / lastAllLikelihood;
@@ -1069,7 +1074,6 @@ public class ETBIR extends LDA_Variational {
             System.err.print("File Not Found");
         }
     }
-
 
     @Override
     public void printParameterAggregation(int k, String folderName, String topicmodel){
