@@ -5,7 +5,7 @@ public class TopicModelParameter {
 	
 	public String m_prefix = "/zf8/lg5bt/DataSigir";//"./data/CoLinAdapt"
 	public String m_data = "Yelp";
-	public String m_topicmodel = "EIBIR";
+	public String m_topicmodel = "ETBIR";
 
 	public double m_beta = 1.0 + 1e-3;
 	public double m_alpha = 1e-2;
