@@ -3,7 +3,7 @@ package structures;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
-import java.util.HashSet;
+import java.util.Set;
 
 import structures._Review.rType;
 import utils.Utils;
@@ -42,16 +42,19 @@ public class _User {
 	double m_adaPos = 0;
 	double m_testPos = 0;
 	
-	/**added by Lin for cf.**/
-	private final HashMap<String, Integer> m_itemIDRating = new HashMap<String, Integer>(); //This hashmap contains all the items the user purchased and corresponding ratings.
-	private double m_nDCG;
-	private double m_MAP;
-	
-	// added by Lin for sanity check.
-	int m_ctgSize = 0;
-	
 	// added by Lin for friendship.
 	String[] m_friends;
+	String[] m_testFriends;
+	String[] m_nonFriends;
+	
+	private ArrayList<_Review> m_trainReviews;
+	private ArrayList<_Review> m_testReviews;
+	protected int m_trainReviewSize = -1;
+	protected int m_testReviewSize = -1;
+	
+	private final HashMap<String, Integer> m_itemIDRating;
+	private String[] m_rankingItems;
+	private HashMap<String, _Review> m_testReviewMap;
 	
 	// The function is used for finding friends from Amazon data set.
 	protected ArrayList<String> m_amazonFriends = new ArrayList<String>();
@@ -62,6 +65,8 @@ public class _User {
 		m_lowDimProfile = null;
 		m_BoWProfile = null;
 		m_pWeight = null;
+		m_itemIDRating = new HashMap<String, Integer>();
+		constructTrainTestReviews();
 	}
 	
 	public _User(int cindex, int classNo){
@@ -75,6 +80,9 @@ public class _User {
 		m_pWeight = null;
 		
 		m_perfStat = new _PerformanceStat(classNo);
+		m_itemIDRating = new HashMap<String, Integer>();
+		constructTrainTestReviews();
+
 	}
 	
 	public _User(String userID, int classNo, ArrayList<_Review> reviews){
@@ -88,42 +96,61 @@ public class _User {
 		m_pWeight = null;
 
 		m_perfStat = new _PerformanceStat(classNo);
-		
-		constructSparseVector();
-		calcPosRatio();
-		calcCtgSize();
-		calcAdpatTestPosRatio();
+		m_itemIDRating = new HashMap<String, Integer>();
+		constructTrainTestReviews();
+
+//		constructSparseVector();
+//		calcPosRatio();
+//		calcCtgSize();
+//		calcAdpatTestPosRatio();
 	}
 	
-	public _User(String userID, int classNo, ArrayList<_Review> reviews, ArrayList<Integer> category){
-		m_userID = userID;
-		m_reviews = reviews;
-		m_classNo = classNo;
-
-		m_lowDimProfile = null;
-		m_BoWProfile = null;
-		m_pWeight = null;
-
-		m_perfStat = new _PerformanceStat(classNo);
-		m_category = category;
-		constructSparseVector();
-		calcCtgSize();
-		calcAdpatTestPosRatio();
+	public void addOneItemIDRatingPair(String item, int r){
+		if(!m_itemIDRating.containsKey(item))
+			m_itemIDRating.put(item, r);
 	}
 	
 	public void addOnePredResult(int predL, int trueL){
 		m_perfStat.addOnePredResult(predL, trueL);
 	}
 	
-	public void constructSparseVector(){
+	// construct the sparse vectors based on the feature used for sentiment model
+	public void constructLRSparseVector(){
 		ArrayList<_SparseFeature[]> reviews = new ArrayList<_SparseFeature[]>();
-
-		for(_Review r: m_reviews) 
+		for(_Review r: m_trainReviews) 
 			reviews.add(r.getSparse());
 		
 		m_BoWProfile = Utils.MergeSpVcts(reviews);// this BoW representation is not normalized?!
 	}
 	
+	// construct the sparse vectors based on the feature used for language model
+	public void constructLMSparseVector(){
+		ArrayList<_SparseFeature[]> reviews = new ArrayList<_SparseFeature[]>();
+		for(_Review r: m_trainReviews) 
+			reviews.add(r.getLMSparse());
+		
+		m_BoWProfile = Utils.MergeSpVcts(reviews);// this BoW representation is not normalized?!
+	}
+	
+	// build the profile for the user
+	public void buildProfile(String model){
+		if(model.equals("lm"))
+			constructLMSparseVector();
+		else
+			constructLRSparseVector();
+	}
+	
+	public void normalizeProfile(){
+		double sum = 0;
+		for(_SparseFeature fv: m_BoWProfile){
+			sum += fv.getValue();
+		}
+		for(_SparseFeature fv: m_BoWProfile){
+			double val = fv.getValue() / sum;
+			fv.setValue(val);
+		}
+	}
+
 	// added by Lin for accessing the index of user cluster.
 	public int getClusterIndex() {
 		return m_cIndex;
@@ -162,6 +189,10 @@ public class _User {
 		m_featureSize = weight.length;
 	}
 
+	public int getClassNo(){
+		return m_classNo;
+	}
+	
 	public double[] getPersonalizedModel() {
 		return m_pWeight;
 	}
@@ -219,7 +250,6 @@ public class _User {
 			return pred;
 		}
 	}
-
 
 	public _PerformanceStat getPerfStat() {
 		return m_perfStat;
@@ -292,28 +322,6 @@ public class _User {
 		return values;
 	}
 	
-	// added by Lin for CF.
-	
-	/***added by Lin for cf***/
-	public void setNDCG(double d){
-		m_nDCG = d;
-	}
-	public void setMAP(double m){
-		m_MAP = m;
-	}
-	public double getNDCG(){
-		return m_nDCG;
-	}
-	public double getMAP(){
-		return m_MAP;
-	}
-	public void addOneItemIDRatingPair(String item, int r){
-		m_itemIDRating.put(item, r);
-	}
-	public HashMap<String, Integer> getItemIDRating(){
-		return m_itemIDRating;
-	}
-	
 	public void removeOneReview(String prodID){
 		int index = 0;
 		for(_Review r: m_reviews){
@@ -323,20 +331,6 @@ public class _User {
 			}
 		}
 		m_reviews.remove(index);
-	}
-
-	public void calcCtgSize(){
-		HashSet<String> ctg = new HashSet<String>();
-		for(_Review r: m_reviews)
-			ctg.add(r.getCategory());
-		m_ctgSize = ctg.size();
-	}
-	
-	public ArrayList<Integer> getCategory(){
-		return m_category;
-	}
-	public int getCtgSize(){
-		return m_ctgSize;
 	}
 
 	public void calcAdpatTestPosRatio(){
@@ -362,13 +356,49 @@ public class _User {
 	public void setFriends(String[] fs){
 		m_friends = Arrays.copyOf(fs, fs.length);
 	}
+	
+	public void setTestFriends(String[] fs){
+		m_testFriends = Arrays.copyOf(fs, fs.length);
+	}
+	
+	public void setNonFriends(String[] nonfs){
+		m_nonFriends = Arrays.copyOf(nonfs, nonfs.length);
+	}
 	public String[] getFriends(){
 		return m_friends;
 	}
+	
+	public int getFriendSize(){
+		if(m_friends == null)
+			return 0;
+		else
+			return m_friends.length;
+	}
+	
+	public String[] getNonFriends(){
+		return m_nonFriends;
+	}
+	
+	public String[] getTestFriends(){
+		return m_testFriends;
+	}
+	
+	public int getTestFriendSize(){
+		if(m_testFriends == null)
+			return 0;
+		else
+			return m_testFriends.length;
+	}
+	
+	public int getNonFriendSize(){
+		if(m_nonFriends == null)
+			return 0;
+		else
+			return m_nonFriends.length;
+	}
 	// check if a user is a friend of the current user
 	public boolean hasFriend(String str){
-		if(m_friends.length == 0){
-			System.out.println("[Debug]No friends!");
+		if(m_friends == null || m_friends.length == 0){
 			return false;
 		}
 		for(String f: m_friends){
@@ -378,6 +408,28 @@ public class _User {
 		return false;
 	}
 	
+	// check if a user is a friend of the current user
+	public boolean hasNonFriend(String str){
+		if(m_nonFriends == null || m_nonFriends.length == 0){
+			return false;
+		}
+		for(String f: m_nonFriends){
+			if(str.equals(f))
+				return true;
+		}
+		return false;
+	}
+	
+	public boolean hasTestFriend(String str){
+		if(m_testFriends.length == 0){
+			return false;
+		}
+		for(String f: m_testFriends){
+			if(str.equals(f))
+				return true;
+		}
+		return false;
+	}
 	public void addAmazonFriend(String s){
 		m_amazonFriends.add(s);
 	}
@@ -385,4 +437,117 @@ public class _User {
 	public ArrayList<String> getAmazonFriends(){
 		return m_amazonFriends;
 	}
- }
+	
+	// In order to construct the friends for testing
+	ArrayList<String> m_amazonTestFriends = new ArrayList<String>();
+	public void addAmazonTestFriend(String s){
+		m_amazonTestFriends.add(s);
+	}
+	
+	public ArrayList<String> getAmazonTestFriends(){
+		return m_amazonTestFriends;
+	}
+	public void constructTrainTestReviews(){
+		m_trainReviews = new ArrayList<>();
+		m_testReviews = new ArrayList<>();
+		m_testReviewMap = new HashMap<String, _Review>();
+		for(_Review r: m_reviews){
+			if(r.getType() == rType.ADAPTATION)
+				m_trainReviews.add(r);
+			else{
+				m_testReviews.add(r);
+				m_testReviewMap.put(r.getItemID(), r);
+			}
+		}
+		m_trainReviewSize = m_trainReviews.size();
+		m_testReviewSize = m_testReviews.size();
+	}
+	
+	public ArrayList<_Review> getTrainReviews(){
+		return m_trainReviews;
+	}
+	public ArrayList<_Review> getTestReviews(){
+		return m_testReviews;
+	}
+	
+	public _Review getTestReview(String item){
+		return m_testReviewMap.get(item);
+	}
+	public int getTrainReviewSize(){
+		return m_trainReviewSize;
+	}
+	
+	public int getTestReviewSize(){
+		return m_testReviewSize;
+	}
+	
+	public int getItemRating(String item){
+		// rating is 0 or 1, thus non-existing is -1
+		if(m_itemIDRating.containsKey(item))
+			return m_itemIDRating.get(item);
+		else{
+//			System.out.println("The item does not exist!");
+			return -1;
+		}
+	}
+	// whether this user has rated this item in the testing set
+	public boolean containsTestRvw(String item){
+		return m_testReviewMap.containsKey(item);
+	}
+	public int getRankingItemSize(){
+		if(m_rankingItems == null)
+			return 0;
+		else 
+			return m_rankingItems.length;
+	}
+	
+	public String[] getRankingItems(){
+		return m_rankingItems;
+	}
+	
+	public void setRankingItems(Set<String> items){
+		if(items.size() == 0)
+			m_rankingItems = null; 
+		else{
+			m_rankingItems = new String[items.size()];
+			int index = 0;
+			for(String item: items){
+				m_rankingItems[index++] = item;
+			}
+		}
+	}
+	
+	// load the candidates from file instead of constructing online
+	ArrayList<String> m_candidates = new ArrayList<String>();
+	public void addOneCandidate(String item){
+		m_candidates.add(item);
+	}
+	
+	public void setRankingItems(HashMap<String, ArrayList<String>> itemMap){
+		// check if it is a valid user or not
+		int relevant = 0;
+		ArrayList<String> validItems = new ArrayList<>();
+		for(String item: m_candidates){
+			if(containsTestRvw(item)){
+				if(itemMap.containsKey(item)){
+					relevant++;
+					validItems.add(item);
+				}
+			} else{
+				if(!itemMap.containsKey(item))
+					System.out.println("[error] Bug in ranking candidates!");
+				else{
+					validItems.add(item);
+				}
+			}
+		}
+		// if the user has at least one relevant item
+		if(relevant > 0){
+			m_rankingItems = new String[validItems.size()];
+			int index = 0;
+			for(String item: validItems){
+				m_rankingItems[index++] = item;
+			}
+		}
+	}
+}

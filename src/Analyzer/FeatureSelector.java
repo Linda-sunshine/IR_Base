@@ -109,7 +109,7 @@ public class FeatureSelector {
 						PrCitNotSum += PrCitNot[i] * Math.log(PrCitNot[i]);
 					}
 				}
-				Gt = PrCiSum + PrCitSum + PrCitNotSum;
+				Gt = PrCiSum + Prt * PrCitSum + (1-Prt) * PrCitNotSum;
 				m_selectedFeatures.add(new _RankItem(f, Gt));
 			}
 		}

@@ -52,7 +52,7 @@ public class ETBIRMain {
         String suffix = ".json";
         String topicmodel = "ETBIR"; // pLSA, LDA_Gibbs, LDA_Variational, ETBIR
 
-        ReviewAnalyzer analyzer = new ReviewAnalyzer(tokenModel, classNumber, fvFiles[fvFile_point], Ngram, lengthThreshold, source);
+        ReviewAnalyzer analyzer = new ReviewAnalyzer(tokenModel, classNumber, fvFiles[fvFile_point], Ngram, lengthThreshold, true, "yelp");
         analyzer.LoadDirectory(reviewFolder, suffix);
 
         _Corpus corpus = analyzer.getCorpus();

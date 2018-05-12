@@ -125,6 +125,8 @@ public abstract class TopicModel {
 	// to be called per EM-iteration
 	protected abstract void init();
 	
+	protected abstract void initial();
+	
 	// to be called by the end of EM algorithm 
 	protected abstract void finalEst();
 	
@@ -277,7 +279,7 @@ public abstract class TopicModel {
 					System.out.print(".");
 					if (displayCount > 6){
 						System.out.format("\t%d:%.3f\n", i, current);
-						infoWriter.format("\t%d:%.3f\n", i, current);
+//						infoWriter.format("\t%d:%.3f\n", i, current);
 					}
 					displayCount ++;
 				}

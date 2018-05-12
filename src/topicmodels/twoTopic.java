@@ -16,7 +16,7 @@ import utils.Utils;
  */
 
 public class twoTopic extends TopicModel {
-	private double[] m_theta;//p(w|\theta) - the only topic for each document
+	private final double[] m_theta;//p(w|\theta) - the only topic for each document
 	protected double[] m_sstat;//c(w,d)p(z|w) - sufficient statistics for each word under topic
 	
 	/*p (w|theta_b) */
@@ -69,6 +69,7 @@ public class twoTopic extends TopicModel {
 			m_theta[i] = (d_beta - 1.0 + m_sstat[i]) / sum;
 	}
 	
+	@Override
 	protected double calculate_log_likelihood(_Doc d) {		
 		double logLikelihood = 0.0;
 		for(_SparseFeature fv:d.getSparse()) {
@@ -102,6 +103,12 @@ public class twoTopic extends TopicModel {
 
 	@Override
 	public void printTopWords(int k, String topWordPath) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	protected void initial() {
 		// TODO Auto-generated method stub
 		
 	}
