@@ -24,7 +24,7 @@ public class ETBIRExecution {
 	    int numberOfCores = Runtime.getRuntime().availableProcessors();
 
 	    String tokenModel = "./data/Model/en-token.bin";
-	    String fvFile = String.format("%s/%s_features.txt", param.m_prefix, param.m_source);
+	    String fvFile = String.format("%s/%s%s_features.txt", param.m_prefix, param.m_source, param.m_source);
 	    String reviewFolder = String.format("%s/%s/data/", param.m_prefix, param.m_source);
 	        
 	    System.out.println("[Info] Start preprocess textual data...");
