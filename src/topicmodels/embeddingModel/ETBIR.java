@@ -927,6 +927,7 @@ public class ETBIR extends LDA_Variational {
     public void EM(){
 
         initial();
+
         int iter = 0;
         double lastAllLikelihood = 1.0;
         double currentAllLikelihood;

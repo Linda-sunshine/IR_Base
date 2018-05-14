@@ -66,7 +66,7 @@ public class _User {
 		m_BoWProfile = null;
 		m_pWeight = null;
 		m_itemIDRating = new HashMap<String, Integer>();
-		constructTrainTestReviews();
+//		constructTrainTestReviews();
 	}
 	
 	public _User(int cindex, int classNo){

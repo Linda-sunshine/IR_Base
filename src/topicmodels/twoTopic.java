@@ -108,7 +108,7 @@ public class twoTopic extends TopicModel {
 	}
 
 	@Override
-	protected void initial() {
+	public void initial() {
 		// TODO Auto-generated method stub
 		
 	}

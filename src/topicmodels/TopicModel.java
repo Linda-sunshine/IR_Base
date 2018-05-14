@@ -175,7 +175,8 @@ public abstract class TopicModel {
 		EM();
 	}
 	
-	public double multithread_E_step() {
+
+	protected double multithread_E_step() {
 		for(int i=0; i<m_workers.length; i++) {
 			m_workers[i].setType(RunType.RT_EM);
 			m_threadpool[i] = new Thread(m_workers[i]);
