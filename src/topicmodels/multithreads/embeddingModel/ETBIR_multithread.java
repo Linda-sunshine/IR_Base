@@ -142,6 +142,7 @@ public class ETBIR_multithread extends ETBIR {
 
         public Item_worker(int number_of_topics, int vocabulary_size) {
             super(number_of_topics, vocabulary_size);
+            alphaStat = new double[number_of_topics];
         }
 
         @Override

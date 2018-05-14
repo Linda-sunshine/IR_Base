@@ -35,7 +35,7 @@ public class CVGeneration {
         String vctFile = String.format("data/Fvs/vct_%s_" + source + trainset + ".dat", pattern);
 
 //        /****Loading json files*****/
-        ReviewAnalyzer analyzer = new ReviewAnalyzer(tokenModel, classNumber, null, Ngram, lengthThreshold, source);
+        ReviewAnalyzer analyzer = new ReviewAnalyzer(tokenModel, classNumber, null, Ngram, lengthThreshold, true, source);
         analyzer.LoadStopwords(stopwords);
         analyzer.LoadDirectory(dataset, suffix); //Load all the documents as the data set.
 

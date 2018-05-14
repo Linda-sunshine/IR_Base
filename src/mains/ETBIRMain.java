@@ -25,20 +25,20 @@ public class ETBIRMain {
         String featureValue = "TF"; //The way of calculating the feature value, which can also be "TFIDF", "BM25"
         int norm = 0;//The way of normalization.(only 1 and 2)
         int lengthThreshold = 5; //Document length threshold
-        String tokenModel = "../data/Model/en-token.bin";
+        String tokenModel = "./data/Model/en-token.bin";
 
         String trainset = "byUser_40_50_12";
         String source = "yelp";
-        String dataset = "../myData/" + source + "/" + trainset + "/";
+        String dataset = "./myData/" + source + "/" + trainset + "/";
 
         /**
          * model training
          */
         String[] fvFiles = new String[4];
-        fvFiles[0] = "../data/Features/fv_2gram_IG_yelp_byUser_30_50_25.txt";
-        fvFiles[1] = "../data/Features/fv_2gram_IG_amazon_movie_byUser_40_50_12.txt";
-        fvFiles[2] = "../data/Features/fv_2gram_IG_amazon_electronic_byUser_20_20_5.txt";
-        fvFiles[3] = "../data/Features/fv_2gram_IG_amazon_book_byUser_40_50_12.txt";
+        fvFiles[0] = "./data/Features/fv_2gram_IG_yelp_byUser_30_50_25.txt";
+        fvFiles[1] = "./data/Features/fv_2gram_IG_amazon_movie_byUser_40_50_12.txt";
+        fvFiles[2] = "./data/Features/fv_2gram_IG_amazon_electronic_byUser_20_20_5.txt";
+        fvFiles[3] = "./data/Features/fv_2gram_IG_amazon_book_byUser_40_50_12.txt";
         int fvFile_point = 0;
         if(source.equals("amazon_movie")){
             fvFile_point = 1;
