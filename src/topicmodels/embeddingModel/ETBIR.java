@@ -945,7 +945,7 @@ public class ETBIR extends LDA_Variational {
                 converge = 1.0;
 
             if(converge < 0){
-                m_varMaxIter += 10;
+//                m_varMaxIter += 10;
                 System.out.println("! E_step not converge...");
             }
             System.out.format("\n-------------\nStart M step %d....\n", iter);

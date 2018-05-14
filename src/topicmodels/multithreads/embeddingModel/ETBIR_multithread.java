@@ -306,44 +306,54 @@ public class ETBIR_multithread extends ETBIR {
             worker.resetStats();
     }
 
-    @Override
-    public double multithread_E_step() {
-        //doc
-        double likelihood = super.multithread_E_step();
-
-        //users
-        for(int i = 0; i < m_userWorkers.length; i++){
+    protected double multithread_general(Thread[] threadPool, EmbedModelWorker[] workers){
+        double likelihood = 0.0;
+        for (int i = 0; i < m_userWorkers.length; i++) {
             m_userWorkers[i].setType(TopicModel_worker.RunType.RT_EM);
             m_userThreadpool[i] = new Thread(m_userWorkers[i]);
             m_userThreadpool[i].start();
         }
-        for(Thread thread:m_userThreadpool){
+        for (Thread thread : m_userThreadpool) {
             try {
                 thread.join();
-            }catch (InterruptedException e){
+            } catch (InterruptedException e) {
                 e.printStackTrace();
             }
         }
-        for(EmbedModelWorker worker:m_userWorkers){
+        for (EmbedModelWorker worker : m_userWorkers) {
             likelihood += worker.accumluateStats();
         }
+        return likelihood;
+    }
 
-        //items
-        for(int i = 0; i < m_itemWorkers.length; i++){
-            m_itemWorkers[i].setType(TopicModel_worker.RunType.RT_EM);
-            m_itemThreadpool[i] = new Thread(m_itemThreadpool[i]);
-            m_itemThreadpool[i].start();
-        }
-        for(Thread thread:m_itemThreadpool){
-            try {
-                thread.join();
-            }catch (InterruptedException e){
-                e.printStackTrace();
-            }
-        }
-        for(EmbedModelWorker worker:m_itemWorkers){
-            likelihood += worker.accumluateStats();
-        }
+    @Override
+    public double multithread_E_step() {
+        int iter = 0;
+        double likelihood = 0.0, last = -1.0, converge = 0.0;
+
+        do {
+            init();
+
+            //doc
+            likelihood = super.multithread_E_step();
+
+            //users
+            likelihood += multithread_general(m_userThreadpool, m_userWorkers);
+
+            //items
+            likelihood += multithread_general(m_itemThreadpool,m_itemWorkers);
+
+            if(iter > 0)
+                converge = Math.abs((likelihood - last) / last);
+            else
+                converge = 1.0;
+
+            last = likelihood;
+            if(converge < m_varConverge)
+                break;
+            System.out.print("---likelihood: " + last + "\n");
+        }while(iter++ < m_varMaxIter);
+        System.out.print(String.format("Current likelihood: %.4f", likelihood));
 
         return likelihood;
     }

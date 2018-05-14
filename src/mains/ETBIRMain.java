@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.IOException;
 import java.text.ParseException;
 
+import Analyzer.MultiThreadedReviewAnalyzer;
 import Analyzer.ReviewAnalyzer;
 import structures._Corpus;
 import topicmodels.LDA.LDA_Gibbs;
@@ -25,6 +26,7 @@ public class ETBIRMain {
         String featureValue = "TF"; //The way of calculating the feature value, which can also be "TFIDF", "BM25"
         int norm = 0;//The way of normalization.(only 1 and 2)
         int lengthThreshold = 5; //Document length threshold
+        int numberOfCores = Runtime.getRuntime().availableProcessors();
         String tokenModel = "./data/Model/en-token.bin";
 
         String trainset = "byUser_40_50_12";
@@ -53,19 +55,19 @@ public class ETBIRMain {
         String suffix = ".json";
         String topicmodel = "ETBIR"; // pLSA, LDA_Gibbs, LDA_Variational, ETBIR
 
-        ReviewAnalyzer analyzer = new ReviewAnalyzer(tokenModel, classNumber, fvFiles[fvFile_point], Ngram,
-                lengthThreshold, true, source);
-        analyzer.LoadDirectory(reviewFolder, suffix);
-
+        MultiThreadedReviewAnalyzer analyzer = new MultiThreadedReviewAnalyzer(tokenModel, classNumber, fvFiles[fvFile_point],
+                Ngram, lengthThreshold, numberOfCores, true, source);
+        analyzer.loadUserDir(reviewFolder);
         _Corpus corpus = analyzer.getCorpus();
-//        corpus.save2File("./myData/byUser/top20_byUser20.dat");
+
+        //        corpus.save2File("./myData/byUser/top20_byUser20.dat");
 
         int number_of_topics = 20;
 
         int varMaxIter = 30;
         double varConverge = 1e-4;
 
-        int emMaxIter = 100;
+        int emMaxIter = 200;
         double emConverge = -1;
         double emConverge4ETBIR = 1e-5;
 
