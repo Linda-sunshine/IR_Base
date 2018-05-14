@@ -9,6 +9,7 @@ import structures._Corpus;
 import topicmodels.LDA.LDA_Gibbs;
 import topicmodels.embeddingModel.ETBIR;
 import topicmodels.multithreads.LDA.LDA_Variational_multithread;
+import topicmodels.multithreads.embeddingModel.ETBIR_multithread;
 import topicmodels.multithreads.pLSA.pLSA_multithread;
 import topicmodels.pLSA.pLSA;
 
@@ -48,7 +49,7 @@ public class ETBIRMain {
         }
 
         String reviewFolder = dataset + "data/";
-        String outputFolder = dataset + "output/feature_PreEta_" + fvFile_point + "/";
+        String outputFolder = dataset + "output/feature_multi_" + fvFile_point + "/";
         String suffix = ".json";
         String topicmodel = "ETBIR"; // pLSA, LDA_Gibbs, LDA_Variational, ETBIR
 
@@ -85,7 +86,7 @@ public class ETBIRMain {
             tModel = new LDA_Variational_multithread(emMaxIter, emConverge, beta, corpus,
                     lambda, number_of_topics, alpha, varMaxIter, varConverge); //set this negative!! or likelihood will not change
         } else if (topicmodel.equals("ETBIR")){
-            tModel = new ETBIR(emMaxIter, emConverge4ETBIR, beta, corpus, lambda,
+            tModel = new ETBIR_multithread(emMaxIter, emConverge4ETBIR, beta, corpus, lambda,
                     number_of_topics, alpha, varMaxIter, varConverge, sigma, rho);
         }else {
             System.out.println("The selected topic model has not developed yet!");
@@ -95,11 +96,6 @@ public class ETBIRMain {
         tModel.setDisplayLap(1);
         new File(outputFolder).mkdirs();
         tModel.setInforWriter(outputFolder + topicmodel + "_info.txt");
-        if(topicmodel.equals("ETBIR")) {
-            ((ETBIR) tModel).analyzeCorpus();
-            tModel.initial();
-            ((ETBIR) tModel).printPara(outputFolder, "init", topicmodel);
-        }
         tModel.EMonCorpus();
         tModel.printTopWords(50, outputFolder + topicmodel + "_topWords.txt");
         tModel.printParameterAggregation(50, outputFolder, topicmodel);
