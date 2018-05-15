@@ -59,7 +59,7 @@ public class ETBIRExecution {
 	    tModel.printTopWords(param.m_topk);
 	    
 	    // create result folder
-	    String resultDir = String.format("%s/ETBIR_%d/", param.m_output, current);
+	    String resultDir = String.format("%s/%s_%d/", param.m_output, param.m_topicmodel, current);
 	    File resultFolder = new File(resultDir);
 	    if (!resultFolder.exists()) {
 	    	System.out.println("[Info]Create directory " + resultFolder);
