@@ -1,6 +1,11 @@
 package topicmodels.embeddingModel;
 
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -80,11 +85,13 @@ public class ETBIR extends LDA_Variational {
                 number_of_topics, d_alpha, d_beta, this.m_sigma, this.m_rho, d_mu, d_sigma_theta, d_nu, d_sigma_P);
     }
 
-    @Override
-    public void EMonCorpus() {
-        m_trainSet = m_corpus.getCollection();
-        EM();
-    }
+//    @Override
+//    public void EMonCorpus() {
+//		System.out.format("%s...\n", toString());
+//
+//        m_trainSet = m_corpus.getCollection();
+//        EM();
+//    }
 
     public void analyzeCorpus(){
         System.out.print("Analzying review data in corpus");
@@ -940,7 +947,8 @@ public class ETBIR extends LDA_Variational {
 
     @Override
     public void EM(){
-
+		System.out.format("%s\n", toString());
+		initial();
         int iter = 0;
         double lastAllLikelihood = 1.0;
         double currentAllLikelihood;
@@ -973,9 +981,10 @@ public class ETBIR extends LDA_Variational {
         }while(iter < number_of_iteration && (converge < 0 || converge > m_converge));
     }
 
-    public void printParameterAggregation(int k, String folderName, String topicmodel){
+    @Override
+	public void printParameterAggregation(int k, String folderName, String topicmodel){
         super.printParameterAggregation(k, folderName, topicmodel);
-        printPara(folderName, "_final", topicmodel);
+        printPara(folderName, "final", topicmodel);
         printTopWords(k, folderName + topicmodel + "_topWords.txt");
     }
 
@@ -1053,7 +1062,8 @@ public class ETBIR extends LDA_Variational {
         }
     }
 
-    public HashMap<String, List<_Doc>> getDocByUser(){
+    @Override
+	public HashMap<String, List<_Doc>> getDocByUser(){
         HashMap<String, List<_Doc>> docByUser = new HashMap<>();
         for(Integer uIdx : m_mapByUser.keySet()) {
             String userName = m_users.get(uIdx).getUserID();
@@ -1066,7 +1076,8 @@ public class ETBIR extends LDA_Variational {
         return docByUser;
     }
 
-    public HashMap<String, List<_Doc>> getDocByItem(){
+    @Override
+	public HashMap<String, List<_Doc>> getDocByItem(){
         HashMap<String, List<_Doc>> docByItem = new HashMap<>();
         for(Integer iIdx : m_mapByItem.keySet()) {
             String itemName = m_items.get(iIdx).getID();
@@ -1079,7 +1090,8 @@ public class ETBIR extends LDA_Variational {
         return docByItem;
     }
 
-    public void printTopWords(int k, String topWordPath, HashMap<String, List<_Doc>> docCluster) {
+    @Override
+	public void printTopWords(int k, String topWordPath, HashMap<String, List<_Doc>> docCluster) {
         try{
             PrintWriter topWordWriter = new PrintWriter(new File(topWordPath));
             PrintWriter topWordWriter2 = new PrintWriter(new File(topWordPath.replace(".txt","_est.txt")));

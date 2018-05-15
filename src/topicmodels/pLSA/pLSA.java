@@ -15,25 +15,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
-
-import structures.MyPriorityQueue;
-import structures._Corpus;
-import structures._Doc;
-import structures._RankItem;
-import structures._SparseFeature;
-import topicmodels.twoTopic;
-import utils.Utils;/**
- * @author Md. Mustafizur Rahman (mr4xb@virginia.edu)
- * Probabilistic Latent Semantic Analysis Topic Modeling 
- */
-
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.PrintWriter;
-import java.util.*;
+import java.util.List;
+import java.util.Map;
 
 import structures.MyPriorityQueue;
 import structures._Corpus;
@@ -42,6 +25,10 @@ import structures._RankItem;
 import structures._SparseFeature;
 import topicmodels.twoTopic;
 import utils.Utils;
+/**
+ * @author Md. Mustafizur Rahman (mr4xb@virginia.edu)
+ * Probabilistic Latent Semantic Analysis Topic Modeling 
+ */
 
 public class pLSA extends twoTopic {
 	// Dirichlet prior for p(\theta|d)
@@ -159,6 +146,7 @@ public class pLSA extends twoTopic {
 		calculate_M_step(0);
 	}
 
+	@Override
 	public void initial(){}
 
 	protected void imposePrior() {		
@@ -358,7 +346,7 @@ public class pLSA extends twoTopic {
 	public void printParameterAggregation(int k, String folderName, String topicmodel){
 		String gammaPathByUser = folderName + topicmodel + "_gammaByUser.txt";
 		String gammaPathByItem = folderName + topicmodel + "_gammaByItem.txt";
-		System.out.println("Gamma filePath: " + gammaPathByUser + "; " + gammaPathByItem);
+//		System.out.println("Gamma filePath: " + gammaPathByUser + "; " + gammaPathByItem);
 
 		//aggregate parameter \gamma by user/item
 		printTopWords(k, gammaPathByUser, getDocByUser());

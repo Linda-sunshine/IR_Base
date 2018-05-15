@@ -21,10 +21,10 @@ public class MyETBIRMain {
         int lengthThreshold = 5; //Document length threshold
 		int numberOfCores = Runtime.getRuntime().availableProcessors();
 
-        String tokenModel = "./data/Model/en-token.bin";
-        String fvFile = "./data/Features/fv_2gram_IG_yelp_byUser_30_50_25.txt";
-        String reviewFolder = "./data/myData/byUser_40_50_12/data";
         String source = "yelp";
+        String tokenModel = "./data/Model/en-token.bin";
+        String fvFile = String.format("/home/lin/DataSet/%s/%s_features.txt", source, source);
+        String reviewFolder = String.format("/home/lin/DataSet/%s/data", source);
         
 		System.out.println("[Info] Start preprocess textual data...");
         MultiThreadedReviewAnalyzer analyzer = new MultiThreadedReviewAnalyzer(tokenModel, classNumber, fvFile, Ngram, lengthThreshold, numberOfCores, true, source);
@@ -46,14 +46,6 @@ public class MyETBIRMain {
 
         pLSA tModel = null;
         long current = System.currentTimeMillis();
-        		
-        String resultDir = String.format("./data/result/ETBIR_%d/", current);
-
-        File resultFolder = new File("./data/ETBIR_"+current);
-        if (!resultFolder.exists()) {
-            System.out.println("[Info]Create directory " + resultFolder);
-            resultFolder.mkdir();
-        }
 
         if (topicmodel.equals("pLSA")) {
             tModel = new pLSA_multithread(number_of_iteration, converge, beta, corpus,
@@ -68,7 +60,7 @@ public class MyETBIRMain {
             tModel = new ETBIR(number_of_iteration, emConverge, beta, corpus, lambda,
             		number_of_topics, alpha, varMaxIter, varConverge, sigma, rho);
             ((ETBIR) tModel).analyzeCorpus();
-            ((ETBIR) tModel).initial();
+//            ((ETBIR) tModel).initial();
         } else{
         	 System.out.println("The selected topic model has not developed yet!");
              return;
@@ -78,7 +70,13 @@ public class MyETBIRMain {
         tModel.setDisplayLap(10);
         tModel.EMonCorpus();
         tModel.printTopWords(topk);
-        tModel.printTopWords(topk, String.format("./data/%s_topic_topwords_%d.txt", topicmodel, current));
-        ((ETBIR) tModel).printParameterAggregation(topk, resultFolder+"/", topicmodel);
+        
+        String resultDir = String.format("./data/result/ETBIR_%d/", current);
+        File resultFolder = new File(resultDir);
+        if (!resultFolder.exists()) {
+            System.out.println("[Info]Create directory " + resultFolder);
+            resultFolder.mkdir();
+        }
+        ((ETBIR) tModel).printParameterAggregation(topk, resultDir, topicmodel);
     }
 }
