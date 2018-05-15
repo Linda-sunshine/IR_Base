@@ -20,3 +20,4 @@ src/topicmodels/embeddingModel/test.java
 src/nohup.out
 *.xlsx
 *.log
+src/mains/ETBIRMain.java

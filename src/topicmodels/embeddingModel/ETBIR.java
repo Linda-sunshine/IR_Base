@@ -926,6 +926,7 @@ public class ETBIR extends LDA_Variational {
     @Override
     public void EM(){
 
+        System.out.format("%s\n", toString());
         initial();
 
         int iter = 0;
@@ -960,9 +961,10 @@ public class ETBIR extends LDA_Variational {
         }while(iter < number_of_iteration && (converge < 0 || converge > m_converge));
     }
 
+    @Override
     public void printParameterAggregation(int k, String folderName, String topicmodel){
         super.printParameterAggregation(k, folderName, topicmodel);
-        printPara(folderName, "_final", topicmodel);
+        printPara(folderName, "final", topicmodel);
         printTopWords(k, folderName + topicmodel + "_topWords.txt");
     }
 
@@ -1007,7 +1009,7 @@ public class ETBIR extends LDA_Variational {
             PrintWriter etaWriter = new PrintWriter(new File(etaFile));
 
             for(int idx = 0; idx < m_items.size(); idx++) {
-                etaWriter.write("item " + idx + "*************\n");
+                etaWriter.write(String.format("item %d %s *********************\n", idx, m_items.get(idx).getID()));
                 _Product4ETBIR item = m_items.get(idx);
                 etaWriter.format("-- eta: \n");
                 for (int i = 0; i < number_of_topics; i++) {
@@ -1024,7 +1026,7 @@ public class ETBIR extends LDA_Variational {
             PrintWriter pWriter = new PrintWriter(new File(pFile));
 
             for(int idx = 0; idx < m_users.size(); idx++) {
-                pWriter.write("user " + idx + "*************\n");
+                pWriter.write(String.format("user %d %s *********************\n", idx, m_users.get(idx).getUserID()));
                 _User4ETBIR user = m_users.get(idx);
                 for (int i = 0; i < number_of_topics; i++) {
                     pWriter.format("-- mu " + i + ": \n");
@@ -1040,6 +1042,7 @@ public class ETBIR extends LDA_Variational {
         }
     }
 
+    @Override
     public HashMap<String, List<_Doc>> getDocByUser(){
         HashMap<String, List<_Doc>> docByUser = new HashMap<>();
         for(Integer uIdx : m_mapByUser.keySet()) {
@@ -1053,6 +1056,7 @@ public class ETBIR extends LDA_Variational {
         return docByUser;
     }
 
+    @Override
     public HashMap<String, List<_Doc>> getDocByItem(){
         HashMap<String, List<_Doc>> docByItem = new HashMap<>();
         for(Integer iIdx : m_mapByItem.keySet()) {
@@ -1066,6 +1070,7 @@ public class ETBIR extends LDA_Variational {
         return docByItem;
     }
 
+    @Override
     public void printTopWords(int k, String topWordPath, HashMap<String, List<_Doc>> docCluster) {
         try{
             PrintWriter topWordWriter = new PrintWriter(new File(topWordPath));

@@ -16,9 +16,7 @@ import java.util.Collection;
 import java.util.List;
 
 public class ETBIR_multithread extends ETBIR {
-    protected Thread[] m_userThreadpool = null;
     protected EmbedModelWorker[] m_userWorkers = null;
-    protected Thread[] m_itemThreadpool = null;
     protected EmbedModelWorker[] m_itemWorkers = null;
 
     public class Doc_worker extends TopicModel_worker {
@@ -28,30 +26,6 @@ public class ETBIR_multithread extends ETBIR {
 
         public Doc_worker(int number_of_topics, int vocabulary_size) {
             super(number_of_topics, vocabulary_size);
-        }
-
-        @Override
-        public void run() {
-            m_likelihood = 0;
-            m_perplexity = 0;
-
-            double loglikelihood = 0, log2 = Math.log(2.0);
-            long eStartTime = System.currentTimeMillis();
-
-            for(_Doc d:m_corpus) {
-                if (m_type == RunType.RT_EM)
-                    m_likelihood += calculate_E_step(d);
-                else if (m_type == RunType.RT_inference) {
-                    loglikelihood = inference(d);
-                    m_perplexity += Math.pow(2.0, -loglikelihood/d.getTotalDocLength() / log2);
-                    m_likelihood += loglikelihood;
-                }
-            }
-            long eEndTime = System.currentTimeMillis();
-
-            // System.out.println("per thread per iteration e step time\t"
-            // + (eEndTime - eStartTime));
-
         }
 
         @Override
@@ -149,10 +123,6 @@ public class ETBIR_multithread extends ETBIR {
         public void run() {
             m_likelihood = 0;
             m_perplexity = 0;
-
-            double loglikelihood = 0, log2 = Math.log(2.0);
-            long eStartTime = System.currentTimeMillis();
-
             for (Object o : m_objects) {
                 _Product4ETBIR i = (_Product4ETBIR) o;
                 if (m_type == TopicModel_worker.RunType.RT_EM)
@@ -161,7 +131,6 @@ public class ETBIR_multithread extends ETBIR {
 
                 }
             }
-            long eEndTime = System.currentTimeMillis();
         }
 
         @Override
@@ -204,9 +173,6 @@ public class ETBIR_multithread extends ETBIR {
             m_likelihood = 0;
             m_perplexity = 0;
 
-            double loglikelihood = 0, log2 = Math.log(2.0);
-            long eStartTime = System.currentTimeMillis();
-
             for (Object o : m_objects) {
                 _User4ETBIR u = (_User4ETBIR) o;
                 if (m_type == TopicModel_worker.RunType.RT_EM)
@@ -215,7 +181,6 @@ public class ETBIR_multithread extends ETBIR {
 
                 }
             }
-            long eEndTime = System.currentTimeMillis();
         }
 
 
@@ -262,11 +227,7 @@ public class ETBIR_multithread extends ETBIR {
         int cores = Runtime.getRuntime().availableProcessors();
         m_threadpool = new Thread[cores];
         m_workers = new ETBIR_multithread.Doc_worker[cores];
-
-        m_itemThreadpool = new Thread[cores];
         m_itemWorkers = new ETBIR_multithread.Item_worker[cores];
-
-        m_userThreadpool = new Thread[cores];
         m_userWorkers = new ETBIR_multithread.User_worker[cores];
 
         for(int i=0; i<cores; i++) {
@@ -306,21 +267,21 @@ public class ETBIR_multithread extends ETBIR {
             worker.resetStats();
     }
 
-    protected double multithread_general(Thread[] threadPool, EmbedModelWorker[] workers){
+    protected double multithread_general(EmbedModelWorker[] workers){
         double likelihood = 0.0;
-        for (int i = 0; i < m_userWorkers.length; i++) {
-            m_userWorkers[i].setType(TopicModel_worker.RunType.RT_EM);
-            m_userThreadpool[i] = new Thread(m_userWorkers[i]);
-            m_userThreadpool[i].start();
+        for (int i = 0; i < workers.length; i++) {
+            workers[i].setType(TopicModel_worker.RunType.RT_EM);
+            m_threadpool[i] = new Thread(workers[i]);
+            m_threadpool[i].start();
         }
-        for (Thread thread : m_userThreadpool) {
+        for (Thread thread : m_threadpool) {
             try {
                 thread.join();
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
         }
-        for (EmbedModelWorker worker : m_userWorkers) {
+        for (EmbedModelWorker worker : workers) {
             likelihood += worker.accumluateStats();
         }
         return likelihood;
@@ -338,10 +299,10 @@ public class ETBIR_multithread extends ETBIR {
             likelihood = super.multithread_E_step();
 
             //users
-            likelihood += multithread_general(m_userThreadpool, m_userWorkers);
+            likelihood += multithread_general(m_userWorkers);
 
             //items
-            likelihood += multithread_general(m_itemThreadpool,m_itemWorkers);
+            likelihood += multithread_general(m_itemWorkers);
 
             if(iter > 0)
                 converge = Math.abs((likelihood - last) / last);
