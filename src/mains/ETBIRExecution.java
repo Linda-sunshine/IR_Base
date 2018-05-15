@@ -35,15 +35,7 @@ public class ETBIRExecution {
 	    pLSA tModel = null;
 	    long current = System.currentTimeMillis();
 	   
-	    // create result folder
-	    String resultDir = String.format("%s/ETBIR_%d/", param.m_output, current);
-	    File resultFolder = new File(resultDir);
-	    if (!resultFolder.exists()) {
-	    	System.out.println("[Info]Create directory " + resultFolder);
-	        resultFolder.mkdir();
-	    }
-
-	    if (param.m_topicmodel.equals("pLSA")) {
+	  	    if (param.m_topicmodel.equals("pLSA")) {
 	        tModel = new pLSA_multithread(param.m_emIter, param.m_emConverge, param.m_beta, corpus,
 	                param.m_lambda, param.m_number_of_topics, param.m_alpha);
 	    } else if (param.m_topicmodel.equals("LDA_Gibbs")) {
@@ -56,7 +48,7 @@ public class ETBIRExecution {
 	        tModel = new ETBIR(param.m_emIter, param.m_emConverge, param.m_beta, corpus, param.m_lambda,
 	        		param.m_number_of_topics, param.m_alpha, param.m_varMaxIter, param.m_varConverge, param.m_sigma, param.m_rho);
 	        ((ETBIR) tModel).analyzeCorpus();
-	        ((ETBIR) tModel).initial();
+//	        ((ETBIR) tModel).initial();
 	    } else{
 	    	System.out.println("The selected topic model has not developed yet!");
 	        return;
@@ -64,7 +56,15 @@ public class ETBIRExecution {
 
 	    tModel.setDisplayLap(10);
 	    tModel.EMonCorpus();
-	    tModel.printTopWords(param.m_topk, resultDir + "_topwords.txt");
+	    tModel.printTopWords(param.m_topk);
+	    
+	    // create result folder
+	    String resultDir = String.format("%s/ETBIR_%d/", param.m_output, current);
+	    File resultFolder = new File(resultDir);
+	    if (!resultFolder.exists()) {
+	    	System.out.println("[Info]Create directory " + resultFolder);
+	        resultFolder.mkdir();
+	    }
 	    ((ETBIR) tModel).printParameterAggregation(param.m_topk, resultDir, param.m_topicmodel);
 	}
 }
