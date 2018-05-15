@@ -337,7 +337,6 @@ public class pLSA extends twoTopic {
 	public void printParameterAggregation(int k, String folderName, String topicmodel){
 		String gammaPathByUser = folderName + topicmodel + "_gammaByUser.txt";
 		String gammaPathByItem = folderName + topicmodel + "_gammaByItem.txt";
-		System.out.println("Gamma filePath: " + gammaPathByUser + "; " + gammaPathByItem);
 
 		//aggregate parameter \gamma by user/item
 		printTopWords(k, gammaPathByUser, getDocByUser());
