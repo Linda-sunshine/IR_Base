@@ -20,7 +20,7 @@ public abstract class TopicModel_worker implements TopicModelWorker {
 	protected double[][] sstat; // p(w|z)
 	protected int number_of_topics;
 	protected int vocabulary_size;
-	RunType m_type = RunType.RT_EM;//EM is the default type 	
+	protected RunType m_type = RunType.RT_EM;//EM is the default type
 	
 	public TopicModel_worker(int number_of_topics, int vocabulary_size) {
 		this.number_of_topics = number_of_topics;
