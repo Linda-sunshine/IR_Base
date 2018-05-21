@@ -14,11 +14,13 @@ public class LinkPredictionWithMMBPerEdge extends LinkPredictionWithMMB{
 	HashMap<String, String[]> m_trainMap = new HashMap<>();
 	HashMap<String, String[]> m_testMap = new HashMap<>();
 	HashMap<String, Integer> m_userIDIndexMap = new HashMap<>();
+	
 	// calculate training/testing size, construct training set/testing set
 	public LinkPredictionWithMMBPerEdge(HashMap<String, String[]> trainMap, HashMap<String, String[]> testMap){
 		m_trainMap = trainMap;
 		m_testMap = testMap;
 	}
+	
 	@Override
 	public void calcTrainTestSize(){
 		

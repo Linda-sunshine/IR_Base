@@ -13,7 +13,7 @@ import Classifier.supervised.modelAdaptation.MMB._MMBAdaptStruct;
 
 /***
  * The class inherits from MTCLinAdaptWithMMB to achieve link prediction.
- * In link prediction, the train users only have train reviews and test users only have test reivews.
+ * In link prediction, the train users only have train reviews and test users only have test reviews.
  * We need to calculate the mixture of each user based on review assignment and edge assignment.
  */
 
@@ -126,6 +126,8 @@ public class LinkPredictionWithMMB {
 			}
 		}
 	}
+	
+	// The main link prediction function
 	public void linkPrediction(){
 		initLinkPred();
 		

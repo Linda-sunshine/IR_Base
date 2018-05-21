@@ -14,7 +14,7 @@ import Classifier.supervised.modelAdaptation.MMB._MMBAdaptStruct;
 
 /***
  * The class utilizes BoW of each user to achieve link prediction.
- * In link prediction, the train users only have train reviews and test users only have test reivews.
+ * In link prediction, the train users only have train reviews and test users only have test reviews.
  */
 
 public class LinkPrediction {
