@@ -5,9 +5,12 @@ import java.io.IOException;
 import java.text.ParseException;
 
 import Analyzer.MultiThreadedReviewAnalyzer;
+import Analyzer.MultiThreadedUserAnalyzer;
 import Analyzer.ReviewAnalyzer;
 import structures._Corpus;
 import topicmodels.LDA.LDA_Gibbs;
+import topicmodels.LDA.LDA_Variational;
+import topicmodels.embeddingModel.CrossValidation;
 import topicmodels.embeddingModel.ETBIR;
 import topicmodels.multithreads.LDA.LDA_Variational_multithread;
 import topicmodels.multithreads.embeddingModel.ETBIR_multithread;
@@ -38,9 +41,9 @@ public class ETBIRMain {
          */
         String[] fvFiles = new String[4];
         fvFiles[0] = "./data/Features/fv_2gram_IG_yelp_byUser_30_50_25.txt";
-        fvFiles[1] = "./data/Features/fv_2gram_IG_amazon_movie_byUser_40_50_12.txt";
-        fvFiles[2] = "./data/Features/fv_2gram_IG_amazon_electronic_byUser_20_20_5.txt";
-        fvFiles[3] = "./data/Features/fv_2gram_IG_amazon_book_byUser_40_50_12.txt";
+        fvFiles[1] = "../data/Features/fv_2gram_IG_amazon_movie_byUser_40_50_12.txt";
+        fvFiles[2] = "../data/Features/fv_2gram_IG_amazon_electronic_byUser_20_20_5.txt";
+        fvFiles[3] = "../data/Features/fv_2gram_IG_amazon_book_byUser_40_50_12.txt";
         int fvFile_point = 0;
         if(source.equals("amazon_movie")){
             fvFile_point = 1;
@@ -50,30 +53,35 @@ public class ETBIRMain {
             fvFile_point = 3;
         }
 
-        String reviewFolder = dataset + "data/";
-        String outputFolder = dataset + "output/feature_multi_" + fvFile_point + "/";
+        String reviewFolder = dataset + "2foldsCV/folder0/train/"; //2foldsCV/folder0/train/, data/
+        String outputFolder = dataset + "2foldsCV/folder0/output/feature_infer_" + fvFile_point + "/";
         String suffix = ".json";
         String topicmodel = "ETBIR"; // pLSA, LDA_Gibbs, LDA_Variational, ETBIR
 
         MultiThreadedReviewAnalyzer analyzer = new MultiThreadedReviewAnalyzer(tokenModel, classNumber, fvFiles[fvFile_point],
                 Ngram, lengthThreshold, numberOfCores, true, source);
+//        analyzer.setReleaseContent(false);
         analyzer.loadUserDir(reviewFolder);
         _Corpus corpus = analyzer.getCorpus();
 
-        //        corpus.save2File("./myData/byUser/top20_byUser20.dat");
+//        corpus.save2File(dataset + "yelp_40_50_12.dat");//for CTM
 
         int number_of_topics = 20;
 
         int varMaxIter = 30;
         double varConverge = 1e-4;
 
-        int emMaxIter = 200;
-        double emConverge = -1;
-        double emConverge4ETBIR = 1e-5;
+        int emMaxIter = 100;
+        double emConverge = 1e-9;
+        double emConverge4ETBIR = 1e-8;
 
 
-        double alpha = 1e-2, beta = 1 + 1e-3, lambda = 1 + 1e-3;//these two parameters must be larger than 1!!!
-        double  sigma = 1e-2, rho = 1e-2;
+        double alpha = topicmodel.equals("ETBIR")?1e-3:0.5+1e-2, beta = 1 + 1e-3, lambda = 1 + 1e-3;//these two parameters must be larger than 1!!!
+        double sigma = 1e-4, rho = 1e-4;
+
+        int topK = 50;
+        int crossV = 1;
+        boolean setRandomFold = true;
 
         // LDA
         /*****parameters for the two-topic topic model*****/
@@ -96,13 +104,26 @@ public class ETBIRMain {
             return;
         }
 
+//        CrossValidation cv = new CrossValidation(crossV, corpus);
+//        cv.analyzeCorpus();
+//        cv.splitCorpus(dataset + crossV + "foldsCV/");
+
         tModel.setDisplayLap(1);
         new File(outputFolder).mkdirs();
         tModel.setInforWriter(outputFolder + topicmodel + "_info.txt");
-        tModel.EMonCorpus();
-        tModel.printTopWords(50, outputFolder + topicmodel + "_topWords.txt");
-        tModel.printParameterAggregation(50, outputFolder, topicmodel);
-        tModel.closeWriter();
+        if (crossV<=1) {
+            tModel.EMonCorpus();
+            tModel.printTopWords(topK, outputFolder + topicmodel + "_topWords.txt");
+            tModel.printParameterAggregation(topK, outputFolder, topicmodel);
+            tModel.closeWriter();
+        }else{
+            tModel.setRandomFold(setRandomFold);
+            double trainProportion = ((double)crossV - 1)/(double)crossV;
+            double testProportion = 1-trainProportion;
+            tModel.setPerplexityProportion(testProportion);
+            tModel.crossValidation(crossV);
+            tModel.printTopWords(topK, outputFolder + topicmodel + "_topWords.txt");
+        }
 
     }
 }
