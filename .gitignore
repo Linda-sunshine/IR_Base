@@ -21,3 +21,4 @@ src/nohup.out
 *.xlsx
 *.log
 src/mains/ETBIRMain.java
+*.dat
