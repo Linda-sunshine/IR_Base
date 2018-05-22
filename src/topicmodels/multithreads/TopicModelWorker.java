@@ -22,4 +22,6 @@ public interface TopicModelWorker extends Runnable {
 	public double getLogLikelihood();
 	
 	public double getPerplexity();
+
+	public double getTotalWords();
 }
