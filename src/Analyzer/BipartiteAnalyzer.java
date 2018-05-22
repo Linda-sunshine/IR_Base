@@ -1,4 +1,4 @@
-package topicmodels.embeddingModel;
+package Analyzer;
 
 import structures.*;
 
@@ -10,7 +10,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
-public class CrossValidation {
+public class BipartiteAnalyzer {
     int m_k;
     _Corpus m_corpus;
     ArrayList<_Doc> m_trainSet;
@@ -28,29 +28,19 @@ public class CrossValidation {
     protected HashMap<Integer, ArrayList<Integer>> m_mapByUser_test; //test
     protected HashMap<Integer, ArrayList<Integer>> m_mapByItem_test;
 
-    public CrossValidation(int k, _Corpus corpus){
+    public BipartiteAnalyzer(int k, _Corpus corpus){
         this.m_k = k;
         this.m_corpus = corpus;
+    }
 
-        m_trainSet = new ArrayList<>();
-        m_testSet = new ArrayList<>();
+    public void analyzeCorpus(){
+        System.out.print("Analzying review data in corpus: ");
 
         m_users = new ArrayList<>();
         m_items = new ArrayList<>();
         m_usersIndex = new HashMap<>();
         m_itemsIndex = new HashMap<>();
         m_reviewIndex = new HashMap<>();
-
-        m_mapByUser = new HashMap<>();
-        m_mapByItem = new HashMap<>();
-        m_mapByUser_test = new HashMap<>();
-        m_mapByItem_test = new HashMap<>();
-
-    }
-
-    public void analyzeCorpus(){
-        System.out.print("Analzying review data in corpus: ");
-
         int u_index = 0, i_index = 0, size = m_corpus.getCollection().size();
         for(int d = 0; d < size; d++){
             _Doc doc = m_corpus.getCollection().get(d);
@@ -82,15 +72,21 @@ public class CrossValidation {
                 m_corpus.getFeatureSize(), size,  m_items.size(),  m_users.size());
     }
 
-    public void analyzeBipartie(ArrayList<_Doc> docs, String source, String mode){
+    public void analyzeBipartie(ArrayList<_Doc> docs, String source){
+        if(source.equals("train") && m_mapByUser == null){
+            m_mapByUser = new HashMap<>();
+            m_mapByItem = new HashMap<>();
+        }else if(source.equals("test") && m_mapByUser_test == null){
+            m_mapByUser_test = new HashMap<>();
+            m_mapByItem_test = new HashMap<>();
+        }
+
         HashMap<Integer, ArrayList<Integer>> mapByUser = source.equals("train")?m_mapByUser:m_mapByUser_test;
         HashMap<Integer, ArrayList<Integer>> mapByItem = source.equals("train")?m_mapByItem:m_mapByItem_test;
 
         System.out.format("Analying bipartie graph: ");
-        if(mode.equals("new")){
-            mapByItem.clear();
-            mapByUser.clear();
-        }
+        mapByItem.clear();
+        mapByUser.clear();
 
         if(m_usersIndex == null){
             System.out.println("! Analyze Corpus first! Analyzing...");
@@ -109,13 +105,15 @@ public class CrossValidation {
             mapByUser.get(u_index).add(i_index);
             mapByItem.get(i_index).add(u_index);
         }
-        System.out.format("-- Mode %s done: review size: %d, item size: %d, user size: %d\n",
-                mode, docs.size(), mapByItem.size(), mapByUser.size());
+        System.out.format("-- Done: review size: %d, item size: %d, user size: %d\n",
+                docs.size(), mapByItem.size(), mapByUser.size());
     }
 
     public void splitCorpus(String outFolder) {
         System.out.format("Splitting corpus into %d folds: ", m_k);
 
+        m_trainSet = new ArrayList<>();
+        m_testSet = new ArrayList<>();
         m_corpus.shuffle(m_k);
         int[] masks = m_corpus.getMasks();
         ArrayList<_Doc> docs = m_corpus.getCollection();
@@ -135,11 +133,11 @@ public class CrossValidation {
             }
 
             // generate bipartie for training set
-            analyzeBipartie(m_trainSet, "train", "new");
+            analyzeBipartie(m_trainSet, "train");
             save2File(outFolder + "folder" + i + "/", "train");
 
             // generate bipartie for testing set
-            analyzeBipartie(m_testSet, "test", "new");
+            analyzeBipartie(m_testSet, "test");
             save2File(outFolder + "folder" + i + "/", "test");
 
 
@@ -180,4 +178,12 @@ public class CrossValidation {
             e.printStackTrace();
         }
     }
+
+    public List<_User> getUsers(){ return this.m_users; }
+    public List<_Product> getItems(){ return this.m_items; }
+    public HashMap<String, Integer> getUsersIndex() { return this.m_usersIndex; }
+    public HashMap<String, Integer> getItemsIndex() {return this.m_itemsIndex; }
+    public HashMap<String, Integer> getReviewIndex() {return this.m_reviewIndex; }
+    public HashMap<Integer, ArrayList<Integer>> getMapByUser() { return this.m_mapByUser; }
+    public HashMap<Integer, ArrayList<Integer>> getMapByItem() { return this.m_mapByItem; }
 }
