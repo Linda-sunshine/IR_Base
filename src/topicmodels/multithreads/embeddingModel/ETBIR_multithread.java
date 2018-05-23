@@ -34,8 +34,8 @@ public class ETBIR_multithread extends ETBIR {
 
             String userID = doc.getUserID();
             String itemID = doc.getItemID();
-            _User4ETBIR currentU = m_users.get(m_usersIndex.get(userID));
-            _Product4ETBIR currentI = m_items.get(m_itemsIndex.get(itemID));
+            _User4ETBIR currentU = (_User4ETBIR) m_users.get(m_usersIndex.get(userID));
+            _Product4ETBIR currentI = (_Product4ETBIR) m_items.get(m_itemsIndex.get(itemID));
 
             double cur = varInference4Doc(doc, currentU, currentI);
             updateStats4Doc(doc);
@@ -63,8 +63,8 @@ public class ETBIR_multithread extends ETBIR {
             // update m_eta_mean_stats for updating rho
             double eta_mean_temp = 0.0;
             double eta_p_temp = 0.0;
-            _Product4ETBIR item = m_items.get(m_itemsIndex.get(doc.getItemID()));
-            _User4ETBIR user = m_users.get(m_usersIndex.get(doc.getUserID()));
+            _Product4ETBIR item = (_Product4ETBIR) m_items.get(m_itemsIndex.get(doc.getItemID()));
+            _User4ETBIR user = (_User4ETBIR) m_users.get(m_usersIndex.get(doc.getUserID()));
             for (int k = 0; k < number_of_topics; k++) {
                 for (int l = 0; l < number_of_topics; l++) {
                     eta_mean_temp += item.m_eta[l] * user.m_nuP[k][l] * doc.m_mu[k];
@@ -248,13 +248,13 @@ public class ETBIR_multithread extends ETBIR {
         }
         workerID = 0;
         for(int i_idx : m_mapByItem.keySet()){
-            _Product4ETBIR item = m_items.get(i_idx);
+            _Product4ETBIR item = (_Product4ETBIR) m_items.get(i_idx);
             m_itemWorkers[workerID%cores].addObject(item);
             workerID++;
         }
         workerID = 0;
         for(int u_idx:m_mapByUser.keySet()) {
-            _User4ETBIR user = m_users.get(u_idx);
+            _User4ETBIR user = (_User4ETBIR) m_users.get(u_idx);
             m_userWorkers[workerID%cores].addObject(user);
             workerID++;
         }
@@ -359,13 +359,13 @@ public class ETBIR_multithread extends ETBIR {
         }
         workerID = 0;
         for(int i_idx:m_mapByItem.keySet()){
-            _Product4ETBIR i = m_items.get(i_idx);
+            _Product4ETBIR i = (_Product4ETBIR) m_items.get(i_idx);
             m_itemWorkers[workerID%m_itemWorkers.length].addObject(i);
             workerID++;
         }
         workerID = 0;
         for(int u_idx:m_mapByUser.keySet()){
-            _User4ETBIR u = m_users.get(u_idx);
+            _User4ETBIR u = (_User4ETBIR) m_users.get(u_idx);
             m_userWorkers[workerID%m_userWorkers.length].addObject(u);
             workerID++;
         }

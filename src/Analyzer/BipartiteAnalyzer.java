@@ -28,8 +28,7 @@ public class BipartiteAnalyzer {
     protected HashMap<Integer, ArrayList<Integer>> m_mapByUser_test; //test
     protected HashMap<Integer, ArrayList<Integer>> m_mapByItem_test;
 
-    public BipartiteAnalyzer(int k, _Corpus corpus){
-        this.m_k = k;
+    public BipartiteAnalyzer(_Corpus corpus){
         this.m_corpus = corpus;
     }
 
@@ -109,9 +108,10 @@ public class BipartiteAnalyzer {
                 docs.size(), mapByItem.size(), mapByUser.size());
     }
 
-    public void splitCorpus(String outFolder) {
+    public void splitCorpus(int k, String outFolder) {
         System.out.format("Splitting corpus into %d folds: ", m_k);
 
+        this.m_k = k;
         m_trainSet = new ArrayList<>();
         m_testSet = new ArrayList<>();
         m_corpus.shuffle(m_k);
