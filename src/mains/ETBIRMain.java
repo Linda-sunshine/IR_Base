@@ -10,7 +10,7 @@ import Analyzer.ReviewAnalyzer;
 import structures._Corpus;
 import topicmodels.LDA.LDA_Gibbs;
 import topicmodels.LDA.LDA_Variational;
-import topicmodels.embeddingModel.CrossValidation;
+import Analyzer.BipartiteAnalyzer;
 import topicmodels.embeddingModel.ETBIR;
 import topicmodels.multithreads.LDA.LDA_Variational_multithread;
 import topicmodels.multithreads.embeddingModel.ETBIR_multithread;
