@@ -42,8 +42,8 @@ public class BipartiteAnalyzer {
         m_reviewIndex = new HashMap<>();
         int u_index = 0, i_index = 0, size = m_corpus.getCollection().size();
         for(int d = 0; d < size; d++){
-            _Doc doc = m_corpus.getCollection().get(d);
-            String userID = doc.getTitle();
+            _Review doc = (_Review) m_corpus.getCollection().get(d);
+            String userID = doc.getUserID();
             String itemID = doc.getItemID();
 
             if(!m_usersIndex.containsKey(userID)){
@@ -92,8 +92,9 @@ public class BipartiteAnalyzer {
             analyzeCorpus();
         }
 
-        for (_Doc d:docs){
-            int u_index = m_usersIndex.get(d.getTitle());
+        for (_Doc doc:docs){
+            _Review d = (_Review) doc;
+            int u_index = m_usersIndex.get(d.getUserID());
             int i_index = m_itemsIndex.get(d.getItemID());
             if(!mapByUser.containsKey(u_index)){
                 mapByUser.put(u_index, new ArrayList<Integer>());
