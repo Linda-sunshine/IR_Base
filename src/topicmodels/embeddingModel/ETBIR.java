@@ -681,7 +681,7 @@ public class ETBIR extends LDA_Variational {
         m_itemsIndex = m_bipartite.getItemsIndex();
         m_reviewIndex = m_bipartite.getReviewIndex();
 
-        m_bipartite.analyzeBipartie(m_trainSet, "train");
+        m_bipartite.analyzeBipartite(m_trainSet, "train");
         m_mapByUser = m_bipartite.getMapByUser();
         m_mapByItem = m_bipartite.getMapByItem();
 
@@ -756,13 +756,13 @@ public class ETBIR extends LDA_Variational {
 
                 long start = System.currentTimeMillis();
                 //train
-                m_bipartite.analyzeBipartie(m_trainSet, "train");
+                m_bipartite.analyzeBipartite(m_trainSet, "train");
                 m_mapByUser = m_bipartite.getMapByUser();
                 m_mapByItem = m_bipartite.getMapByItem();
                 EM();
 
                 //test
-                m_bipartite.analyzeBipartie(m_testSet, "test");
+                m_bipartite.analyzeBipartite(m_testSet, "test");
                 m_mapByUser_test = m_bipartite.getMapByUser();
                 m_mapByItem_test = m_bipartite.getMapByItem();
                 perf[i] = Evaluation();

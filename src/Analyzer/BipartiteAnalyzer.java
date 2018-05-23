@@ -71,7 +71,7 @@ public class BipartiteAnalyzer {
                 m_corpus.getFeatureSize(), size,  m_items.size(),  m_users.size());
     }
 
-    public void analyzeBipartie(ArrayList<_Doc> docs, String source){
+    public void analyzeBipartite(ArrayList<_Doc> docs, String source){
         if(source.equals("train") && m_mapByUser == null){
             m_mapByUser = new HashMap<>();
             m_mapByItem = new HashMap<>();
@@ -133,11 +133,11 @@ public class BipartiteAnalyzer {
             }
 
             // generate bipartie for training set
-            analyzeBipartie(m_trainSet, "train");
+            analyzeBipartite(m_trainSet, "train");
             save2File(outFolder + "folder" + i + "/", "train");
 
             // generate bipartie for testing set
-            analyzeBipartie(m_testSet, "test");
+            analyzeBipartite(m_testSet, "test");
             save2File(outFolder + "folder" + i + "/", "test");
 
 
