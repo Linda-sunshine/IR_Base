@@ -73,6 +73,7 @@ public class LDA_Variational extends pLSA {
 	@Override
 	protected void init() {//will be called at the beginning of each EM iteration
 		// initialize alpha statistics
+		Arrays.fill(m_alpha, d_alpha);
 		Arrays.fill(m_alphaStat, 0);
 		
 		// initialize with all smoothing terms
