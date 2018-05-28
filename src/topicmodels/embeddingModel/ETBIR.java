@@ -45,8 +45,8 @@ public class ETBIR extends LDA_Variational {
     protected double m_eta_p_Stats;
     protected double m_eta_mean_Stats;
 
-    double d_mu = 1.0, d_sigma_theta = 1e-3;
-    double d_nu = 1.0, d_sigma_P = 1e-3;
+    double d_mu = 1.0, d_sigma_theta = 1e-2;
+    double d_nu = 1.0, d_sigma_P = 1e-2;
 
     public ETBIR(int emMaxIter, double emConverge,
                  double beta, _Corpus corpus, double lambda,
@@ -668,6 +668,11 @@ public class ETBIR extends LDA_Variational {
     public void analyzeCorpus(){
         m_bipartite = new BipartiteAnalyzer(m_corpus);
         m_bipartite.analyzeCorpus();
+        m_users = m_bipartite.getUsers();
+        m_items = m_bipartite.getItems();
+        m_usersIndex = m_bipartite.getUsersIndex();
+        m_itemsIndex = m_bipartite.getItemsIndex();
+        m_reviewIndex = m_bipartite.getReviewIndex();
     }
 
     @Override
@@ -675,11 +680,6 @@ public class ETBIR extends LDA_Variational {
         m_trainSet = m_corpus.getCollection();
         //analyze corpus and generate bipartite
         analyzeCorpus();
-        m_users = m_bipartite.getUsers();
-        m_items = m_bipartite.getItems();
-        m_usersIndex = m_bipartite.getUsersIndex();
-        m_itemsIndex = m_bipartite.getItemsIndex();
-        m_reviewIndex = m_bipartite.getReviewIndex();
 
         m_bipartite.analyzeBipartite(m_trainSet, "train");
         m_mapByUser = m_bipartite.getMapByUser();
@@ -737,6 +737,7 @@ public class ETBIR extends LDA_Variational {
         m_testSet = new ArrayList<_Doc>();
 
         double[] perf = new double[k];
+        double[] like = new double[k];
         if(m_randomFold==true){
             m_corpus.shuffle(k);
             int[] masks = m_corpus.getMasks();
@@ -763,9 +764,11 @@ public class ETBIR extends LDA_Variational {
 
                 //test
                 m_bipartite.analyzeBipartite(m_testSet, "test");
-                m_mapByUser_test = m_bipartite.getMapByUser();
-                m_mapByItem_test = m_bipartite.getMapByItem();
-                perf[i] = Evaluation();
+                m_mapByUser_test = m_bipartite.getMapByUser_test();
+                m_mapByItem_test = m_bipartite.getMapByItem_test();
+                double[] results = EvaluatePerp();
+                perf[i] = results[0];
+                like[i] = results[1];
 
                 System.out.format("%s Train/Test finished in %.2f seconds...\n", this.toString(), (System.currentTimeMillis()-start)/1000.0);
                 m_trainSet.clear();
@@ -778,6 +781,13 @@ public class ETBIR extends LDA_Variational {
             var += (perf[i]-mean) * (perf[i]-mean);
         var = Math.sqrt(var/k);
         System.out.format("Perplexity %.3f+/-%.3f\n", mean, var);
+
+        mean = Utils.sumOfArray(like)/k;
+        var = 0;
+        for(int i=0; i<like.length; i++)
+            var += (like[i]-mean) * (like[i]-mean);
+        var = Math.sqrt(var/k);
+        System.out.format("Loglikelihood %.3f+/-%.3f\n", mean, var);
     }
 
     public int getTotalLength(){
@@ -788,9 +798,9 @@ public class ETBIR extends LDA_Variational {
         return length;
     }
 
-    @Override
-    public double Evaluation() {
+    public double[] EvaluatePerp() {
         m_collectCorpusStats = false;
+        double[] results = new double[2];
         double perplexity = 0, loglikelihood=0, log2 = Math.log(2.0), sumLikelihood = 0;
         double totalWords = 0.0;
         if (m_multithread==false) {
@@ -804,6 +814,12 @@ public class ETBIR extends LDA_Variational {
             System.out.println("In Normal");
             int iter=0;
             double last = -1.0, converge = 0.0;
+            for(int u_idx : m_mapByUser_test.keySet()){
+                m_mapByUser.get(u_idx).addAll(m_mapByUser_test.get(u_idx));
+            }
+            for(int i_idx : m_mapByItem_test.keySet()){
+                m_mapByItem.get(i_idx).addAll(m_mapByItem_test.get(i_idx));
+            }
             do {
                 init();
                 loglikelihood = 0.0;
@@ -812,11 +828,11 @@ public class ETBIR extends LDA_Variational {
                 }
                 for (int u_idx : m_mapByUser_test.keySet()) {
                     _User4ETBIR user = (_User4ETBIR) m_users.get(u_idx);
-                    varInference4User(user);
+                    loglikelihood += varInference4User(user);
                 }
                 for (int i_idx : m_mapByItem_test.keySet()) {
                     _Product4ETBIR item = (_Product4ETBIR) m_items.get(i_idx);
-                    varInference4Item(item);
+                    loglikelihood += varInference4Item(item);
                 }
                 if(iter > 0)
                     converge = Math.abs((loglikelihood - last) / last);
@@ -837,10 +853,12 @@ public class ETBIR extends LDA_Variational {
         perplexity /= totalWords;
         perplexity = Math.exp(-perplexity);
         sumLikelihood /= m_testSet.size();
+        results[0] = perplexity;
+        results[1] = sumLikelihood;
 
         System.out.format("Test set perplexity is %.3f and log-likelihood is %.3f\n", perplexity, sumLikelihood);
 
-        return perplexity;
+        return results;
     }
 
     @Override

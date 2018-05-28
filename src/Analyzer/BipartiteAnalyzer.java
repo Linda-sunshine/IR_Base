@@ -187,4 +187,6 @@ public class BipartiteAnalyzer {
     public HashMap<String, Integer> getReviewIndex() {return this.m_reviewIndex; }
     public HashMap<Integer, ArrayList<Integer>> getMapByUser() { return this.m_mapByUser; }
     public HashMap<Integer, ArrayList<Integer>> getMapByItem() { return this.m_mapByItem; }
+    public HashMap<Integer, ArrayList<Integer>> getMapByUser_test(){ return this.m_mapByUser_test; }
+    public HashMap<Integer, ArrayList<Integer>> getMapByItem_test() { return this.m_mapByItem_test; }
 }
