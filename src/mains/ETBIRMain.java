@@ -32,7 +32,7 @@ public class ETBIRMain {
         int numberOfCores = Runtime.getRuntime().availableProcessors();
         String tokenModel = "./data/Model/en-token.bin";
 
-        String trainset = "byUser_40_50_12";
+        String trainset = "byUser_4k_review";
         String source = "yelp";
         String dataset = "./myData/" + source + "/" + trainset + "/";
 
@@ -41,9 +41,9 @@ public class ETBIRMain {
          */
         String[] fvFiles = new String[4];
         fvFiles[0] = "./data/Features/fv_2gram_IG_yelp_byUser_30_50_25.txt";
-        fvFiles[1] = "../data/Features/fv_2gram_IG_amazon_movie_byUser_40_50_12.txt";
-        fvFiles[2] = "../data/Features/fv_2gram_IG_amazon_electronic_byUser_20_20_5.txt";
-        fvFiles[3] = "../data/Features/fv_2gram_IG_amazon_book_byUser_40_50_12.txt";
+        fvFiles[1] = "./data/Features/fv_2gram_IG_amazon_movie_byUser_40_50_12.txt";
+        fvFiles[2] = "./data/Features/fv_2gram_IG_amazon_electronic_byUser_20_20_5.txt";
+        fvFiles[3] = "./data/Features/fv_2gram_IG_amazon_book_byUser_40_50_12.txt";
         int fvFile_point = 0;
         if(source.equals("amazon_movie")){
             fvFile_point = 1;
@@ -53,14 +53,14 @@ public class ETBIRMain {
             fvFile_point = 3;
         }
 
-        String reviewFolder = dataset + "2foldsCV/folder0/train/"; //2foldsCV/folder0/train/, data/
-        String outputFolder = dataset + "2foldsCV/folder0/output/feature_infer_" + fvFile_point + "/";
+        String reviewFolder = dataset + "data/"; //2foldsCV/folder0/train/, data/
+        String outputFolder = dataset + "output/feature_infer_" + fvFile_point + "/";
         String suffix = ".json";
         String topicmodel = "ETBIR"; // pLSA, LDA_Gibbs, LDA_Variational, ETBIR
 
         MultiThreadedReviewAnalyzer analyzer = new MultiThreadedReviewAnalyzer(tokenModel, classNumber, fvFiles[fvFile_point],
                 Ngram, lengthThreshold, numberOfCores, true, source);
-//        analyzer.setReleaseContent(false);
+//        analyzer.setReleaseContent(false);//Remember to set it as false when generating crossfolders!!!
         analyzer.loadUserDir(reviewFolder);
         _Corpus corpus = analyzer.getCorpus();
 
@@ -76,11 +76,11 @@ public class ETBIRMain {
         double emConverge4ETBIR = 1e-8;
 
 
-        double alpha = topicmodel.equals("ETBIR")?1e-3:0.5+1e-2, beta = 1 + 1e-3, lambda = 1 + 1e-3;//these two parameters must be larger than 1!!!
-        double sigma = 1e-4, rho = 1e-4;
+        double alpha = topicmodel.equals("ETBIR")?1e-1:0.5+1e-2, beta = 1 + 1e-3, lambda = 1 + 1e-3;//these two parameters must be larger than 1!!!
+        double sigma = 1e-2, rho = 1e-2;
 
         int topK = 50;
-        int crossV = 1;
+        int crossV = 5;
         boolean setRandomFold = true;
 
         // LDA
@@ -104,9 +104,9 @@ public class ETBIRMain {
             return;
         }
 
-//        CrossValidation cv = new CrossValidation(crossV, corpus);
+//        BipartiteAnalyzer cv = new BipartiteAnalyzer(corpus);
 //        cv.analyzeCorpus();
-//        cv.splitCorpus(dataset + crossV + "foldsCV/");
+//        cv.splitCorpus(crossV,dataset + crossV + "foldsCV/");
 
         tModel.setDisplayLap(1);
         new File(outputFolder).mkdirs();
