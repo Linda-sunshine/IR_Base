@@ -25,7 +25,7 @@ public class ETBIRExecution {
 
 		String tokenModel = "./data/Model/en-token.bin";
 		String fvFile = String.format("%s/%s/%s_features.txt", param.m_prefix, param.m_source, param.m_source);
-		String reviewFolder = String.format("%s/%s/data/", param.m_prefix, param.m_source);
+		String reviewFolder = String.format("%s/%s/byUser_70k_review/data/", param.m_prefix, param.m_source);
 
 		System.out.println("[Info] Start preprocess textual data...");
 		MultiThreadedReviewAnalyzer analyzer = new MultiThreadedReviewAnalyzer(tokenModel, classNumber, fvFile, Ngram, lengthThreshold, numberOfCores, true, param.m_source);

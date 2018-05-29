@@ -3,7 +3,7 @@ package structures;
 
 public class TopicModelParameter {
 	
-	public String m_prefix = "/zf18/ll5fy/DataSet";//"./data/CoLinAdapt"
+	public String m_prefix = "/zf18/ll5fy/lab/dataset";//"./data/CoLinAdapt"
 	public String m_source = "yelp"; // "amazon_movie"
 	public String m_topicmodel = "ETBIR";
 
