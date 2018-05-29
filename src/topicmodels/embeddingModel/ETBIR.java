@@ -821,7 +821,7 @@ public class ETBIR extends LDA_Variational {
                 m_mapByItem.get(i_idx).addAll(m_mapByItem_test.get(i_idx));
             }
             do {
-                init();
+//                init();
                 loglikelihood = 0.0;
                 for (_Doc d : m_testSet) {
                     loglikelihood += inference(d);
