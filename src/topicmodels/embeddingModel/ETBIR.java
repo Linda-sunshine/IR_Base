@@ -802,62 +802,65 @@ public class ETBIR extends LDA_Variational {
     public double[] EvaluatePerp() {
         m_collectCorpusStats = false;
         double[] results = new double[2];
-        double perplexity = 0, loglikelihood=0, log2 = Math.log(2.0), sumLikelihood = 0;
+        double perplexity = 0, likelihood=0, log2 = Math.log(2.0), likelihood_doc = 0;
         double totalWords = 0.0;
-        if (m_multithread==false) {
+
+        for(int u_idx : m_mapByUser_test.keySet()){
+            m_mapByUser.get(u_idx).addAll(m_mapByUser_test.get(u_idx));
+        }
+        for(int i_idx : m_mapByItem_test.keySet()){
+            m_mapByItem.get(i_idx).addAll(m_mapByItem_test.get(i_idx));
+        }
+
+        if (m_multithread) {
             System.out.println("In thread");
-            loglikelihood = multithread_inference();
-            sumLikelihood += loglikelihood;
-            perplexity += loglikelihood;
-            totalWords += getTotalLength();
+            likelihood_doc = multithread_inference();
+            likelihood = likelihood_doc;
+            perplexity = likelihood;
+            totalWords = getTotalLength();
 
         } else {
             System.out.println("In Normal");
             int iter=0;
             double last = -1.0, converge = 0.0;
-            for(int u_idx : m_mapByUser_test.keySet()){
-                m_mapByUser.get(u_idx).addAll(m_mapByUser_test.get(u_idx));
-            }
-            for(int i_idx : m_mapByItem_test.keySet()){
-                m_mapByItem.get(i_idx).addAll(m_mapByItem_test.get(i_idx));
-            }
             do {
                 init();
-                loglikelihood = 0.0;
+                likelihood = 0.0;
                 for (_Doc d : m_testSet) {
-                    loglikelihood += inference(d);
+                    likelihood += inference(d);
                 }
+                likelihood_doc = likelihood; //only count doc related likelihood for perplexity
                 for (int u_idx : m_mapByUser_test.keySet()) {
                     _User4ETBIR user = (_User4ETBIR) m_users.get(u_idx);
-                    varInference4User(user);
+                    likelihood += varInference4User(user);
                 }
                 for (int i_idx : m_mapByItem_test.keySet()) {
                     _Product4ETBIR item = (_Product4ETBIR) m_items.get(i_idx);
-                    varInference4Item(item);
+                    likelihood += varInference4Item(item);
                 }
                 if(iter > 0)
-                    converge = Math.abs((loglikelihood - last) / last);
+                    converge = Math.abs((likelihood - last) / last);
                 else
                     converge = 1.0;
 
-                last = loglikelihood;
+                last = likelihood;
                 if(converge < m_varConverge)
                     break;
                 System.out.print("---likelihood: " + last + "\n");
             }while(iter++<m_varMaxIter);
-            sumLikelihood += loglikelihood;
-            perplexity += loglikelihood;
-            totalWords += getTotalLength();
+            likelihood = likelihood_doc;
+            perplexity = likelihood;
+            totalWords = getTotalLength();
 
         }
 //		perplexity /= m_testSet.size();
         perplexity /= totalWords;
         perplexity = Math.exp(-perplexity);
-        sumLikelihood /= m_testSet.size();
+        likelihood /= m_testSet.size();
         results[0] = perplexity;
-        results[1] = sumLikelihood;
+        results[1] = likelihood;
 
-        System.out.format("Test set perplexity is %.3f and log-likelihood is %.3f\n", perplexity, sumLikelihood);
+        System.out.format("Test set perplexity is %.3f and log-likelihood is %.3f\n", perplexity, likelihood);
 
         return results;
     }

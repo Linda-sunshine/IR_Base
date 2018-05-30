@@ -335,7 +335,7 @@ public class ETBIR_multithread extends ETBIR {
     @Override
     protected double multithread_inference() {
         int iter = 0;
-        double likelihood = 0.0, last = -1.0, converge = 0.0;
+        double likelihood = 0.0, likelihood_doc = 0.0, last = -1.0, converge = 0.0;
 
         //clear up for adding new testing documents
         for(int i=0; i<m_workers.length; i++) {
@@ -413,6 +413,7 @@ public class ETBIR_multithread extends ETBIR {
             for (TopicModelWorker worker : m_workers) {
                 likelihood += worker.getLogLikelihood();
             }
+            likelihood_doc = likelihood;
             for (EmbedModelWorker worker : m_itemWorkers) {
                 likelihood += worker.getLogLikelihood();
             }
@@ -433,7 +434,7 @@ public class ETBIR_multithread extends ETBIR {
 
         System.out.print(String.format("Current likelihood: %.4f", likelihood));
 
-        return likelihood;
+        return likelihood_doc; //only calculate document related likelihood
     }
 
 }
