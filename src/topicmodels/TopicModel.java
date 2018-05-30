@@ -9,6 +9,7 @@ import structures._Corpus;
 import structures._Doc;
 import topicmodels.markovmodel.HTSM;
 import topicmodels.multithreads.TopicModelWorker;
+import topicmodels.multithreads.TopicModel_worker;
 import topicmodels.multithreads.TopicModel_worker.RunType;
 import utils.Utils;
 
@@ -175,6 +176,7 @@ public abstract class TopicModel {
 		EM();
 	}
 	
+
 	protected double multithread_E_step() {
 		for(int i=0; i<m_workers.length; i++) {
 			m_workers[i].setType(RunType.RT_EM);
@@ -197,7 +199,7 @@ public abstract class TopicModel {
 		return likelihood;
 	}
 	
-	protected void multithread_inference() {
+	protected double multithread_inference() {
 		//clear up for adding new testing documents
 		for(int i=0; i<m_workers.length; i++) {
 			m_workers[i].setType(RunType.RT_inference);
@@ -232,6 +234,7 @@ public abstract class TopicModel {
 				e.printStackTrace();
 			}
 		}
+		return 0;
 	}
 
 	public void EM() {	
@@ -272,8 +275,8 @@ public abstract class TopicModel {
 			
 			if (m_displayLap>0 && i%m_displayLap==0) {
 				if (m_converge>0) {
-					System.out.format("Likelihood %.3f at step %s converge to %f...\n", current, i, delta);
-					infoWriter.format("Likelihood %.3f at step %s converge to %f...\n", current, i, delta);
+					System.out.format("Likelihood %.5f at step %s converge to %.10f...\n", current, i, delta);
+					infoWriter.format("Likelihood %.5f at step %s converge to %.10f...\n", current, i, delta);
 
 				} else {
 					System.out.print(".");
@@ -306,9 +309,9 @@ public abstract class TopicModel {
 			for(TopicModelWorker worker:m_workers) {
 				sumLikelihood += worker.getLogLikelihood();
 				perplexity += worker.getPerplexity();
+				totalWords += worker.getTotalWords();
 			}
 		} else {
-			
 			System.out.println("In Normal");
 			for(_Doc d:m_testSet) {				
 				loglikelihood = inference(d);

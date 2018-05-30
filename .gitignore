@@ -8,3 +8,11 @@ run
 /bin/
 Jar/*
 output/*
+*.xml
+*.txt
+*.iml
+*.dat
+*.json
+*.log
+*.class
+*.out

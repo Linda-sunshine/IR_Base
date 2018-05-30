@@ -1,11 +1,21 @@
 package mains;
 
+import java.io.File;
 import java.io.IOException;
 import java.text.ParseException;
 
+import Analyzer.MultiThreadedReviewAnalyzer;
+import Analyzer.MultiThreadedUserAnalyzer;
 import Analyzer.ReviewAnalyzer;
 import structures._Corpus;
+import topicmodels.LDA.LDA_Gibbs;
+import topicmodels.LDA.LDA_Variational;
+import Analyzer.BipartiteAnalyzer;
 import topicmodels.embeddingModel.ETBIR;
+import topicmodels.multithreads.LDA.LDA_Variational_multithread;
+import topicmodels.multithreads.embeddingModel.ETBIR_multithread;
+import topicmodels.multithreads.pLSA.pLSA_multithread;
+import topicmodels.pLSA.pLSA;
 
 
 /**
@@ -19,92 +29,101 @@ public class ETBIRMain {
         String featureValue = "TF"; //The way of calculating the feature value, which can also be "TFIDF", "BM25"
         int norm = 0;//The way of normalization.(only 1 and 2)
         int lengthThreshold = 5; //Document length threshold
+        int numberOfCores = Runtime.getRuntime().availableProcessors();
         String tokenModel = "./data/Model/en-token.bin";
 
-//        /**
-//         * generate vocabulary: too large.. ask Lin about it
-//         */
-//        double startProb = 0.1; // Used in feature selection, the starting point of the features.
-//        double endProb = 0.999; // Used in feature selection, the ending point of the features.
-//        int maxDF = -1, minDF = 10; // Filter the features with DFs smaller than this threshold.
-//        String featureSelection = "IG";
-//
-//        String folder = "./myData/byUser/";
-//        String suffix = ".json";
-//        String stopwords = "./data/Model/stopwords.dat";
-//        String pattern = String.format("%dgram_%s", Ngram, featureSelection);
-//        String fvFile = String.format("data/Features/fv_%s_byUser_20.txt", pattern);
-//        String fvStatFile = String.format("data/Features/fv_stat_%s_byUser_20.txt", pattern);
-//        String vctFile = String.format("data/Fvs/vct_%s_byUser_20.dat", pattern);
-//
-////        /****Loading json files*****/
-//        DocAnalyzer analyzer = new DocAnalyzer(tokenModel, classNumber, null, Ngram, lengthThreshold);
-//        analyzer.LoadStopwords(stopwords);
-//        analyzer.LoadDirectory(folder, suffix); //Load all the documents as the data set.
-//
-////		/****Feature selection*****/
-//        System.out.println("Performing feature selection, wait...");
-//        analyzer.featureSelection(fvFile, featureSelection, startProb, endProb, maxDF, minDF); //Select the features.
-//        analyzer.SaveCVStat(fvStatFile);
+        String trainset = "byUser_4k_review";
+        String source = "yelp";
+        String dataset = "./myData/" + source + "/" + trainset + "/";
 
         /**
          * model training
          */
-        String fvFile = "./data/Features/fv_2gram_IG_byUser_20.txt";
-        String reviewFolder = "./myData/byUser_1/";
+        String[] fvFiles = new String[4];
+        fvFiles[0] = "./data/Features/fv_2gram_IG_yelp_byUser_30_50_25.txt";
+        fvFiles[1] = "./data/Features/fv_2gram_IG_amazon_movie_byUser_40_50_12.txt";
+        fvFiles[2] = "./data/Features/fv_2gram_IG_amazon_electronic_byUser_20_20_5.txt";
+        fvFiles[3] = "./data/Features/fv_2gram_IG_amazon_book_byUser_40_50_12.txt";
+        int fvFile_point = 0;
+        if(source.equals("amazon_movie")){
+            fvFile_point = 1;
+        }else if(source.equals("amazon_electronic")){
+            fvFile_point = 2;
+        }else if(source.equals("amazon_book")){
+            fvFile_point = 3;
+        }
+
+        String reviewFolder = dataset + "data/"; //2foldsCV/folder0/train/, data/
+        String outputFolder = dataset + "output/feature_infer_" + fvFile_point + "/";
         String suffix = ".json";
+        String topicmodel = "ETBIR"; // pLSA, LDA_Gibbs, LDA_Variational, ETBIR
 
-        ReviewAnalyzer analyzer = new ReviewAnalyzer(tokenModel, classNumber, fvFile, Ngram, lengthThreshold, true, "yelp");
-        analyzer.LoadDirectory(reviewFolder, suffix);
-
+        MultiThreadedReviewAnalyzer analyzer = new MultiThreadedReviewAnalyzer(tokenModel, classNumber, fvFiles[fvFile_point],
+                Ngram, lengthThreshold, numberOfCores, true, source);
+//        analyzer.setReleaseContent(false);//Remember to set it as false when generating crossfolders!!!
+        analyzer.loadUserDir(reviewFolder);
         _Corpus corpus = analyzer.getCorpus();
-//        corpus.save2File("./myData/byUser/top20_byUser20.dat");
 
-        int topic_number = 10;
+//        corpus.save2File(dataset + "yelp_40_50_12.dat");//for CTM
 
-        int varMaxIter = 5;
-        double varConverge = 1e-6;
+        int number_of_topics = 20;
 
-        int emMaxIter = 20;
-        double emConverge = 1e-3;
+        int varMaxIter = 30;
+        double varConverge = 1e-4;
+
+        int emMaxIter = 100;
+        double emConverge = 1e-9;
+        double emConverge4ETBIR = 1e-8;
 
 
-        double alpha =1 + 1e-2, beta = 1.0 + 1e-3, eta = 5.0, lambda=1+1e-2;//these two parameters must be larger than 1!!!
-        double  sigma = 1.0 + 1e-2, rho = 1.0 + 1e-2;
+        double alpha = topicmodel.equals("ETBIR")?1e-1:0.5+1e-2, beta = 1 + 1e-3, lambda = 1 + 1e-3;//these two parameters must be larger than 1!!!
+        double sigma = 1e-1, rho = 1e-1;
+
+        int topK = 50;
+        int crossV = 5;
+        boolean setRandomFold = true;
 
         // LDA
-//        /*****parameters for the two-topic topic model*****/
-//        String topicmodel = "LDA_Variational"; // pLSA, LDA_Gibbs, LDA_Variational
-//
-//        int number_of_topics = 15;
-//        double converge = -1, lambda = 0.7; // negative converge means do need to check likelihood convergency
-//        int number_of_iteration = 100;
-//        boolean aspectSentiPrior = true;
-//        pLSA tModel = null;
-//        if (topicmodel.equals("pLSA")) {
-//            tModel = new pLSA_multithread(number_of_iteration, converge, beta, corpus,
-//                    lambda, number_of_topics, alpha);
-//        } else if (topicmodel.equals("LDA_Gibbs")) {
-//            tModel = new LDA_Gibbs(number_of_iteration, converge, beta, corpus,
-//                    lambda, number_of_topics, alpha, 0.4, 50);
-//        }  else if (topicmodel.equals("LDA_Variational")) {
-//            tModel = new LDA_Variational_multithread(number_of_iteration, converge, beta, corpus,
-//                    lambda, number_of_topics, alpha, 10, -1);
-//        } else {
-//            System.out.println("The selected topic model has not developed yet!");
-//            return;
-//        }
-//
-//        tModel.setDisplayLap(0);
-//        tModel.setInforWriter(reviewFolder + topicmodel + "_info.txt");
-//        tModel.EMonCorpus();
-//        tModel.printTopWords(50, reviewFolder + topicmodel + "_topWords.txt");
+        /*****parameters for the two-topic topic model*****/
 
-        // my model
+        pLSA tModel = null;
+        if (topicmodel.equals("pLSA")) {
+            tModel = new pLSA_multithread(emMaxIter, emConverge, beta, corpus,
+                    lambda, number_of_topics, alpha);
+        } else if (topicmodel.equals("LDA_Gibbs")) {
+            tModel = new LDA_Gibbs(emMaxIter, emConverge, beta, corpus,
+                    lambda, number_of_topics, alpha, 0.4, 50);
+        }  else if (topicmodel.equals("LDA_Variational")) {
+            tModel = new LDA_Variational_multithread(emMaxIter, emConverge, beta, corpus,
+                    lambda, number_of_topics, alpha, varMaxIter, varConverge); //set this negative!! or likelihood will not change
+        } else if (topicmodel.equals("ETBIR")){
+            tModel = new ETBIR_multithread(emMaxIter, emConverge4ETBIR, beta, corpus, lambda,
+                    number_of_topics, alpha, varMaxIter, varConverge, sigma, rho);
+        }else {
+            System.out.println("The selected topic model has not developed yet!");
+            return;
+        }
 
-        ETBIR etbirModel = new ETBIR(emMaxIter, emConverge, beta, corpus, lambda,
-                topic_number, alpha, varMaxIter, varConverge, sigma, rho);
-        etbirModel.analyzeCorpus();
-        etbirModel.EM();
+//        BipartiteAnalyzer cv = new BipartiteAnalyzer(corpus);
+//        cv.analyzeCorpus();
+//        cv.splitCorpus(crossV,dataset + crossV + "foldsCV/");
+
+        tModel.setDisplayLap(1);
+        new File(outputFolder).mkdirs();
+        tModel.setInforWriter(outputFolder + topicmodel + "_info.txt");
+        if (crossV<=1) {
+            tModel.EMonCorpus();
+            tModel.printTopWords(topK, outputFolder + topicmodel + "_topWords.txt");
+            tModel.printParameterAggregation(topK, outputFolder, topicmodel);
+            tModel.closeWriter();
+        }else{
+            tModel.setRandomFold(setRandomFold);
+            double trainProportion = ((double)crossV - 1)/(double)crossV;
+            double testProportion = 1-trainProportion;
+            tModel.setPerplexityProportion(testProportion);
+            tModel.crossValidation(crossV);
+            tModel.printTopWords(topK, outputFolder + topicmodel + "_topWords.txt");
+        }
+
     }
 }
