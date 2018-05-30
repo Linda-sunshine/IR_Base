@@ -77,7 +77,7 @@ public class ETBIRMain {
 
 
         double alpha = topicmodel.equals("ETBIR")?1e-1:0.5+1e-2, beta = 1 + 1e-3, lambda = 1 + 1e-3;//these two parameters must be larger than 1!!!
-        double sigma = 1e-2, rho = 1e-2;
+        double sigma = 1e-1, rho = 1e-1;
 
         int topK = 50;
         int crossV = 5;
