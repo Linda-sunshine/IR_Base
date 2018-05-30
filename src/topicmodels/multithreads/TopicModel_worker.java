@@ -16,6 +16,7 @@ public abstract class TopicModel_worker implements TopicModelWorker {
 	protected ArrayList<_Doc> m_corpus;
 	protected double m_likelihood;
 	protected double m_perplexity;
+	protected int m_totalWords;
 	
 	protected double[][] sstat; // p(w|z)
 	protected int number_of_topics;
@@ -43,11 +44,16 @@ public abstract class TopicModel_worker implements TopicModelWorker {
 	public double getPerplexity() {
 		return m_perplexity;
 	}
-	
+
+	public double getTotalWords(){
+		return m_totalWords;
+	}
+
 	@Override
 	public void run() {
 		m_likelihood = 0;
 		m_perplexity = 0;
+		m_totalWords = 0;
 		
 		double loglikelihood = 0, log2 = Math.log(2.0);
 		// System.out.println("thread corpus size\t" + m_corpus.size());
@@ -58,8 +64,10 @@ public abstract class TopicModel_worker implements TopicModelWorker {
 				m_likelihood += calculate_E_step(d);
 			else if (m_type == RunType.RT_inference) {
 				loglikelihood = inference(d);
-				m_perplexity += Math.pow(2.0, -loglikelihood/d.getTotalDocLength() / log2);
+//				m_perplexity += Math.pow(2.0, -loglikelihood/d.getTotalDocLength() / log2);
 				m_likelihood += loglikelihood;
+				m_perplexity += loglikelihood;
+				m_totalWords += d.getTotalDocLength();
 			}
 		}
 		long eEndTime = System.currentTimeMillis();

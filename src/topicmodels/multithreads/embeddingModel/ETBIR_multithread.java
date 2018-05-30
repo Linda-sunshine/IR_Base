@@ -32,10 +32,10 @@ public class ETBIR_multithread extends ETBIR {
         public double calculate_E_step(_Doc d) {
             _Doc4ETBIR doc = (_Doc4ETBIR)d;
 
-            String userID = doc.getTitle();
+            String userID = doc.getUserID();
             String itemID = doc.getItemID();
-            _User4ETBIR currentU = m_users.get(m_usersIndex.get(userID));
-            _Product4ETBIR currentI = m_items.get(m_itemsIndex.get(itemID));
+            _User4ETBIR currentU = (_User4ETBIR) m_users.get(m_usersIndex.get(userID));
+            _Product4ETBIR currentI = (_Product4ETBIR) m_items.get(m_itemsIndex.get(itemID));
 
             double cur = varInference4Doc(doc, currentU, currentI);
             updateStats4Doc(doc);
@@ -63,8 +63,8 @@ public class ETBIR_multithread extends ETBIR {
             // update m_eta_mean_stats for updating rho
             double eta_mean_temp = 0.0;
             double eta_p_temp = 0.0;
-            _Product4ETBIR item = m_items.get(m_itemsIndex.get(doc.getItemID()));
-            _User4ETBIR user = m_users.get(m_usersIndex.get(doc.getTitle()));
+            _Product4ETBIR item = (_Product4ETBIR) m_items.get(m_itemsIndex.get(doc.getItemID()));
+            _User4ETBIR user = (_User4ETBIR) m_users.get(m_usersIndex.get(doc.getUserID()));
             for (int k = 0; k < number_of_topics; k++) {
                 for (int l = 0; l < number_of_topics; l++) {
                     eta_mean_temp += item.m_eta[l] * user.m_nuP[k][l] * doc.m_mu[k];
@@ -123,12 +123,16 @@ public class ETBIR_multithread extends ETBIR {
         public void run() {
             m_likelihood = 0;
             m_perplexity = 0;
+
+            double loglikelihood = 0;
             for (Object o : m_objects) {
                 _Product4ETBIR i = (_Product4ETBIR) o;
                 if (m_type == TopicModel_worker.RunType.RT_EM)
                     m_likelihood += calculate_E_step(i);
                 else if (m_type == TopicModel_worker.RunType.RT_inference) {
-
+                    loglikelihood = inference(i);
+                    m_likelihood += loglikelihood;
+                    m_perplexity += loglikelihood;
                 }
             }
         }
@@ -173,16 +177,18 @@ public class ETBIR_multithread extends ETBIR {
             m_likelihood = 0;
             m_perplexity = 0;
 
+            double loglikelihood = 0.0;
             for (Object o : m_objects) {
                 _User4ETBIR u = (_User4ETBIR) o;
                 if (m_type == TopicModel_worker.RunType.RT_EM)
                     m_likelihood += calculate_E_step(u);
                 else if (m_type == TopicModel_worker.RunType.RT_inference) {
-
+                    loglikelihood = inference(u);
+                    m_likelihood += loglikelihood;
+                    m_perplexity += loglikelihood;
                 }
             }
         }
-
 
         @Override
         public double calculate_E_step(Object o) {
@@ -222,8 +228,7 @@ public class ETBIR_multithread extends ETBIR {
         m_multithread = true;
     }
 
-    protected void initialize_probability(Collection<_Doc> collection, Collection<_User4ETBIR> users,
-                                          Collection<_Product4ETBIR> items) {
+    protected void initialize_probability(Collection<_Doc> collection) {
         int cores = Runtime.getRuntime().availableProcessors();
         m_threadpool = new Thread[cores];
         m_workers = new ETBIR_multithread.Doc_worker[cores];
@@ -242,17 +247,19 @@ public class ETBIR_multithread extends ETBIR {
             workerID++;
         }
         workerID = 0;
-        for(_Product4ETBIR i:items){
-            m_itemWorkers[workerID%cores].addObject(i);
+        for(int i_idx : m_mapByItem.keySet()){
+            _Product4ETBIR item = (_Product4ETBIR) m_items.get(i_idx);
+            m_itemWorkers[workerID%cores].addObject(item);
             workerID++;
         }
         workerID = 0;
-        for(_User4ETBIR u:users){
-            m_userWorkers[workerID%cores].addObject(u);
+        for(int u_idx:m_mapByUser.keySet()) {
+            _User4ETBIR user = (_User4ETBIR) m_users.get(u_idx);
+            m_userWorkers[workerID%cores].addObject(user);
             workerID++;
         }
 
-        super.initialize_probability(collection, users, items);
+        super.initialize_probability(collection);
     }
 
 
@@ -304,6 +311,116 @@ public class ETBIR_multithread extends ETBIR {
             //items
             likelihood += multithread_general(m_itemWorkers);
 
+            if(Double.isNaN(likelihood)){
+                System.out.println("! E_step produces NaN likelihood...");
+                break;
+            }
+
+            if(iter > 0)
+                converge = Math.abs((likelihood - last) / last);
+            else
+                converge = 1.0;
+
+            last = likelihood;
+
+            if(converge < m_varConverge)
+                break;
+            System.out.print("---likelihood: " + last + "\n");
+        }while(iter++ < m_varMaxIter);
+        System.out.print(String.format("Current likelihood: %.4f", likelihood));
+
+        return likelihood;
+    }
+
+    @Override
+    protected double multithread_inference() {
+        int iter = 0;
+        double likelihood = 0.0, likelihood_doc = 0.0, last = -1.0, converge = 0.0;
+
+        //clear up for adding new testing documents
+        for(int i=0; i<m_workers.length; i++) {
+            m_workers[i].setType(TopicModel_worker.RunType.RT_inference);
+            m_workers[i].clearCorpus();
+        }
+        for(int i = 0; i < m_itemWorkers.length; i++){
+            m_itemWorkers[i].setType(TopicModel_worker.RunType.RT_inference);
+            m_itemWorkers[i].clearObjects();
+        }
+        for(int i = 0;i < m_userWorkers.length; i++){
+            m_userWorkers[i].setType(TopicModel_worker.RunType.RT_inference);
+            m_userWorkers[i].clearObjects();
+        }
+
+        //evenly allocate the testing work load
+        int workerID = 0;
+        for(_Doc d:m_testSet) {
+            m_workers[workerID % m_workers.length].addDoc(d);
+            workerID++;
+        }
+        workerID = 0;
+        for(int i_idx:m_mapByItem.keySet()){
+            _Product4ETBIR i = (_Product4ETBIR) m_items.get(i_idx);
+            m_itemWorkers[workerID%m_itemWorkers.length].addObject(i);
+            workerID++;
+        }
+        workerID = 0;
+        for(int u_idx:m_mapByUser.keySet()){
+            _User4ETBIR u = (_User4ETBIR) m_users.get(u_idx);
+            m_userWorkers[workerID%m_userWorkers.length].addObject(u);
+            workerID++;
+        }
+
+        do {
+            init();
+            likelihood = 0.0;
+            //run
+            for (int i = 0; i < m_workers.length; i++) {
+                m_threadpool[i] = new Thread(m_workers[i]);
+                m_threadpool[i].start();
+            }
+
+            //wait till all finished
+            for (Thread thread : m_threadpool) {
+                try {
+                    thread.join();
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+            }
+            for (int i = 0; i < m_userWorkers.length; i++) {
+                m_threadpool[i] = new Thread(m_userWorkers[i]);
+                m_threadpool[i].start();
+            }
+            for (Thread thread : m_threadpool) {
+                try {
+                    thread.join();
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+            }
+            for (int i = 0; i < m_itemWorkers.length; i++) {
+                m_threadpool[i] = new Thread(m_itemWorkers[i]);
+                m_threadpool[i].start();
+            }
+            for (Thread thread : m_threadpool) {
+                try {
+                    thread.join();
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+            }
+
+            for (TopicModelWorker worker : m_workers) {
+                likelihood += worker.getLogLikelihood();
+            }
+            likelihood_doc = likelihood;
+            for (EmbedModelWorker worker : m_itemWorkers) {
+                likelihood += worker.getLogLikelihood();
+            }
+            for (EmbedModelWorker worker : m_userWorkers) {
+                likelihood += worker.getLogLikelihood();
+            }
+
             if(iter > 0)
                 converge = Math.abs((likelihood - last) / last);
             else
@@ -314,8 +431,10 @@ public class ETBIR_multithread extends ETBIR {
                 break;
             System.out.print("---likelihood: " + last + "\n");
         }while(iter++ < m_varMaxIter);
+
         System.out.print(String.format("Current likelihood: %.4f", likelihood));
 
-        return likelihood;
+        return likelihood_doc; //only calculate document related likelihood
     }
+
 }
