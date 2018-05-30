@@ -73,9 +73,12 @@ public class MultiThreadedUserAnalyzer extends UserAnalyzer {
 		if(folder == null || folder.isEmpty())
 			return;
 
-		System.out.println("Review folder: " + folder);
 		File dir = new File(folder);
 		final File[] files=dir.listFiles();
+		if(files == null){
+            System.out.println("! " + folder + " does not refer to a directory!");
+            return;
+        }
 		ArrayList<Thread> threads = new ArrayList<Thread>();
 		for(int i=0;i<m_numberOfCores;++i){
 			threads.add(  (new Thread() {
@@ -86,21 +89,21 @@ public class MultiThreadedUserAnalyzer extends UserAnalyzer {
 						for (int j = 0; j + core <files.length; j += m_numberOfCores) {
 							File f = files[j+core];
 							// && f.getAbsolutePath().endsWith("txt")
-							if(f.isFile()){//load the user								
+							if(f.isFile()){//load the user
 								loadUser(f.getAbsolutePath(),core);
 							}
 						}
 					} catch(Exception ex) {
-						ex.printStackTrace(); 
+						ex.printStackTrace();
 					}
 				}
-				
+
 				private Thread initialize(int core ) {
 					this.core = core;
 					return this;
 				}
 			}).initialize(i));
-			
+
 			threads.get(i).start();
 		}
 		for(int i=0;i<m_numberOfCores;++i){
@@ -108,12 +111,12 @@ public class MultiThreadedUserAnalyzer extends UserAnalyzer {
 				threads.get(i).join();
 			} catch (InterruptedException e) {
 				e.printStackTrace();
-			} 
-		} 
-		
+			}
+		}
+
 		// process sub-directories
 		int count=0;
-		for(File f:files ) 
+		for(File f:files )
 			if (f.isDirectory())
 				loadUserDir(f.getAbsolutePath());
 			else
