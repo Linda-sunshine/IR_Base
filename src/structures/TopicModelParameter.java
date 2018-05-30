@@ -4,7 +4,7 @@ package structures;
 public class TopicModelParameter {
 	
 	public String m_prefix = "/zf18/ll5fy/lab/dataset";//"./data/CoLinAdapt"
-	public String m_source = "yelp/byUser_70k_review"; // "amazon_movie"
+	public String m_source = "yelp"; // "amazon_movie"
 	public String m_topicmodel = "ETBIR";
 
 	public double m_beta = 1.0 + 1e-3;
@@ -23,7 +23,7 @@ public class TopicModelParameter {
 	public double m_varConverge = 1e-5;
 	public double m_emConverge = 1e-9;
 	
-	public String m_output = String.format("%s/%s/output", m_prefix, m_source);// output directory
+	public String m_output = String.format("%s/%s/byUser_70k_review/output", m_prefix, m_source);// output directory
 		
 	public TopicModelParameter(String argv[]){
 		
