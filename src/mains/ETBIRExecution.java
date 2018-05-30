@@ -58,6 +58,7 @@ public class ETBIRExecution {
 		tModel.EMonCorpus();
 		tModel.printTopWords(param.m_topk);
 
+		long last = System.currentTimeMillis();
 		// create result folder
 		String resultDir = String.format("%s/%s_%d/", param.m_output, param.m_topicmodel, current);
 		File resultFolder = new File(resultDir);
@@ -66,6 +67,8 @@ public class ETBIRExecution {
 			resultFolder.mkdir();
 		}
 		((ETBIR) tModel).printParameterAggregation(param.m_topk, resultDir, param.m_topicmodel);
+		System.out.format("[Info] Cost: %.2f seconds." + (last-current)/1000 );
+
 		if(crossV>1){
             tModel.setRandomFold(setRandomFold);
             double trainProportion = ((double)crossV - 1)/(double)crossV;
