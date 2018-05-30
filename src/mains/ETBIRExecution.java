@@ -21,6 +21,8 @@ public class ETBIRExecution {
 		int classNumber = 6; //Define the number of classes in this Naive Bayes.
 		int Ngram = 2; //The default value is unigram.
 		int lengthThreshold = 5; //Document length threshold
+		int crossV = 5;
+		boolean setRandomFold = true;
 		int numberOfCores = Runtime.getRuntime().availableProcessors();
 
 		String tokenModel = "./data/Model/en-token.bin";
@@ -64,5 +66,13 @@ public class ETBIRExecution {
 			resultFolder.mkdir();
 		}
 		((ETBIR) tModel).printParameterAggregation(param.m_topk, resultDir, param.m_topicmodel);
+		if(crossV>1){
+            tModel.setRandomFold(setRandomFold);
+            double trainProportion = ((double)crossV - 1)/(double)crossV;
+            double testProportion = 1-trainProportion;
+            System.out.format("Begin %d-fold cross validation", crossV);
+            tModel.setPerplexityProportion(testProportion);
+            tModel.crossValidation(crossV);
+        }
 	}
 }

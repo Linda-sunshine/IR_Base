@@ -4,7 +4,7 @@ package structures;
 public class TopicModelParameter {
 	
 	public String m_prefix = "/zf18/ll5fy/lab/dataset";//"./data/CoLinAdapt"
-	public String m_source = "yelp"; // "amazon_movie"
+	public String m_source = "yelp/byUser_70k_review"; // "amazon_movie"
 	public String m_topicmodel = "ETBIR";
 
 	public double m_beta = 1.0 + 1e-3;
@@ -16,9 +16,9 @@ public class TopicModelParameter {
 	public double m_rho = 1.0 + 1e-2;
 	
 	public int m_topk = 30;
-	public int m_emIter = 30;
+	public int m_emIter = 100;
 	public int m_number_of_topics = 30;
-	public int m_varMaxIter = 5; // variational inference max iter number
+	public int m_varMaxIter = 20; // variational inference max iter number
 	
 	public double m_varConverge = 1e-5;
 	public double m_emConverge = 1e-9;
