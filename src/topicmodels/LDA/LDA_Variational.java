@@ -60,6 +60,7 @@ public class LDA_Variational extends pLSA {
 	protected void initialize_probability(Collection<_Doc> collection) {
 		// initialize with all smoothing terms
 		init();
+		Arrays.fill(m_alpha, d_alpha);
 		
 		// initialize topic-word allocation, p(w|z)
 		for(_Doc d:collection) {
@@ -208,7 +209,8 @@ public class LDA_Variational extends pLSA {
 	public double calculate_log_likelihood(_Doc d) {
 		int wid;
 		double[] diGamma = new double[this.number_of_topics];
-		double logLikelihood = Utils.lgamma(Utils.sumOfArray(m_alpha)) - Utils.lgamma(Utils.sumOfArray(d.m_sstat)), v, diGammaSum = Utils.digamma(Utils.sumOfArray(d.m_sstat));
+		double logLikelihood = Utils.lgamma(Utils.sumOfArray(m_alpha)) - Utils.lgamma(Utils.sumOfArray(d.m_sstat)), v;
+		double diGammaSum = Utils.digamma(Utils.sumOfArray(d.m_sstat));
 		for(int i=0; i<number_of_topics; i++) {
 			diGamma[i] = Utils.digamma(d.m_sstat[i]) - diGammaSum;
 			logLikelihood += Utils.lgamma(d.m_sstat[i]) - Utils.lgamma(m_alpha[i])
