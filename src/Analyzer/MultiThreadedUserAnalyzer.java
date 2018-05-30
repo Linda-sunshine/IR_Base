@@ -49,7 +49,7 @@ public class MultiThreadedUserAnalyzer extends UserAnalyzer {
 			String providedCV, int Ngram, int threshold, int numberOfCores, boolean b)
 					throws InvalidFormatException, FileNotFoundException, IOException {
 		super(tokenModel, classNo, providedCV, Ngram, threshold, b);
-		
+
 		m_numberOfCores = numberOfCores;
 		
 		// since DocAnalyzer already contains a tokenizer, then we can user it and define a pool with length of m_numberOfCores - 1
@@ -73,6 +73,7 @@ public class MultiThreadedUserAnalyzer extends UserAnalyzer {
 		if(folder == null || folder.isEmpty())
 			return;
 
+		System.out.println("Review folder: " + folder);
 		File dir = new File(folder);
 		final File[] files=dir.listFiles();
 		ArrayList<Thread> threads = new ArrayList<Thread>();

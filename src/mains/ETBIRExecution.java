@@ -30,7 +30,6 @@ public class ETBIRExecution {
 		String reviewFolder = String.format("%s/%s/byUser_70k_review/data/", param.m_prefix, param.m_source);
 
 		System.out.println("[Info] Start preprocess textual data...");
-		System.out.println("review folder: " + reviewFolder);
 		MultiThreadedReviewAnalyzer analyzer = new MultiThreadedReviewAnalyzer(tokenModel, classNumber, fvFile, Ngram, lengthThreshold, numberOfCores, true, param.m_source);
 		analyzer.loadUserDir(reviewFolder);
 		_Corpus corpus = analyzer.getCorpus();
