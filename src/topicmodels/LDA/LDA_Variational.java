@@ -60,6 +60,7 @@ public class LDA_Variational extends pLSA {
 	protected void initialize_probability(Collection<_Doc> collection) {
 		// initialize with all smoothing terms
 		init();
+		Arrays.fill(m_alpha, d_alpha);
 		
 		// initialize topic-word allocation, p(w|z)
 		for(_Doc d:collection) {
@@ -73,7 +74,6 @@ public class LDA_Variational extends pLSA {
 	@Override
 	protected void init() {//will be called at the beginning of each EM iteration
 		// initialize alpha statistics
-		Arrays.fill(m_alpha, d_alpha);
 		Arrays.fill(m_alphaStat, 0);
 		
 		// initialize with all smoothing terms

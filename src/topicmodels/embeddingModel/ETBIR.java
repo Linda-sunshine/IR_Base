@@ -45,8 +45,8 @@ public class ETBIR extends LDA_Variational {
     protected double m_eta_p_Stats;
     protected double m_eta_mean_Stats;
 
-    double d_mu = 1.0, d_sigma_theta = 1e-2;
-    double d_nu = 1.0, d_sigma_P = 1e-2;
+    double d_mu = 1.0, d_sigma_theta = 10;
+    double d_nu = 1.0, d_sigma_P = 10;
 
     public ETBIR(int emMaxIter, double emConverge,
                  double beta, _Corpus corpus, double lambda,
@@ -645,6 +645,7 @@ public class ETBIR extends LDA_Variational {
 
         // initialize with all smoothing terms
         init();
+        Arrays.fill(m_alpha, d_alpha);
 
         System.out.println("Initializing model...");
         // initialize topic-word allocation, p(w|z)
@@ -821,18 +822,18 @@ public class ETBIR extends LDA_Variational {
                 m_mapByItem.get(i_idx).addAll(m_mapByItem_test.get(i_idx));
             }
             do {
-//                init();
+                init();
                 loglikelihood = 0.0;
                 for (_Doc d : m_testSet) {
                     loglikelihood += inference(d);
                 }
                 for (int u_idx : m_mapByUser_test.keySet()) {
                     _User4ETBIR user = (_User4ETBIR) m_users.get(u_idx);
-                    loglikelihood += varInference4User(user);
+                    varInference4User(user);
                 }
                 for (int i_idx : m_mapByItem_test.keySet()) {
                     _Product4ETBIR item = (_Product4ETBIR) m_items.get(i_idx);
-                    loglikelihood += varInference4Item(item);
+                    varInference4Item(item);
                 }
                 if(iter > 0)
                     converge = Math.abs((loglikelihood - last) / last);
