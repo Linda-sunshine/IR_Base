@@ -46,7 +46,7 @@ public class ETBIR extends LDA_Variational {
     protected double m_eta_mean_Stats;
 
     double d_mu = 10.0, d_sigma_theta = 100;
-    double d_nu = 10.0, d_sigma_P = 100;
+    double d_nu = 1.0, d_sigma_P = 10;
 
     public ETBIR(int emMaxIter, double emConverge,
                  double beta, _Corpus corpus, double lambda,
