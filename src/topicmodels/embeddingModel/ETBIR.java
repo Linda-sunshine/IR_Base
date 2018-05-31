@@ -352,8 +352,8 @@ public class ETBIR extends LDA_Variational {
                 moment = N * zeta_stat * Math.exp(doc.m_mu[k] + 0.5 * doc.m_Sigma[k]);
                 norm = Utils.dotProduct(item.m_eta, user.m_nuP[k]) / etaSum;
 
-                muG = -m_rho * (doc.m_mu[k] - norm)
-                        + doc.m_phiStat[k] - moment;//-1 because LBFGS is minimization
+                muG = - m_rho * (doc.m_mu[k] - norm)
+                      + doc.m_phiStat[k] - moment;//-1 because LBFGS is minimization
 
                 fValue += -0.5 * m_rho * (doc.m_mu[k] * doc.m_mu[k] - 2 * doc.m_mu[k] * norm)
                         + doc.m_mu[k] * doc.m_phiStat[k] - moment;
@@ -368,7 +368,7 @@ public class ETBIR extends LDA_Variational {
     void update_SigmaTheta(_Doc4ETBIR d){
         double fValue = 1.0, lastFValue = 1.0, cvg = 1e-4, diff, iterMax = 20, iter = 0;
         double stepsize = 1e-3, moment, sigma;
-        double[] SigmaG = new double[number_of_topics]; // gradient for Sigma
+        double SigmaG = 0; // gradient for Sigma
         int N = d.getTotalDocLength();
 
         for(int k=0; k < number_of_topics; k++)
@@ -382,11 +382,11 @@ public class ETBIR extends LDA_Variational {
             for (int k = 0; k < number_of_topics; k++) {
                 sigma = d.m_sigmaSqrt[k] * d.m_sigmaSqrt[k];
                 moment = Math.exp(d.m_mu[k] + 0.5 * sigma);
-                SigmaG[k] = -m_rho * d.m_sigmaSqrt[k] - N * d.m_sigmaSqrt[k] * moment / d.m_zeta
+                SigmaG = -m_rho * d.m_sigmaSqrt[k] - N * d.m_sigmaSqrt[k] * moment / d.m_zeta
                         + 1.0 / d.m_sigmaSqrt[k]; //-1 because LBFGS is minimization
-                fValue += -0.5 * m_rho * sigma - N * moment / d.m_zeta + 0.5 * Math.log(sigma);
+                fValue += -0.5 * m_rho * sigma - N * moment / d.m_zeta + Math.log(d.m_sigmaSqrt[k]);
 
-                d.m_sigmaSqrt[k] += stepsize * SigmaG[k];//fixed stepsize
+                d.m_sigmaSqrt[k] += stepsize * SigmaG;//fixed stepsize
             }
 
             diff = (lastFValue - fValue) / lastFValue;
