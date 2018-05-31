@@ -1,6 +1,5 @@
 package topicmodels.multithreads;
 
-import structures._Doc;
 import topicmodels.multithreads.TopicModel_worker.RunType;
 
 public interface EmbedModelWorker extends Runnable {

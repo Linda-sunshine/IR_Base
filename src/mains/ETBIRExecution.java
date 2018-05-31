@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.IOException;
 import java.text.ParseException;
 
+import Analyzer.MultiThreadedReviewAnalyzer;
 import structures.TopicModelParameter;
 import structures._Corpus;
 import topicmodels.LDA.LDA_Gibbs;
@@ -11,7 +12,6 @@ import topicmodels.embeddingModel.ETBIR;
 import topicmodels.multithreads.LDA.LDA_Variational_multithread;
 import topicmodels.multithreads.pLSA.pLSA_multithread;
 import topicmodels.pLSA.pLSA;
-import Analyzer.MultiThreadedReviewAnalyzer;
 
 public class ETBIRExecution {
 

@@ -1,14 +1,18 @@
 package Analyzer;
 
-import structures.*;
-
 import java.io.File;
-import java.io.FileDescriptor;
-import java.io.FileNotFoundException;
 import java.io.FileWriter;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+
+import structures._Corpus;
+import structures._Doc;
+import structures._Product;
+import structures._Product4ETBIR;
+import structures._Review;
+import structures._User;
+import structures._User4ETBIR;
 
 public class BipartiteAnalyzer {
     int m_k;

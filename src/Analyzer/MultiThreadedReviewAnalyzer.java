@@ -3,10 +3,10 @@ package Analyzer;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 
-import opennlp.tools.util.InvalidFormatException;
 import json.JSONArray;
 import json.JSONException;
 import json.JSONObject;
+import opennlp.tools.util.InvalidFormatException;
 import structures._Doc4ETBIR;
 
 public class MultiThreadedReviewAnalyzer extends MultiThreadedUserAnalyzer {

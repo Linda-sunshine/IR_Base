@@ -1,9 +1,9 @@
 package topicmodels.multithreads;
 
-import structures._Doc;
-import topicmodels.multithreads.TopicModel_worker.RunType;
 import java.util.ArrayList;
 import java.util.List;
+
+import topicmodels.multithreads.TopicModel_worker.RunType;
 
 public abstract class EmbedModel_worker implements EmbedModelWorker{
     protected List<Object> m_objects;

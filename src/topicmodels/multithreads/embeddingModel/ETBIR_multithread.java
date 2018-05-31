@@ -1,19 +1,20 @@
 package topicmodels.multithreads.embeddingModel;
 
-import structures.*;
-import topicmodels.TopicModel;
+import java.util.Arrays;
+import java.util.Collection;
+
+import structures._Corpus;
+import structures._Doc;
+import structures._Doc4ETBIR;
+import structures._Product4ETBIR;
+import structures._SparseFeature;
+import structures._User4ETBIR;
 import topicmodels.embeddingModel.ETBIR;
 import topicmodels.multithreads.EmbedModelWorker;
 import topicmodels.multithreads.EmbedModel_worker;
-import topicmodels.multithreads.LDA.LDA_Variational_multithread;
 import topicmodels.multithreads.TopicModelWorker;
 import topicmodels.multithreads.TopicModel_worker;
 import utils.Utils;
-
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.List;
 
 public class ETBIR_multithread extends ETBIR {
     protected EmbedModelWorker[] m_userWorkers = null;
