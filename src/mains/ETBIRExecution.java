@@ -67,7 +67,7 @@ public class ETBIRExecution {
 			resultFolder.mkdir();
 		}
 		((ETBIR) tModel).printParameterAggregation(param.m_topk, resultDir, param.m_topicmodel);
-		System.out.format("[Info] Cost: %.2f seconds." + (last-current)/1000 );
+		System.out.format("[Info] Cost: %.2f seconds.", (last-current)/1000 );
 
 		if(crossV>1){
             tModel.setRandomFold(setRandomFold);
