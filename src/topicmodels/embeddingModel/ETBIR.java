@@ -244,30 +244,28 @@ public class ETBIR extends LDA_Variational {
 
     protected double varInference4Item(_Product4ETBIR i){
         double current = 0.0, last = 1.0, converge = 0.0;
-        int iter = 0, itemIndex = m_itemsIndex.get(i.getID());
+        int iter = 0, itemIdx = m_itemsIndex.get(i.getID());
 
         //can we set these structures as global?
-        double[] pNuStates = new double[number_of_topics];
-        double[][] pSumStates = new double[number_of_topics][number_of_topics];
+        double[] pNuStats = new double[number_of_topics];
+        double[][] pSumStats = new double[number_of_topics][number_of_topics];
 
-        ArrayList<Integer> Ui = m_mapByItem.get(itemIndex);//all users associated with this item
+        ArrayList<Integer> Ui = m_mapByItem.get(itemIdx);//all users associated with this item
         for (Integer userIdx : Ui) {
             _User4ETBIR user = (_User4ETBIR) m_users.get(userIdx);
-            _Doc4ETBIR doc = (_Doc4ETBIR) m_corpus.getCollection().get(m_reviewIndex.get(itemIndex + "_" + userIdx));
-            for(int k = 0; k < number_of_topics; k++){
-                for(int j = 0; j < number_of_topics; j++)
-                    pNuStates[k] += user.m_nuP[j][k] * doc.m_mu[j];
-
+            _Doc4ETBIR doc = (_Doc4ETBIR) m_corpus.getCollection().get(m_reviewIndex.get(itemIdx + "_" + userIdx));
+            for(int k = 0; k < number_of_topics; k++){ 
                 for(int l = 0; l < number_of_topics; l++){
-                    for (int j = 0; j < number_of_topics; j++){
-                        pSumStates[k][l] += user.m_SigmaP[j][l][k] + user.m_nuP[j][k] * user.m_nuP[j][l];
-                    }
+                	pNuStats[k] += user.m_nuP[l][k] * doc.m_mu[l];
+                	
+                    for (int j = 0; j < number_of_topics; j++)
+                        pSumStats[k][l] += user.m_SigmaP[j][l][k] + user.m_nuP[j][k] * user.m_nuP[j][l];
                 }
             }
         }
 
         do{
-            update_eta(i, pNuStates, pSumStates);
+            update_eta(i, pNuStats, pSumStats);
 
             current = calc_log_likelihood_per_item(i);
             if (iter > 0)
@@ -398,7 +396,7 @@ public class ETBIR extends LDA_Variational {
 
     //variational inference for p(P|\nu,\Sigma) for each user
     void update_SigmaP(_User4ETBIR u){
-        ArrayList<Integer> Iu = m_mapByUser.get(m_usersIndex.get(u.getUserID()));
+        ArrayList<Integer> Iu = m_mapByUser.get(m_usersIndex.get(u.getUserID()));//all the items reviewed by this user
         RealMatrix eta_stat_sigma = MatrixUtils.createRealIdentityMatrix(number_of_topics).scalarMultiply(m_sigma);
 
         for (Integer itemIdx : Iu) {
@@ -406,8 +404,7 @@ public class ETBIR extends LDA_Variational {
 
             RealMatrix eta_vec = MatrixUtils.createColumnRealMatrix(item.m_eta);
             double eta_0 = Utils.sumOfArray(item.m_eta);
-            RealMatrix eta_stat_i = MatrixUtils.createRealDiagonalMatrix(item.m_eta).add(
-                    eta_vec.multiply(eta_vec.transpose()));
+            RealMatrix eta_stat_i = MatrixUtils.createRealDiagonalMatrix(item.m_eta).add(eta_vec.multiply(eta_vec.transpose()));
 
             eta_stat_sigma = eta_stat_sigma.add(eta_stat_i.scalarMultiply(m_rho / (eta_0 * (eta_0 + 1.0))));
         }
@@ -420,7 +417,7 @@ public class ETBIR extends LDA_Variational {
     //variational inference for p(P|\nu,\Sigma) for each user
     void update_nu(_User4ETBIR u){
         ArrayList<Integer> Iu = m_mapByUser.get(m_usersIndex.get(u.getUserID()));
-        RealMatrix eta_stat_sigma = MatrixUtils.createRealMatrix(u.m_SigmaP[0]);
+        RealMatrix eta_stat_sigma = MatrixUtils.createRealMatrix(u.m_SigmaP[0]);//all topics share the same covariance matrix
 
         for (int k = 0; k < number_of_topics; k++) {
             RealMatrix eta_stat_nu = MatrixUtils.createColumnRealMatrix(new double[number_of_topics]);
@@ -440,25 +437,26 @@ public class ETBIR extends LDA_Variational {
 
     // update eta with non-negative constraint using fix step graident descent
     void update_eta(_Product4ETBIR i, double[] pNuStates, double[][] pSumStates){
-        double fValue = 1.0, lastFValue, cvg = 1e-4, diff, iterMax = 20, iter = 0;
+        double fValue = 1.0, lastFValue, cvg = 1e-4, diff, iterMax = 20, iter = 0, alpha0 = Utils.sumOfArray(m_alpha);
         double stepsize = 1e-2;
 
         double[] etaG = new double[number_of_topics];
         double[] eta_log = new double[number_of_topics];
         double[] eta_temp = new double[number_of_topics];
+        
         for(int k = 0; k < number_of_topics; k++){
             eta_log[k] = Math.log(i.m_eta[k]);
             eta_temp[k] = i.m_eta[k];
         }
         
         do{
-            lastFValue = fValue;
-            fValue = 0.0;
-
             double eta0 = Utils.sumOfArray(eta_temp);
             double lgGammaEta = Utils.lgamma(eta0);
             double diGammaEta = Utils.digamma(eta0);
             double triGammaEta = Utils.trigamma(eta0);
+            
+            lastFValue = fValue;
+            fValue = -lgGammaEta;
             
             for(int k = 0; k < number_of_topics; k++) {
                 double gTerm2 = 0.0;
@@ -476,7 +474,7 @@ public class ETBIR extends LDA_Variational {
                 }
 
                 etaG[k] = Utils.trigamma(eta_temp[k]) * eta_temp[k] * (m_alpha[k] - eta_temp[k])
-                        - triGammaEta * eta_temp[k] * (Utils.sumOfArray(m_alpha) - eta0)
+                        - triGammaEta * eta_temp[k] * (alpha0 - eta0)
                         + m_rho * eta_temp[k] * pNuStates[k] / eta0
                         - m_rho * eta_temp[k] * gTerm2 / (eta0 * eta0)
                         - m_rho * eta_temp[k] * gTerm3 / (2 * eta0 * (eta0 + 1.0))
@@ -487,11 +485,10 @@ public class ETBIR extends LDA_Variational {
                         + m_rho * eta_temp[k] * pNuStates[k] / eta0 
                         - m_rho * eta_temp[k] * term3 / (2 * eta0 * (eta0 + 1.0));
             }
-            fValue -=  lgGammaEta;
             
             // fix stepsize
             for(int k = 0; k < number_of_topics; k++) {
-                eta_log[k] = eta_log[k] + stepsize * etaG[k];
+                eta_log[k] += stepsize * etaG[k];
                 eta_temp[k] = Math.exp(eta_log[k]);
             }
 
