@@ -510,8 +510,7 @@ public class ETBIR extends LDA_Variational {
         for(int k = 0; k < number_of_topics; k++){
             double temp1 = 0.0;
             for(int l = 0; l < number_of_topics; l++) 
-                temp1 += u.m_SigmaP[k][l][l] + u.m_nuP[k][l] * u.m_nuP[k][l];
-            
+                temp1 += u.m_SigmaP[k][l][l] + u.m_nuP[k][l] * u.m_nuP[k][l];            
             
             double det = new LUDecomposition(MatrixUtils.createRealMatrix(u.m_SigmaP[k])).getDeterminant();
             log_likelihood += -0.5 * (temp1 * m_sigma - number_of_topics)
@@ -523,17 +522,16 @@ public class ETBIR extends LDA_Variational {
 
     // calculate the likelihood of item-related terms (term1-term6)
     protected double calc_log_likelihood_per_item(_Product4ETBIR i){
-        double log_likelihood = 0.0;
         double eta0 = Utils.sumOfArray(i.m_eta);
         double diGammaEtaSum = Utils.digamma(eta0);
         double lgammaEtaSum = Utils.lgamma(eta0);
         double lgammaAlphaSum = Utils.lgamma(Utils.sumOfArray(m_alpha));
 
+        double log_likelihood = lgammaAlphaSum - lgammaEtaSum;
         for(int k = 0; k < number_of_topics; k++){
             log_likelihood += (m_alpha[k] - i.m_eta[k]) * (Utils.digamma(i.m_eta[k]) - diGammaEtaSum);
             log_likelihood -= Utils.lgamma(m_alpha[k]) - Utils.lgamma(i.m_eta[k]);
         }
-        log_likelihood += lgammaAlphaSum - lgammaEtaSum;
 
         return log_likelihood;
     }
@@ -549,7 +547,6 @@ public class ETBIR extends LDA_Variational {
         double term2 = 0.0;
         double term3 = 0.0;
         double term4 = 0.0;
-        double part3 = 0.0;
         for(int k = 0; k < number_of_topics; k++){
             term1 += doc.m_Sigma[k] + doc.m_mu[k] * doc.m_mu[k];
             for(int j = 0; j < number_of_topics; j++){
@@ -566,13 +563,13 @@ public class ETBIR extends LDA_Variational {
             }
             term4 += Math.log(m_rho * doc.m_Sigma[k]);
         }
-        part3 += -m_rho * (0.5 * term1 - term2 / eta0 + term3 / (2 * eta0 * (eta0 + 1.0))) + number_of_topics/2.0 + 0.5 * term4;
-        log_likelihood += part3;
+        log_likelihood += -m_rho * (0.5 * term1 - term2 / eta0 + term3 / (2 * eta0 * (eta0 + 1.0))) 
+        		 + number_of_topics/2.0 + 0.5 * term4;
 
         //part4
         int wid;
         double v;
-        double part4 = 0.0, part5 = 0.0;
+        double part5 = 0.0;
         term1 = 0.0;
         term2 = 0.0;
         term3 = 0.0;
@@ -585,10 +582,9 @@ public class ETBIR extends LDA_Variational {
                 term3 += v * Math.log(doc.m_phi[n][k]);
                 part5 += v * topic_term_probabilty[k][wid];
             }
-            term2 += Math.exp(doc.m_mu[k] + doc.m_Sigma[k]/2.0);
+            term2 += Math.exp(doc.m_mu[k] + 0.5*doc.m_Sigma[k]);
         }
-        part4 += term1 - doc.getTotalDocLength() * ( term2 / doc.m_zeta - 1.0 + Math.log(doc.m_zeta)) - term3;
-        log_likelihood += part4;
+        log_likelihood += term1 - doc.getTotalDocLength() * ( term2 / doc.m_zeta - 1.0 + Math.log(doc.m_zeta)) - term3;
         log_likelihood += part5;
 
         return log_likelihood;
