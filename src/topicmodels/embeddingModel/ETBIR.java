@@ -64,6 +64,7 @@ public class ETBIR extends LDA_Variational {
     protected double m_eta_p_Stats;
     protected double m_eta_mean_Stats;
 
+    //default model parameters
     double d_mu = 1.0, d_sigma_theta = 10;
     double d_nu = 1.0, d_sigma_P = 10;
 
@@ -137,10 +138,8 @@ public class ETBIR extends LDA_Variational {
                 for (int j = 0; j < number_of_topics; j++) {
                     double term1 = user.m_SigmaP[k][l][j] + user.m_nuP[k][l] * user.m_nuP[k][j];
                     eta_p_temp += item.m_eta[l] * item.m_eta[j] * term1;
-                    if (j == l) {
-                        term1 = user.m_SigmaP[k][l][j] + user.m_nuP[k][l] * user.m_nuP[k][j];
+                    if (j == l)
                         eta_p_temp += item.m_eta[l] * term1;
-                    }
                 }
             }
         }
@@ -150,7 +149,7 @@ public class ETBIR extends LDA_Variational {
         m_eta_p_Stats += eta_p_temp / (eta0 * (eta0 + 1.0));
     }
 
-    // return log-likelihood
+    // E-step only for documents, return log-likelihood
     @Override
     public double calculate_E_step(_Doc d){
         _Doc4ETBIR doc = (_Doc4ETBIR)d;
@@ -339,7 +338,7 @@ public class ETBIR extends LDA_Variational {
         double stepsize = 1e-2, muG; // gradient for mu
         int N = doc.getTotalDocLength();
 
-        double moment, zeta_stat = 1.0 / doc.m_zeta, norm;
+        double moment, norm;
         double etaSum = Utils.sumOfArray(item.m_eta);
 
         do {
@@ -347,7 +346,7 @@ public class ETBIR extends LDA_Variational {
             lastFValue = fValue;
             fValue = 0.0;
             for (int k = 0; k < number_of_topics; k++) {
-                moment = N * zeta_stat * Math.exp(doc.m_mu[k] + 0.5 * doc.m_Sigma[k]);
+                moment = N / doc.m_zeta * Math.exp(doc.m_mu[k] + 0.5 * doc.m_Sigma[k]);
                 norm = Utils.dotProduct(item.m_eta, user.m_nuP[k]) / etaSum;
 
                 muG = - m_rho * (doc.m_mu[k] - norm)
@@ -379,10 +378,10 @@ public class ETBIR extends LDA_Variational {
 
             for (int k = 0; k < number_of_topics; k++) {
                 sigma = d.m_sigmaSqrt[k] * d.m_sigmaSqrt[k];
-                moment = Math.exp(d.m_mu[k] + 0.5 * sigma);
-                SigmaG = -m_rho * d.m_sigmaSqrt[k] - N * d.m_sigmaSqrt[k] * moment / d.m_zeta
+                moment = N * Math.exp(d.m_mu[k] + 0.5 * sigma) / d.m_zeta;
+                SigmaG = -m_rho * d.m_sigmaSqrt[k] - d.m_sigmaSqrt[k] * moment
                         + 1.0 / d.m_sigmaSqrt[k]; //-1 because LBFGS is minimization
-                fValue += -0.5 * m_rho * sigma - N * moment / d.m_zeta + Math.log(d.m_sigmaSqrt[k]);
+                fValue += -0.5 * m_rho * sigma - moment + Math.log(d.m_sigmaSqrt[k]);
 
                 d.m_sigmaSqrt[k] += stepsize * SigmaG;//fixed stepsize
             }
@@ -695,6 +694,21 @@ public class ETBIR extends LDA_Variational {
         }while(iter < number_of_iteration && (converge < 0 || converge > m_converge));
     }
 
+	@Override
+	public void calculate_M_step(int iter) {	
+		super.calculate_M_step(iter);
+		
+		//update per-column variance in P: \sigma
+		m_sigma = number_of_topics / m_pStats;
+		
+		//update the \theta variance \rho
+		double rho = number_of_topics / (m_thetaStats + m_eta_p_Stats - 2*m_eta_mean_Stats);
+		
+		if (rho<=0) 
+			System.err.println("[Warning]The estimated rho is not positive! Restore the previous value!");
+		else 
+			m_rho = rho;
+	}
 
     //k-fold Cross Validation.
     @Override
