@@ -169,15 +169,18 @@ public class ETBIR extends LDA_Variational {
     }
 
     protected double E_step(){
-        int iter = 0;
+        int iter = 0, docIndex = 0;
         double totalLikelihood = 0.0, last = -1.0, converge = 0.0;
 
         do {
             init();
 
             totalLikelihood = 0.0;
-            for (_Doc d:m_trainSet) 
+            for (_Doc d:m_trainSet) {
                 totalLikelihood += calculate_E_step(d);
+//                if (++docIndex % 10 == 0)
+//                	System.out.println();
+            }
 
             for (int u_idx:m_mapByUser.keySet()) {
                 _User4ETBIR user = (_User4ETBIR) m_users.get(u_idx);
@@ -293,6 +296,9 @@ public class ETBIR extends LDA_Variational {
             last = current;
         } while (++iter < m_varMaxIter && Math.abs(converge) > m_varConverge);
 
+        last = Utils.logSum(d.m_mu);//in case we have some very large numbers
+        for(int k=0; k<number_of_topics; k++)
+        	d.m_topics[k] = Math.exp(d.m_mu[k] - last);
         return current;
     }
 
@@ -327,7 +333,7 @@ public class ETBIR extends LDA_Variational {
 
     // alternative: line search / fixed-stepsize gradient descent
     void update_mu_sigmaTheta(_Doc4ETBIR doc, _User4ETBIR user, _Product4ETBIR item){
-        double fValue = 1.0, lastFValue = 1.0, cvg = 1e-4, diff, iterMax = 30, iter = 0;
+        double fValue = 1.0, lastFValue, cvg = 1e-3, diff, iterMax = 20, iter = 0;
         double stepsize = 1e-2, muG, sigmaG, sigma;
         double N = doc.getTotalDocLength(), logN = Math.log(N);
 
@@ -375,6 +381,12 @@ public class ETBIR extends LDA_Variational {
                 doc.m_Sigma[k] = doc.m_sigmaSqrt[k] * doc.m_sigmaSqrt[k];
             update_zeta(doc);
         } while (iter++ < iterMax && Math.abs(diff) > cvg);
+        
+//        if (iter>=iterMax)
+//        	System.out.print("x");//fail to converge
+//        else
+//        	System.out.print("o");//converge in likelihood
+        	
     }
 
     //variational inference for p(P|\nu,\Sigma) for each user
@@ -491,7 +503,7 @@ public class ETBIR extends LDA_Variational {
     
     @Override
     protected int getCorpusSize() {
-		return m_items.size();//but this should be the training item size?
+		return m_mapByItem.size();//but this should be the training item size?
 	}
     
     // calculate the likelihood of user-related terms (term2-term7)
@@ -539,7 +551,7 @@ public class ETBIR extends LDA_Variational {
 
     // calculate the likelihood of doc-related terms (term3-term8 + term4-term9 + term5)
     protected double calc_log_likelihood_per_doc(_Doc4ETBIR doc, _User4ETBIR currentU, _Product4ETBIR currentI) {
-        double log_likelihood = 0.5 * number_of_topics * (Math.log(m_rho) - log2PI) - doc.getDocInferLength() * doc.m_logZeta;
+        double log_likelihood = 0.5 * number_of_topics * (Math.log(m_rho)-1) - doc.getDocLength() * doc.m_logZeta;
         double eta0 = Utils.sumOfArray(currentI.m_eta);
         
         //likelihood from topic proportion
@@ -558,7 +570,7 @@ public class ETBIR extends LDA_Variational {
                     }
                 }
             }
-            term4 += Math.log(m_rho * doc.m_Sigma[k]);
+            term4 += Math.log(doc.m_Sigma[k]);
         }
         log_likelihood += -m_rho * (0.5 * term1 - term2 / eta0 + term3 / (2 * eta0 * (eta0 + 1.0))) 
         		 		+ 0.5 * term4;
@@ -657,7 +669,7 @@ public class ETBIR extends LDA_Variational {
         double currentAllLikelihood;
         double converge = 0.0;
         do{
-            System.out.format("====================\n[Info]Start E-step %d....\n", iter);
+            System.out.format("====================\n[Info]Start EM iteration %d....\n", iter);
             if(m_multithread)
                 currentAllLikelihood = multithread_E_step();
             else
@@ -673,13 +685,14 @@ public class ETBIR extends LDA_Variational {
             else
                 converge = 1.0;
             
-            System.out.format("\n--------------------------[Info]Start M-step %d....\n", iter);
+            System.out.format("[Info]M-step....\n--------------------------\n", iter);
             calculate_M_step(iter);
             
             lastAllLikelihood = currentAllLikelihood;
             System.out.format("[Info]EM iteration %d: likelihood is %.2f, converges to %.4f...\n\n",
                     iter, currentAllLikelihood, converge);
-
+            
+            printTopWords(10);//print out the top words every iteration
         }while(++iter < number_of_iteration && converge > m_converge);
     }
 
@@ -842,7 +855,7 @@ public class ETBIR extends LDA_Variational {
         printParam(folderName, "final", topicmodel);
         printTopWords(k, folderName + topicmodel + "_topWords.txt");
     }
-
+    
     @Override
     public void printTopWords(int k, String topWordPath) {
         System.out.println("TopWord FilePath:" + topWordPath);
