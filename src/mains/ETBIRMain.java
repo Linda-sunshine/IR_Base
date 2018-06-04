@@ -7,8 +7,8 @@ import java.text.ParseException;
 import Analyzer.MultiThreadedReviewAnalyzer;
 import structures._Corpus;
 import topicmodels.LDA.LDA_Gibbs;
+import topicmodels.embeddingModel.ETBIR;
 import topicmodels.multithreads.LDA.LDA_Variational_multithread;
-import topicmodels.multithreads.embeddingModel.ETBIR_multithread;
 import topicmodels.multithreads.pLSA.pLSA_multithread;
 import topicmodels.pLSA.pLSA;
 
@@ -24,12 +24,12 @@ public class ETBIRMain {
         String featureValue = "TF"; //The way of calculating the feature value, which can also be "TFIDF", "BM25"
         int norm = 0;//The way of normalization.(only 1 and 2)
         int lengthThreshold = 5; //Document length threshold
-        int numberOfCores = Runtime.getRuntime().availableProcessors();
+        int numberOfCores = 1; //Runtime.getRuntime().availableProcessors();
         String tokenModel = "./data/Model/en-token.bin";
 
         String trainset = "byUser_4k_review";
         String source = "yelp";
-        String dataset = "./myData/" + source + "/" + trainset + "/";
+        String dataset = "./data/yelp/";
 
         /**
          * model training
@@ -48,7 +48,7 @@ public class ETBIRMain {
             fvFile_point = 3;
         }
 
-        String reviewFolder = dataset + "data/"; //2foldsCV/folder0/train/, data/
+        String reviewFolder = dataset; //2foldsCV/folder0/train/, data/
         String outputFolder = dataset + "output/feature_infer_" + fvFile_point + "/";
         String suffix = ".json";
         String topicmodel = "ETBIR"; // pLSA, LDA_Gibbs, LDA_Variational, ETBIR
@@ -63,19 +63,17 @@ public class ETBIRMain {
 
         int number_of_topics = 20;
 
-        int varMaxIter = 30;
-        double varConverge = 1e-4;
+        int varMaxIter = 5;
+        double varConverge = 1e-3;
 
         int emMaxIter = 100;
-        double emConverge = 1e-9;
-        double emConverge4ETBIR = 1e-8;
+        double emConverge = 1e-5;
 
-
-        double alpha = topicmodel.equals("ETBIR")?1e-1:0.5+1e-2, beta = 1 + 1e-3, lambda = 1 + 1e-3;//these two parameters must be larger than 1!!!
+        double alpha = 1e-1, beta = 1 + 1e-3, lambda = 1 + 1e-3;//these two parameters must be larger than 1!!!
         double sigma = 1e-1, rho = 1e-1;
 
         int topK = 50;
-        int crossV = 5;
+        int crossV = 1;
         boolean setRandomFold = true;
 
         // LDA
@@ -92,7 +90,7 @@ public class ETBIRMain {
             tModel = new LDA_Variational_multithread(emMaxIter, emConverge, beta, corpus,
                     lambda, number_of_topics, alpha, varMaxIter, varConverge); //set this negative!! or likelihood will not change
         } else if (topicmodel.equals("ETBIR")){
-            tModel = new ETBIR_multithread(emMaxIter, emConverge4ETBIR, beta, corpus, lambda,
+            tModel = new ETBIR(emMaxIter, emConverge, beta, corpus, lambda,
                     number_of_topics, alpha, varMaxIter, varConverge, sigma, rho);
         }else {
             System.out.println("The selected topic model has not developed yet!");

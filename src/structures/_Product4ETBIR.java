@@ -1,6 +1,6 @@
 package structures;
 
-import java.util.Arrays;
+import utils.Utils;
 
 /**
  * Created by lulin on 3/29/18.
@@ -15,6 +15,6 @@ public class _Product4ETBIR extends _Product {
     //create necessary structure for variational inference    
   	public void setTopics4Variational(int k, double eta) {
   		m_eta = new double[k];
-        Arrays.fill(m_eta, eta);
+  		Utils.randomize(m_eta, eta);
   	}
 }
