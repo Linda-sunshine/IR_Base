@@ -83,6 +83,7 @@ public class MyLinkPredMain {
 			linkPred = new LinkPredictionWithSVMPerEdge(c, rho, analyzer.getTrainMap(), analyzer.getTestMap());
 		else if(model.equals("svm+text"))
 			linkPred = new LinkPredictionWithSVMWithText(c, rho, lmTopK);
+	
 		
 		linkPred.initMMB(classNumber, analyzer.getFeatureSize(), featureMap, globalModel, featureGroupFile, featureGroupFileSup, globalLM);
 		linkPred.getMMB().setR2TradeOffs(eta3, eta4);

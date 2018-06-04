@@ -1,4 +1,4 @@
-package mains;
+package myMains;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -7,47 +7,52 @@ import java.io.PrintWriter;
 import java.util.ArrayList;
 
 import opennlp.tools.util.InvalidFormatException;
-import structures.CFParameter;
 import structures._User;
 import Analyzer.MultiThreadedLMAnalyzer;
+import Analyzer.MultiThreadedReviewAnalyzer;
 import Application.CollaborativeFiltering;
+import Application.CollaborativeFilteringWithETBIR;
 import Application.CollaborativeFilteringWithMMB;
 
-public class CFExecution {
+public class MyETBIRCFMain {
 	public static void main(String[] args) throws InvalidFormatException, FileNotFoundException, IOException{
 
 		int classNumber = 5;
 		int Ngram = 2; // The default value is unigram.
 		int lengthThreshold = 5; // Document length threshold
-		double trainRatio = 0, adaptRatio = 0.5;
+		double trainRatio = 0, adaptRatio = 1;
 		int numberOfCores = Runtime.getRuntime().availableProcessors();
 		boolean enforceAdapt = true;
-		CFParameter param = new CFParameter(args);
-		
+
+		String dataset = "yelp"; // "Amazon", "Yelp"
 		String tokenModel = "./data/Model/en-token.bin"; // Token model.
 		
-//		String providedCV = String.format("./data/CoLinAdapt/%s/SelectedVocab.csv", param.m_data); // CV.
-//		String userFolder = String.format("./data/CoLinAdapt/%s/Users", param.m_data);
-		
-		String providedCV = String.format("/zf8/lg5bt/DataSigir/%s/SelectedVocab.csv", param.m_data); // CV.
-		String userFolder = String.format("/zf8/lg5bt/DataSigir/%s/Users", param.m_data);
-
 		String fs = "DF";//"IG_CHI"
 		int lmTopK = 1000; // topK for language model.
-		String lmFvFile = String.format("/zf8/lg5bt/DataSigir/%s/fv_lm_%s_%d.txt", param.m_data, fs, lmTopK);
+		String lmFvFile = String.format("./data/CoLinAdapt/%s/fv_lm_%s_%d.txt", dataset, fs, lmTopK);
 		
-		MultiThreadedLMAnalyzer analyzer = new MultiThreadedLMAnalyzer(tokenModel, classNumber, providedCV, lmFvFile, Ngram, lengthThreshold, numberOfCores, false);
-		analyzer.config(trainRatio, adaptRatio, enforceAdapt);
-		analyzer.loadUserDir(userFolder); // load user and reviews
-		analyzer.setFeatureValues("TFIDF-sublinear", 0);			
-		analyzer.rmMultipleReviews4OneItem();
+		String providedCV = String.format("./data/ETBIR/%s/%s_features.txt", dataset, dataset); // CV.
+		String trainFolder = String.format("./data/ETBIR/%s/train", dataset);
+		String testFolder = String.format("./data/ETBIR/%s/test", dataset);
 
+//		String providedCV = String.format("/zf8/lg5bt/DataSigir/%s/SelectedVocab.csv", dataset); // CV.
+//		String userFolder = String.format("/zf8/lg5bt/DataSigir/%s/Users", dataset);
+				
+		MultiThreadedLMAnalyzer analyzer = new MultiThreadedLMAnalyzer(tokenModel, classNumber, providedCV, lmFvFile, Ngram, lengthThreshold, numberOfCores, true);
+		analyzer.config(trainRatio, adaptRatio, enforceAdapt);
+		analyzer.loadUserDir(trainFolder); // load user and reviews
+		analyzer.loadTestUserDir(testFolder);
+		analyzer.setFeatureValues("TFIDF-sublinear", 0);
+//		analyzer.rmMultipleReviews4OneItem();
+		
 		/***Collaborative filtering starts here.***/
+		boolean equalWeight = false;
 		String dir, model, cfFile;
 		String suffix1 = "txt", suffix2 = "classifer";
-		String[] models = new String[]{"avg", "lr", "lm", "mtsvm_0.5_1", "mtclindp_0.5_1", "mtclinhdp_0.5", "mmb_lm", "mmb_lr", "mmb_mixture"};
-		long start = System.currentTimeMillis();
-
+		String[] models = new String[]{"etbir"};
+//		String[] models = new String[]{"mtsvm_0.5_1", "mtclindp_0.5_1", "mtclinhdp_0.5", "mmb_lm", "mmb_lr", "mmb_mixture"};
+		String neighborSelection = "all"; // "all" 
+		
 		/***
 		 * In order to perform cf, we need to follow the following steps:
 		 * Step 1: construct ranking neighbors using the same CollaborativeFiltering.java
@@ -55,12 +60,12 @@ public class CFExecution {
 		
 		// Step 1: construct ranking neighbors using the same CollaborativeFiltering.java
 		CollaborativeFiltering cfInit = new CollaborativeFiltering(analyzer.getUsers(), analyzer.getFeatureSize()+1);
-		int[] threshold = new int[]{3, 5, 10};
+		int[] threshold = new int[]{5};
 		
 		for(int th: threshold){	
-			dir = String.format("./data/cfData/%s_cf_%s_%d_", param.m_data, param.m_ns, th);
+			dir = String.format("./data/cfData/%s_cf_%s_%d_", dataset, neighborSelection, th);
 			// construct ranking neighbors
-			cfInit.constructRankingNeighbors(param.m_ns, th);
+			cfInit.constructRankingNeighbors(neighborSelection, th);
 			cfInit.saveUserItemPairs(dir);
 		}
 		
@@ -69,17 +74,19 @@ public class CFExecution {
 		for(int th: threshold){ // threshold: time or popularity
 			for(int k: ks){
 				// load the saved neighbor file
-				cfFile = String.format("./data/cfData/%s_cf_%s_%d_test.csv", param.m_data, param.m_ns, th);
+				cfFile = String.format("./data/cfData/%s_cf_%s_%d_test.csv", dataset, neighborSelection, th);
 				ArrayList<_User> cfUsers = cfInit.getUsers();
 				cfInit.loadRankingCandidates(cfFile);
 			
 				int validUser = cfInit.getValidUserSize();
 				double[][] performance = new double[models.length][2];
+				
+				
 			
 				for(int m=0; m<models.length; m++){
 					model = models[m];
-//					dir = String.format("./data/CoLinAdapt/%s/models/%s_%s/", dataset, dataset, model);
-					dir = String.format("/home/lin/DataSigir/%s/models/%s_%s/", param.m_data, param.m_data, model);
+					dir = String.format("./data/ETBIR/%s/models/%s_%s/", dataset, dataset, model);
+//					dir = String.format("/home/lin/DataSigir/%s/models/%s_%s/", dataset, dataset, model);
 					System.out.format("\n-----------------run %s %d neighbors-------------------------\n", model, k);
 				
 					CollaborativeFiltering cf = null;
@@ -89,14 +96,16 @@ public class CFExecution {
 					} else 
 						cf = new CollaborativeFiltering(cfUsers, analyzer.getFeatureSize()+1, k);
 					cf.setValidUserSize(validUser);
-					cf.setEqualWeightFlag(param.m_equalWeight);
+					cf.setEqualWeightFlag(equalWeight);
 				
 					// utilize the average as ranking score
 					if(model.equals("avg")){
 						cf.setAvgFlag(true);
-					}else if(model.equals("lm") || model.equals("mmb_lm")){
-						cf.setFeatureSize(lmTopK);
-						cf.loadWeights(dir, model, suffix1, suffix2);
+					}else if(model.equals("etbir")) {
+						String userWeight = "./data/ETBIR/yelp/output/ETBIR_final_p4User.txt";
+						String itemWeight = "./data/ETBIR/yelp/output/ETBIR_final_eta4Item.txt";
+						cf.loadWeights(userWeight, model, suffix1, suffix2);
+						((CollaborativeFilteringWithETBIR) cf).loadItemWeights(itemWeight);
 					} else{
 						cf.loadWeights(dir, model, suffix1, suffix2);
 					}
@@ -109,7 +118,7 @@ public class CFExecution {
 					performance[m][1] = cf.getAvgMAP();
 				}
 			
-				String filename = String.format("./data/%s_cf_equalWeight_%b_%s_%d_top_%d.txt", param.m_data, param.m_equalWeight, param.m_ns, th, k);
+				String filename = String.format("./data/%s_cf_equalWeight_%b_%s_%d_top_%d.txt", dataset, equalWeight, neighborSelection, th, k);
 				PrintWriter writer = new PrintWriter(new File(filename));
 				writer.write("\t\tNDCG\tMAP\n");
 
@@ -121,9 +130,6 @@ public class CFExecution {
 				}
 				writer.close();
 			}
-			long end = System.currentTimeMillis();
-			long mins = (end - start)/(1000*60);
-			System.out.println("[Info]The collaborative filtering took " + mins + " mins to finish!");
 		}
 	}
 }

@@ -463,6 +463,12 @@ public class _User {
 		m_testReviewSize = m_testReviews.size();
 	}
 	
+	// set the test reveiws for the current user
+	public void setTestReviews(ArrayList<_Review> reviews){
+		m_testReviews = reviews;
+		m_testReviewSize = m_testReviews.size();
+		m_reviews.addAll(m_testReviews);
+	}
 	public ArrayList<_Review> getTrainReviews(){
 		return m_trainReviews;
 	}

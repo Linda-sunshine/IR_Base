@@ -2,15 +2,16 @@ package Analyzer;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
-
 import opennlp.tools.util.InvalidFormatException;
 import json.JSONArray;
 import json.JSONException;
 import json.JSONObject;
 import structures._Doc4ETBIR;
 
+
 public class MultiThreadedReviewAnalyzer extends MultiThreadedUserAnalyzer {
 	String source;
+	
 	public MultiThreadedReviewAnalyzer(String tokenModel, int classNo,
 			String providedCV, int Ngram, int threshold, int numberOfCores,
 			boolean b, String source) throws InvalidFormatException, FileNotFoundException,
@@ -60,4 +61,5 @@ public class MultiThreadedReviewAnalyzer extends MultiThreadedUserAnalyzer {
 	        }
 	    }
 	}
+
 }

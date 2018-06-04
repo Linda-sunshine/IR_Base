@@ -5,6 +5,8 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
 
 import structures.MyPriorityQueue;
 import structures._RankItem;
@@ -13,6 +15,7 @@ import utils.Utils;
 
 public class CollaborativeFilteringWithETBIR extends CollaborativeFiltering {
 	int m_dim;  // the number of dimension for low-dimension representation
+	double[][] m_itemWeights;
 	
 	public CollaborativeFilteringWithETBIR(ArrayList<_User> users, int fs, int k) {
 		super(users, fs);
@@ -61,6 +64,42 @@ public class CollaborativeFilteringWithETBIR extends CollaborativeFiltering {
 		}
 	}	
 	
+	// load the learned traits of items 
+	public void loadItemWeights(String filename){
+		m_itemWeights = new double[m_itemMap.size()][m_dim];
+		
+		try{
+			BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(filename), "UTF-8"));
+			int itemIndex = 0;
+			String line, itemID;
+			String[] eta;
+			while((line = reader.readLine()) != null){
+				itemIndex = Integer.valueOf(line.split("\\s+")[1]); // read item index
+				itemID = line.split("\\s+")[2]; // read item ID
+				
+				// skip the user without analysis, m_dim * 2 lines
+				if(!m_itemMap.containsKey(itemID)){
+					reader.readLine();
+					reader.readLine();
+				} else{				
+					// read the eta of each item
+						reader.readLine();
+						eta = reader.readLine().split("\\s+");
+						if(eta.length == m_dim){
+							for(int i=0; i<m_dim; i++){
+								m_itemWeights[itemIndex][i] = Double.valueOf(eta[i]);
+							}
+						}
+				}
+			}
+			reader.close();
+			System.out.format("[Info]Finish loading %d items' weights!\n", m_itemWeights.length);
+		} catch(IOException e){
+			System.err.format("[Error]Failed to open file %s!!", filename);
+			e.printStackTrace();
+		}
+	}
+	
 	
 	// calculate the ranking score of each item of each user
 	@Override
@@ -96,7 +135,7 @@ public class CollaborativeFilteringWithETBIR extends CollaborativeFiltering {
 			for(String nei: neighbors){
 				int neiIndex = m_userIDIndex.get(nei);
 				if(neiIndex == userIndex) continue;
-				topKNeighbors.add(new _RankItem(neiIndex, calculateUserItemSimilarity(m_userWeights[userIndex], m_userWeights[neiIndex])));
+				topKNeighbors.add(new _RankItem(neiIndex, calculateUserItemSimilarity(m_userWeights[userIndex], m_itemWeights[neiIndex], m_userWeights[neiIndex])));
 			}
 			//Calculate the value given by the neighbors and similarity;
 			for(_RankItem ri: topKNeighbors){
@@ -118,10 +157,37 @@ public class CollaborativeFilteringWithETBIR extends CollaborativeFiltering {
 		return Utils.cosine(p1Gamma, p2Gamma);
 	}	
 	
-	// P * item
+	// P * item_traits, aggregate P in one dimension
 	protected double[] matrixVectorProduct(double[] ui, double[] item){
-		
+		int dim = item.length;
+		if(ui.length % dim != 0){
+			System.err.println("[error] Wrong dimension!");
+			return null;
+		}
+		double[] res = new double[dim];
+		double sum = 0;
+		for(int i=0; i<ui.length; i++){
+			sum += ui[i] * item[i % dim];
+			if(i % dim == 0){
+				res[i / dim] = sum;
+				sum = 0;
+			}
+		}
+		return res;
 	}
 	
-	
+	public static void main(String[] args){
+		CollaborativeFilteringWithETBIR test = new CollaborativeFilteringWithETBIR(null, 0, 0);
+		int dim = 5;
+		double[] ui = new double[dim * dim];
+		double[] item = new double[dim];
+		
+		for(int i=0; i< ui.length; i++)
+			ui[i] = Math.random();
+		
+		for(int i=0; i<dim; i++)
+			item[i] = Math.random();
+		
+		test.matrixVectorProduct(ui, item);
+	}
 }
