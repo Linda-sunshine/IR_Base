@@ -93,7 +93,7 @@ public class MyETBIRCFMain {
 				cf.calculateAllNDCGMAP();
 				cf.calculateAvgNDCGMAP();
 
-				System.out.format("[Info] NDCG: %.4f, MAP: %.4f\n", cf.getAvgNDCG(), cf.getAvgMAP());
+				System.out.format("\n[Info] NDCG: %.4f, MAP: %.4f\n", cf.getAvgNDCG(), cf.getAvgMAP());
 			}
 		}
 	}
