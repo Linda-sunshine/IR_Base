@@ -17,9 +17,9 @@ public class CollaborativeFilteringWithETBIR extends CollaborativeFiltering {
 	int m_dim;  // the number of dimension for low-dimension representation
 	double[][] m_itemWeights;
 	
-	public CollaborativeFilteringWithETBIR(ArrayList<_User> users, int fs, int k) {
-		super(users, fs);
-		m_dim = k;
+	public CollaborativeFilteringWithETBIR(ArrayList<_User> users, int fs, int k, int dim) {
+		super(users, fs, k);
+		m_dim = dim;
 	}
 	
 	// load the P of all the users at once
@@ -83,13 +83,14 @@ public class CollaborativeFilteringWithETBIR extends CollaborativeFiltering {
 					reader.readLine();
 				} else{				
 					// read the eta of each item
-						reader.readLine();
-						eta = reader.readLine().split("\\s+");
-						if(eta.length == m_dim){
-							for(int i=0; i<m_dim; i++){
-								m_itemWeights[itemIndex][i] = Double.valueOf(eta[i]);
-							}
+					reader.readLine();
+					eta = reader.readLine().split("\\s+");
+					if(eta.length == m_dim){
+						for(int i=0; i<m_dim; i++){
+							m_itemWeights[itemIndex][i] = Double.valueOf(eta[i]);
 						}
+						m_itemMap.get(itemID).setItemWeights(m_itemWeights[itemIndex]);
+					}
 				}
 			}
 			reader.close();
@@ -135,7 +136,7 @@ public class CollaborativeFilteringWithETBIR extends CollaborativeFiltering {
 			for(String nei: neighbors){
 				int neiIndex = m_userIDIndex.get(nei);
 				if(neiIndex == userIndex) continue;
-				topKNeighbors.add(new _RankItem(neiIndex, calculateUserItemSimilarity(m_userWeights[userIndex], m_itemWeights[neiIndex], m_userWeights[neiIndex])));
+				topKNeighbors.add(new _RankItem(neiIndex, calculateUserItemSimilarity(m_userWeights[userIndex], m_itemMap.get(item).getItemWeights(), m_userWeights[neiIndex])));
 			}
 			//Calculate the value given by the neighbors and similarity;
 			for(_RankItem ri: topKNeighbors){
@@ -177,7 +178,7 @@ public class CollaborativeFilteringWithETBIR extends CollaborativeFiltering {
 	}
 	
 	public static void main(String[] args){
-		CollaborativeFilteringWithETBIR test = new CollaborativeFilteringWithETBIR(null, 0, 0);
+		CollaborativeFilteringWithETBIR test = new CollaborativeFilteringWithETBIR(null, 0, 0, 0);
 		int dim = 5;
 		double[] ui = new double[dim * dim];
 		double[] item = new double[dim];

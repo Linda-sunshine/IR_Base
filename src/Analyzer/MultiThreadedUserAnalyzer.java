@@ -118,7 +118,7 @@ public class MultiThreadedUserAnalyzer extends UserAnalyzer {
 			else
 				count++;
 
-		System.out.format("%d users are loaded from %s...\n", count, folder);
+		System.out.format("\n%d users are loaded from %s...\n", count, folder);
 	}
 	
 		

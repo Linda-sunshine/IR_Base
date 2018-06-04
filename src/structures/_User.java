@@ -468,6 +468,11 @@ public class _User {
 		m_testReviews = reviews;
 		m_testReviewSize = m_testReviews.size();
 		m_reviews.addAll(m_testReviews);
+		m_testReviewMap = new HashMap<String, _Review>();
+		
+		for(_Review r: m_testReviews){
+			m_testReviewMap.put(r.getItemID(), r);
+		}
 	}
 	public ArrayList<_Review> getTrainReviews(){
 		return m_trainReviews;

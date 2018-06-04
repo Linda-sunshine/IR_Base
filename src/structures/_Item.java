@@ -8,6 +8,7 @@ public class _Item {
 	protected String m_itemID;
 	protected ArrayList<_Review> m_reviews;
 	protected _SparseFeature[] m_BoWProfile; //The BoW representation of a user.
+	protected double[] m_itemWeights; // the learned eta from ETBIR
 	
 	public _Item(String id){
 		m_itemID = id;
@@ -48,6 +49,14 @@ public class _Item {
 	
 	public _SparseFeature[] getBoWProfile(){
 		return m_BoWProfile;
+	}
+	
+	public double[] getItemWeights(){
+		return m_itemWeights;
+	}
+	
+	public void setItemWeights(double[] ws){
+		m_itemWeights = ws;
 	}
 		
 }

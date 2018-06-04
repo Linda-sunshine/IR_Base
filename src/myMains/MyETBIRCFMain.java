@@ -49,7 +49,7 @@ public class MyETBIRCFMain {
 		boolean equalWeight = false;
 		String dir, model, cfFile;
 		String suffix1 = "txt", suffix2 = "classifer";
-		String[] models = new String[]{"etbir"};
+//		String[] models = new String[]{"etbir"};
 //		String[] models = new String[]{"mtsvm_0.5_1", "mtclindp_0.5_1", "mtclinhdp_0.5", "mmb_lm", "mmb_lr", "mmb_mixture"};
 		String neighborSelection = "all"; // "all" 
 		
@@ -60,6 +60,7 @@ public class MyETBIRCFMain {
 		
 		// Step 1: construct ranking neighbors using the same CollaborativeFiltering.java
 		CollaborativeFiltering cfInit = new CollaborativeFiltering(analyzer.getUsers(), analyzer.getFeatureSize()+1);
+		int dim = 20;
 		int[] threshold = new int[]{5};
 		
 		for(int th: threshold){	
@@ -79,56 +80,20 @@ public class MyETBIRCFMain {
 				cfInit.loadRankingCandidates(cfFile);
 			
 				int validUser = cfInit.getValidUserSize();
-				double[][] performance = new double[models.length][2];
+				System.out.format("\n-----------------run ETBIR %d neighbors-------------------------\n", k);
+				CollaborativeFilteringWithETBIR cf = new CollaborativeFilteringWithETBIR(cfUsers, analyzer.getFeatureSize()+1, k, dim);
+				cf.setValidUserSize(validUser);
+				cf.setEqualWeightFlag(equalWeight);
 				
+				String userWeight = "./data/ETBIR/yelp/output/ETBIR_final_p4User.txt";
+				String itemWeight = "./data/ETBIR/yelp/output/ETBIR_final_eta4Item.txt";
+				cf.loadWeights(userWeight, "", suffix1, suffix2);
+				cf.loadItemWeights(itemWeight);
 				
-			
-				for(int m=0; m<models.length; m++){
-					model = models[m];
-					dir = String.format("./data/ETBIR/%s/models/%s_%s/", dataset, dataset, model);
-//					dir = String.format("/home/lin/DataSigir/%s/models/%s_%s/", dataset, dataset, model);
-					System.out.format("\n-----------------run %s %d neighbors-------------------------\n", model, k);
-				
-					CollaborativeFiltering cf = null;
-					if(model.equals("mmb_mixture")){
-						cf = new CollaborativeFilteringWithMMB(cfUsers, analyzer.getFeatureSize()+1, k);
-						((CollaborativeFilteringWithMMB) cf).calculateMLEB(dir+"B_0.txt", dir+"B_1.txt");
-					} else 
-						cf = new CollaborativeFiltering(cfUsers, analyzer.getFeatureSize()+1, k);
-					cf.setValidUserSize(validUser);
-					cf.setEqualWeightFlag(equalWeight);
-				
-					// utilize the average as ranking score
-					if(model.equals("avg")){
-						cf.setAvgFlag(true);
-					}else if(model.equals("etbir")) {
-						String userWeight = "./data/ETBIR/yelp/output/ETBIR_final_p4User.txt";
-						String itemWeight = "./data/ETBIR/yelp/output/ETBIR_final_eta4Item.txt";
-						cf.loadWeights(userWeight, model, suffix1, suffix2);
-						((CollaborativeFilteringWithETBIR) cf).loadItemWeights(itemWeight);
-					} else{
-						cf.loadWeights(dir, model, suffix1, suffix2);
-					}
-				
-					cf.calculateAllNDCGMAP();
-					cf.calculateAvgNDCGMAP();
-//					cf.savePerf(String.format("%s_perf_%s_equalWeight_%b_%s_%d_top_%d.txt", dataset, model, equalWeight, neighborSelection, th, k));
+				cf.calculateAllNDCGMAP();
+				cf.calculateAvgNDCGMAP();
 
-					performance[m][0] = cf.getAvgNDCG();
-					performance[m][1] = cf.getAvgMAP();
-				}
-			
-				String filename = String.format("./data/%s_cf_equalWeight_%b_%s_%d_top_%d.txt", dataset, equalWeight, neighborSelection, th, k);
-				PrintWriter writer = new PrintWriter(new File(filename));
-				writer.write("\t\tNDCG\tMAP\n");
-
-				for(int m=0; m<models.length; m++){
-					writer.write(models[m]+"\t");
-					for(double p: performance[m])
-						writer.write(p+"\t");
-					writer.write("\n");
-				}
-				writer.close();
+				System.out.format("[Info] NDCG: %.4f, MAP: %.4f\n", cf.getAvgNDCG(), cf.getAvgMAP());
 			}
 		}
 	}
