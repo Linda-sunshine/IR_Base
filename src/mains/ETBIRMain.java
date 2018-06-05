@@ -7,8 +7,8 @@ import java.text.ParseException;
 import Analyzer.MultiThreadedReviewAnalyzer;
 import structures._Corpus;
 import topicmodels.LDA.LDA_Gibbs;
+import topicmodels.LDA.LDA_Variational;
 import topicmodels.embeddingModel.ETBIR;
-import topicmodels.multithreads.LDA.LDA_Variational_multithread;
 import topicmodels.multithreads.pLSA.pLSA_multithread;
 import topicmodels.pLSA.pLSA;
 
@@ -63,13 +63,13 @@ public class ETBIRMain {
 
         int number_of_topics = 20;
 
-        int varMaxIter = 5;
+        int varMaxIter = 3;
         double varConverge = 1e-3;
 
-        int emMaxIter = 100;
-        double emConverge = 1e-5;
+        int emMaxIter = 20;
+        double emConverge = 1e-4;
 
-        double alpha = 1e-1, beta = 1 + 1e-3, lambda = 1 + 1e-3;//these two parameters must be larger than 1!!!
+        double alpha = 1+ 1e-1/number_of_topics, beta = 1 + 1e-3, lambda = 1 + 1e-3;//these two parameters must be larger than 1!!!
         double sigma = 1e-1, rho = 1e-1;
 
         int topK = 50;
@@ -87,7 +87,7 @@ public class ETBIRMain {
             tModel = new LDA_Gibbs(emMaxIter, emConverge, beta, corpus,
                     lambda, number_of_topics, alpha, 0.4, 50);
         }  else if (topicmodel.equals("LDA_Variational")) {
-            tModel = new LDA_Variational_multithread(emMaxIter, emConverge, beta, corpus,
+            tModel = new LDA_Variational(emMaxIter, emConverge, beta, corpus,
                     lambda, number_of_topics, alpha, varMaxIter, varConverge); //set this negative!! or likelihood will not change
         } else if (topicmodel.equals("ETBIR")){
             tModel = new ETBIR(emMaxIter, emConverge, beta, corpus, lambda,

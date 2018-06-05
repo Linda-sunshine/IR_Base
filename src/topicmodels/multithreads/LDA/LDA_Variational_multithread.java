@@ -119,7 +119,7 @@ public class LDA_Variational_multithread extends LDA_Variational {
 
 	@Override
 	public String toString() {
-		return String.format("multithread LDA[k:%d, alpha:%.2f, beta:%.2f, Variational]", number_of_topics, d_alpha, d_beta);
+		return String.format("multithread LDA[k:%d, alpha:%.3f, beta:%.3f, Variational]", number_of_topics, d_alpha, d_beta);
 	}
 	
 	@Override

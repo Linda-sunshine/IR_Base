@@ -83,8 +83,8 @@ public class MultiThreadedUserAnalyzer extends UserAnalyzer {
 					try {
 						for (int j = 0; j + core <files.length; j += m_numberOfCores) {
 							File f = files[j+core];
-							// && f.getAbsolutePath().endsWith("txt")
-							if(f.isFile()){//load the user								
+							// 
+							if(f.isFile() && f.getAbsolutePath().endsWith("json")){//load the user								
 								loadUser(f.getAbsolutePath(),core);
 							}
 						}
@@ -111,11 +111,12 @@ public class MultiThreadedUserAnalyzer extends UserAnalyzer {
 		
 		// process sub-directories
 		int count=0;
-		for(File f:files ) 
+		for(File f:files) {
 			if (f.isDirectory())
 				loadUserDir(f.getAbsolutePath());
 			else
 				count++;
+		}
 
 		System.out.format("%d users are loaded from %s...\n", count, folder);
 	}
