@@ -80,6 +80,7 @@ public class ETBIR extends LDA_Variational {
 
         this.m_sigma = sigma;
         this.m_rho = rho;
+        m_logSpace = true;
     }
 
     @Override
@@ -194,7 +195,7 @@ public class ETBIR extends LDA_Variational {
             System.out.format("[Info]E-Step: %d iteration, likelihood=%.2f, converge to %.4f\n", 
             		iter, last, converge);
 
-        }while(iter++ < m_varMaxIter && converge > m_varConverge);
+        }while(iter++ < m_varMaxIter*2 && converge > m_varConverge/3);
         
         //collect sufficient statistics for model update
         if (m_collectCorpusStats) {
@@ -380,7 +381,7 @@ public class ETBIR extends LDA_Variational {
                 	System.err.format("[Warning]%s has a potentially too large mu: %.3f!\n", doc.getID(), doc.m_mu[k]);
                 	warning = true;
                 }
-                if (Math.abs(doc.m_sigmaSqrt[k])>10) {
+                if (Math.abs(doc.m_sigmaSqrt[k])>5) {
                 	System.err.format("[Warning]%s has a potentially too large Sigma: %.3f!\n", doc.getID(), doc.m_sigmaSqrt[k]*doc.m_sigmaSqrt[k]);
                 	warning = true;
                 }
@@ -452,16 +453,14 @@ public class ETBIR extends LDA_Variational {
 
         double[] etaG = new double[number_of_topics], etaH = new double[number_of_topics];
         double[] eta_log = new double[number_of_topics];
-        double[] eta_temp = new double[number_of_topics];
         
         for(int k = 0; k < number_of_topics; k++){
             eta_log[k] = Math.log(i.m_eta[k]);
-            eta_temp[k] = i.m_eta[k];
             etaH[k] = 1.0;
         }
         
         do{
-            double eta0 = Utils.sumOfArray(eta_temp);
+            double eta0 = Utils.sumOfArray(i.m_eta);
             double diGammaEta0 = Utils.digamma(eta0);
             double triGammaEta0 = Utils.trigamma(eta0);
             
@@ -475,38 +474,36 @@ public class ETBIR extends LDA_Variational {
                 double term3 = pSumStates[k][k];
                 
                 for(int l = 0; l < number_of_topics; l++){
-                    gTerm2 += pNuStates[l] * eta_temp[l];
-                    gTerm3 += 2 * pSumStates[l][k] * eta_temp[l];
+                    gTerm2 += pNuStates[l] * i.m_eta[l];
+                    gTerm3 += 2 * pSumStates[l][k] * i.m_eta[l];
                     for(int p = 0; p < number_of_topics; p++)
-                        gTerm4 += eta_temp[l] * eta_temp[p] * pSumStates[l][p];
-                    gTerm4 += eta_temp[l] * pSumStates[l][l];
-                    term3 += eta_temp[l] * pSumStates[l][k];
+                        gTerm4 += i.m_eta[l] * i.m_eta[p] * pSumStates[l][p];
+                    gTerm4 += i.m_eta[l] * pSumStates[l][l];
+                    term3 += i.m_eta[l] * pSumStates[l][k];
                 }
 
-                etaG[k] = Utils.trigamma(eta_temp[k]) * eta_temp[k] * (m_alpha[k] - eta_temp[k])
-                        - triGammaEta0 * eta_temp[k] * (alpha0 - eta0)
-                        + m_rho * eta_temp[k] * pNuStates[k] / eta0
-                        - m_rho * eta_temp[k] * gTerm2 / (eta0 * eta0)
-                        - m_rho * eta_temp[k] * gTerm3 / (2 * eta0 * (eta0 + 1.0))
-                        + m_rho * (2 * eta0 + 1.0) * eta_temp[k] * gTerm4 / (2 * eta0 * eta0 * (eta0 + 1.0) * (eta0 + 1.0));
+                etaG[k] = Utils.trigamma(i.m_eta[k]) * i.m_eta[k] * (m_alpha[k] - i.m_eta[k])
+                        - triGammaEta0 * i.m_eta[k] * (alpha0 - eta0)
+                        + m_rho * i.m_eta[k] * pNuStates[k] / eta0
+                        - m_rho * i.m_eta[k] * gTerm2 / (eta0 * eta0)
+                        - m_rho * i.m_eta[k] * gTerm3 / (2 * eta0 * (eta0 + 1.0))
+                        + m_rho * (2 * eta0 + 1.0) * i.m_eta[k] * gTerm4 / (2 * eta0 * eta0 * (eta0 + 1.0) * (eta0 + 1.0));
 
-                fValue += (m_alpha[k] - eta_temp[k]) * (Utils.digamma(eta_temp[k]) - diGammaEta0)
-                        + Utils.lgamma(eta_temp[k])
-                        + m_rho * eta_temp[k] * pNuStates[k] / eta0 
-                        - m_rho * eta_temp[k] * term3 / (2 * eta0 * (eta0 + 1.0));
+                fValue += (m_alpha[k] - i.m_eta[k]) * (Utils.digamma(i.m_eta[k]) - diGammaEta0)
+                        + Utils.lgamma(i.m_eta[k])
+                        + m_rho * i.m_eta[k] * pNuStates[k] / eta0 
+                        - m_rho * i.m_eta[k] * term3 / (2 * eta0 * (eta0 + 1.0));
             }
             
             // fix stepsize
             for(int k = 0; k < number_of_topics; k++) {
                 eta_log[k] += stepsize/Math.sqrt(etaH[k]) * etaG[k];//ada gradient update
-                eta_temp[k] = Math.exp(eta_log[k]);
+                i.m_eta[k] = Math.exp(eta_log[k]);
                 etaH[k] += etaG[k] * etaG[k];
             }
 
             diff = (lastFValue - fValue) / lastFValue;
         }while(iter++ < iterMax && Math.abs(diff) > cvg);
-
-        System.arraycopy(eta_temp, 0, i.m_eta, 0, number_of_topics);
     }
     
     @Override
@@ -673,7 +670,7 @@ public class ETBIR extends LDA_Variational {
         initialize_probability(m_trainSet);
 
         m_collectCorpusStats = true;
-        int iter = 0;
+        int iter = 1;
         double lastAllLikelihood = 1.0;
         double currentAllLikelihood;
         double converge = 0.0;

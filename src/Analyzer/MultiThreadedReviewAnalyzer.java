@@ -21,8 +21,10 @@ public class MultiThreadedReviewAnalyzer extends MultiThreadedUserAnalyzer {
 	
 	@Override
 	protected void loadUser(String filename, int core) {
-		if (!filename.toLowerCase().endsWith(".json")) 
-			System.err.println("[Error] Wrong file suffix...");
+		if (!filename.toLowerCase().endsWith(".json")) {
+			System.err.println("[Error]Wrong file suffix...");
+			return;
+		}
 
 	    String[] keys;
 	    if(source.equals("yelp"))

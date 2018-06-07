@@ -163,7 +163,8 @@ public class LDA_Variational extends pLSA {
 				topic_term_probabilty[i][v] = Math.log(word_topic_sstat[i][v]/sum);
 		}
 		
-		if (iter%5!=4)//no need to estimate \alpha very often
+		if (iter%5 != 4)//no need to estimate \alpha very often
+//		if (iter==0)
 			return;
 		
 		//we need to estimate p(\theta|\alpha) as well later on
@@ -191,7 +192,7 @@ public class LDA_Variational extends pLSA {
 				diff += deltaAlpha * deltaAlpha;
 			}
 			diff /= number_of_topics;
-		} while(++i<m_varMaxIter && diff>m_varConverge);
+		} while(++i<m_varMaxIter*5 && diff>m_varConverge/5);
 	}
 	
 	protected int getCorpusSize() {

@@ -44,6 +44,8 @@ public class MultiThreadedUserAnalyzer extends UserAnalyzer {
 	private Object m_featureStatLock=null;
 	private Object m_mapLock = null;
 	
+	protected String m_suffix = null;//filter by suffix
+	
 	public MultiThreadedUserAnalyzer(String tokenModel, int classNo,
 			String providedCV, int Ngram, int threshold, int numberOfCores, boolean b)
 					throws InvalidFormatException, FileNotFoundException, IOException {
@@ -66,6 +68,10 @@ public class MultiThreadedUserAnalyzer extends UserAnalyzer {
 		m_mapLock = new Object();
 	}
 	
+	public void setSuffixFilter(String suffix) {
+		m_suffix = suffix;
+	}
+	
 	//Load all the users.
 	@Override
 	public void loadUserDir(String folder){
@@ -84,8 +90,9 @@ public class MultiThreadedUserAnalyzer extends UserAnalyzer {
 						for (int j = 0; j + core <files.length; j += m_numberOfCores) {
 							File f = files[j+core];
 							// 
-							if(f.isFile() && f.getAbsolutePath().endsWith("json")){//load the user								
-								loadUser(f.getAbsolutePath(),core);
+							if(f.isFile() 
+								&& (m_suffix==null || f.getAbsolutePath().endsWith(m_suffix))){//load the user								
+								loadUser(f.getAbsolutePath(), core);
 							}
 						}
 					} catch(Exception ex) {
@@ -114,11 +121,12 @@ public class MultiThreadedUserAnalyzer extends UserAnalyzer {
 		for(File f:files) {
 			if (f.isDirectory())
 				loadUserDir(f.getAbsolutePath());
-			else
+			else if (m_suffix==null || f.getAbsolutePath().endsWith(m_suffix))
 				count++;
 		}
-
-		System.out.format("%d users are loaded from %s...\n", count, folder);
+		
+		if (count>0)
+			System.out.format("%d users are loaded from %s...\n", count, folder);
 	}
 	
 	// Load one file as a user here. 
