@@ -162,10 +162,7 @@ public class LDA_Variational extends pLSA {
 			for(int v=0; v<vocabulary_size; v++) //will be in the log scale!!
 				topic_term_probabilty[i][v] = Math.log(word_topic_sstat[i][v]/sum);
 		}
-		
-		if (iter%5!=4)//no need to estimate \alpha very often
-			return;
-		
+
 		//we need to estimate p(\theta|\alpha) as well later on
 		int docSize = getCorpusSize(), i = 0;
 		double alphaSum, diAlphaSum, z, c, c1, c2, diff, deltaAlpha;
@@ -187,7 +184,7 @@ public class LDA_Variational extends pLSA {
 			diff = 0;
 			for(int k=0; k<number_of_topics; k++) {
 				deltaAlpha = (m_alphaG[k]-c) / m_alphaH[k];
-				m_alpha[k] -= deltaAlpha;
+				m_alpha[k] -= 0.001 * deltaAlpha; // set small stepsize, so the value won't jump too much
 				diff += deltaAlpha * deltaAlpha;
 			}
 			diff /= number_of_topics;
