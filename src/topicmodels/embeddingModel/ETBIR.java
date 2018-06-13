@@ -45,8 +45,8 @@ public class ETBIR extends LDA_Variational {
     protected double m_eta_p_Stats;
     protected double m_eta_mean_Stats;
 
-    double d_mu = 10.0, d_sigma_theta = 100;
-    double d_nu = 10.0, d_sigma_P = 100;
+    double d_mu = 2.0, d_sigma_theta = 1.0;
+    double d_nu = 2.0, d_sigma_P = 1.0;
 
     public ETBIR(int emMaxIter, double emConverge,
                  double beta, _Corpus corpus, double lambda,
@@ -205,7 +205,7 @@ public class ETBIR extends LDA_Variational {
 
     @Override
     protected void initTestDoc(_Doc d) {
-        ((_Doc4ETBIR) d).setTopics4Variational(number_of_topics, d_alpha, d_mu, d_sigma_theta);
+        ((_Doc4ETBIR) d).setTopics4Variational(number_of_topics, d_alpha+1, d_mu, d_sigma_theta);
     }
 
     protected double varInference4User(_User4ETBIR u){
@@ -430,7 +430,7 @@ public class ETBIR extends LDA_Variational {
     }
 
     // update eta with non-negative constraint using fix step graident descent
-    void update_eta(_Product4ETBIR i, double[] pNuStates, double[][] pSumStates){
+    double update_eta(_Product4ETBIR i, double[] pNuStates, double[][] pSumStates){
         double fValue = 1.0, lastFValue, cvg = 1e-4, diff, iterMax = 20, iter = 0;
         double stepsize=1e-2;
 
@@ -490,6 +490,7 @@ public class ETBIR extends LDA_Variational {
         for(int k=0;k<number_of_topics;k++){
             i.m_eta[k] = eta_temp[k];
         }
+        return fValue;
     }
 
     @Override
@@ -501,8 +502,8 @@ public class ETBIR extends LDA_Variational {
                 topic_term_probabilty[i][v] = Math.log(word_topic_sstat[i][v]/sum);
         }
 
-        if (iter%5!=4)//no need to estimate \alpha very often
-            return;
+//        if (iter%5!=4)//no need to estimate \alpha very often
+//            return;
 
         //we need to estimate p(\theta|\alpha) as well later on
         int itemSize = m_items.size(), i = 0;
@@ -525,7 +526,7 @@ public class ETBIR extends LDA_Variational {
             diff = 0;
             for(int k=0; k<number_of_topics; k++) {
                 deltaAlpha = (m_alphaG[k]-c) / m_alphaH[k];
-                m_alpha[k] -= deltaAlpha;
+                m_alpha[k] -= 0.001*deltaAlpha;
                 diff += deltaAlpha * deltaAlpha;
             }
             diff /= number_of_topics;
@@ -627,7 +628,7 @@ public class ETBIR extends LDA_Variational {
 
         System.out.println("Initializing documents...");
         for(_Doc doc : docs)
-            ((_Doc4ETBIR) doc).setTopics4Variational(number_of_topics, d_alpha, d_mu, d_sigma_theta);
+            ((_Doc4ETBIR) doc).setTopics4Variational(number_of_topics, d_alpha+1, d_mu, d_sigma_theta);
 
 
         System.out.println("Initializing users...");
@@ -640,7 +641,7 @@ public class ETBIR extends LDA_Variational {
         System.out.println("Initializing items...");
         for(int i_idx : m_mapByItem.keySet()) {
             _Product4ETBIR item = (_Product4ETBIR) m_items.get(i_idx);
-            item.setTopics4Variational(number_of_topics, d_alpha + 1);
+            item.setTopics4Variational(number_of_topics, d_alpha);
         }
 
         // initialize with all smoothing terms
@@ -723,6 +724,7 @@ public class ETBIR extends LDA_Variational {
             lastAllLikelihood = currentAllLikelihood;
             System.out.format("[Stat]%s step: likelihood is %.3f, converge to %f...\n",
                     iter, currentAllLikelihood, converge);
+            printTopWords(30);
             iter++;
             if(converge < m_converge)
                 break;
@@ -888,21 +890,47 @@ public class ETBIR extends LDA_Variational {
         Utils.L1Normalization(m_sstat);
 
         try{
-            PrintWriter topWordWriter = new PrintWriter(new File(topWordPath));
+            FileWriter topWordWriter = new FileWriter(new File(topWordPath));
 
             for(int i=0; i<topic_term_probabilty.length; i++) {
                 MyPriorityQueue<_RankItem> fVector = new MyPriorityQueue<_RankItem>(k);
                 for(int j = 0; j < vocabulary_size; j++)
                     fVector.add(new _RankItem(m_corpus.getFeature(j), topic_term_probabilty[i][j]));
 
-                topWordWriter.format("Topic %d(%.5f):\t", i, m_sstat[i]);
+                topWordWriter.write(String.format("Topic %d(%.5f):\t", i, m_sstat[i]));
                 for(_RankItem it:fVector)
-                    topWordWriter.format("%s(%.5f)\t", it.m_name, Math.exp(it.m_value));
+                    topWordWriter.write(String.format("%s(%.5f)\t", it.m_name, Math.exp(it.m_value)));
                 topWordWriter.write("\n");
             }
             topWordWriter.close();
         } catch(Exception ex){
             System.err.print("File Not Found");
+        }
+    }
+
+    @Override
+    public void printTopWords(int k) {
+        Arrays.fill(m_sstat, 0);
+        for(int d = 0; d < m_trainSet.size(); d++) {
+            _Doc4ETBIR doc = (_Doc4ETBIR) m_trainSet.get(d);
+            double expSum = 0;
+            for(int i = 0; i < number_of_topics; i++){
+                expSum += Math.exp(doc.m_mu[i]);
+            }
+            for(int i=0; i<number_of_topics; i++)
+                m_sstat[i] += Math.exp(doc.m_mu[i]) / expSum;
+        }
+        Utils.L1Normalization(m_sstat);
+
+        for(int i=0; i<topic_term_probabilty.length; i++) {
+            MyPriorityQueue<_RankItem> fVector = new MyPriorityQueue<_RankItem>(k);
+            for(int j = 0; j < vocabulary_size; j++)
+                fVector.add(new _RankItem(m_corpus.getFeature(j), topic_term_probabilty[i][j]));
+
+            System.out.format("Topic %d(%.5f):\t", i, m_sstat[i]);
+            for(_RankItem it:fVector)
+                System.out.format("%s(%.5f)\t", it.m_name, Math.exp(it.m_value));
+            System.out.print("\n");
         }
     }
 

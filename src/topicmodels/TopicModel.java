@@ -275,8 +275,9 @@ public abstract class TopicModel {
 			
 			if (m_displayLap>0 && i%m_displayLap==0) {
 				if (m_converge>0) {
-					System.out.format("Likelihood %.5f at step %s converge to %.10f...\n", current, i, delta);
-					infoWriter.format("Likelihood %.5f at step %s converge to %.10f...\n", current, i, delta);
+				    System.out.println("==============");
+					System.out.format("[Stat] Likelihood %.5f at step %s converge to %.10f...\n", current, i, delta);
+					infoWriter.format("[Stat] Likelihood %.5f at step %s converge to %.10f...\n", current, i, delta);
 
 				} else {
 					System.out.print(".");
@@ -287,7 +288,9 @@ public abstract class TopicModel {
 					displayCount ++;
 				}
 			}
-			
+
+			printTopWords(50);
+
 			if (m_converge>0 && Math.abs(delta)<m_converge)
 				break;//to speed-up, we don't need to compute likelihood in many cases
 		} while (++i<this.number_of_iteration);

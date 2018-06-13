@@ -20,7 +20,7 @@ public class _Product4ETBIR extends _Product {
   		m_eta = new double[k];
 
         for(int i = 0; i < k; i++){
-            m_eta[i] = eta -1 + Math.random() * 0.5 * eta;
+            m_eta[i] = eta + Math.random() * 0.5 * eta;
         }
         Utils.L1Normalization(m_eta);
   	}
