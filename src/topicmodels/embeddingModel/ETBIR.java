@@ -45,8 +45,8 @@ public class ETBIR extends LDA_Variational {
     protected double m_eta_p_Stats;
     protected double m_eta_mean_Stats;
 
-    double d_mu = 2.0, d_sigma_theta = 1.0;
-    double d_nu = 2.0, d_sigma_P = 1.0;
+    double d_mu = 1.0, d_sigma_theta = 1.0;
+    double d_nu = 1.0, d_sigma_P = 1.0;
 
     public ETBIR(int emMaxIter, double emConverge,
                  double beta, _Corpus corpus, double lambda,
@@ -205,7 +205,7 @@ public class ETBIR extends LDA_Variational {
 
     @Override
     protected void initTestDoc(_Doc d) {
-        ((_Doc4ETBIR) d).setTopics4Variational(number_of_topics, d_alpha+1, d_mu, d_sigma_theta);
+        ((_Doc4ETBIR) d).setTopics4Variational(number_of_topics, d_alpha, d_mu, d_sigma_theta);
     }
 
     protected double varInference4User(_User4ETBIR u){
@@ -280,6 +280,7 @@ public class ETBIR extends LDA_Variational {
             update_phi(d);
             update_zeta(d);
             update_mu(d, u ,i);
+            update_zeta(d);
             update_SigmaTheta(d);
             update_zeta(d);
 
@@ -628,7 +629,7 @@ public class ETBIR extends LDA_Variational {
 
         System.out.println("Initializing documents...");
         for(_Doc doc : docs)
-            ((_Doc4ETBIR) doc).setTopics4Variational(number_of_topics, d_alpha+1, d_mu, d_sigma_theta);
+            ((_Doc4ETBIR) doc).setTopics4Variational(number_of_topics, d_alpha, d_mu, d_sigma_theta);
 
 
         System.out.println("Initializing users...");

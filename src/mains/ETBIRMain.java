@@ -76,8 +76,8 @@ public class ETBIRMain {
         double emConverge4ETBIR = 1e-8;
 
 
-        double alpha = topicmodel.equals("ETBIR")?1e-2:1+1e-2, beta = 1 + 1e-3, lambda = 1 + 1e-3;//these two parameters must be larger than 1!!!
-        double sigma = 1e-1, rho = 1e-1;
+        double alpha = topicmodel.equals("ETBIR")?1+1e-2:1+1e-2, beta = 1 + 1e-3, lambda = 1 + 1e-3;//these two parameters must be larger than 1!!!
+        double sigma = 1.01, rho = 1.01;
 
         int topK = 50;
         int crossV = 1;
