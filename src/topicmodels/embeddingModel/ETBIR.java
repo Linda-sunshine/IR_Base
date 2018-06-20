@@ -120,7 +120,6 @@ public class ETBIR extends LDA_Variational {
                     double term1 = user.m_SigmaP[k][l][j] + user.m_nuP[k][l] * user.m_nuP[k][j];
                     eta_p_temp += item.m_eta[l] * item.m_eta[j] * term1;
                     if (j == l) {
-                        term1 = user.m_SigmaP[k][l][j] + user.m_nuP[k][l] * user.m_nuP[k][j];
                         eta_p_temp += item.m_eta[l] * term1;
                     }
                 }
@@ -209,14 +208,23 @@ public class ETBIR extends LDA_Variational {
     }
 
     protected double varInference4User(_User4ETBIR u){
-        double current = 0.0, last = 1.0, converge = 0.0;
+        double likelihood_user = 0.0, current = 0.0, last = 1.0, converge = 0.0;
         int iter = 0;
 
         do{
             update_SigmaP(u);
             update_nu(u);
 
-            current = calc_log_likelihood_per_user(u);
+            likelihood_user = calc_log_likelihood_per_user(u);// likelihood for user (second term in lower bound)
+
+            //likelihood related to user for converge
+            current = likelihood_user;
+            for(Integer itemIdx : m_mapByUser.get(m_usersIndex.get(u.getUserID()))){
+                _Product4ETBIR i = (_Product4ETBIR) m_items.get(itemIdx);
+                _Doc4ETBIR d = (_Doc4ETBIR) m_corpus.getCollection().get(m_reviewIndex.get(itemIdx + "_"
+                        + m_usersIndex.get(u.getUserID())));
+                current += calc_log_likelihood_per_doc(d, u, i);
+            }
             if(iter > 0)
                 converge = (last - current) / last;
             else
@@ -225,7 +233,7 @@ public class ETBIR extends LDA_Variational {
             last = current;
         } while(++iter < m_varMaxIter && Math.abs(converge) > m_varConverge);
 
-        return current;
+        return likelihood_user;
     }
 
     protected double varInference4Item(_Product4ETBIR i){
@@ -256,20 +264,9 @@ public class ETBIR extends LDA_Variational {
             }
         }
 
-        do{
-            update_eta(i, pNuStates, pSumStates);
+        update_eta(i, pNuStates, pSumStates);
 
-            current = calc_log_likelihood_per_item(i);
-            if (iter > 0)
-                converge = (last - current) / last;
-            else
-                converge = 1.0;
-
-            last = current;
-
-        } while (++iter < m_varMaxIter && Math.abs(converge) > m_varConverge);
-
-        return current;
+        return calc_log_likelihood_per_item(i);
     }
 
     protected double varInference4Doc(_Doc4ETBIR d, _User4ETBIR u, _Product4ETBIR i) {
@@ -496,6 +493,11 @@ public class ETBIR extends LDA_Variational {
 
     @Override
     public void calculate_M_step(int iter) {
+        //maximize likelihood for \rho of p(\theta|P\gamma, \rho)
+        m_rho = m_trainSet.size() * number_of_topics / (m_thetaStats + m_eta_p_Stats - 2 * m_eta_mean_Stats);
+        //maximize likelihood for \sigma
+        m_sigma = m_mapByUser.size() * number_of_topics * number_of_topics / m_pStats;
+
         //maximum likelihood estimation of p(w|z,\beta)
         for(int i=0; i<number_of_topics; i++) {
             double sum = Utils.sumOfArray(word_topic_sstat[i]);
@@ -733,8 +735,44 @@ public class ETBIR extends LDA_Variational {
         }while(iter < number_of_iteration && (converge < 0 || converge > m_converge));
     }
 
+    @Override
+    public double oneFoldValidation(){
+        analyzeCorpus();
+        m_trainSet = new ArrayList<_Doc>();
+        m_testSet = new ArrayList<_Doc>();
+        for(_Doc d:m_corpus.getCollection()){
+            if(d.getType() == _Doc.rType.TRAIN){
+                m_trainSet.add(d);
+            }else if(d.getType() == _Doc.rType.TEST){
+                m_testSet.add(d);
+            }
+        }
+
+        System.out.println("Train Set Size "+m_trainSet.size());
+        System.out.println("Test Set Size "+m_testSet.size());
+
+        long start = System.currentTimeMillis();
+        //train
+        m_bipartite.analyzeBipartite(m_trainSet, "train");
+        m_mapByUser = m_bipartite.getMapByUser();
+        m_mapByItem = m_bipartite.getMapByItem();
+        EM();
+
+        //test
+        m_bipartite.analyzeBipartite(m_testSet, "test");
+        m_mapByUser_test = m_bipartite.getMapByUser_test();
+        m_mapByItem_test = m_bipartite.getMapByItem_test();
+
+        double[] results = EvaluatePerp();
+        System.out.format("%s Train/Test finished in %.2f seconds...\n", this.toString(), (System.currentTimeMillis()-start)/1000.0);
+        m_trainSet.clear();
+        m_testSet.clear();
+
+        return results[0];
+    }
 
     //k-fold Cross Validation.
+    @Override
     public void crossValidation(int k) {
         analyzeCorpus();
         m_trainSet = new ArrayList<_Doc>();

@@ -119,7 +119,13 @@ public abstract class TopicModel {
 			infoWriter.close();
 		}
 	}
-	
+
+	public void setCorpus(_Corpus c) { this.m_corpus = c; }
+
+	public void setTrainSet(ArrayList<_Doc> trainset){ this.m_trainSet = trainset; }
+
+	public void setTestSet(ArrayList<_Doc> testset) { this.m_testSet = testset; }
+
 	//initialize necessary model parameters
 	protected abstract void initialize_probability(Collection<_Doc> collection);	
 	
@@ -401,11 +407,35 @@ public abstract class TopicModel {
 	public void setPerplexityProportion(double proportion){
 		m_testWord4PerplexityProportion = proportion;
 	}
-	
+
+	public double oneFoldValidation(){
+        m_trainSet = new ArrayList<_Doc>();
+        m_testSet = new ArrayList<_Doc>();
+        for(_Doc d:m_corpus.getCollection()){
+            if(d.getType() == _Doc.rType.TRAIN){
+                m_trainSet.add(d);
+            }else if(d.getType() == _Doc.rType.TEST){
+                m_testSet.add(d);
+            }
+        }
+
+        System.out.println("Train Set Size "+m_trainSet.size());
+        System.out.println("Test Set Size "+m_testSet.size());
+
+        long start = System.currentTimeMillis();
+        EM();
+        double perf = Evaluation();
+        System.out.format("%s Train/Test finished in %.2f seconds...\n", this.toString(), (System.currentTimeMillis()-start)/1000.0);
+        m_trainSet.clear();
+        m_testSet.clear();
+
+        return perf;
+    }
+
 	//k-fold Cross Validation.
 	public void crossValidation(int k) {
-		m_trainSet = new ArrayList<_Doc>();
-		m_testSet = new ArrayList<_Doc>();
+        m_trainSet = new ArrayList<_Doc>();
+        m_testSet = new ArrayList<_Doc>();
 		
 		double[] perf;
 		int amazonTrainsetRatingCount[] = {0,0,0,0,0};

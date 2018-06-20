@@ -30,16 +30,38 @@ public class BipartiteAnalyzer {
 
     public BipartiteAnalyzer(_Corpus corpus){
         this.m_corpus = corpus;
-    }
-
-    public void analyzeCorpus(){
-        System.out.print("Analzying review data in corpus: ");
-
         m_users = new ArrayList<>();
         m_items = new ArrayList<>();
         m_usersIndex = new HashMap<>();
         m_itemsIndex = new HashMap<>();
         m_reviewIndex = new HashMap<>();
+        m_mapByUser = new HashMap<>();
+        m_mapByItem = new HashMap<>();
+        m_mapByUser_test = new HashMap<>();
+        m_mapByItem_test = new HashMap<>();
+    }
+
+    public void reset(){
+        this.m_corpus.reset();
+        m_users.clear();
+        m_items.clear();
+        m_usersIndex.clear();
+        m_itemsIndex.clear();
+        m_reviewIndex.clear();
+        m_mapByUser.clear();
+        m_mapByItem.clear();
+        m_mapByUser_test.clear();
+        m_mapByItem_test.clear();
+    }
+
+    public void analyzeCorpus(){
+        System.out.print("Analzying review data in corpus: ");
+
+        m_users.clear();
+        m_items.clear();
+        m_usersIndex.clear();
+        m_itemsIndex.clear();
+        m_reviewIndex.clear();
         int u_index = 0, i_index = 0, size = m_corpus.getCollection().size();
         for(int d = 0; d < size; d++){
             _Review doc = (_Review) m_corpus.getCollection().get(d);
@@ -72,14 +94,6 @@ public class BipartiteAnalyzer {
     }
 
     public void analyzeBipartite(ArrayList<_Doc> docs, String source){
-        if(source.equals("train") && m_mapByUser == null){
-            m_mapByUser = new HashMap<>();
-            m_mapByItem = new HashMap<>();
-        }else if(source.equals("test") && m_mapByUser_test == null){
-            m_mapByUser_test = new HashMap<>();
-            m_mapByItem_test = new HashMap<>();
-        }
-
         HashMap<Integer, ArrayList<Integer>> mapByUser = source.equals("train")?m_mapByUser:m_mapByUser_test;
         HashMap<Integer, ArrayList<Integer>> mapByItem = source.equals("train")?m_mapByItem:m_mapByItem_test;
 
@@ -135,11 +149,11 @@ public class BipartiteAnalyzer {
 
             // generate bipartie for training set
             analyzeBipartite(m_trainSet, "train");
-            save2File(outFolder + "folder" + i + "/", "train");
+//            save2File(outFolder + "folder" + i + "/", "train");
 
             // generate bipartie for testing set
             analyzeBipartite(m_testSet, "test");
-            save2File(outFolder + "folder" + i + "/", "test");
+            save2File(outFolder, String.valueOf(i));
 
 
             System.out.println("-- Fold number " + i);
