@@ -96,9 +96,9 @@ public class ETBIR_multithread extends ETBIR {
 
         @Override
         public void resetStats() {
-            m_thetaStats = 0.0;
-            m_eta_p_Stats = 0.0;
-            m_eta_mean_Stats = 0.0;
+            thetaStats = 0.0;
+            eta_p_Stats = 0.0;
+            eta_mean_Stats = 0.0;
             super.resetStats();
         }
 
