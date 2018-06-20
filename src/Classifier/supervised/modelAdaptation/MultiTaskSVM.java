@@ -12,7 +12,7 @@ import Classifier.supervised.liblinear.Problem;
 import Classifier.supervised.liblinear.SolverType;
 import structures._PerformanceStat.TestMode;
 import structures._Review;
-import structures._Review.rType;
+import structures._Doc.rType;
 import structures._SparseFeature;
 import structures._User;
 

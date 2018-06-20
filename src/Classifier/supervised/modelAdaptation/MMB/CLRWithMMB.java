@@ -22,7 +22,7 @@ import structures._HDPThetaStar;
 import structures._HDPThetaStar._Connection;
 import structures._MMBNeighbor;
 import structures._Review;
-import structures._Review.rType;
+import structures._Doc.rType;
 import structures._User;
 import utils.Utils;
 public class CLRWithMMB extends CLRWithHDP {

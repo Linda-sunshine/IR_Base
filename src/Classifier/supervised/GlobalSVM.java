@@ -11,7 +11,7 @@ import Classifier.supervised.liblinear.Parameter;
 import Classifier.supervised.liblinear.Problem;
 import Classifier.supervised.modelAdaptation._AdaptStruct;
 import structures._Review;
-import structures._Review.rType;
+import structures._Doc.rType;
 
 public class GlobalSVM extends IndividualSVM{
 

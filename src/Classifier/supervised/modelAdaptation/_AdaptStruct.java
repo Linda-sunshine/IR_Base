@@ -10,7 +10,7 @@ import java.util.LinkedList;
 import structures._Doc;
 import structures._PerformanceStat;
 import structures._Review;
-import structures._Review.rType;
+import structures._Doc.rType;
 import structures._SparseFeature;
 import structures._User;
 
