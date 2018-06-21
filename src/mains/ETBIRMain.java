@@ -42,11 +42,11 @@ public class ETBIRMain {
         int emMaxIter = 50;
         double emConverge = 1e-12;
 
-        double alpha = 1 + 1e-2, beta = 1 + 1e-3, lambda = 1 + 1e-3;//these two parameters must be larger than 1!!!
+        double alpha = 1+1e-1, beta = 1 + 1e-3, lambda = 1 + 1e-3;//these two parameters must be larger than 1!!!
         double sigma = 1.01, rho = 1.01;
 
         int topK = 50;
-        int crossV = 1;
+        int crossV = 5;
         boolean setRandomFold = true;
 
         /*****data setting*****/
