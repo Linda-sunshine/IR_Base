@@ -1,7 +1,6 @@
 package structures;
 
-import java.util.Arrays;
-import java.util.Random;
+import utils.Utils;
 
 /**
  * Created by lulin on 3/29/18.
@@ -19,11 +18,9 @@ public class _User4ETBIR extends _User{
         m_SigmaP = new double[k][k][k];
 
         for(int i = 0; i < k; i++){
+            Utils.randomize(m_nuP[i], nu);
             for(int j = 0; j < k; j++){
-                m_nuP[i][j] = nu + Math.random() * 0.5 * nu;
-                for(int l = 0; l < k; l++){
-                    m_SigmaP[i][j][l] = sigma + Math.random() * 0.5 * sigma;
-                }
+                m_SigmaP[i][j][j] = sigma;
             }
         }
     }

@@ -288,9 +288,9 @@ public class ETBIR_multithread extends ETBIR {
                 e.printStackTrace();
             }
         }
-        for (EmbedModelWorker worker : workers) {
+        for (EmbedModelWorker worker : workers)
             likelihood += worker.accumluateStats();
-        }
+
         return likelihood;
     }
 
