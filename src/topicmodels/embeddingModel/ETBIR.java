@@ -10,10 +10,7 @@ import org.apache.commons.math3.linear.RealMatrix;
 
 import structures.*;
 import topicmodels.LDA.LDA_Variational;
-import topicmodels.markovmodel.HTSM;
-import topicmodels.multithreads.TopicModelWorker;
 import utils.Utils;
-import LBFGS.LBFGS;
 
 /**
  * @author Lu Lin

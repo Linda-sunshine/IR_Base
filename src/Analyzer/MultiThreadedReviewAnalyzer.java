@@ -9,8 +9,6 @@ import json.JSONException;
 import json.JSONObject;
 import structures._Doc4ETBIR;
 import structures._Review;
-import structures._User;
-import utils.Utils;
 
 public class MultiThreadedReviewAnalyzer extends MultiThreadedUserAnalyzer {
 	String source;
