@@ -46,16 +46,16 @@ public class ETBIRMain {
         double sigma = 1.01, rho = 1.01;
 
         int topK = 50;
-        int crossV = 5;
+        int crossV = 2;
         boolean setRandomFold = true;
 
         /*****data setting*****/
-        String trainset = "byUser_4k_review";
+        String trainset = "byUser_70k_review";
         String source = "yelp";
-        String dataset = "./myData/" + source + "/" + trainset + "/";
+        String dataset = "../../dataset/" + source + "/" + trainset + "/";
 
         String[] fvFiles = new String[4];
-        fvFiles[0] = "./data/Features/fv_2gram_IG_yelp_byUser_30_50_25.txt";
+        fvFiles[0] = "../data/Features/fv_2gram_IG_yelp_byUser_30_50_25.txt";
         fvFiles[1] = "./data/Features/fv_2gram_IG_amazon_movie_byUser_40_50_12.txt";
         fvFiles[2] = "./data/Features/fv_2gram_IG_amazon_electronic_byUser_20_20_5.txt";
         fvFiles[3] = "./data/Features/fv_2gram_IG_amazon_book_byUser_40_50_12.txt";
@@ -85,13 +85,13 @@ public class ETBIRMain {
 
 //        corpus.save2File(dataset + "yelp_40_50_12.dat");//for CTM
 
-        BipartiteAnalyzer cv = new BipartiteAnalyzer(corpus); // split corpus into folds
-        cv.analyzeCorpus();
-        cv.splitCorpus(crossV,dataset + crossV + "foldsCV/");
+//        BipartiteAnalyzer cv = new BipartiteAnalyzer(corpus); // split corpus into folds
+//        cv.analyzeCorpus();
+//        cv.splitCorpus(crossV,dataset + crossV + "foldsCV/");
 
 
         /*****model loading*****/
-        String topicmodel = "ETBIR"; // pLSA, LDA_Gibbs, LDA_Variational, ETBIR
+        String topicmodel = "LDA_Variational"; // pLSA, LDA_Gibbs, LDA_Variational, ETBIR
         pLSA tModel = null;
         if (topicmodel.equals("pLSA")) {
             tModel = new pLSA_multithread(emMaxIter, emConverge, beta, corpus,
