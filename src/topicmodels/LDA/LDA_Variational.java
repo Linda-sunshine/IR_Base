@@ -163,13 +163,14 @@ public class LDA_Variational extends pLSA {
 				topic_term_probabilty[i][v] = Math.log(word_topic_sstat[i][v]/sum);
 		}
 		
-		if (iter%5 != 4)//no need to estimate \alpha very often
-//		if (iter==0)
+//		if (iter%5 != 4)//no need to estimate \alpha very often
+		if (iter==0)
 			return;
 		
 		//we need to estimate p(\theta|\alpha) as well later on
 		int docSize = getCorpusSize(), i = 0;
 		double alphaSum, diAlphaSum, z, c, c1, c2, diff, deltaAlpha;
+		double stepsize = 0.01;
 		do {
 			alphaSum = Utils.sumOfArray(m_alpha);
 			diAlphaSum = Utils.digamma(alphaSum);
@@ -188,11 +189,15 @@ public class LDA_Variational extends pLSA {
 			diff = 0;
 			for(int k=0; k<number_of_topics; k++) {
 				deltaAlpha = (m_alphaG[k]-c) / m_alphaH[k];
-				m_alpha[k] -= deltaAlpha;
+				m_alpha[k] -= deltaAlpha * stepsize;
 				diff += deltaAlpha * deltaAlpha;
 			}
-			diff /= number_of_topics;
-		} while(++i<m_varMaxIter*5 && diff>m_varConverge/5);
+			diff /= number_of_topics / (stepsize * stepsize);
+		} while(++i<m_varMaxIter && diff>m_varConverge);
+		
+		for(int k=0; k<number_of_topics; k++)
+			System.out.print(m_alpha[k] + "\t");
+		System.out.println();
 	}
 	
 	protected int getCorpusSize() {

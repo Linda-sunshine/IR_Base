@@ -71,7 +71,7 @@ public abstract class TopicModel_worker implements TopicModelWorker {
 		}
 		long eEndTime = System.currentTimeMillis();
 
-		System.out.format("[Info]Execution time in E-step time %d\n", (eEndTime - eStartTime)/1000);
+		System.out.format("[Info]Execution time in E-step time %.2fs\n", (eEndTime - eStartTime)/1000.0);
 	}
 	
 	@Override

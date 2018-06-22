@@ -67,8 +67,11 @@ public class ETBIR extends LDA_Variational {
     protected double m_eta_mean_Stats;
 
     //default model parameters
-    double d_mu = 0.0, d_sigma_theta = 1.0;
-    double d_nu = 0.0, d_sigma_P = 1.0;
+    double d_mu = 1.0, d_sigma_theta = 1.0;
+    double d_nu = 1.0, d_sigma_P = 1.0;
+    
+    //only for debugging purpose
+    double[] m_topicPropMean, m_topicPropSD;
 
     public ETBIR(int emMaxIter, double emConverge,
                  double beta, _Corpus corpus, double lambda,
@@ -97,6 +100,9 @@ public class ETBIR extends LDA_Variational {
         m_thetaStats = 0.0;
         m_eta_p_Stats = 0.0;
         m_eta_mean_Stats = 0.0;
+        
+        Arrays.fill(m_topicPropMean, 0);
+        Arrays.fill(m_topicPropSD, 0);
     }
 
     protected void updateStats4Item(_Product4ETBIR item){
@@ -126,8 +132,13 @@ public class ETBIR extends LDA_Variational {
         }
 
         // update m_thetaStats for updating rho
-        for(int k = 0; k < number_of_topics; k++)
+        v = Utils.logSum(doc.m_mu);
+        for(int k = 0; k < number_of_topics; k++) {
             m_thetaStats += doc.m_Sigma[k] + doc.m_mu[k] * doc.m_mu[k];
+            
+            m_topicPropMean[k] += Math.exp(doc.m_mu[k] - v);
+            m_topicPropSD[k] += Math.exp(2* (doc.m_mu[k] - v));
+        }
 
         // update m_eta_p_stats for updating rho
         // update m_eta_mean_stats for updating rho
@@ -152,8 +163,8 @@ public class ETBIR extends LDA_Variational {
         m_eta_p_Stats += eta_p_temp / (eta0 * (eta0 + 1.0));
     }
 
-    protected double E_step(){
-        int iter = 0, docIndex = 0;
+    protected double E_step(int round){
+        int iter = 0;
         double totalLikelihood = 0.0, last = -1.0, converge = 0.0;
         _Doc4ETBIR d;
         _User4ETBIR u;
@@ -171,19 +182,21 @@ public class ETBIR extends LDA_Variational {
                 i = (_Product4ETBIR) m_items.get(m_itemsIndex.get(itemID));
                 
                 totalLikelihood += varInference4Doc(d, u, i);
-//                if (++docIndex % 10 == 0)
-//                	System.out.println();
             }
+            
+  //          if (round % 10 == 5) {
+	            for (int u_idx:m_mapByUser.keySet()) {
+	                u = (_User4ETBIR) m_users.get(u_idx);
+	                totalLikelihood += varInference4User(u);                
+	            }
+    //        }
 
-            for (int u_idx:m_mapByUser.keySet()) {
-                u = (_User4ETBIR) m_users.get(u_idx);
-                totalLikelihood += varInference4User(u);                
-            }
-
-            for (int i_idx:m_mapByItem.keySet()) {
-                i = (_Product4ETBIR) m_items.get(i_idx);
-                totalLikelihood += varInference4Item(i);
-            }
+  //          if (round % 10 == 0) {
+	            for (int i_idx:m_mapByItem.keySet()) {
+	                i = (_Product4ETBIR) m_items.get(i_idx);
+	            	totalLikelihood += varInference4Item(i);
+	            }
+   //         }
 
             if(iter > 0)
                 converge = Math.abs((totalLikelihood - last) / last);
@@ -195,7 +208,7 @@ public class ETBIR extends LDA_Variational {
             System.out.format("[Info]E-Step: %d iteration, likelihood=%.2f, converge to %.4f\n", 
             		iter, last, converge);
 
-        }while(iter++ < m_varMaxIter*2 && converge > m_varConverge/3);
+        }while(iter++ < m_varMaxIter && converge > m_varConverge);
         
         //collect sufficient statistics for model update
         if (m_collectCorpusStats) {
@@ -209,6 +222,18 @@ public class ETBIR extends LDA_Variational {
 	            updateStats4Item((_Product4ETBIR) m_items.get(i_idx));
         }
             
+        for(int k=0; k<number_of_topics; k++) {
+        	m_topicPropMean[k] /= m_trainSet.size();
+        	System.out.format("%.4f\t", m_topicPropMean[k]);
+        }
+        System.out.println();
+        
+        for(int k=0; k<number_of_topics; k++) {
+        	m_topicPropSD[k] = m_topicPropSD[k]/m_trainSet.size() - m_topicPropMean[k] * m_topicPropMean[k];
+        	System.out.format("%.4f\t", m_topicPropSD[k]);
+        }
+        System.out.println();
+        
         return totalLikelihood;
     }
 
@@ -248,8 +273,7 @@ public class ETBIR extends LDA_Variational {
     }
 
     protected double varInference4Item(_Product4ETBIR i){
-        double current = 0.0, last = 1.0, converge = 0.0;
-        int iter = 0, itemIdx = m_itemsIndex.get(i.getID());
+        int itemIdx = m_itemsIndex.get(i.getID());
 
         double[] pNuStats = new double[number_of_topics];
         double[][] pSumStats = new double[number_of_topics][number_of_topics];
@@ -268,19 +292,8 @@ public class ETBIR extends LDA_Variational {
             }
         }
 
-        do{
-            update_eta(i, pNuStats, pSumStats);
-
-            current = calc_log_likelihood_per_item(i);
-            if (iter > 0)
-                converge = (last - current) / last;
-            else
-                converge = 1.0;
-
-            last = current;
-        } while (++iter < m_varMaxIter && Math.abs(converge) > m_varConverge);
-
-        return current;
+        update_eta(i, pNuStats, pSumStats);
+        return calc_log_likelihood_per_item(i);
     }
 
     protected double varInference4Doc(_Doc4ETBIR d, _User4ETBIR u, _Product4ETBIR i) {
@@ -300,9 +313,6 @@ public class ETBIR extends LDA_Variational {
             last = current;
         } while (++iter < m_varMaxIter && Math.abs(converge) > m_varConverge);
 
-        last = Utils.logSum(d.m_mu);//in case we have some very large numbers
-        for(int k=0; k<number_of_topics; k++)
-        	d.m_topics[k] = Math.exp(d.m_mu[k] - last);
         return current;
     }
 
@@ -370,32 +380,35 @@ public class ETBIR extends LDA_Variational {
                 doc.m_sigmaSqrt[k] += stepsize/Math.sqrt(sigmaH[k]) * sigmaG;//ada gradient
                 doc.m_Sigma[k] = doc.m_sigmaSqrt[k] * doc.m_sigmaSqrt[k];
                 
-                fValue += -0.5 * m_rho * (doc.m_Sigma[k] + doc.m_mu[k] * doc.m_mu[k] - 2 * doc.m_mu[k] * norm)
-                        + doc.m_mu[k] * doc.m_sstat[k] 
-                        - moment + Math.log(Math.abs(doc.m_sigmaSqrt[k]));
-                
                 muH[k] += muG * muG;
                 sigmaH[k] += sigmaG * sigmaG;
                 
                 if (Math.abs(doc.m_mu[k])>10) {
-                	System.err.format("[Warning]%s has a potentially too large mu: %.3f!\n", doc.getID(), doc.m_mu[k]);
-                	warning = true;
+//                	System.err.format("[Warning]%s has a potentially too large mu: %.3f!\n", doc.getID(), doc.m_mu[k]);
+                	if (doc.m_mu[k]>0)
+                		doc.m_mu[k] = 10;
+                	else                	
+                		doc.m_mu[k] = -10;
+//                	warning = true;
                 }
-                if (Math.abs(doc.m_sigmaSqrt[k])>5) {
-                	System.err.format("[Warning]%s has a potentially too large Sigma: %.3f!\n", doc.getID(), doc.m_sigmaSqrt[k]*doc.m_sigmaSqrt[k]);
-                	warning = true;
+                if (Math.abs(doc.m_sigmaSqrt[k])>10) {
+//                	System.err.format("[Warning]%s has a potentially too large Sigma: %.3f!\n", doc.getID(), doc.m_sigmaSqrt[k]*doc.m_sigmaSqrt[k]);
+                	if (doc.m_sigmaSqrt[k]>0)
+                		doc.m_sigmaSqrt[k] = 10;
+                	else
+                		doc.m_sigmaSqrt[k] = -10;
+                	doc.m_Sigma[k] = 100;
+//                	warning = true;
                 }
+                
+                fValue += -0.5 * m_rho * (doc.m_Sigma[k] + doc.m_mu[k] * doc.m_mu[k] - 2 * doc.m_mu[k] * norm)
+                        + doc.m_mu[k] * doc.m_sstat[k] 
+                        - moment + Math.log(Math.abs(doc.m_sigmaSqrt[k]));
             }
 
             diff = (lastFValue - fValue) / lastFValue;                
             update_zeta(doc);
         } while (!warning && iter++ < iterMax && Math.abs(diff) > cvg);
-        
-//        if (iter>=iterMax)
-//        	System.out.print("x");//fail to converge
-//        else
-//        	System.out.print("o");//converge in likelihood
-        	
     }
 
     //variational inference for p(P|\nu,\Sigma) for each user
@@ -619,6 +632,9 @@ public class ETBIR extends LDA_Variational {
             item.setTopics4Variational(number_of_topics, d_alpha);
         }
 
+        m_topicPropMean = new double[number_of_topics];
+        m_topicPropSD = new double[number_of_topics];
+        
         // initialize with all smoothing terms
         init();
         Arrays.fill(m_alpha, d_alpha);
@@ -680,7 +696,7 @@ public class ETBIR extends LDA_Variational {
             if(m_multithread)
                 currentAllLikelihood = multithread_E_step();
             else
-                currentAllLikelihood = E_step();
+                currentAllLikelihood = E_step(iter);
 
             if(Double.isNaN(currentAllLikelihood)){
                 System.err.println("[Error]E_step produces NaN likelihood...");
@@ -699,9 +715,22 @@ public class ETBIR extends LDA_Variational {
             System.out.format("[Info]EM iteration %d: likelihood is %.2f, converges to %.4f...\n\n",
                     iter, currentAllLikelihood, converge);
             
-            printTopWords(10);//print out the top words every iteration
+            if (iter%10==5) {
+            	finalEst();
+            	printTopWords(10);//print out the top words every iteration
+            }
         }while(++iter < number_of_iteration && converge > m_converge);
+        
+        finalEst();
     }
+    
+	@Override
+	protected void estThetaInDoc(_Doc d) {
+		_Doc4ETBIR doc = (_Doc4ETBIR)d;
+		double sum = Utils.logSum(doc.m_mu);
+		for(int k=0;k<this.number_of_topics;k++) 
+			d.m_topics[k] = doc.m_mu[k] - sum;
+	}
 
 	@Override
 	public void calculate_M_step(int iter) {	

@@ -62,16 +62,16 @@ public class ETBIRMain {
 
 //        corpus.save2File(dataset + "yelp_40_50_12.dat");//for CTM
 
-        int number_of_topics = 20;
+        int number_of_topics = 30;
 
-        int varMaxIter = 4;
-        double varConverge = 1e-3;
+        int varMaxIter = 10;
+        double varConverge = 1e-4;
 
-        int emMaxIter = 100;
+        int emMaxIter = 150;
         double emConverge = 1e-9;
 
-        double alpha = 1+ 1e-1/number_of_topics, beta = 1 + 1e-3, lambda = 1e-2;//these two parameters must be larger than 1!!!
-        double sigma = 1e-1, rho = 1e-1;
+        double alpha = 1.01, beta = 1 + 1e-3, lambda = 1e-2;//these two parameters must be larger than 1!!!
+        double sigma = 1.01, rho = 1.01;
 
         int topK = 50;
         int crossV = 1;
