@@ -9,6 +9,7 @@ import structures._Corpus;
 import structures._Doc;
 import topicmodels.markovmodel.HTSM;
 import topicmodels.multithreads.TopicModelWorker;
+import topicmodels.multithreads.TopicModel_worker;
 import topicmodels.multithreads.TopicModel_worker.RunType;
 import utils.Utils;
 
@@ -118,7 +119,13 @@ public abstract class TopicModel {
 			infoWriter.close();
 		}
 	}
-	
+
+	public void setCorpus(_Corpus c) { this.m_corpus = c; }
+
+	public void setTrainSet(ArrayList<_Doc> trainset){ this.m_trainSet = trainset; }
+
+	public void setTestSet(ArrayList<_Doc> testset) { this.m_testSet = testset; }
+
 	//initialize necessary model parameters
 	protected abstract void initialize_probability(Collection<_Doc> collection);	
 	
@@ -272,8 +279,9 @@ public abstract class TopicModel {
 			
 			if (m_displayLap>0 && i%m_displayLap==0) {
 				if (m_converge>0) {
-					System.out.format("Likelihood %.5f at step %s converge to %.10f...\n", current, i, delta);
-					infoWriter.format("Likelihood %.5f at step %s converge to %.10f...\n", current, i, delta);
+				    System.out.println("==============");
+					System.out.format("[Stat] Likelihood %.5f at step %s converge to %.10f...\n", current, i, delta);
+					infoWriter.format("[Stat] Likelihood %.5f at step %s converge to %.10f...\n", current, i, delta);
 
 				} else {
 					System.out.print(".");
@@ -284,7 +292,9 @@ public abstract class TopicModel {
 					displayCount ++;
 				}
 			}
-			
+
+			printTopWords(50);
+
 			if (m_converge>0 && Math.abs(delta)<m_converge)
 				break;//to speed-up, we don't need to compute likelihood in many cases
 		} while (++i<this.number_of_iteration);
@@ -395,11 +405,35 @@ public abstract class TopicModel {
 	public void setPerplexityProportion(double proportion){
 		m_testWord4PerplexityProportion = proportion;
 	}
-	
+
+	public double oneFoldValidation(){
+        m_trainSet = new ArrayList<_Doc>();
+        m_testSet = new ArrayList<_Doc>();
+        for(_Doc d:m_corpus.getCollection()){
+            if(d.getType() == _Doc.rType.TRAIN){
+                m_trainSet.add(d);
+            }else if(d.getType() == _Doc.rType.TEST){
+                m_testSet.add(d);
+            }
+        }
+
+        System.out.println("Train Set Size "+m_trainSet.size());
+        System.out.println("Test Set Size "+m_testSet.size());
+
+        long start = System.currentTimeMillis();
+        EM();
+        double perf = Evaluation();
+        System.out.format("%s Train/Test finished in %.2f seconds...\n", this.toString(), (System.currentTimeMillis()-start)/1000.0);
+        m_trainSet.clear();
+        m_testSet.clear();
+
+        return perf;
+    }
+
 	//k-fold Cross Validation.
 	public void crossValidation(int k) {
-		m_trainSet = new ArrayList<_Doc>();
-		m_testSet = new ArrayList<_Doc>();
+        m_trainSet = new ArrayList<_Doc>();
+        m_testSet = new ArrayList<_Doc>();
 		
 		double[] perf;
 		int amazonTrainsetRatingCount[] = {0,0,0,0,0};

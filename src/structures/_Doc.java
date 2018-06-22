@@ -16,7 +16,15 @@ import utils.Utils;
  * General structure to present a document for DM/ML/IR
  */
 public class _Doc extends _DocBase implements Comparable<_Doc> {
-	
+	public enum rType {
+		TRAIN, // for training the global model
+		ADAPTATION, // for training the personalized model
+		TEST, // for testing
+		SEPARATE // added by Lin for sanity check.
+	}
+
+	rType m_type; // specification of this doc
+
 	String m_itemID; // ID of the product being commented
 	String m_title; //The short title of the document	
 	
@@ -96,6 +104,7 @@ public class _Doc extends _DocBase implements Comparable<_Doc> {
 		m_sstat = null;
 		m_words = null;
 		m_sentences = null;
+		m_type = rType.TRAIN; // by default, every doc is used for training the model
 	}
 	
 	public _Doc (int ID, String name, String prodID, String title, String source, int ylabel, long timeStamp){
@@ -111,8 +120,17 @@ public class _Doc extends _DocBase implements Comparable<_Doc> {
 		m_sstat = null;
 		m_words = null;
 		m_sentences = null;
+		m_type = rType.TRAIN; // by default, every review is used for training the model
 	}
-	
+
+	public rType getType() {
+		return m_type;
+	}
+
+	public void setType(rType type) {
+		m_type = type;
+	}
+
 	public void setItemID(String itemID) {
 		m_itemID = itemID;
 	}

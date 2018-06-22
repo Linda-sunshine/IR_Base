@@ -7,7 +7,7 @@ import java.util.Collections;
 
 import opennlp.tools.util.InvalidFormatException;
 import structures._Review;
-import structures._Review.rType;
+import structures._Doc.rType;
 
 public class IsoUserAnalyzer extends MultiThreadedUserAnalyzer {
 
