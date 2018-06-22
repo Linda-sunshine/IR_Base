@@ -73,22 +73,32 @@ public class ETBIRMain {
                 Ngram, lengthThreshold, numberOfCores, true, source);
         _Corpus corpus = new _Corpus();
         if(crossV>1 && setRandomFold==false){
-            reviewFolder = dataset + crossV + "foldsCV/";
+            String cvFolder = dataset + crossV + "foldsCV/";
+            File file = new File(cvFolder);
+            if(!file.exists() && !file.isDirectory()){
+                System.err.println("[Warning]Cross validation dataset has not been created. Generating...");
+                analyzer.setSuffixFilter("json");
+                analyzer.setReleaseContent(false);//Remember to set it as false when generating crossfolders!!!
+                analyzer.loadUserDir(reviewFolder);
+                corpus = analyzer.getCorpus();
+                BipartiteAnalyzer cv = new BipartiteAnalyzer(corpus); // split corpus into folds
+                cv.analyzeCorpus();
+                cv.splitCorpus(crossV,cvFolder);
+                reviewFolder = cvFolder;
+            }else{
+                analyzer.setSuffixFilter("txt");
+                analyzer.loadUserDir(cvFolder);
+                corpus = analyzer.getCorpus();
+                reviewFolder = cvFolder;
+            }
         }else{
-//        analyzer.setReleaseContent(false);//Remember to set it as false when generating crossfolders!!!
             analyzer.loadUserDir(reviewFolder);
             corpus = analyzer.getCorpus();
         }
 
         String outputFolder = dataset + "output/" + crossV + "foldsCV" + "/";
-        String suffix = ".json";
 
 //        corpus.save2File(dataset + "yelp_40_50_12.dat");//for CTM
-
-//        BipartiteAnalyzer cv = new BipartiteAnalyzer(corpus); // split corpus into folds
-//        cv.analyzeCorpus();
-//        cv.splitCorpus(crossV,dataset + crossV + "foldsCV/");
-
 
         /*****model loading*****/
         String topicmodel = "ETBIR"; // pLSA, LDA_Gibbs, LDA_Variational, ETBIR
@@ -106,7 +116,7 @@ public class ETBIRMain {
             tModel = new ETBIR_multithread(emMaxIter, emConverge, beta, corpus, lambda,
                     number_of_topics, alpha, varMaxIter, varConverge, sigma, rho);
         }else {
-            System.out.println("The selected topic model has not developed yet!");
+            System.err.println("[Error]The selected topic model has not developed yet!");
             return;
         }
 
@@ -128,12 +138,13 @@ public class ETBIRMain {
         } else{//cross validation with fixed folds
             double[] perf = new double[crossV];
             for(int k = 0; k <crossV; k++){
-                analyzer.reset();
+                analyzer.getCorpus().reset();
                 //load test set
                 String testFolder = reviewFolder + k + "/";
+                analyzer.setSuffixFilter("txt");
                 analyzer.loadUserDir(testFolder);
                 for(_Doc d : analyzer.getCorpus().getCollection()){
-                    ((_Review)d).setType(_Review.rType.TEST);
+                    d.setType(_Doc.rType.TEST);
                 }
                 //load train set
                 for(int i = 0; i < crossV; i++){

@@ -97,7 +97,7 @@ public class BipartiteAnalyzer {
         HashMap<Integer, ArrayList<Integer>> mapByUser = source.equals("train")?m_mapByUser:m_mapByUser_test;
         HashMap<Integer, ArrayList<Integer>> mapByItem = source.equals("train")?m_mapByItem:m_mapByItem_test;
 
-        System.out.format("Analying bipartie graph: ");
+        System.out.format("Analying bipartie graph for %s: ", source);
         mapByItem.clear();
         mapByUser.clear();
 
