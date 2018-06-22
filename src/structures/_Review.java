@@ -5,17 +5,10 @@ import java.util.HashMap;
 import utils.Utils;
 
 public class _Review extends _Doc {
-	public enum rType {
-		TRAIN, // for training the global model
-		ADAPTATION, // for training the personalized model
-		TEST, // for testing
-		SEPARATE // added by Lin for sanity check.
-	}
 	
 	String m_userID;
 	String m_category; 
-	rType m_type; // specification of this review
-	
+
 	//Constructor for route project.
 	public _Review(int ID, String source, int ylabel){
 		super(ID, source, ylabel);
@@ -27,15 +20,6 @@ public class _Review extends _Doc {
 		m_itemID = productID;
 		m_category = category;
 		m_timeStamp = timeStamp;
-		m_type = rType.TRAIN; // by default, every review is used for training the global model
-	}
-	
-	public rType getType() {
-		return m_type;
-	}
-	
-	public void setType(rType type) {
-		m_type = type;
 	}
 	
 	//Compare the timestamp of two documents and sort them based on timestamps.
