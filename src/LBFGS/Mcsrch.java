@@ -20,10 +20,10 @@
  */
 package LBFGS;
 /** This class implements an algorithm for multi-dimensional line search.
-  * This file is a translation of Fortran code written by Jorge Nocedal.
-  * It is distributed as part of the RISO project. See comments in the file
-  * <tt>LBFGS.java</tt> for more information.
-  */
+ * This file is a translation of Fortran code written by Jorge Nocedal.
+ * It is distributed as part of the RISO project. See comments in the file
+ * <tt>LBFGS.java</tt> for more information.
+ */
 public class Mcsrch
 {
 	private static int infoc[] = new int[1], j = 0;
@@ -34,101 +34,101 @@ public class Mcsrch
 	static double max3( double x, double y, double z ) { return x < y ? ( y < z ? z : y ) : ( x < z ? z : x ); }
 
 	/** Minimize a function along a search direction. This code is
-	  * a Java translation of the function <code>MCSRCH</code> from
-	  * <code>lbfgs.f</code>, which in turn is a slight modification of
-	  * the subroutine <code>CSRCH</code> of More' and Thuente.
-	  * The changes are to allow reverse communication, and do not affect
-	  * the performance of the routine. This function, in turn, calls
-	  * <code>mcstep</code>.<p>
-	  *
-	  * The Java translation was effected mostly mechanically, with some
-	  * manual clean-up; in particular, array indices start at 0 instead of 1.
-	  * Most of the comments from the Fortran code have been pasted in here
-	  * as well.<p>
-	  *
-	  * The purpose of <code>mcsrch</code> is to find a step which satisfies
-	  * a sufficient decrease condition and a curvature condition.<p>
-	  *
-	  * At each stage this function updates an interval of uncertainty with
-	  * endpoints <code>stx</code> and <code>sty</code>. The interval of
-	  * uncertainty is initially chosen so that it contains a
-	  * minimizer of the modified function
-	  * <pre>
-	  *      f(x+stp*s) - f(x) - ftol*stp*(gradf(x)'s).
-	  * </pre>
-	  * If a step is obtained for which the modified function
-	  * has a nonpositive function value and nonnegative derivative,
-	  * then the interval of uncertainty is chosen so that it
-	  * contains a minimizer of <code>f(x+stp*s)</code>.<p>
-	  *
-	  * The algorithm is designed to find a step which satisfies
-	  * the sufficient decrease condition
-	  * <pre>
-	  *       f(x+stp*s) &lt;= f(X) + ftol*stp*(gradf(x)'s),
-	  * </pre>
-	  * and the curvature condition
-	  * <pre>
-	  *       abs(gradf(x+stp*s)'s)) &lt;= gtol*abs(gradf(x)'s).
-	  * </pre>
-	  * If <code>ftol</code> is less than <code>gtol</code> and if, for example,
-	  * the function is bounded below, then there is always a step which
-	  * satisfies both conditions. If no step can be found which satisfies both
-	  * conditions, then the algorithm usually stops when rounding
-	  * errors prevent further progress. In this case <code>stp</code> only
-	  * satisfies the sufficient decrease condition.<p>
-	  *
-	  * @author Original Fortran version by Jorge J. More' and David J. Thuente
-	  *	  as part of the Minpack project, June 1983, Argonne National 
-	  *   Laboratory. Java translation by Robert Dodier, August 1997.
-	  *
-	  * @param n The number of variables.
-	  *
-	  * @param x On entry this contains the base point for the line search.
-	  *		On exit it contains <code>x + stp*s</code>.
-	  *
-	  * @param f On entry this contains the value of the objective function
-	  *		at <code>x</code>. On exit it contains the value of the objective
-	  *		function at <code>x + stp*s</code>.
-	  *
-	  * @param g On entry this contains the gradient of the objective function
-	  *		at <code>x</code>. On exit it contains the gradient at
-	  *		<code>x + stp*s</code>.
-	  *
-	  *	@param s The search direction.
-	  *
-	  * @param stp On entry this contains an initial estimate of a satifactory
-	  *		step length. On exit <code>stp</code> contains the final estimate.
-	  *
-	  *	@param ftol Tolerance for the sufficient decrease condition.
-	  *
-	  * @param xtol Termination occurs when the relative width of the interval
-	  *		of uncertainty is at most <code>xtol</code>.
-	  *
-	  *	@param maxfev Termination occurs when the number of evaluations of
-	  *		the objective function is at least <code>maxfev</code> by the end
-	  *		of an iteration.
-	  *
-	  *	@param info This is an output variable, which can have these values:
-	  *		<ul>
-	  *		<li><code>info = 0</code> Improper input parameters.
-	  *		<li><code>info = -1</code> A return is made to compute the function and gradient.
-	  *		<li><code>info = 1</code> The sufficient decrease condition and
-	  *			the directional derivative condition hold.
-	  *		<li><code>info = 2</code> Relative width of the interval of uncertainty
-	  *			is at most <code>xtol</code>.
-	  *		<li><code>info = 3</code> Number of function evaluations has reached <code>maxfev</code>.
-	  *		<li><code>info = 4</code> The step is at the lower bound <code>stpmin</code>.
-	  *		<li><code>info = 5</code> The step is at the upper bound <code>stpmax</code>.
-	  *		<li><code>info = 6</code> Rounding errors prevent further progress.
-	  *			There may not be a step which satisfies the
-	  *			sufficient decrease and curvature conditions.
-	  *			Tolerances may be too small.
-	  *		</ul>
-	  *
-	  *	@param nfev On exit, this is set to the number of function evaluations.
-	  *
-	  *	@param wa Temporary storage array, of length <code>n</code>.
-	  */
+	 * a Java translation of the function <code>MCSRCH</code> from
+	 * <code>lbfgs.f</code>, which in turn is a slight modification of
+	 * the subroutine <code>CSRCH</code> of More' and Thuente.
+	 * The changes are to allow reverse communication, and do not affect
+	 * the performance of the routine. This function, in turn, calls
+	 * <code>mcstep</code>.<p>
+	 *
+	 * The Java translation was effected mostly mechanically, with some
+	 * manual clean-up; in particular, array indices start at 0 instead of 1.
+	 * Most of the comments from the Fortran code have been pasted in here
+	 * as well.<p>
+	 *
+	 * The purpose of <code>mcsrch</code> is to find a step which satisfies
+	 * a sufficient decrease condition and a curvature condition.<p>
+	 *
+	 * At each stage this function updates an interval of uncertainty with
+	 * endpoints <code>stx</code> and <code>sty</code>. The interval of
+	 * uncertainty is initially chosen so that it contains a
+	 * minimizer of the modified function
+	 * <pre>
+	 *      f(x+stp*s) - f(x) - ftol*stp*(gradf(x)'s).
+	 * </pre>
+	 * If a step is obtained for which the modified function
+	 * has a nonpositive function value and nonnegative derivative,
+	 * then the interval of uncertainty is chosen so that it
+	 * contains a minimizer of <code>f(x+stp*s)</code>.<p>
+	 *
+	 * The algorithm is designed to find a step which satisfies
+	 * the sufficient decrease condition
+	 * <pre>
+	 *       f(x+stp*s) &lt;= f(X) + ftol*stp*(gradf(x)'s),
+	 * </pre>
+	 * and the curvature condition
+	 * <pre>
+	 *       abs(gradf(x+stp*s)'s)) &lt;= gtol*abs(gradf(x)'s).
+	 * </pre>
+	 * If <code>ftol</code> is less than <code>gtol</code> and if, for example,
+	 * the function is bounded below, then there is always a step which
+	 * satisfies both conditions. If no step can be found which satisfies both
+	 * conditions, then the algorithm usually stops when rounding
+	 * errors prevent further progress. In this case <code>stp</code> only
+	 * satisfies the sufficient decrease condition.<p>
+	 *
+	 * @author Original Fortran version by Jorge J. More' and David J. Thuente
+	 *	  as part of the Minpack project, June 1983, Argonne National
+	 *   Laboratory. Java translation by Robert Dodier, August 1997.
+	 *
+	 * @param n The number of variables.
+	 *
+	 * @param x On entry this contains the base point for the line search.
+	 *		On exit it contains <code>x + stp*s</code>.
+	 *
+	 * @param f On entry this contains the value of the objective function
+	 *		at <code>x</code>. On exit it contains the value of the objective
+	 *		function at <code>x + stp*s</code>.
+	 *
+	 * @param g On entry this contains the gradient of the objective function
+	 *		at <code>x</code>. On exit it contains the gradient at
+	 *		<code>x + stp*s</code>.
+	 *
+	 *	@param s The search direction.
+	 *
+	 * @param stp On entry this contains an initial estimate of a satifactory
+	 *		step length. On exit <code>stp</code> contains the final estimate.
+	 *
+	 *	@param ftol Tolerance for the sufficient decrease condition.
+	 *
+	 * @param xtol Termination occurs when the relative width of the interval
+	 *		of uncertainty is at most <code>xtol</code>.
+	 *
+	 *	@param maxfev Termination occurs when the number of evaluations of
+	 *		the objective function is at least <code>maxfev</code> by the end
+	 *		of an iteration.
+	 *
+	 *	@param info This is an output variable, which can have these values:
+	 *		<ul>
+	 *		<li><code>info = 0</code> Improper input parameters.
+	 *		<li><code>info = -1</code> A return is made to compute the function and gradient.
+	 *		<li><code>info = 1</code> The sufficient decrease condition and
+	 *			the directional derivative condition hold.
+	 *		<li><code>info = 2</code> Relative width of the interval of uncertainty
+	 *			is at most <code>xtol</code>.
+	 *		<li><code>info = 3</code> Number of function evaluations has reached <code>maxfev</code>.
+	 *		<li><code>info = 4</code> The step is at the lower bound <code>stpmin</code>.
+	 *		<li><code>info = 5</code> The step is at the upper bound <code>stpmax</code>.
+	 *		<li><code>info = 6</code> Rounding errors prevent further progress.
+	 *			There may not be a step which satisfies the
+	 *			sufficient decrease and curvature conditions.
+	 *			Tolerances may be too small.
+	 *		</ul>
+	 *
+	 *	@param nfev On exit, this is set to the number of function evaluations.
+	 *
+	 *	@param wa Temporary storage array, of length <code>n</code>.
+	 */
 
 	public static void mcsrch ( int n , double[] x , double f , double[] g , double[] s , int is0 , double[] stp , double ftol , double xtol , int maxfev , int[] info , int[] nfev , double[] wa )
 	{
@@ -139,7 +139,7 @@ public class Mcsrch
 		if ( info[0] != - 1 )
 		{
 			infoc[0] = 1;
-			if ( n <= 0 || stp[0] <= 0 || ftol < 0 || LBFGS.gtol < 0 || xtol < 0 || LBFGS.stpmin < 0 || LBFGS.stpmax < LBFGS.stpmin || maxfev <= 0 ) 
+			if ( n <= 0 || stp[0] <= 0 || ftol < 0 || LBFGS.gtol < 0 || xtol < 0 || LBFGS.stpmin < 0 || LBFGS.stpmax < LBFGS.stpmin || maxfev <= 0 )
 				return;
 
 			// Compute the initial gradient in the search direction
@@ -214,9 +214,9 @@ public class Mcsrch
 				// If an unusual termination is to occur then let
 				// stp be the lowest point obtained so far.
 
-				if ( ( brackt[0] && ( stp[0] <= stmin || stp[0] >= stmax ) ) 
-						|| nfev[0] >= maxfev - 1 
-						|| infoc[0] == 0 
+				if ( ( brackt[0] && ( stp[0] <= stmin || stp[0] >= stmax ) )
+						|| nfev[0] >= maxfev - 1
+						|| infoc[0] == 0
 						|| ( brackt[0] && stmax - stmin <= xtol * stmax ) )
 					stp[0] = stx[0];
 
@@ -317,60 +317,60 @@ public class Mcsrch
 	}
 
 	/** The purpose of this function is to compute a safeguarded step for
-	  * a linesearch and to update an interval of uncertainty for
-	  * a minimizer of the function.<p>
-	  * 
-	  * The parameter <code>stx</code> contains the step with the least function
-	  * value. The parameter <code>stp</code> contains the current step. It is
-	  * assumed that the derivative at <code>stx</code> is negative in the
-	  * direction of the step. If <code>brackt[0]</code> is <code>true</code> 
-	  * when <code>mcstep</code> returns then a
-	  * minimizer has been bracketed in an interval of uncertainty
-	  * with endpoints <code>stx</code> and <code>sty</code>.<p>
-	  * 
-	  * Variables that must be modified by <code>mcstep</code> are 
-	  * implemented as 1-element arrays.
-	  *
-	  * @param stx Step at the best step obtained so far. 
-	  *   This variable is modified by <code>mcstep</code>.
-	  * @param fx Function value at the best step obtained so far. 
-	  *   This variable is modified by <code>mcstep</code>.
-	  * @param dx Derivative at the best step obtained so far. The derivative
-	  *   must be negative in the direction of the step, that is, <code>dx</code>
-	  *   and <code>stp-stx</code> must have opposite signs. 
-	  *   This variable is modified by <code>mcstep</code>.
-	  * 
-	  * @param sty Step at the other endpoint of the interval of uncertainty.
-	  *   This variable is modified by <code>mcstep</code>.
-	  * @param fy Function value at the other endpoint of the interval of uncertainty.
-	  *   This variable is modified by <code>mcstep</code>.
-	  * @param dy Derivative at the other endpoint of the interval of
-	  *   uncertainty. This variable is modified by <code>mcstep</code>.
-	  * 
-	  * @param stp Step at the current step. If <code>brackt</code> is set
-	  *   then on input <code>stp</code> must be between <code>stx</code>
-	  *   and <code>sty</code>. On output <code>stp</code> is set to the
-	  *   new step.
-	  * @param fp Function value at the current step.
-	  * @param dp Derivative at the current step.
-	  * 
-	  * @param brackt Tells whether a minimizer has been bracketed.
-	  *   If the minimizer has not been bracketed, then on input this
-	  *   variable must be set <code>false</code>. If the minimizer has
-	  *   been bracketed, then on output this variable is <code>true</code>.
-	  * 
-	  * @param stpmin Lower bound for the step.
-	  * @param stpmax Upper bound for the step.
-	  * 
-	  * @param info On return from <code>mcstep</code>, this is set as follows:
-	  *   If <code>info</code> is 1, 2, 3, or 4, then the step has been
-	  *   computed successfully. Otherwise <code>info</code> = 0, and this
-	  *   indicates improper input parameters.
-	  *
-	  * @author Jorge J. More, David J. Thuente: original Fortran version,
-	  *   as part of Minpack project. Argonne Nat'l Laboratory, June 1983.
-	  *   Robert Dodier: Java translation, August 1997.
-	  */
+	 * a linesearch and to update an interval of uncertainty for
+	 * a minimizer of the function.<p>
+	 *
+	 * The parameter <code>stx</code> contains the step with the least function
+	 * value. The parameter <code>stp</code> contains the current step. It is
+	 * assumed that the derivative at <code>stx</code> is negative in the
+	 * direction of the step. If <code>brackt[0]</code> is <code>true</code>
+	 * when <code>mcstep</code> returns then a
+	 * minimizer has been bracketed in an interval of uncertainty
+	 * with endpoints <code>stx</code> and <code>sty</code>.<p>
+	 *
+	 * Variables that must be modified by <code>mcstep</code> are
+	 * implemented as 1-element arrays.
+	 *
+	 * @param stx Step at the best step obtained so far.
+	 *   This variable is modified by <code>mcstep</code>.
+	 * @param fx Function value at the best step obtained so far.
+	 *   This variable is modified by <code>mcstep</code>.
+	 * @param dx Derivative at the best step obtained so far. The derivative
+	 *   must be negative in the direction of the step, that is, <code>dx</code>
+	 *   and <code>stp-stx</code> must have opposite signs.
+	 *   This variable is modified by <code>mcstep</code>.
+	 *
+	 * @param sty Step at the other endpoint of the interval of uncertainty.
+	 *   This variable is modified by <code>mcstep</code>.
+	 * @param fy Function value at the other endpoint of the interval of uncertainty.
+	 *   This variable is modified by <code>mcstep</code>.
+	 * @param dy Derivative at the other endpoint of the interval of
+	 *   uncertainty. This variable is modified by <code>mcstep</code>.
+	 *
+	 * @param stp Step at the current step. If <code>brackt</code> is set
+	 *   then on input <code>stp</code> must be between <code>stx</code>
+	 *   and <code>sty</code>. On output <code>stp</code> is set to the
+	 *   new step.
+	 * @param fp Function value at the current step.
+	 * @param dp Derivative at the current step.
+	 *
+	 * @param brackt Tells whether a minimizer has been bracketed.
+	 *   If the minimizer has not been bracketed, then on input this
+	 *   variable must be set <code>false</code>. If the minimizer has
+	 *   been bracketed, then on output this variable is <code>true</code>.
+	 *
+	 * @param stpmin Lower bound for the step.
+	 * @param stpmax Upper bound for the step.
+	 *
+	 * @param info On return from <code>mcstep</code>, this is set as follows:
+	 *   If <code>info</code> is 1, 2, 3, or 4, then the step has been
+	 *   computed successfully. Otherwise <code>info</code> = 0, and this
+	 *   indicates improper input parameters.
+	 *
+	 * @author Jorge J. More, David J. Thuente: original Fortran version,
+	 *   as part of Minpack project. Argonne Nat'l Laboratory, June 1983.
+	 *   Robert Dodier: Java translation, August 1997.
+	 */
 	public static void mcstep ( double[] stx , double[] fx , double[] dx , double[] sty , double[] fy , double[] dy , double[] stp , double fp , double dp , boolean[] brackt , double stpmin , double stpmax , int[] info )
 	{
 		boolean bound;
@@ -378,9 +378,9 @@ public class Mcsrch
 
 		info[0] = 0;
 
-		if ( (brackt[0] && (stp[0] <= Math.min (stx[0], sty[0]) || stp[0] >= Math.max (stx[0], sty[0])) ) 
-				|| dx[0] * (stp[0] - stx[0]) >= 0.0 
-				|| stpmax < stpmin ) 
+		if ( (brackt[0] && (stp[0] <= Math.min (stx[0], sty[0]) || stp[0] >= Math.max (stx[0], sty[0])) )
+				|| dx[0] * (stp[0] - stx[0]) >= 0.0
+				|| stpmax < stpmin )
 			return;
 
 		// Determine if the derivatives have opposite sign.
@@ -396,7 +396,7 @@ public class Mcsrch
 
 			info[0] = 1;
 			bound = true;
-			
+
 			theta = 3 * ( fx[0] - fp ) / ( stp[0] - stx[0] ) + dx[0] + dp;
 			s = max3 ( Math.abs ( theta ) , Math.abs ( dx[0] ) , Math.abs ( dp ) );
 			gamma = s * Math.sqrt ( sqr( theta / s ) - ( dx[0] / s ) * ( dp / s ) );
@@ -406,7 +406,7 @@ public class Mcsrch
 			r = p/q;
 			stpc = stx[0] + r * ( stp[0] - stx[0] );
 			stpq = stx[0] + ( ( dx[0] / ( ( fx[0] - fp ) / ( stp[0] - stx[0] ) + dx[0] ) ) / 2 ) * ( stp[0] - stx[0] );
-			
+
 			if ( Math.abs ( stpc - stx[0] ) < Math.abs ( stpq - stx[0] ) )
 			{
 				stpf = stpc;
@@ -426,7 +426,7 @@ public class Mcsrch
 
 			info[0] = 2;
 			bound = false;
-			
+
 			theta = 3 * ( fx[0] - fp ) / ( stp[0] - stx[0] ) + dx[0] + dp;
 			s = max3 ( Math.abs ( theta ) , Math.abs ( dx[0] ) , Math.abs ( dp ) );
 			gamma = s * Math.sqrt ( sqr( theta / s ) - ( dx[0] / s ) * ( dp / s ) );
@@ -436,7 +436,7 @@ public class Mcsrch
 			r = p/q;
 			stpc = stp[0] + r * ( stx[0] - stp[0] );
 			stpq = stp[0] + ( dp / ( dp - dx[0] ) ) * ( stx[0] - stp[0] );
-			
+
 			if ( Math.abs ( stpc - stp[0] ) > Math.abs ( stpq - stp[0] ) )
 			{
 				stpf = stpc;

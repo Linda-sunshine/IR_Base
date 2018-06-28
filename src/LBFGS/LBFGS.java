@@ -3,82 +3,82 @@ package LBFGS;
 public class LBFGS {
 
 
-/* RISO: an implementation of distributed belief networks.
- * Copyright (C) 1999, Robert Dodier.
- *
- * This program is free software; you can redistribute it and/or modify
- * it under either option (1) or (2) below.
- * (1) The GNU General Public License as published by the Free Software
- * Foundation; either version 2 of the License, or (at your option)
- * any later version.
- * (2) The Apache license, version 2.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA, 02111-1307, USA,
- * or visit the GNU web site, www.gnu.org.
- */
+	/* RISO: an implementation of distributed belief networks.
+	 * Copyright (C) 1999, Robert Dodier.
+	 *
+	 * This program is free software; you can redistribute it and/or modify
+	 * it under either option (1) or (2) below.
+	 * (1) The GNU General Public License as published by the Free Software
+	 * Foundation; either version 2 of the License, or (at your option)
+	 * any later version.
+	 * (2) The Apache license, version 2.
+	 *
+	 * This program is distributed in the hope that it will be useful,
+	 * but WITHOUT ANY WARRANTY; without even the implied warranty of
+	 * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+	 * GNU General Public License for more details.
+	 *
+	 * You should have received a copy of the GNU General Public License
+	 * along with this program; if not, write to the Free Software
+	 * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA, 02111-1307, USA,
+	 * or visit the GNU web site, www.gnu.org.
+	 */
 
 /** <p> This class contains code for the limited-memory Broyden-Fletcher-Goldfarb-Shanno
-  * (LBFGS) algorithm for large-scale multidimensional unconstrained minimization problems.
-  * This file is a translation of Fortran code written by Jorge Nocedal.
-  * The only modification to the algorithm is the addition of a cache to 
-  * store the result of the most recent line search. See <tt>solution_cache</tt> below.
-  *
-  * LBFGS is distributed as part of the RISO project. Following is a message from Jorge Nocedal:
-  * <pre>
-  *   From: Jorge Nocedal [mailto:nocedal@dario.ece.nwu.edu]
-  *   Sent: Friday, August 17, 2001 9:09 AM
-  *   To: Robert Dodier
-  *   Subject: Re: Commercial licensing terms for LBFGS?
-  *   
-  *   Robert:
-  *   The code L-BFGS (for unconstrained problems) is in the public domain.
-  *   It can be used in any commercial application.
-  *   
-  *   The code L-BFGS-B (for bound constrained problems) belongs to
-  *   ACM. You need to contact them for a commercial license. It is
-  *   algorithm 778.
-  *   
-  *   Jorge
-  * </pre>
-  * 
-  * <p> This code is derived from the Fortran program <code>lbfgs.f</code>.
-  * The Java translation was effected mostly mechanically, with some
-  * manual clean-up; in particular, array indices start at 0 instead of 1.
-  * Most of the comments from the Fortran code have been pasted in here
-  * as well.</p>
-  *
-  * <p> Here's some information on the original LBFGS Fortran source code,
-  * available at <a href="http://www.netlib.org/opt/lbfgs_um.shar">
-  * http://www.netlib.org/opt/lbfgs_um.shar</a>. This info is taken
-  * verbatim from the Netlib blurb on the Fortran source.</p>
-  *
-  * <pre>
-  * 	file    opt/lbfgs_um.shar
-  * 	for     unconstrained optimization problems
-  * 	alg     limited memory BFGS method
-  * 	by      J. Nocedal
-  * 	contact nocedal@eecs.nwu.edu
-  * 	ref     D. C. Liu and J. Nocedal, ``On the limited memory BFGS method for
-  * 	,       large scale optimization methods'' Mathematical Programming 45
-  * 	,       (1989), pp. 503-528.
-  * 	,       (Postscript file of this paper is available via anonymous ftp
-  * 	,       to eecs.nwu.edu in the directory pub/lbfgs/lbfgs_um.)
-  * </pre>
-  *
-  * @author Jorge Nocedal: original Fortran version, including comments
-  * (July 1990). Robert Dodier: Java translation, August 1997.
-  */
+ * (LBFGS) algorithm for large-scale multidimensional unconstrained minimization problems.
+ * This file is a translation of Fortran code written by Jorge Nocedal.
+ * The only modification to the algorithm is the addition of a cache to
+ * store the result of the most recent line search. See <tt>solution_cache</tt> below.
+ *
+ * LBFGS is distributed as part of the RISO project. Following is a message from Jorge Nocedal:
+ * <pre>
+ *   From: Jorge Nocedal [mailto:nocedal@dario.ece.nwu.edu]
+ *   Sent: Friday, August 17, 2001 9:09 AM
+ *   To: Robert Dodier
+ *   Subject: Re: Commercial licensing terms for LBFGS?
+ *
+ *   Robert:
+ *   The code L-BFGS (for unconstrained problems) is in the public domain.
+ *   It can be used in any commercial application.
+ *
+ *   The code L-BFGS-B (for bound constrained problems) belongs to
+ *   ACM. You need to contact them for a commercial license. It is
+ *   algorithm 778.
+ *
+ *   Jorge
+ * </pre>
+ *
+ * <p> This code is derived from the Fortran program <code>lbfgs.f</code>.
+ * The Java translation was effected mostly mechanically, with some
+ * manual clean-up; in particular, array indices start at 0 instead of 1.
+ * Most of the comments from the Fortran code have been pasted in here
+ * as well.</p>
+ *
+ * <p> Here's some information on the original LBFGS Fortran source code,
+ * available at <a href="http://www.netlib.org/opt/lbfgs_um.shar">
+ * http://www.netlib.org/opt/lbfgs_um.shar</a>. This info is taken
+ * verbatim from the Netlib blurb on the Fortran source.</p>
+ *
+ * <pre>
+ * 	file    opt/lbfgs_um.shar
+ * 	for     unconstrained optimization problems
+ * 	alg     limited memory BFGS method
+ * 	by      J. Nocedal
+ * 	contact nocedal@eecs.nwu.edu
+ * 	ref     D. C. Liu and J. Nocedal, ``On the limited memory BFGS method for
+ * 	,       large scale optimization methods'' Mathematical Programming 45
+ * 	,       (1989), pp. 503-528.
+ * 	,       (Postscript file of this paper is available via anonymous ftp
+ * 	,       to eecs.nwu.edu in the directory pub/lbfgs/lbfgs_um.)
+ * </pre>
+ *
+ * @author Jorge Nocedal: original Fortran version, including comments
+ * (July 1990). Robert Dodier: Java translation, August 1997.
+ */
 
 	/** Specialized exception class for LBFGS; contains the
-	  * <code>iflag</code> value returned by <code>lbfgs</code>.
-	  */
+	 * <code>iflag</code> value returned by <code>lbfgs</code>.
+	 */
 
 	public static class ExceptionWithIflag extends Exception
 	{
@@ -89,42 +89,42 @@ public class LBFGS {
 	}
 
 	/** Controls the accuracy of the line search <code>mcsrch</code>. If the
-	  * function and gradient evaluations are inexpensive with respect
-	  * to the cost of the iteration (which is sometimes the case when
-	  * solving very large problems) it may be advantageous to set <code>gtol</code>
-	  * to a small value. A typical small value is 0.1.  Restriction:
-	  * <code>gtol</code> should be greater than 1e-4.
-	  */
+	 * function and gradient evaluations are inexpensive with respect
+	 * to the cost of the iteration (which is sometimes the case when
+	 * solving very large problems) it may be advantageous to set <code>gtol</code>
+	 * to a small value. A typical small value is 0.1.  Restriction:
+	 * <code>gtol</code> should be greater than 1e-4.
+	 */
 
-	public static double gtol = 0.5;
+	public static double gtol = 0.9;
 
 	/** Specify lower bound for the step in the line search.
-	  * The default value is 1e-20. This value need not be modified unless
-	  * the exponent is too large for the machine being used, or unless
-	  * the problem is extremely badly scaled (in which case the exponent
-	  * should be increased).
-	  */
+	 * The default value is 1e-20. This value need not be modified unless
+	 * the exponent is too large for the machine being used, or unless
+	 * the problem is extremely badly scaled (in which case the exponent
+	 * should be increased).
+	 */
 
-	public static double stpmin = 1e-32;
+	public static double stpmin = 1e-20;
 
 	/** Specify upper bound for the step in the line search.
-	  * The default value is 1e20. This value need not be modified unless
-	  * the exponent is too large for the machine being used, or unless
-	  * the problem is extremely badly scaled (in which case the exponent
-	  * should be increased).
-	  */
+	 * The default value is 1e20. This value need not be modified unless
+	 * the exponent is too large for the machine being used, or unless
+	 * the problem is extremely badly scaled (in which case the exponent
+	 * should be increased).
+	 */
 
-	public static double stpmax = 1e32;
+	public static double stpmax = 1e20;
 
 	/** The solution vector as it was at the end of the most recently
-	  * completed line search. This will usually be different from the
-	  * return value of the parameter <tt>x</tt> of <tt>lbfgs</tt>, which
-	  * is modified by line-search steps. A caller which wants to stop the
-	  * optimization iterations before <tt>LBFGS.lbfgs</tt> automatically stops
-	  * (by reaching a very small gradient) should copy this vector instead
-	  * of using <tt>x</tt>. When <tt>LBFGS.lbfgs</tt> automatically stops,
-	  * then <tt>x</tt> and <tt>solution_cache</tt> are the same.
-	  */
+	 * completed line search. This will usually be different from the
+	 * return value of the parameter <tt>x</tt> of <tt>lbfgs</tt>, which
+	 * is modified by line-search steps. A caller which wants to stop the
+	 * optimization iterations before <tt>LBFGS.lbfgs</tt> automatically stops
+	 * (by reaching a very small gradient) should copy this vector instead
+	 * of using <tt>x</tt>. When <tt>LBFGS.lbfgs</tt> automatically stops,
+	 * then <tt>x</tt> and <tt>solution_cache</tt> are the same.
+	 */
 	public static double[] solution_cache = null;
 
 	private static double gnorm = 0, stp1 = 0, ftol = 0, stp[] = new double[1], ys = 0, yy = 0, sq = 0, yr = 0, beta = 0, xnorm = 0;
@@ -134,147 +134,147 @@ public class LBFGS {
 	private static double[] w = null;
 
 	/** This method returns the total number of evaluations of the objective
-	  * function since the last time LBFGS was restarted. The total number of function
-	  * evaluations increases by the number of evaluations required for the
-	  * line search; the total is only increased after a successful line search.
-	  */
+	 * function since the last time LBFGS was restarted. The total number of function
+	 * evaluations increases by the number of evaluations required for the
+	 * line search; the total is only increased after a successful line search.
+	 */
 	public static int nfevaluations() { return nfun; }
-	
+
 	/** This subroutine solves the unconstrained minimization problem
-	  * <pre>
-	  *     min f(x),    x = (x1,x2,...,x_n),
-	  * </pre>
-	  * using the limited-memory BFGS method. The routine is especially
-	  * effective on problems involving a large number of variables. In
-	  * a typical iteration of this method an approximation <code>Hk</code> to the
-	  * inverse of the Hessian is obtained by applying <code>m</code> BFGS updates to
-	  * a diagonal matrix <code>Hk0</code>, using information from the previous M steps.
-	  * The user specifies the number <code>m</code>, which determines the amount of
-	  * storage required by the routine. The user may also provide the
-	  * diagonal matrices <code>Hk0</code> if not satisfied with the default choice.
-	  * The algorithm is described in "On the limited memory BFGS method
-	  * for large scale optimization", by D. Liu and J. Nocedal,
-	  * Mathematical Programming B 45 (1989) 503-528.
-	  *
-	  * The user is required to calculate the function value <code>f</code> and its
-	  * gradient <code>g</code>. In order to allow the user complete control over
-	  * these computations, reverse  communication is used. The routine
-	  * must be called repeatedly under the control of the parameter
-	  * <code>iflag</code>. 
-	  *
-	  * The steplength is determined at each iteration by means of the
-	  * line search routine <code>mcsrch</code>, which is a slight modification of
-	  * the routine <code>CSRCH</code> written by More' and Thuente.
-	  *
-	  * The only variables that are machine-dependent are <code>xtol</code>,
-	  * <code>stpmin</code> and <code>stpmax</code>.
-	  *
-	  * Progress messages and non-fatal error messages are printed to <code>System.err</code>.
-	  * Fatal errors cause exception to be thrown, as listed below.
-	  *
-	  * @param n The number of variables in the minimization problem.
-	  *		Restriction: <code>n &gt; 0</code>.
-	  *
-	  * @param m The number of corrections used in the BFGS update. 
-	  *		Values of <code>m</code> less than 3 are not recommended;
-	  *		large values of <code>m</code> will result in excessive
-	  *		computing time. <code>3 &lt;= m &lt;= 7</code> is recommended.
-	  *		Restriction: <code>m &gt; 0</code>.
-	  *
-	  * @param x On initial entry this must be set by the user to the values
-	  *		of the initial estimate of the solution vector. On exit with
-	  *		<code>iflag = 0</code>, it contains the values of the variables
-	  *		at the best point found (usually a solution).
-	  *
-	  * @param f Before initial entry and on a re-entry with <code>iflag = 1</code>,
-	  *		it must be set by the user to contain the value of the function
-	  *		<code>f</code> at the point <code>x</code>.
-	  *
-	  * @param g Before initial entry and on a re-entry with <code>iflag = 1</code>,
-	  *		it must be set by the user to contain the components of the
-	  *		gradient <code>g</code> at the point <code>x</code>.
-	  *
-	  * @param diagco  Set this to <code>true</code> if the user  wishes to
-	  *		provide the diagonal matrix <code>Hk0</code> at each iteration.
-	  *		Otherwise it should be set to <code>false</code> in which case
-	  *		<code>lbfgs</code> will use a default value described below. If
-	  *		<code>diagco</code> is set to <code>true</code> the routine will
-	  *		return at each iteration of the algorithm with <code>iflag = 2</code>,
-	  *		and the diagonal matrix <code>Hk0</code> must be provided in
-	  *		the array <code>diag</code>.
-	  *
-	  * @param diag If <code>diagco = true</code>, then on initial entry or on
-	  *		re-entry with <code>iflag = 2</code>, <code>diag</code>
-	  *		must be set by the user to contain the values of the 
-	  *		diagonal matrix <code>Hk0</code>. Restriction: all elements of
-	  *		<code>diag</code> must be positive.
-	  *
-	  * @param iprint Specifies output generated by <code>lbfgs</code>.
-	  *		<code>iprint[0]</code> specifies the frequency of the output:
-	  *		<ul>
-	  *		<li> <code>iprint[0] &lt; 0</code>: no output is generated,
-	  *		<li> <code>iprint[0] = 0</code>: output only at first and last iteration,
-	  *		<li> <code>iprint[0] &gt; 0</code>: output every <code>iprint[0]</code> iterations.
-	  *		</ul>
-	  *
-	  *		<code>iprint[1]</code> specifies the type of output generated:
-	  *		<ul>
-	  *		<li> <code>iprint[1] = 0</code>: iteration count, number of function 
-	  *			evaluations, function value, norm of the gradient, and steplength,
-	  *		<li> <code>iprint[1] = 1</code>: same as <code>iprint[1]=0</code>, plus vector of
-	  *			variables and  gradient vector at the initial point,
-	  *		<li> <code>iprint[1] = 2</code>: same as <code>iprint[1]=1</code>, plus vector of
-	  *			variables,
-	  *		<li> <code>iprint[1] = 3</code>: same as <code>iprint[1]=2</code>, plus gradient vector.
-	  *		</ul>
-	  *
-	  *	@param eps Determines the accuracy with which the solution
-	  *		is to be found. The subroutine terminates when
-	  *		<pre>
-	  *            ||G|| &lt; EPS max(1,||X||),
-	  *		</pre>
-	  *		where <code>||.||</code> denotes the Euclidean norm.
-	  *
-	  *	@param xtol An estimate of the machine precision (e.g. 10e-16 on a
-	  *		SUN station 3/60). The line search routine will terminate if the
-	  *		relative width of the interval of uncertainty is less than
-	  *		<code>xtol</code>.
-	  *
-	  * @param iflag This must be set to 0 on initial entry to <code>lbfgs</code>.
-	  *		A return with <code>iflag &lt; 0</code> indicates an error,
-	  *		and <code>iflag = 0</code> indicates that the routine has
-	  *		terminated without detecting errors. On a return with
-	  *		<code>iflag = 1</code>, the user must evaluate the function
-	  *		<code>f</code> and gradient <code>g</code>. On a return with
-	  *		<code>iflag = 2</code>, the user must provide the diagonal matrix
-	  *		<code>Hk0</code>.
-	  *
-	  *		The following negative values of <code>iflag</code>, detecting an error,
-	  *		are possible:
-	  *		<ul>
-	  *		<li> <code>iflag = -1</code> The line search routine
-	  *			<code>mcsrch</code> failed. One of the following messages
-	  *			is printed:
-	  *			<ul>
-	  *			<li> Improper input parameters.
-	  *			<li> Relative width of the interval of uncertainty is at
-	  *				most <code>xtol</code>.
-	  *			<li> More than 20 function evaluations were required at the
-	  *				present iteration.
-	  *			<li> The step is too small.
-	  *			<li> The step is too large.
-	  *			<li> Rounding errors prevent further progress. There may not
-	  *				be  a step which satisfies the sufficient decrease and
-	  *				curvature conditions. Tolerances may be too small.
-	  *			</ul>
-	  *		<li><code>iflag = -2</code> The i-th diagonal element of the diagonal inverse
-	  *			Hessian approximation, given in DIAG, is not positive.
-	  *		<li><code>iflag = -3</code> Improper input parameters for LBFGS
-	  *			(<code>n</code> or <code>m</code> are not positive).
-	  *		</ul>
-	  *
-	  *	@throws LBFGS.ExceptionWithIflag 
-	  */
+	 * <pre>
+	 *     min f(x),    x = (x1,x2,...,x_n),
+	 * </pre>
+	 * using the limited-memory BFGS method. The routine is especially
+	 * effective on problems involving a large number of variables. In
+	 * a typical iteration of this method an approximation <code>Hk</code> to the
+	 * inverse of the Hessian is obtained by applying <code>m</code> BFGS updates to
+	 * a diagonal matrix <code>Hk0</code>, using information from the previous M steps.
+	 * The user specifies the number <code>m</code>, which determines the amount of
+	 * storage required by the routine. The user may also provide the
+	 * diagonal matrices <code>Hk0</code> if not satisfied with the default choice.
+	 * The algorithm is described in "On the limited memory BFGS method
+	 * for large scale optimization", by D. Liu and J. Nocedal,
+	 * Mathematical Programming B 45 (1989) 503-528.
+	 *
+	 * The user is required to calculate the function value <code>f</code> and its
+	 * gradient <code>g</code>. In order to allow the user complete control over
+	 * these computations, reverse  communication is used. The routine
+	 * must be called repeatedly under the control of the parameter
+	 * <code>iflag</code>.
+	 *
+	 * The steplength is determined at each iteration by means of the
+	 * line search routine <code>mcsrch</code>, which is a slight modification of
+	 * the routine <code>CSRCH</code> written by More' and Thuente.
+	 *
+	 * The only variables that are machine-dependent are <code>xtol</code>,
+	 * <code>stpmin</code> and <code>stpmax</code>.
+	 *
+	 * Progress messages and non-fatal error messages are printed to <code>System.err</code>.
+	 * Fatal errors cause exception to be thrown, as listed below.
+	 *
+	 * @param n The number of variables in the minimization problem.
+	 *		Restriction: <code>n &gt; 0</code>.
+	 *
+	 * @param m The number of corrections used in the BFGS update.
+	 *		Values of <code>m</code> less than 3 are not recommended;
+	 *		large values of <code>m</code> will result in excessive
+	 *		computing time. <code>3 &lt;= m &lt;= 7</code> is recommended.
+	 *		Restriction: <code>m &gt; 0</code>.
+	 *
+	 * @param x On initial entry this must be set by the user to the values
+	 *		of the initial estimate of the solution vector. On exit with
+	 *		<code>iflag = 0</code>, it contains the values of the variables
+	 *		at the best point found (usually a solution).
+	 *
+	 * @param f Before initial entry and on a re-entry with <code>iflag = 1</code>,
+	 *		it must be set by the user to contain the value of the function
+	 *		<code>f</code> at the point <code>x</code>.
+	 *
+	 * @param g Before initial entry and on a re-entry with <code>iflag = 1</code>,
+	 *		it must be set by the user to contain the components of the
+	 *		gradient <code>g</code> at the point <code>x</code>.
+	 *
+	 * @param diagco  Set this to <code>true</code> if the user  wishes to
+	 *		provide the diagonal matrix <code>Hk0</code> at each iteration.
+	 *		Otherwise it should be set to <code>false</code> in which case
+	 *		<code>lbfgs</code> will use a default value described below. If
+	 *		<code>diagco</code> is set to <code>true</code> the routine will
+	 *		return at each iteration of the algorithm with <code>iflag = 2</code>,
+	 *		and the diagonal matrix <code>Hk0</code> must be provided in
+	 *		the array <code>diag</code>.
+	 *
+	 * @param diag If <code>diagco = true</code>, then on initial entry or on
+	 *		re-entry with <code>iflag = 2</code>, <code>diag</code>
+	 *		must be set by the user to contain the values of the
+	 *		diagonal matrix <code>Hk0</code>. Restriction: all elements of
+	 *		<code>diag</code> must be positive.
+	 *
+	 * @param iprint Specifies output generated by <code>lbfgs</code>.
+	 *		<code>iprint[0]</code> specifies the frequency of the output:
+	 *		<ul>
+	 *		<li> <code>iprint[0] &lt; 0</code>: no output is generated,
+	 *		<li> <code>iprint[0] = 0</code>: output only at first and last iteration,
+	 *		<li> <code>iprint[0] &gt; 0</code>: output every <code>iprint[0]</code> iterations.
+	 *		</ul>
+	 *
+	 *		<code>iprint[1]</code> specifies the type of output generated:
+	 *		<ul>
+	 *		<li> <code>iprint[1] = 0</code>: iteration count, number of function
+	 *			evaluations, function value, norm of the gradient, and steplength,
+	 *		<li> <code>iprint[1] = 1</code>: same as <code>iprint[1]=0</code>, plus vector of
+	 *			variables and  gradient vector at the initial point,
+	 *		<li> <code>iprint[1] = 2</code>: same as <code>iprint[1]=1</code>, plus vector of
+	 *			variables,
+	 *		<li> <code>iprint[1] = 3</code>: same as <code>iprint[1]=2</code>, plus gradient vector.
+	 *		</ul>
+	 *
+	 *	@param eps Determines the accuracy with which the solution
+	 *		is to be found. The subroutine terminates when
+	 *		<pre>
+	 *            ||G|| &lt; EPS max(1,||X||),
+	 *		</pre>
+	 *		where <code>||.||</code> denotes the Euclidean norm.
+	 *
+	 *	@param xtol An estimate of the machine precision (e.g. 10e-16 on a
+	 *		SUN station 3/60). The line search routine will terminate if the
+	 *		relative width of the interval of uncertainty is less than
+	 *		<code>xtol</code>.
+	 *
+	 * @param iflag This must be set to 0 on initial entry to <code>lbfgs</code>.
+	 *		A return with <code>iflag &lt; 0</code> indicates an error,
+	 *		and <code>iflag = 0</code> indicates that the routine has
+	 *		terminated without detecting errors. On a return with
+	 *		<code>iflag = 1</code>, the user must evaluate the function
+	 *		<code>f</code> and gradient <code>g</code>. On a return with
+	 *		<code>iflag = 2</code>, the user must provide the diagonal matrix
+	 *		<code>Hk0</code>.
+	 *
+	 *		The following negative values of <code>iflag</code>, detecting an error,
+	 *		are possible:
+	 *		<ul>
+	 *		<li> <code>iflag = -1</code> The line search routine
+	 *			<code>mcsrch</code> failed. One of the following messages
+	 *			is printed:
+	 *			<ul>
+	 *			<li> Improper input parameters.
+	 *			<li> Relative width of the interval of uncertainty is at
+	 *				most <code>xtol</code>.
+	 *			<li> More than 20 function evaluations were required at the
+	 *				present iteration.
+	 *			<li> The step is too small.
+	 *			<li> The step is too large.
+	 *			<li> Rounding errors prevent further progress. There may not
+	 *				be  a step which satisfies the sufficient decrease and
+	 *				curvature conditions. Tolerances may be too small.
+	 *			</ul>
+	 *		<li><code>iflag = -2</code> The i-th diagonal element of the diagonal inverse
+	 *			Hessian approximation, given in DIAG, is not positive.
+	 *		<li><code>iflag = -3</code> Improper input parameters for LBFGS
+	 *			(<code>n</code> or <code>m</code> are not positive).
+	 *		</ul>
+	 *
+	 *	@throws LBFGS.ExceptionWithIflag
+	 */
 
 	public static void lbfgs ( int n , int m , double[] x , double f , double[] g , boolean diagco , double[] diag , int[] iprint , double eps , double xtol , int[] iflag ) throws ExceptionWithIflag
 	{
@@ -338,8 +338,8 @@ public class LBFGS {
 
 			gnorm = Math.sqrt ( ddot ( n , g , 0, 1 , g , 0, 1 ) );
 			stp1= 1/gnorm;
-			ftol= 0.0001; 
-			maxfev= 50;
+			ftol= 0.0001;
+			maxfev= 20;
 
 			if ( iprint [ 1 -1] >= 0 ) lb1 ( iprint , iter , nfun , gnorm , n , m , x , f , g , stp , finish );
 
@@ -445,7 +445,7 @@ public class LBFGS {
 			}
 
 			Mcsrch.mcsrch ( n , x , f , g , w , ispt + point * n , stp , ftol , xtol , maxfev , info , nfev , diag );
-	
+
 			if ( info[0] == - 1 )
 			{
 				iflag[0]=1;
@@ -486,12 +486,12 @@ public class LBFGS {
 			// the completion (info[0]==1) of the most recent line search.
 
 			System.arraycopy( x, 0, solution_cache, 0, n );
-			
-			
+
+
 			if ( finish )
 			{
 				iflag[0]=0;
-					return;
+				return;
 			}
 
 			execute_entire_while_loop = true;		// from now on, execute whole loop
@@ -499,39 +499,39 @@ public class LBFGS {
 	}
 
 	/** Print debugging and status messages for <code>lbfgs</code>.
-	  * Depending on the parameter <code>iprint</code>, this can include 
-	  * number of function evaluations, current function value, etc.
-	  * The messages are output to <code>System.err</code>.
-	  *
-	  * @param iprint Specifies output generated by <code>lbfgs</code>.<p>
-	  *		<code>iprint[0]</code> specifies the frequency of the output:
-	  *		<ul>
-	  *		<li> <code>iprint[0] &lt; 0</code>: no output is generated,
-	  *		<li> <code>iprint[0] = 0</code>: output only at first and last iteration,
-	  *		<li> <code>iprint[0] &gt; 0</code>: output every <code>iprint[0]</code> iterations.
-	  *		</ul><p>
-	  *
-	  *		<code>iprint[1]</code> specifies the type of output generated:
-	  *		<ul>
-	  *		<li> <code>iprint[1] = 0</code>: iteration count, number of function 
-	  *			evaluations, function value, norm of the gradient, and steplength,
-	  *		<li> <code>iprint[1] = 1</code>: same as <code>iprint[1]=0</code>, plus vector of
-	  *			variables and  gradient vector at the initial point,
-	  *		<li> <code>iprint[1] = 2</code>: same as <code>iprint[1]=1</code>, plus vector of
-	  *			variables,
-	  *		<li> <code>iprint[1] = 3</code>: same as <code>iprint[1]=2</code>, plus gradient vector.
-	  *		</ul>
-	  * @param iter Number of iterations so far.
-	  * @param nfun Number of function evaluations so far.
-	  * @param gnorm Norm of gradient at current solution <code>x</code>.
-	  * @param n Number of free parameters.
-	  * @param m Number of corrections kept.
-	  * @param x Current solution.
-	  * @param f Function value at current solution.
-	  * @param g Gradient at current solution <code>x</code>.
-	  * @param stp Current stepsize.
-	  * @param finish Whether this method should print the ``we're done'' message.
-	  */
+	 * Depending on the parameter <code>iprint</code>, this can include
+	 * number of function evaluations, current function value, etc.
+	 * The messages are output to <code>System.err</code>.
+	 *
+	 * @param iprint Specifies output generated by <code>lbfgs</code>.<p>
+	 *		<code>iprint[0]</code> specifies the frequency of the output:
+	 *		<ul>
+	 *		<li> <code>iprint[0] &lt; 0</code>: no output is generated,
+	 *		<li> <code>iprint[0] = 0</code>: output only at first and last iteration,
+	 *		<li> <code>iprint[0] &gt; 0</code>: output every <code>iprint[0]</code> iterations.
+	 *		</ul><p>
+	 *
+	 *		<code>iprint[1]</code> specifies the type of output generated:
+	 *		<ul>
+	 *		<li> <code>iprint[1] = 0</code>: iteration count, number of function
+	 *			evaluations, function value, norm of the gradient, and steplength,
+	 *		<li> <code>iprint[1] = 1</code>: same as <code>iprint[1]=0</code>, plus vector of
+	 *			variables and  gradient vector at the initial point,
+	 *		<li> <code>iprint[1] = 2</code>: same as <code>iprint[1]=1</code>, plus vector of
+	 *			variables,
+	 *		<li> <code>iprint[1] = 3</code>: same as <code>iprint[1]=2</code>, plus gradient vector.
+	 *		</ul>
+	 * @param iter Number of iterations so far.
+	 * @param nfun Number of function evaluations so far.
+	 * @param gnorm Norm of gradient at current solution <code>x</code>.
+	 * @param n Number of free parameters.
+	 * @param m Number of corrections kept.
+	 * @param x Current solution.
+	 * @param f Function value at current solution.
+	 * @param g Gradient at current solution <code>x</code>.
+	 * @param stp Current stepsize.
+	 * @param finish Whether this method should print the ``we're done'' message.
+	 */
 	public static void lb1 ( int[] iprint , int iter , int nfun , double gnorm , int n , int m , double[] x , double f , double[] g , double[] stp , boolean finish )
 	{
 		int i;
@@ -575,7 +575,7 @@ public class LBFGS {
 			else
 			{
 				if ( iprint [ 2 -1] > 1 && finish )
-						System.err.println( "\ti\tnfn\tfunc\tgnorm\tsteplength" );
+					System.err.println( "\ti\tnfn\tfunc\tgnorm\tsteplength" );
 				System.err.println( "\t"+iter+"\t"+nfun+"\t"+f+"\t"+gnorm+"\t"+stp[0] );
 			}
 			if ( iprint [ 2 -1] == 2 || iprint [ 2 -1] == 3 )
@@ -606,10 +606,10 @@ public class LBFGS {
 	}
 
 	/** Compute the sum of a vector times a scalara plus another vector.
-	  * Adapted from the subroutine <code>daxpy</code> in <code>lbfgs.f</code>.
-	  * There could well be faster ways to carry out this operation; this
-	  * code is a straight translation from the Fortran.
-	  */ 
+	 * Adapted from the subroutine <code>daxpy</code> in <code>lbfgs.f</code>.
+	 * There could well be faster ways to carry out this operation; this
+	 * code is a straight translation from the Fortran.
+	 */
 	public static void daxpy ( int n , double da , double[] dx , int ix0, int incx , double[] dy , int iy0, int incy )
 	{
 		int i, ix, iy, m, mp1;
@@ -659,10 +659,10 @@ public class LBFGS {
 	}
 
 	/** Compute the dot product of two vectors.
-	  * Adapted from the subroutine <code>ddot</code> in <code>lbfgs.f</code>.
-	  * There could well be faster ways to carry out this operation; this
-	  * code is a straight translation from the Fortran.
-	  */ 
+	 * Adapted from the subroutine <code>ddot</code> in <code>lbfgs.f</code>.
+	 * There could well be faster ways to carry out this operation; this
+	 * code is a straight translation from the Fortran.
+	 */
 	public static double ddot ( int n, double[] dx, int ix0, int incx, double[] dy, int iy0, int incy )
 	{
 		double dtemp;
