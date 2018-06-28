@@ -4,14 +4,19 @@ import java.io.File;
 import java.io.IOException;
 import java.text.ParseException;
 
+import Analyzer.BipartiteAnalyzer;
 import structures.TopicModelParameter;
 import structures._Corpus;
+import structures._Doc;
+import structures._Review;
+import topicmodels.CTM.CTM;
 import topicmodels.LDA.LDA_Gibbs;
 import topicmodels.embeddingModel.ETBIR;
 import topicmodels.multithreads.LDA.LDA_Variational_multithread;
 import topicmodels.multithreads.pLSA.pLSA_multithread;
 import topicmodels.pLSA.pLSA;
 import Analyzer.MultiThreadedReviewAnalyzer;
+import utils.Utils;
 
 public class ETBIRExecution {
 
@@ -21,22 +26,37 @@ public class ETBIRExecution {
 		int classNumber = 6; //Define the number of classes in this Naive Bayes.
 		int Ngram = 2; //The default value is unigram.
 		int lengthThreshold = 5; //Document length threshold
-		int crossV = 5;
 		boolean setRandomFold = false;
 		int numberOfCores = Runtime.getRuntime().availableProcessors();
 
 		String tokenModel = "./data/Model/en-token.bin";
+		String dataset = String.format("%s/%s/%s/", param.m_prefix, param.m_source, param.m_set);
 		String fvFile = String.format("%s/%s/%s_features.txt", param.m_prefix, param.m_source, param.m_source);
-		String reviewFolder = String.format("%s/%s/byUser_70k_review/data/", param.m_prefix, param.m_source);
+		String reviewFolder = dataset + "data/";
+		String outputFolder = dataset + "output/" + param.m_crossV + "foldsCV" + "/";
 
-		System.out.println("[Info]Start preprocess textual data...");
-		MultiThreadedReviewAnalyzer analyzer = new MultiThreadedReviewAnalyzer(tokenModel, classNumber, fvFile, Ngram, lengthThreshold, numberOfCores, true, param.m_source);
+		MultiThreadedReviewAnalyzer analyzer = new MultiThreadedReviewAnalyzer(tokenModel, classNumber, fvFile,
+				Ngram, lengthThreshold, numberOfCores, true, param.m_source);
+		if(setRandomFold==false)
+			analyzer.setReleaseContent(false);//Remember to set it as false when generating crossfolders!!!
 		analyzer.loadUserDir(reviewFolder);
 		_Corpus corpus = analyzer.getCorpus();
 
+		if(param.m_crossV>1 && setRandomFold==false){
+			reviewFolder = dataset + param.m_crossV + "foldsCV/";
+			//if no data, generate
+            String cvFolder = reviewFolder + 0 + "/";
+			File testFile = new File(cvFolder);
+			if(!testFile.exists() && !testFile.isDirectory()){
+				System.err.format("[Warning]Cross validation dataset %s not exist! Now generating...", cvFolder);
+				BipartiteAnalyzer cv = new BipartiteAnalyzer(corpus); // split corpus into folds
+				cv.analyzeCorpus();
+				cv.splitCorpus(param.m_crossV, dataset + param.m_crossV + "foldsCV/");
+			}
+		}
+
 		pLSA tModel = null;
 		long current = System.currentTimeMillis();
-
 		if (param.m_topicmodel.equals("pLSA")) {
 			tModel = new pLSA_multithread(param.m_emIter, param.m_emConverge, param.m_beta, corpus,
 					param.m_lambda, param.m_number_of_topics, param.m_alpha);
@@ -45,37 +65,75 @@ public class ETBIRExecution {
 					param.m_lambda, param.m_number_of_topics, param.m_alpha, 0.4, 50);
 		}  else if (param.m_topicmodel.equals("LDA_Variational")) {
 			tModel = new LDA_Variational_multithread(param.m_emIter, param.m_emConverge, param.m_beta, corpus,
-					param.m_lambda, param.m_number_of_topics, param.m_alpha, 10, 1e-5);
+					param.m_lambda, param.m_number_of_topics, param.m_alpha, param.m_varMaxIter, param.m_varConverge);
 		} else if(param.m_topicmodel.equals("ETBIR")){
 			tModel = new ETBIR(param.m_emIter, param.m_emConverge, param.m_beta, corpus, param.m_lambda,
 					param.m_number_of_topics, param.m_alpha, param.m_varMaxIter, param.m_varConverge, param.m_sigma, param.m_rho);
+		} else if(param.m_topicmodel.equals("CTM")){
+			tModel = new CTM(param.m_emIter, param.m_emConverge, param.m_beta, corpus,
+					param.m_lambda, param.m_number_of_topics, param.m_alpha, param.m_varMaxIter, param.m_varConverge);
 		} else{
 			System.out.println("The selected topic model has not developed yet!");
 			return;
 		}
 
-		tModel.setDisplayLap(10);
-		tModel.EMonCorpus();
-		tModel.printTopWords(param.m_topk);
-
-		long last = System.currentTimeMillis();
-		// create result folder
-		String resultDir = String.format("%s/%s_%d/", param.m_output, param.m_topicmodel, current);
-		File resultFolder = new File(resultDir);
-		if (!resultFolder.exists()) {
-			System.out.println("[Info]Create directory " + resultFolder);
-			resultFolder.mkdir();
-		}
-		((ETBIR) tModel).printParameterAggregation(param.m_topk, resultDir, param.m_topicmodel);
-		System.out.format("[Info] Cost: %.2f seconds.", (last-current)/1000 );
-
-		if(crossV>1){
+        tModel.setDisplayLap(1);
+        new File(outputFolder).mkdirs();
+        tModel.setInforWriter(outputFolder + param.m_topicmodel + "_info.txt");
+        if (param.m_crossV<=1) {//just train
+            tModel.EMonCorpus();
+            tModel.printParameterAggregation(param.m_topk, outputFolder, param.m_topicmodel);
+            tModel.closeWriter();
+        } else if(setRandomFold == true){//cross validation with random folds
             tModel.setRandomFold(setRandomFold);
-            double trainProportion = ((double)crossV - 1)/(double)crossV;
+            double trainProportion = ((double)param.m_crossV - 1)/(double)param.m_crossV;
             double testProportion = 1-trainProportion;
-            System.out.format("Begin %d-fold cross validation", crossV);
             tModel.setPerplexityProportion(testProportion);
-            tModel.crossValidation(crossV);
+            tModel.crossValidation(param.m_crossV);
+        } else{//cross validation with fixed folds
+            double[] perf = new double[param.m_crossV];
+            double[] like = new double[param.m_crossV];
+            System.out.println("[Info]Start FIXED cross validation...");
+            for(int k = 0; k <param.m_crossV; k++){
+                analyzer.getCorpus().reset();
+                //load test set
+                String testFolder = reviewFolder + k + "/";
+                analyzer.loadUserDir(testFolder);
+                for(_Doc d : analyzer.getCorpus().getCollection()){
+                    d.setType(_Review.rType.TEST);
+                }
+                //load train set
+                for(int i = 0; i < param.m_crossV; i++){
+                    if(i!=k){
+                        String trainFolder = reviewFolder + i + "/";
+                        analyzer.loadUserDir(trainFolder);
+                    }
+                }
+                tModel.setCorpus(analyzer.getCorpus());
+
+                System.out.format("====================\n[Info]Fold No. %d: ", k);
+                perf[k] = tModel.oneFoldValidation()[0];
+                like[k] = tModel.oneFoldValidation()[1];
+
+                String resultFolder = outputFolder + k + "/";
+                new File(resultFolder).mkdirs();
+                tModel.printParameterAggregation(param.m_topk, resultFolder, param.m_topicmodel);
+                tModel.printTopWords(param.m_topk);
+            }
+
+            //output the performance statistics
+            double mean = Utils.sumOfArray(like)/param.m_crossV, var = 0;
+            for(int i=0; i<like.length; i++)
+                var += (like[i]-mean) * (like[i]-mean);
+            var = Math.sqrt(var/param.m_crossV);
+            System.out.format("[Stat]Loglikelihood %.3f+/-%.3f\n", mean, var);
+
+            mean = Utils.sumOfArray(perf)/param.m_crossV;
+            var = 0;
+            for(int i=0; i<perf.length; i++)
+                var += (perf[i]-mean) * (perf[i]-mean);
+            var = Math.sqrt(var/param.m_crossV);
+            System.out.format("[Stat]Perplexity %.3f+/-%.3f\n", mean, var);
         }
-	}
+    }
 }

@@ -1,0 +1,10 @@
+#!/bin/sh
+nohup ./run -set byUser_4k_review -topicmodel ETBIR -nuOfTopics 5 > ./output/yelp_4k_ETBIR_5.output 2>&1 &
+nohup ./run -set byUser_4k_review -topicmodel ETBIR -nuOfTopics 10 > ./output/yelp_4k_ETBIR_10.output 2>&1 &
+nohup ./run -set byUser_4k_review -topicmodel ETBIR -nuOfTopics 15 > ./output/yelp_4k_ETBIR_15.output 2>&1 &
+nohup ./run -set byUser_4k_review -topicmodel ETBIR -nuOfTopics 20 > ./output/yelp_4k_ETBIR_20.output 2>&1 &
+nohup ./run -set byUser_4k_review -topicmodel ETBIR -nuOfTopics 25 > ./output/yelp_4k_ETBIR_25.output 2>&1 &
+nohup ./run -set byUser_4k_review -topicmodel ETBIR -nuOfTopics 30 > ./output/yelp_4k_ETBIR_30.output 2>&1 &
+nohup ./run -set byUser_4k_review -topicmodel ETBIR -nuOfTopics 35 > ./output/yelp_4k_ETBIR_35.output 2>&1 &
+nohup ./run -set byUser_4k_review -topicmodel ETBIR -nuOfTopics 40 > ./output/yelp_4k_ETBIR_40.output 2>&1 &
+

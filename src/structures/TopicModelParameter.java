@@ -5,25 +5,27 @@ public class TopicModelParameter {
 	
 	public String m_prefix = "/zf18/ll5fy/lab/dataset";//"./data/CoLinAdapt"
 	public String m_source = "yelp"; // "amazon_movie"
+	public String m_set = "byUser_4k_review";
 	public String m_topicmodel = "ETBIR";
+	public int m_crossV = 5;
 
-	public double m_beta = 1.0 + 1e-3;
-	public double m_alpha = 1e-2;
-	public double m_lambda = 1e-3;
+	public double m_beta = 1 + 1e-3;
+	public double m_alpha = 1 + 1e-2;
+	public double m_lambda = 1 + 1e-3;
 	
 	// model parameters for ETBIR
 	public double m_sigma = 1.0 + 1e-2;
 	public double m_rho = 1.0 + 1e-2;
 	
 	public int m_topk = 30;
-	public int m_emIter = 100;
+	public int m_emIter = 50;
 	public int m_number_of_topics = 30;
 	public int m_varMaxIter = 20; // variational inference max iter number
 	
-	public double m_varConverge = 1e-5;
-	public double m_emConverge = 1e-9;
+	public double m_varConverge = 1e-6;
+	public double m_emConverge = 1e-10;
 	
-	public String m_output = String.format("%s/%s/byUser_70k_review/output", m_prefix, m_source);// output directory
+	public String m_output = String.format("%s/%s/%s/output", m_prefix, m_source, m_set);// output directory
 		
 	public TopicModelParameter(String argv[]){
 		
@@ -39,9 +41,14 @@ public class TopicModelParameter {
 				m_prefix = argv[i];
 			else if (argv[i-1].equals("-source"))
 				m_source = argv[i];
+            else if (argv[i-1].equals("-set"))
+                m_set = argv[i];
 			else if(argv[i-1].equals("-topicmodel"))
 				m_topicmodel = argv[i];
-			
+            else if(argv[i-1].equals("-crossV")){
+                m_crossV = Integer.valueOf(argv[i]);
+            }
+
 			else if(argv[i-1].equals("-alpha"))
 				m_alpha = Double.valueOf(argv[i]);
 			else if(argv[i-1].equals("-beta"))

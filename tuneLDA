@@ -1,0 +1,10 @@
+#!/bin/sh
+nohup ./run -set byUser_4k_review -topicmodel LDA_Variational -nuOfTopics 5 > ./output/yelp_4k_LDA_5.output 2>&1 &
+nohup ./run -set byUser_4k_review -topicmodel LDA_Variational -nuOfTopics 10 > ./output/yelp_4k_LDA_10.output 2>&1 &
+nohup ./run -set byUser_4k_review -topicmodel LDA_Variational -nuOfTopics 15 > ./output/yelp_4k_LDA_15.output 2>&1 &
+nohup ./run -set byUser_4k_review -topicmodel LDA_Variational -nuOfTopics 20 > ./output/yelp_4k_LDA_20.output 2>&1 &
+nohup ./run -set byUser_4k_review -topicmodel LDA_Variational -nuOfTopics 25 > ./output/yelp_4k_LDA_25.output 2>&1 &
+nohup ./run -set byUser_4k_review -topicmodel LDA_Variational -nuOfTopics 30 > ./output/yelp_4k_LDA_30.output 2>&1 &
+nohup ./run -set byUser_4k_review -topicmodel LDA_Variational -nuOfTopics 35 > ./output/yelp_4k_LDA_35.output 2>&1 &
+nohup ./run -set byUser_4k_review -topicmodel LDA_Variational -nuOfTopics 40 > ./output/yelp_4k_LDA_40.output 2>&1 &
+
