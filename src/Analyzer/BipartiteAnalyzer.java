@@ -55,7 +55,7 @@ public class BipartiteAnalyzer {
     }
 
     public void analyzeCorpus(){
-        System.out.print("Analzying review data in corpus: ");
+        System.out.print("[Info]Analzying corpus: ");
 
         m_users.clear();
         m_items.clear();
@@ -89,7 +89,7 @@ public class BipartiteAnalyzer {
                 System.out.print(".");//every 10%
         }
 
-        System.out.format("-- Done: vocabulary size: %d, corpus size: %d, item size: %d, user size: %d\n",
+        System.out.format("-- Corpus: vocabulary size: %d, review size: %d, item size: %d, user size: %d\n",
                 m_corpus.getFeatureSize(), size,  m_items.size(),  m_users.size());
     }
 
@@ -97,12 +97,12 @@ public class BipartiteAnalyzer {
         HashMap<Integer, ArrayList<Integer>> mapByUser = source.equals("train")?m_mapByUser:m_mapByUser_test;
         HashMap<Integer, ArrayList<Integer>> mapByItem = source.equals("train")?m_mapByItem:m_mapByItem_test;
 
-        System.out.format("Analying bipartie graph: ");
+        System.out.format("[Info]Analying bipartie graph: ");
         mapByItem.clear();
         mapByUser.clear();
 
         if(m_usersIndex == null){
-            System.out.println("! Analyze Corpus first! Analyzing...");
+            System.err.println("[Warning]Analyze Corpus first! Analyzing...");
             analyzeCorpus();
         }
 
@@ -119,12 +119,12 @@ public class BipartiteAnalyzer {
             mapByUser.get(u_index).add(i_index);
             mapByItem.get(i_index).add(u_index);
         }
-        System.out.format("-- Done: review size: %d, item size: %d, user size: %d\n",
+        System.out.format("-- graph: review size: %d, item size: %d, user size: %d\n",
                 docs.size(), mapByItem.size(), mapByUser.size());
     }
 
     public void splitCorpus(int k, String outFolder) {
-        System.out.format("Splitting corpus into %d folds: ", m_k);
+        System.out.format("[Info]Splitting corpus into %d folds: ", m_k);
 
         this.m_k = k;
         m_trainSet = new ArrayList<>();
@@ -134,7 +134,7 @@ public class BipartiteAnalyzer {
         ArrayList<_Doc> docs = m_corpus.getCollection();
 
         if(m_usersIndex == null){
-            System.out.println("! Analysing corpus first! Analyzing...");
+            System.err.println("[Warning]Analysing corpus first! Analyzing...");
             analyzeCorpus();
         }
 
@@ -155,11 +155,7 @@ public class BipartiteAnalyzer {
             analyzeBipartite(m_testSet, "test");
             save2File(outFolder, String.valueOf(i));
 
-
-            System.out.println("-- Fold number " + i);
-            System.out.println("-- Train Set Size "+m_trainSet.size());
-            System.out.println("-- Test Set Size "+m_testSet.size());
-
+            System.out.format("-- Fold No. %d: train size = %d, test size = %d\n", i, m_trainSet.size(), m_testSet.size());
             m_trainSet.clear();
             m_testSet.clear();
         }

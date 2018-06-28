@@ -144,10 +144,10 @@ public class _Corpus {
 		try {
 			BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(filename)));
 			for(_Doc doc:m_collection) {
-				writer.write(String.format("%d", doc.getYLabel()));
+				writer.write(String.format("%d", doc.getSparse().length));
 				for(_SparseFeature fv:doc.getSparse())
-					writer.write(String.format(" %d:%f", fv.getIndex()+1, fv.getValue()));//index starts from 1
-				writer.write(String.format(" #%s-%s\n", doc.m_itemID, doc.m_name));//product ID and review ID
+					writer.write(String.format(" %d:%.1f", fv.getIndex(), fv.getValue()));//index starts from 1
+				writer.write(String.format(" #%s\n", doc.m_name));//review ID
 			}
 			writer.close();
 			

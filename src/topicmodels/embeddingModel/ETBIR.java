@@ -329,10 +329,10 @@ public class ETBIR extends LDA_Variational {
                 doc.m_mu[k] += stepsize/Math.sqrt(muH[k]) * muG;//ada gradient
                 muH[k] += muG * muG;
 
-                if (Math.abs(doc.m_mu[k])>10) {
-                    System.err.format("[Warning]%s has a potentially too large mu: %.3f!\n", doc.getID(), doc.m_mu[k]);
-                    warning = true;
-                }
+//                if (Math.abs(doc.m_mu[k])>50) {
+//                    System.err.format("[Warning]%s has a potentially too large mu: %.3f!\n", doc.getID(), doc.m_mu[k]);
+//                    warning = true;
+//                }
             }
 
             diff = (lastFValue - fValue) / lastFValue;
@@ -371,10 +371,10 @@ public class ETBIR extends LDA_Variational {
 
                 sigmaH[k] += sigmaG * sigmaG;
 
-                if (Math.abs(d.m_sigmaSqrt[k])>5) {
-                    System.err.format("[Warning]%s has a potentially too large Sigma: %.3f!\n", d.getID(), d.m_sigmaSqrt[k]*d.m_sigmaSqrt[k]);
-                    warning = true;
-                }
+//                if (Math.abs(d.m_sigmaSqrt[k])>50) {
+//                    System.err.format("[Warning]%s has a potentially too large Sigma: %.3f!\n", d.getID(), d.m_sigmaSqrt[k]*d.m_sigmaSqrt[k]);
+//                    warning = true;
+//                }
             }
 
             diff = (lastFValue - fValue) / lastFValue;
@@ -572,9 +572,9 @@ public class ETBIR extends LDA_Variational {
         }
 
         if (Double.isNaN(log_likelihood)) {
-            System.err.format("User %s likelihood encounters NaN!", u.getUserID());
+            System.err.format("[Warning]User %s likelihood encounters NaN!", u.getUserID());
         } else if (Double.isInfinite(log_likelihood)) {
-            System.err.format("User %s likelihood encounters infinity!", u.getUserID());
+            System.err.format("[Warning]User %s likelihood encounters infinity!", u.getUserID());
         }
 
         return log_likelihood;
@@ -592,9 +592,9 @@ public class ETBIR extends LDA_Variational {
         }
 
         if (Double.isNaN(log_likelihood)) {
-            System.err.format("Item %s likelihood encounters NaN!\n", i.getID());
+            System.err.format("[Warning]Item %s likelihood encounters NaN!\n", i.getID());
         } else if (Double.isInfinite(log_likelihood)) {
-            System.err.format("Item %s likelihood encounters infinite!\n", i.getID());
+            System.err.format("[Warning]Item %s likelihood encounters infinite!\n", i.getID());
         }
 
         return log_likelihood;
@@ -639,9 +639,9 @@ public class ETBIR extends LDA_Variational {
         }
 
         if (Double.isNaN(log_likelihood)) {
-            System.err.format("Encounter likelihood NaN in document %s for item %s!\n", doc.getID(), currentI.getID());
+            System.err.format("[Warning]Encounter likelihood NaN in document %s for item %s!\n", doc.getID(), currentI.getID());
         } else if (Double.isInfinite(log_likelihood)) {
-            System.err.format("Encounter likelihood infinity in document %s for item %s!\n", doc.getID(), currentI.getID());
+            System.err.format("[Warning]Encounter likelihood infinity in document %s for item %s!\n", doc.getID(), currentI.getID());
         }
 
         return log_likelihood;
@@ -758,7 +758,7 @@ public class ETBIR extends LDA_Variational {
     }
 
     @Override
-    public double oneFoldValidation(){
+    public double[] oneFoldValidation(){
         analyzeCorpus();
         m_trainSet = new ArrayList<_Doc>();
         m_testSet = new ArrayList<_Doc>();
@@ -770,8 +770,7 @@ public class ETBIR extends LDA_Variational {
             }
         }
 
-        System.out.println("Train Set Size "+m_trainSet.size());
-        System.out.println("Test Set Size "+m_testSet.size());
+        System.out.format("train size = %d, test size = %d....\n", m_trainSet.size(), m_testSet.size());
 
         long start = System.currentTimeMillis();
         //train
@@ -785,12 +784,12 @@ public class ETBIR extends LDA_Variational {
         m_mapByUser_test = m_bipartite.getMapByUser_test();
         m_mapByItem_test = m_bipartite.getMapByItem_test();
 
-        double[] results = EvaluatePerp();
-        System.out.format("%s Train/Test finished in %.2f seconds...\n", this.toString(), (System.currentTimeMillis()-start)/1000.0);
+        double[] results = Evaluation2();
+        System.out.format("[Info]%s Train/Test finished in %.2f seconds...\n", this.toString(), (System.currentTimeMillis()-start)/1000.0);
         m_trainSet.clear();
         m_testSet.clear();
 
-        return results[0];
+        return results;
     }
 
     //k-fold Cross Validation.
@@ -802,6 +801,7 @@ public class ETBIR extends LDA_Variational {
 
         double[] perf = new double[k];
         double[] like = new double[k];
+        System.out.println("[Info]Start RANDOM cross validation...");
         if(m_randomFold==true){
             m_corpus.shuffle(k);
             int[] masks = m_corpus.getMasks();
@@ -815,9 +815,7 @@ public class ETBIR extends LDA_Variational {
                         m_trainSet.add(docs.get(j));
                 }
 
-                System.out.println("[Info]Fold number "+i);
-                System.out.println("[Info]Training Set Size "+m_trainSet.size());
-                System.out.println("[Info]Testing Set Size "+m_testSet.size());
+                System.out.format("====================\n[Info]Fold No. %d: train size = %d, test size = %d....\n", i, m_trainSet.size(), m_testSet.size());
 
                 long start = System.currentTimeMillis();
                 //train
@@ -830,7 +828,7 @@ public class ETBIR extends LDA_Variational {
                 m_bipartite.analyzeBipartite(m_testSet, "test");
                 m_mapByUser_test = m_bipartite.getMapByUser_test();
                 m_mapByItem_test = m_bipartite.getMapByItem_test();
-                double[] results = EvaluatePerp();
+                double[] results = Evaluation2();
                 perf[i] = results[0];
                 like[i] = results[1];
 
@@ -845,14 +843,14 @@ public class ETBIR extends LDA_Variational {
         for(int i=0; i<perf.length; i++)
             var += (perf[i]-mean) * (perf[i]-mean);
         var = Math.sqrt(var/k);
-        System.out.format("Perplexity %.3f+/-%.3f\n", mean, var);
+        System.out.format("[Stat]Perplexity %.3f+/-%.3f\n", mean, var);
 
         mean = Utils.sumOfArray(like)/k;
         var = 0;
         for(int i=0; i<like.length; i++)
             var += (like[i]-mean) * (like[i]-mean);
         var = Math.sqrt(var/k);
-        System.out.format("Loglikelihood %.3f+/-%.3f\n", mean, var);
+        System.out.format("[Stat]Loglikelihood %.3f+/-%.3f\n", mean, var);
     }
 
     public int getTotalLength(){
@@ -862,7 +860,8 @@ public class ETBIR extends LDA_Variational {
         return length;
     }
 
-    public double[] EvaluatePerp() {
+    @Override
+    public double[] Evaluation2() {
         m_collectCorpusStats = false;
         double[] results = new double[2];
         double perplexity = 0, likelihood=0, likelihood_doc = 0;
@@ -918,12 +917,9 @@ public class ETBIR extends LDA_Variational {
             totalWords = getTotalLength();
         }
 
-        perplexity = Math.exp(-perplexity/totalWords);
-        likelihood /= m_testSet.size();
-        results[0] = perplexity;
-        results[1] = likelihood;
-
-        System.out.format("Test set perplexity is %.3f and log-likelihood is %.3f\n", perplexity, likelihood);
+        results[0] = Math.exp(-perplexity/totalWords);
+        results[1] = likelihood / m_testSet.size();
+        System.out.format("Test set perplexity is %.3f and log-likelihood is %.3f\n", results[0], results[1]);
 
         return results;
     }

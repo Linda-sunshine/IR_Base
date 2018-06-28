@@ -15,6 +15,7 @@ public class _Doc4ETBIR extends _Review{
     public _Doc4ETBIR(int ID, String name, String prodID, String userID, String source, int ylabel, long timeStamp){
 //        super(ID,  name,  prodID,  title,  source,  ylabel,  timeStamp);
         super(ID, source, ylabel, userID,  prodID, "", timeStamp);
+        m_name = name;
     }
     
     //create necessary structure for variational inference    
@@ -27,8 +28,8 @@ public class _Doc4ETBIR extends _Review{
         m_sigmaSqrt = new double[k];
 
         for(int i = 0; i < k; i++){
-            m_mu[i] = mu + Math.random();
-            m_Sigma[i] = sigma + Math.random() * 0.5 * sigma;
+            m_mu[i] = mu + Math.random() * mu;
+            m_Sigma[i] = sigma + Math.random() * sigma;
             if (i==0)
                 m_logZeta = m_mu[i] + 0.5*m_Sigma[i];
             else
