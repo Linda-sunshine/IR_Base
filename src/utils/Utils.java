@@ -405,7 +405,7 @@ public class Utils {
 	static public void randomize(double[] pros, double beta) {
         double total = 0;
         for (int i = 0; i < pros.length; i++) {
-            pros[i] = beta + Math.random();//to avoid zero probability
+            pros[i] = beta + Math.random() * beta;//to avoid zero probability
             total += pros[i];
         }
 
