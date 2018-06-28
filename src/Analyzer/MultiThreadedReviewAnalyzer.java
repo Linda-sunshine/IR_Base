@@ -92,17 +92,6 @@ public class MultiThreadedReviewAnalyzer extends MultiThreadedUserAnalyzer {
 						}
 					}
 				}
-				if(reviews.size() > 1){//at least one for adaptation and one for testing
-					synchronized (m_allocReviewLock) {
-						allocateReviews(reviews);
-						m_users.add(new _User(userID, m_classNo, reviews)); //create new user from the file.
-					}
-				} else if(reviews.size() == 1){// added by Lin, for those users with fewer than 2 reviews, ignore them.
-					review = reviews.get(0);
-					synchronized (m_rollbackLock) {
-						rollBack(Utils.revertSpVct(review.getSparse()), review.getYLabel());
-					}
-				}
 
 				reader.close();
 			} catch(IOException e){
