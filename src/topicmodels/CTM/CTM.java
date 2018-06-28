@@ -37,6 +37,12 @@ public class CTM extends LDA_Variational {
         m_logSpace = true;
     }
 
+    @Override
+    public String toString(){
+        return String.format("CTM[k:%d]\n",
+                number_of_topics);
+    }
+
     public void initModel(){
         System.out.println("[Info]Initializing CTM Model...");
 

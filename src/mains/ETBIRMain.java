@@ -32,15 +32,15 @@ public class ETBIRMain {
         String tokenModel = "./data/Model/en-token.bin";
 
         /*****parameters for topic model*****/
-        String topicmodel = "CTM"; // pLSA, LDA_Gibbs, LDA_Variational, ETBIR
+        String topicmodel = "ETBIR"; // pLSA, LDA_Gibbs, LDA_Variational, ETBIR
         int number_of_topics = 20;
         int varMaxIter = 20;
         double varConverge = 1e-6;
         int emMaxIter = 50;
         double emConverge = 1e-10;
 
-        double alpha = 0.1, beta = 1 + 1e-3, lambda = 1 + 1e-3;//these two parameters must be larger than 1!!!
-        double sigma = 0.1, rho = 0.1;
+        double alpha = 1.1, beta = 1 + 1e-3, lambda = 1 + 1e-3;//these two parameters must be larger than 1!!!
+        double sigma = 1.1, rho = 1.1;
 
         int topK = 50;
         int crossV = 2;
@@ -117,7 +117,6 @@ public class ETBIRMain {
         tModel.setInforWriter(outputFolder + topicmodel + "_info.txt");
         if (crossV<=1) {//just train
             tModel.EMonCorpus();
-            tModel.printTopWords(topK, outputFolder + topicmodel + "_topWords.txt");
             tModel.printParameterAggregation(topK, outputFolder, topicmodel);
             tModel.closeWriter();
         } else if(setRandomFold == true){//cross validation with random folds
@@ -126,7 +125,6 @@ public class ETBIRMain {
             double testProportion = 1-trainProportion;
             tModel.setPerplexityProportion(testProportion);
             tModel.crossValidation(crossV);
-            tModel.printTopWords(topK, outputFolder + topicmodel + "_topWords.txt");
         } else{//cross validation with fixed folds
             double[] perf = new double[crossV];
             double[] like = new double[crossV];

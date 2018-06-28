@@ -745,7 +745,7 @@ public class ETBIR extends LDA_Variational {
             System.out.format("[Info]EM iteration %d: likelihood is %.2f, converges to %.4f...\n\n",
                     iter, currentAllLikelihood, converge);
 
-            printTopWords(10);//print out the top words every iteration
+//            printTopWords(10);//print out the top words every iteration
         }while(++iter < number_of_iteration && converge > m_converge);
     }
 
@@ -927,8 +927,7 @@ public class ETBIR extends LDA_Variational {
     @Override
     public void printParameterAggregation(int k, String folderName, String topicmodel){
         super.printParameterAggregation(k, folderName, topicmodel);
-        printParam(folderName, "final", topicmodel);
-        printTopWords(k, folderName + topicmodel + "_topWords.txt");
+        printParam(folderName, topicmodel);
     }
 
     @Override
@@ -991,9 +990,9 @@ public class ETBIR extends LDA_Variational {
         }
     }
 
-    public void printParam(String folderName, String mode, String topicmodel){
-        String etaFile = folderName + topicmodel + "_" + mode + "_eta4Item.txt";
-        String pFile = folderName + topicmodel + "_" + mode + "_p4User.txt";
+    public void printParam(String folderName, String topicmodel){
+        String etaFile = folderName + topicmodel + "_" + "_eta4Item.txt";
+        String pFile = folderName + topicmodel + "_" + "_p4User.txt";
         try{
             PrintWriter etaWriter = new PrintWriter(new File(etaFile));
 

@@ -341,6 +341,9 @@ public class pLSA extends twoTopic {
 		//aggregate parameter \gamma by user/item
 		printTopWords(k, gammaPathByUser, getDocByUser());
 		printTopWords(k, gammaPathByItem, getDocByItem());
+
+		//overall topic words
+		printTopWords(k, folderName + topicmodel + "_topWords.txt");
 	}
 
 	public HashMap<String, List<_Doc>> getDocByUser(){

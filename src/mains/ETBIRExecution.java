@@ -22,14 +22,14 @@ public class ETBIRExecution {
 		int Ngram = 2; //The default value is unigram.
 		int lengthThreshold = 5; //Document length threshold
 		int crossV = 5;
-		boolean setRandomFold = true;
+		boolean setRandomFold = false;
 		int numberOfCores = Runtime.getRuntime().availableProcessors();
 
 		String tokenModel = "./data/Model/en-token.bin";
 		String fvFile = String.format("%s/%s/%s_features.txt", param.m_prefix, param.m_source, param.m_source);
 		String reviewFolder = String.format("%s/%s/byUser_70k_review/data/", param.m_prefix, param.m_source);
 
-		System.out.println("[Info] Start preprocess textual data...");
+		System.out.println("[Info]Start preprocess textual data...");
 		MultiThreadedReviewAnalyzer analyzer = new MultiThreadedReviewAnalyzer(tokenModel, classNumber, fvFile, Ngram, lengthThreshold, numberOfCores, true, param.m_source);
 		analyzer.loadUserDir(reviewFolder);
 		_Corpus corpus = analyzer.getCorpus();
