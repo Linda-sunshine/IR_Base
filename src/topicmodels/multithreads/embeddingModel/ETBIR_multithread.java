@@ -325,9 +325,10 @@ public class ETBIR_multithread extends ETBIR {
 
             if(converge < m_varConverge)
                 break;
-            System.out.print("---likelihood: " + last + "\n");
+            System.out.format("[Info]Multi-thread E-Step: %d iteration, likelihood=%.2f, converge to %.4f\n",
+                    iter, last, converge);
         }while(iter++ < m_varMaxIter);
-        System.out.print(String.format("Current likelihood: %.4f", likelihood));
+        System.out.print(String.format("Current likelihood: %.4f\n", likelihood));
 
         return likelihood;
     }

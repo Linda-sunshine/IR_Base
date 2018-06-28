@@ -13,6 +13,7 @@ import topicmodels.CTM.CTM;
 import topicmodels.LDA.LDA_Gibbs;
 import topicmodels.embeddingModel.ETBIR;
 import topicmodels.multithreads.LDA.LDA_Variational_multithread;
+import topicmodels.multithreads.embeddingModel.ETBIR_multithread;
 import topicmodels.multithreads.pLSA.pLSA_multithread;
 import topicmodels.pLSA.pLSA;
 import Analyzer.MultiThreadedReviewAnalyzer;
@@ -67,7 +68,7 @@ public class ETBIRExecution {
 			tModel = new LDA_Variational_multithread(param.m_emIter, param.m_emConverge, param.m_beta, corpus,
 					param.m_lambda, param.m_number_of_topics, param.m_alpha, param.m_varMaxIter, param.m_varConverge);
 		} else if(param.m_topicmodel.equals("ETBIR")){
-			tModel = new ETBIR(param.m_emIter, param.m_emConverge, param.m_beta, corpus, param.m_lambda,
+			tModel = new ETBIR_multithread(param.m_emIter, param.m_emConverge, param.m_beta, corpus, param.m_lambda,
 					param.m_number_of_topics, param.m_alpha, param.m_varMaxIter, param.m_varConverge, param.m_sigma, param.m_rho);
 		} else if(param.m_topicmodel.equals("CTM")){
 			tModel = new CTM(param.m_emIter, param.m_emConverge, param.m_beta, corpus,

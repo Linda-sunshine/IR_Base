@@ -174,7 +174,7 @@ public class ETBIR extends LDA_Variational {
 
             last = totalLikelihood;
 
-            System.out.format("[Info]E-Step: %d iteration, likelihood=%.2f, converge to %.4f\n",
+            System.out.format("[Info]Single-thread E-Step: %d iteration, likelihood=%.2f, converge to %.4f\n",
                     iter, last, converge);
 
         }while(iter++ < m_varMaxIter*2 && converge > m_varConverge/3);
