@@ -153,6 +153,7 @@ public class ETBIRMain {
                 String resultFolder = outputFolder + k + "/";
                 new File(resultFolder).mkdirs();
                 tModel.printParameterAggregation(topK, resultFolder, topicmodel);
+                tModel.printTopWords(topK);
             }
 
             //output the performance statistics
