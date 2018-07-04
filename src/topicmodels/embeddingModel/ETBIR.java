@@ -486,8 +486,12 @@ public class ETBIR extends LDA_Variational {
             Utils.scaleArray(etaMu[k], m_rho);
             for(int l=0; l<number_of_topics; l++) {
                 u.m_nuP[k][l] = 0;
-                for(int j=0; j<number_of_topics; j++)
+                for(int j=0; j<number_of_topics; j++) {
                     u.m_nuP[k][l] += etaMu[k][j] * Sigma[l][j];
+                    if(j == k){
+                        u.m_nuP[k][l] += m_sigma * Sigma[l][j];
+                    }
+                }
             }
         }
     }
@@ -753,8 +757,8 @@ public class ETBIR extends LDA_Variational {
     public void calculate_M_step(int iter) {
         super.calculate_M_step(iter);
 
-//        m_rho = m_trainSet.size() * number_of_topics / (m_thetaStats + m_eta_p_Stats - 2 * m_eta_mean_Stats); //maximize likelihood for \rho of p(\theta|P\gamma, \rho)
-//        m_sigma = m_mapByUser.size() * number_of_topics * number_of_topics / m_pStats; //maximize likelihood for \sigma
+        m_rho = m_trainSet.size() * number_of_topics / (m_thetaStats + m_eta_p_Stats - 2 * m_eta_mean_Stats); //maximize likelihood for \rho of p(\theta|P\gamma, \rho)
+        m_sigma = m_mapByUser.size() * number_of_topics * number_of_topics / m_pStats; //maximize likelihood for \sigma
     }
 
     @Override
