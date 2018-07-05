@@ -10,6 +10,7 @@ import Analyzer.MultiThreadedLMAnalyzer;
 import Analyzer.MultiThreadedReviewAnalyzer;
 import Application.CollaborativeFiltering;
 import Application.CollaborativeFilteringWithETBIR;
+import utils.Utils;
 
 public class ETBIRCFMain {
     public static void main(String[] args) throws InvalidFormatException, FileNotFoundException, IOException{
@@ -18,6 +19,9 @@ public class ETBIRCFMain {
         int Ngram = 2; // The default value is unigram.
         int lengthThreshold = 5; // Document length threshold
         double trainRatio = 0, adaptRatio = 1;
+        int[] ks = new int[]{2, 4, 6, 8, 10, 12, 14}; // top_k neighbors
+        int crossV = 5;
+        String mode = "row"; //row, column, pureP, pureEta
         int numberOfCores = Runtime.getRuntime().availableProcessors();
         boolean enforceAdapt = true;
         String tokenModel = "./data/Model/en-token.bin"; // Token model.
@@ -29,7 +33,6 @@ public class ETBIRCFMain {
         /*****data setting*****/
         String scaleset = "byUser_4k_review";
         String dataset = "yelp";
-        int crossV = 5;
         String folder = String.format("./myData/%s/%s", dataset, scaleset);
         String inputFolder = String.format("%s/%dfoldsCV", folder, crossV);
         String outputFolder = String.format("%s/output/%dfoldsCV", folder, crossV);
@@ -48,6 +51,8 @@ public class ETBIRCFMain {
             fvFile_point = 3;
         }
 
+        double[][] ndcg = new double[ks.length][crossV];
+        double[][] map = new double[ks.length][crossV];
         for(int i = 0; i < crossV; i++) {
             /***Loading data.***/
             MultiThreadedLMAnalyzer analyzer = new MultiThreadedLMAnalyzer(tokenModel, classNumber, fvFiles[fvFile_point],
@@ -95,17 +100,16 @@ public class ETBIRCFMain {
             }
 
             // Step 2: perform collaborative filtering
-            int[] ks = new int[]{4, 6, 8, 10}; // top_k neighbors
             for (int th : threshold) { // threshold: time or popularity
-                for (int k : ks) {
+                for (int k = 0; k < ks.length; k++) {
                     // load the saved neighbor file
                     cfFile = String.format("%s/%s_cf_%s_%d_test.csv", saveAdjFolder, dataset, neighborSelection, th);
                     ArrayList<_User> cfUsers = cfInit.getUsers();
                     cfInit.loadRankingCandidates(cfFile);
 
                     int validUser = cfInit.getValidUserSize();
-                    System.out.format("\n-----------------run ETBIR %d neighbors-------------------------\n", k);
-                    CollaborativeFilteringWithETBIR cf = new CollaborativeFilteringWithETBIR(cfUsers, analyzer.getFeatureSize() + 1, k, dim);
+                    System.out.format("\n-----------------run ETBIR %d neighbors-------------------------\n", ks[k]);
+                    CollaborativeFilteringWithETBIR cf = new CollaborativeFilteringWithETBIR(cfUsers, analyzer.getFeatureSize() + 1, ks[k], dim);
                     cf.setValidUserSize(validUser);
                     cf.setEqualWeightFlag(equalWeight);
 
@@ -117,9 +121,27 @@ public class ETBIRCFMain {
                     cf.calculateAllNDCGMAP();
                     cf.calculateAvgNDCGMAP();
 
-                    System.out.format("\n[Info] NDCG: %.4f, MAP: %.4f\n", cf.getAvgNDCG(), cf.getAvgMAP());
+                    System.out.format("\n[Info]NDCG: %.4f, MAP: %.4f\n", cf.getAvgNDCG(), cf.getAvgMAP());
+                    ndcg[k][i] = cf.getAvgNDCG();
+                    map[k][i] = cf.getAvgMAP();
                 }
             }
+        }
+
+        //output the performance statistics
+        for(int k = 0; k < ks.length; k++) {
+            double mean = Utils.sumOfArray(ndcg[k]) / crossV, var = 0;
+            for (int i = 0; i < ndcg[k].length; i++)
+                var += (ndcg[k][i] - mean) * (ndcg[k][i] - mean);
+            var = Math.sqrt(var / crossV);
+            System.out.format("[Stat]NDCG %.4f+/-%.4f\n", mean, var);
+
+            mean = Utils.sumOfArray(map[k]) / crossV;
+            var = 0;
+            for (int i = 0; i < map[k].length; i++)
+                var += (map[k][i] - mean) * (map[k][i] - mean);
+            var = Math.sqrt(var / crossV);
+            System.out.format("[Stat]MAP %.4f+/-%.4f\n", mean, var);
         }
     }
 }
