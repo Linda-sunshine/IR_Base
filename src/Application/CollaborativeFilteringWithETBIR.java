@@ -32,7 +32,7 @@ public class CollaborativeFilteringWithETBIR extends CollaborativeFiltering {
 			int userIndex = 0;
 			String line, p[];
 			while((line = reader.readLine()) != null){
-				String userID = line.split("\\s+")[2]; // read user ID
+				String userID = line.split("\\s+")[3]; // read user ID (format: No. x UserID xxx)
 				
 				// skip the user without analysis, m_dim * 2 lines
 				if(!m_userIDIndex.containsKey(userID)){

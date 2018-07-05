@@ -25,7 +25,7 @@ import utils.Utils;
  * Loading text file format for amazon and yelp reviews
  */
 public class UserAnalyzer extends DocAnalyzer {
-	
+	HashMap<String, Integer> m_userIndex;
 	ArrayList<_User> m_users; // Store all users with their reviews.
 	double m_trainRatio = 0.25; // by default, the first 25% for training the global model 
 	double m_adaptRatio = 0.5; // by default, the next 50% for adaptation, and rest 25% for testing
@@ -36,7 +36,8 @@ public class UserAnalyzer extends DocAnalyzer {
 	public UserAnalyzer(String tokenModel, int classNo, String providedCV, int Ngram, int threshold, boolean b) 
 			throws InvalidFormatException, FileNotFoundException, IOException{
 		super(tokenModel, classNo, providedCV, Ngram, threshold, b);
-		m_users = new ArrayList<_User>();
+		m_users = new ArrayList<>();
+		m_userIndex = new HashMap<>();
 	}
 	
 	public void config(double train, double adapt, boolean enforceAdpt) {
@@ -193,8 +194,13 @@ public class UserAnalyzer extends DocAnalyzer {
 			}
 			
 			if(reviews.size() > 1){//at least one for adaptation and one for testing
-				allocateReviews(reviews);				
-				m_users.add(new _User(userID, m_classNo, reviews)); //create new user from the file.
+				allocateReviews(reviews);
+				if(m_userIndex.containsKey(userID)){
+					m_users.get(m_userIndex.get(userID)).appendRvws(reviews);
+				} else {
+					m_userIndex.put(userID, m_users.size());
+					m_users.add(new _User(userID, m_classNo, reviews)); //create new user from the file.
+				}
 			} else if(reviews.size() == 1){// added by Lin, for those users with fewer than 2 reviews, ignore them.
 				review = reviews.get(0);
 				rollBack(Utils.revertSpVct(review.getSparse()), review.getYLabel());

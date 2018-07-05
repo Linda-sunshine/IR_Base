@@ -995,8 +995,8 @@ public class ETBIR extends LDA_Variational {
     }
 
     public void printParam(String folderName, String topicmodel){
-        String etaFile = folderName + topicmodel + "_" + "_eta4Item.txt";
-        String pFile = folderName + topicmodel + "_" + "_p4User.txt";
+        String etaFile = folderName + topicmodel + "_" + "eta4Item.txt";
+        String pFile = folderName + topicmodel + "_" + "p4User.txt";
         try{
             PrintWriter etaWriter = new PrintWriter(new File(etaFile));
 
