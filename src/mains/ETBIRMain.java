@@ -35,15 +35,15 @@ public class ETBIRMain {
         String topicmodel = "ETBIR"; // pLSA, LDA_Gibbs, LDA_Variational, ETBIR
         int number_of_topics = 20;
         int varMaxIter = 20;
-        double varConverge = 1e-6;
-        int emMaxIter = 50;
+        double varConverge = 1e-5;
+        int emMaxIter = 40;
         double emConverge = 1e-10;
 
         double alpha = 1.1, beta = 1 + 1e-3, lambda = 1 + 1e-3;//these two parameters must be larger than 1!!!
         double sigma = 1.1, rho = 1.1;
 
         int topK = 50;
-        int crossV = 5;
+        int crossV = 1;
         boolean setRandomFold = false;
 
         /*****data setting*****/
