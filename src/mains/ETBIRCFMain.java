@@ -62,6 +62,10 @@ public class ETBIRCFMain {
                     analyzer.loadUserDir(trainFolder);
                 }
             }
+            //need to explicitly allocate train-test for each user
+            for(_User u:analyzer.getUsers()){
+                u.constructTrainTestReviews();
+            }
             //load test set
             analyzer.loadTestUserDir(testFolder);
             analyzer.setFeatureValues("TFIDF-sublinear", 0);
