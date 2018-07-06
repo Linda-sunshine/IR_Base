@@ -50,6 +50,7 @@ public class ETBIR extends LDA_Variational {
     protected double m_thetaStats;
     protected double m_eta_p_Stats;
     protected double m_eta_mean_Stats;
+    protected double m_lambda_Stats;
 
     double d_mu = 1.0, d_sigma_theta = 1.0;
     double d_nu = 1.0, d_sigma_P = 1.0;
@@ -81,6 +82,7 @@ public class ETBIR extends LDA_Variational {
         m_thetaStats = 0.0;
         m_eta_p_Stats = 0.0;
         m_eta_mean_Stats = 0.0;
+        m_lambda_Stats = 0.0;
     }
 
     protected void updateStats4Item(_Product4ETBIR item){
@@ -94,6 +96,7 @@ public class ETBIR extends LDA_Variational {
             for(int l = 0; l < number_of_topics; l++){
                 m_pStats += user.m_SigmaP[k][l][l] + user.m_nuP[k][l] * user.m_nuP[k][l];
             }
+            m_lambda_Stats += user.m_nuP[k][k];
         }
     }
 
@@ -489,7 +492,7 @@ public class ETBIR extends LDA_Variational {
                 for(int j=0; j<number_of_topics; j++) {
                     u.m_nuP[k][l] += etaMu[k][j] * Sigma[l][j];
                     if(j == k){
-                        u.m_nuP[k][l] += m_sigma * Sigma[l][j];
+                        u.m_nuP[k][l] += m_sigma * m_lambda * Sigma[l][j];
                     }
                 }
             }
@@ -569,6 +572,7 @@ public class ETBIR extends LDA_Variational {
             double temp1 = 0.0;
             for(int l = 0; l < number_of_topics; l++)
                 temp1 += u.m_SigmaP[k][l][l] + u.m_nuP[k][l] * u.m_nuP[k][l];
+            temp1 += m_lambda * m_lambda - 2 * m_lambda * u.m_nuP[k][k];
 
             double det = new LUDecomposition(MatrixUtils.createRealMatrix(u.m_SigmaP[k])).getDeterminant();
             log_likelihood += -0.5 * (temp1 * m_sigma - number_of_topics)
@@ -576,9 +580,9 @@ public class ETBIR extends LDA_Variational {
         }
 
         if (Double.isNaN(log_likelihood)) {
-            System.err.format("[Warning]User %s likelihood encounters NaN!", u.getUserID());
+            System.err.format("[Warning]User %s likelihood encounters NaN!\n", u.getUserID());
         } else if (Double.isInfinite(log_likelihood)) {
-            System.err.format("[Warning]User %s likelihood encounters infinity!", u.getUserID());
+            System.err.format("[Warning]User %s likelihood encounters infinity!\n", u.getUserID());
         }
 
         return log_likelihood;
@@ -616,14 +620,10 @@ public class ETBIR extends LDA_Variational {
             for(int j = 0; j < number_of_topics; j++){
                 term2 += currentI.m_eta[k] * currentU.m_nuP[j][k] * doc.m_mu[j];
 
-                for(int l = 0; l < number_of_topics; l++){
+                for(int l = 0; l < number_of_topics; l++)
                     term3 += currentI.m_eta[j] * currentI.m_eta[l] *
                             (currentU.m_SigmaP[k][j][l] + currentU.m_nuP[k][j] * currentU.m_nuP[k][l]);
-                    if(l == j){
-                        term3 += currentI.m_eta[l] *
-                                (currentU.m_SigmaP[k][j][l] + currentU.m_nuP[k][j] * currentU.m_nuP[k][l]);
-                    }
-                }
+                term3 += currentI.m_eta[j] * (currentU.m_SigmaP[k][j][j] + currentU.m_nuP[k][j] * currentU.m_nuP[k][j]);
             }
             term4 += Math.log(doc.m_Sigma[k]);
         }
@@ -757,8 +757,9 @@ public class ETBIR extends LDA_Variational {
     public void calculate_M_step(int iter) {
         super.calculate_M_step(iter);
 
-        m_rho = m_trainSet.size() * number_of_topics / (m_thetaStats + m_eta_p_Stats - 2 * m_eta_mean_Stats); //maximize likelihood for \rho of p(\theta|P\gamma, \rho)
-        m_sigma = m_mapByUser.size() * number_of_topics * number_of_topics / m_pStats; //maximize likelihood for \sigma
+        m_lambda = m_lambda_Stats / (m_mapByUser.size() * number_of_topics);
+//        m_rho = m_trainSet.size() * number_of_topics / (m_thetaStats + m_eta_p_Stats - 2 * m_eta_mean_Stats); //maximize likelihood for \rho of p(\theta|P\gamma, \rho)
+//        m_sigma = m_mapByUser.size() * number_of_topics * number_of_topics / m_pStats; //maximize likelihood for \sigma
     }
 
     @Override
