@@ -528,6 +528,20 @@ public class _User {
 		}
 	}
 
+	ArrayList<String> m_trainItems = new ArrayList<>();
+	public ArrayList<String> getTrainItems(){
+		if(m_trainItems == null) {
+			for (_Review rv : m_trainReviews) {
+				if (!m_trainItems.contains(rv.getItemID()))
+					m_trainItems.add(rv.getItemID());
+				else
+					System.err.println("[Warning]One user reviewed item twice!");
+			}
+		}
+
+		return m_trainItems;
+	}
+
 	// load the candidates from file instead of constructing online
 	ArrayList<String> m_candidates = new ArrayList<String>();
 	public void addOneCandidate(String item){

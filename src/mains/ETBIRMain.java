@@ -39,7 +39,7 @@ public class ETBIRMain {
         int emMaxIter = 40;
         double emConverge = 1e-10;
 
-        double alpha = 1.1, beta = 1 + 1e-3, lambda = 1 + 1e-3;//these two parameters must be larger than 1!!!
+        double alpha = 1e-2, beta = 1 + 1e-3, lambda = 1 + 1e-3;//these two parameters must be larger than 1!!!
         double sigma = 1.1, rho = 1.1;
 
         int topK = 50;

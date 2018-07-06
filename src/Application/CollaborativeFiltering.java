@@ -39,7 +39,8 @@ public class CollaborativeFiltering {
 	
 	//Given a user ID, access the index of the user.
 	protected HashMap<String, Integer> m_userIDIndex;
-	
+	protected HashMap<String, Integer> m_itemIDIndex;
+
 	protected double m_avgNDCG, m_avgMAP;
 	//Assume we have a cache containing all the similarities of all pairs of users.
 	protected double[] m_similarity, m_NDCGs, m_MAPs;

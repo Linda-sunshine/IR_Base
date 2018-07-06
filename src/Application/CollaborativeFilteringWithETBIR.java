@@ -13,14 +13,19 @@ import structures._RankItem;
 import structures._User;
 import utils.Utils;
 
+import javax.rmi.CORBA.Util;
+
 public class CollaborativeFilteringWithETBIR extends CollaborativeFiltering {
 	int m_dim;  // the number of dimension for low-dimension representation
 	double[][] m_itemWeights;
+	String m_mode;
 	
 	public CollaborativeFilteringWithETBIR(ArrayList<_User> users, int fs, int k, int dim) {
 		super(users, fs, k);
 		m_dim = dim;
 	}
+
+	public void setMode(String mode){ m_mode=mode;}
 	
 	// load the P of all the users at once
 	@Override
@@ -113,7 +118,12 @@ public class CollaborativeFilteringWithETBIR extends CollaborativeFiltering {
 			return 0;
 		}
 		//select top k users who have purchased this item.
-		ArrayList<String> neighbors = m_trainMap.get(item);
+		ArrayList<String> neighbors;
+		if(m_mode.equals("productUserItem") || m_mode.equals("userP") || m_mode.equals("column"))
+			neighbors = m_trainMap.get(item);
+		else
+			neighbors = u.getTrainItems();
+
 		if(m_avgFlag){
 			for(String nei: neighbors){
 				int neiIndex = m_userIDIndex.get(nei);
@@ -134,9 +144,18 @@ public class CollaborativeFilteringWithETBIR extends CollaborativeFiltering {
 				topKNeighbors = new MyPriorityQueue<_RankItem>(m_k);
 			//collect k nearest neighbors for each item of the user.
 			for(String nei: neighbors){
-				int neiIndex = m_userIDIndex.get(nei);
-				if(neiIndex == userIndex) continue;
-				topKNeighbors.add(new _RankItem(neiIndex, calculateUserItemSimilarity(m_userWeights[userIndex], m_itemMap.get(item).getItemWeights(), m_userWeights[neiIndex])));
+				int neiIndex;
+				if(m_mode.equals("productUserItem")) {
+					neiIndex = m_userIDIndex.get(nei);
+					if (neiIndex == userIndex) continue;
+					topKNeighbors.add(new _RankItem(neiIndex,
+							calculateUserItemSimilarity(m_userWeights[userIndex], m_itemMap.get(item).getItemWeights(), m_userWeights[neiIndex])));
+				}
+				else if(m_mode.equals("userP")){
+					neiIndex = m_userIDIndex.get(nei);
+					if (neiIndex == userIndex) continue;
+					topKNeighbors.add(new _RankItem(neiIndex, getSimilarity(userIndex, neiIndex)));
+				}
 			}
 			//Calculate the value given by the neighbors and similarity;
 			for(_RankItem ri: topKNeighbors){
@@ -150,7 +169,11 @@ public class CollaborativeFilteringWithETBIR extends CollaborativeFiltering {
 		} else
 			return rankSum/simSum;
 	}
-	
+
+	protected double calculateItemSimilarity(double[] item1, double[] item2){
+		return Utils.cosine(item1, item2);
+	}
+
 	// calculate the similarity between two users based on their P_i^T \gamma
 	protected double calculateUserItemSimilarity(double[] ui, double[] item, double[] uj){
 		double[] p1Gamma = matrixVectorProduct(ui, item);

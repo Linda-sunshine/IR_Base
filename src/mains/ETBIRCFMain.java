@@ -21,7 +21,7 @@ public class ETBIRCFMain {
         double trainRatio = 0, adaptRatio = 1;
         int[] ks = new int[]{2, 4, 6, 8, 10, 12, 14}; // top_k neighbors
         int crossV = 5;
-        String mode = "row"; //row, column, pureP, pureEta
+        String mode = "userP"; //row, column, userP, itemEta, productUserItem
         int numberOfCores = Runtime.getRuntime().availableProcessors();
         boolean enforceAdapt = true;
         String tokenModel = "./data/Model/en-token.bin"; // Token model.
@@ -112,6 +112,7 @@ public class ETBIRCFMain {
                     CollaborativeFilteringWithETBIR cf = new CollaborativeFilteringWithETBIR(cfUsers, analyzer.getFeatureSize() + 1, ks[k], dim);
                     cf.setValidUserSize(validUser);
                     cf.setEqualWeightFlag(equalWeight);
+                    cf.setMode(mode);
 
                     String userWeight = String.format("%s/%d/ETBIR_p4User.txt", outputFolder, i);
                     String itemWeight = String.format("%s/%d/ETBIR_eta4Item.txt", outputFolder, i);
