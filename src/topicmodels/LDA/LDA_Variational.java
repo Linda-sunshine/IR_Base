@@ -3,11 +3,14 @@
  */
 package topicmodels.LDA;
 
+import java.io.File;
+import java.io.PrintWriter;
 import java.util.Arrays;
 import java.util.Collection;
 
 import structures._Corpus;
 import structures._Doc;
+import structures._Doc4ETBIR;
 import structures._SparseFeature;
 import topicmodels.pLSA.pLSA;
 import utils.Utils;
@@ -189,6 +192,9 @@ public class LDA_Variational extends pLSA {
 			}
 			diff /= number_of_topics;
 		} while(++i<m_varMaxIter && diff>m_varConverge);
+
+		// update per-document topic distribution vectors
+		finalEst();
 	}
 	
 	protected int getCorpusSize() {
@@ -233,5 +239,41 @@ public class LDA_Variational extends pLSA {
 		double likelihood = calculate_E_step(d);
 		estThetaInDoc(d);
 		return likelihood;
+	}
+
+	@Override
+	public void printParameterAggregation(int k, String folderName, String topicmodel) {
+		super.printParameterAggregation(k, folderName, topicmodel);
+		printParam(folderName, topicmodel);
+	}
+
+	public void printParam(String folderName, String topicmodel){
+		String priorAlphaPath = folderName + topicmodel + "_priorAlpha.txt";
+		String postGammaPath = folderName + topicmodel + "_postGamma.txt";
+
+		//print out prior parameter of dirichlet: alpha
+		try{
+			PrintWriter alphaWriter = new PrintWriter(new File(priorAlphaPath));
+			for (int i = 0; i < number_of_topics; i++)
+				alphaWriter.format("%.5f\t", this.m_alpha[i]);
+			alphaWriter.close();
+		} catch(Exception ex){
+			System.err.format("File %s Not Found", priorAlphaPath);
+		}
+
+		//print out posterior parameter of dirichlet for each document: gamma
+		try{
+			PrintWriter gammaWriter = new PrintWriter(new File(postGammaPath));
+
+			for(int idx = 0; idx < m_trainSet.size(); idx++) {
+				gammaWriter.write(String.format("No. %d DocID %s *********************\n", idx, m_trainSet.get(idx).getID()));
+				for (int i = 0; i < number_of_topics; i++)
+					gammaWriter.format("%.5f\t", ((_Doc4ETBIR) m_trainSet.get(idx)).m_sstat[i]);
+				gammaWriter.println();
+			}
+			gammaWriter.close();
+		} catch(Exception ex){
+			System.err.format("File %s Not Found", postGammaPath);
+		}
 	}
 }

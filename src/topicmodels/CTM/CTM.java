@@ -3,6 +3,7 @@ package topicmodels.CTM;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.PrintStream;
+import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Random;
@@ -667,4 +668,67 @@ public class CTM extends LDA_Variational {
             }
         }
     }
+
+    @Override
+    public void printParam(String folderName, String topicmodel){
+        String priorSigmaPath = folderName + topicmodel + "_priorSigma.txt";
+        String priorEtaPath = folderName + topicmodel + "_priorEta.txt";
+        String postNuPath = folderName + topicmodel + "_postNu.txt";
+        String postLambdaPath = folderName + topicmodel + "_postLambda.txt";
+
+        //print out prior parameter for covariance: Sigma
+        try{
+            PrintWriter sigmaWriter = new PrintWriter(new File(priorSigmaPath));
+
+            for(int i = 0; i < len2; i++) {
+                for(int j = 0; j < len2; j++)
+                    sigmaWriter.format("%.8f\t", cov[i][j]);
+                sigmaWriter.write("\n");
+            }
+            sigmaWriter.close();
+        } catch(Exception ex){
+            System.err.format("File %s Not Found", priorSigmaPath);
+        }
+
+        //print out prior parameter for mean: eta
+        try{
+            PrintWriter etaWriter = new PrintWriter(new File(priorEtaPath));
+            for(int i = 0; i < len2; i++)
+                etaWriter.format("%.8f\t", mu[i]);
+            etaWriter.close();
+        } catch(Exception ex){
+            System.err.format("File %s Not Found", priorEtaPath);
+        }
+
+        //print out posterior parameter of variance for each document: nu
+        try{
+            PrintWriter nuWriter = new PrintWriter(new File(postNuPath));
+
+            for(int idx = 0; idx < m_trainSet.size(); idx++) {
+                nuWriter.write(String.format("No. %d DocID %s *********************\n", idx, m_trainSet.get(idx).getID()));
+                for (int i = 0; i < len2; i++)
+                    nuWriter.format("%.5f\t", ((_Doc4ETBIR) m_trainSet.get(idx)).m_mu[i]);
+                nuWriter.println();
+            }
+            nuWriter.close();
+        } catch(Exception ex){
+            System.err.format("File %s Not Found", postNuPath);
+        }
+
+        //print out posterior parameter of mean for each document: lambda
+        try{
+            PrintWriter lambdaWriter = new PrintWriter(new File(postLambdaPath));
+
+            for(int idx = 0; idx < m_trainSet.size(); idx++) {
+                lambdaWriter.write(String.format("No. %d DocID %s *********************\n", idx, m_trainSet.get(idx).getID()));
+                for (int i = 0; i < len2; i++)
+                    lambdaWriter.format("%.5f\t", ((_Doc4ETBIR) m_trainSet.get(idx)).m_Sigma[i]);
+                lambdaWriter.println();
+            }
+            lambdaWriter.close();
+        } catch(Exception ex){
+            System.err.format("File %s Not Found", postLambdaPath);
+        }
+    }
+
 }

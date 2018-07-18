@@ -304,7 +304,7 @@ public class ETBIR extends LDA_Variational {
         double stepsize = 1e-2, muG; // gradient for mu
         int N = doc.getTotalDocLength();
 
-        double moment, norm;
+        double moment, norm, check1, check2, check3;
         double etaSum = Utils.sumOfArray(item.m_eta);
 
         double[] muH = new double[number_of_topics];
@@ -319,6 +319,8 @@ public class ETBIR extends LDA_Variational {
                 moment = N * Math.exp(doc.m_mu[k] + 0.5 * doc.m_Sigma[k]-doc.m_logZeta);
                 norm = Utils.dotProduct(item.m_eta, user.m_nuP[k]) / etaSum;
 
+                check1 = doc.m_mu[k] - norm;
+                check2 = doc.m_sstat[k] - moment;
                 muG = -m_rho * (doc.m_mu[k] - norm)
                         + doc.m_sstat[k] - moment;
 

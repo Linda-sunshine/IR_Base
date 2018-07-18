@@ -43,7 +43,7 @@ public class ETBIRMain {
         double sigma = 1.1, rho = 1.1;
 
         int topK = 50;
-        int crossV = 5;
+        int crossV = 1;
         boolean setRandomFold = false;
 
         /*****data setting*****/
@@ -52,7 +52,7 @@ public class ETBIRMain {
         String dataset = "./myData/" + source + "/" + trainset + "/";
         String outputFolder = dataset + "output/" + crossV + "foldsCV" + "/";
 
-        PrintStream out = new PrintStream(new FileOutputStream(outputFolder + topicmodel + "_log.txt"));
+        PrintStream out = new PrintStream(new FileOutputStream("log.txt"));
 //        System.setOut(out);
 
         String[] fvFiles = new String[4];
@@ -77,7 +77,7 @@ public class ETBIRMain {
         analyzer.loadUserDir(reviewFolder);
         _Corpus corpus = analyzer.getCorpus();
 
-        if(crossV>1 && setRandomFold==false){
+        if(setRandomFold==false){
             reviewFolder = dataset + crossV + "foldsCV/";
             //if no data, generate
             File testFile = new File(reviewFolder + 0 + "/");
