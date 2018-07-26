@@ -4,9 +4,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.PrintStream;
 import java.io.PrintWriter;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Random;
+import java.util.*;
 
 import Jama.Matrix;
 import LBFGS.LBFGS;
@@ -610,70 +608,46 @@ public class CTM extends LDA_Variational {
         System.out.format("[Stat]Loglikelihood %.3f+/-%.3f\n", mean, var);
     }
 
-    protected void initTestDoc(_Doc d) {
-        initDoc(d);
-    }
-
     @Override
-    public void finalEst(){
-        String finalLambdaFile = "finalLambda.dat";
-
-        int numLambda = 0;
+    public void printAggreTopWords(int k, String topWordPath, HashMap<String, List<_Doc>> docCluster) {
         try{
-            PrintStream out = new PrintStream(new File(finalLambdaFile));
+            PrintWriter topWordWriter = new PrintWriter(new File(topWordPath));
 
-            for (_Doc doc : m_trainSet) {
-                estThetaInDoc(doc);
-
-                if (numLambda >= 7000) {
-                    continue;
+            for(Map.Entry<String, List<_Doc>> entryU : docCluster.entrySet()) {
+                double[] gamma = new double[number_of_topics];
+                Arrays.fill(gamma, 0);
+                for(_Doc d:entryU.getValue()) {
+                    double sum = Utils.logSum(((_Doc4ETBIR)d).m_mu);
+                    for (int i = 0; i < number_of_topics; i++) {
+                        gamma[i] += Math.exp(((_Doc4ETBIR)d).m_mu[i] - sum);
+                    }
                 }
-                for(int i=0; i<((_Doc4ETBIR)doc).m_mu.length; i++){
-                    out.print(((_Doc4ETBIR) doc).m_mu[i] + "\t");
+                Utils.L1Normalization(gamma);
+
+                topWordWriter.format("ID %s(%d reviews)\n", entryU.getKey(), entryU.getValue().size());
+                for (int i = 0; i < topic_term_probabilty.length; i++) {
+                    MyPriorityQueue<_RankItem> fVector = new MyPriorityQueue<_RankItem>(k);
+                    for (int j = 0; j < vocabulary_size; j++)
+                        fVector.add(new _RankItem(m_corpus.getFeature(j), topic_term_probabilty[i][j]));
+
+                    topWordWriter.format("-- Topic %d(%.5f):\t", i, gamma[i]);
+                    for (_RankItem it : fVector)
+                        topWordWriter.format("%s(%.5f)\t", it.m_name, m_logSpace ? Math.exp(it.m_value) : it.m_value);
+                    topWordWriter.write("\n");
                 }
-                out.print("\n");
-                numLambda += 1;
             }
-            out.flush();
-            out.close();
-
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
-        }
-    }
-
-    @Override
-    protected void estThetaInDoc(_Doc doc){
-
-        double sum = 0;
-        Arrays.fill(doc.m_topics, 0);
-
-        _SparseFeature[] fv = doc.getSparse();
-        for (int n = 0; n < fv.length; n++) {
-            int wid = fv[n].getIndex();
-            double v = fv[n].getValue();
-            for(int i=0; i < len1; i++){
-                doc.m_topics[i] += v*doc.m_phi[n][i];//here should multiply v
-            }
-        }
-
-        sum = Utils.sumOfArray(doc.m_topics);
-        for(int i=0; i < len1; i++){
-            if (m_logSpace){
-                doc.m_topics[i] = Math.log(doc.m_topics[i]/sum);
-                //System.out.println(doc.m_topics[i]);
-            }else{
-                doc.m_topics[i] = doc.m_topics[i]/sum;
-                //System.out.println(doc.m_topics[i]);
-            }
+            topWordWriter.close();
+        } catch(Exception ex){
+            System.err.println("File Not Found: " + topWordPath);
         }
     }
 
     @Override
     public void printParam(String folderName, String topicmodel){
         String priorSigmaPath = folderName + topicmodel + "_priorSigma.txt";
-        String priorEtaPath = folderName + topicmodel + "_priorEta.txt";
+        String priorMuPath = folderName + topicmodel + "_priorMu.txt";
         String postNuPath = folderName + topicmodel + "_postNu.txt";
+        String postSoftmaxPath = folderName + topicmodel + "_postSoftmax.txt";
         String postLambdaPath = folderName + topicmodel + "_postLambda.txt";
 
         //print out prior parameter for covariance: Sigma
@@ -692,12 +666,12 @@ public class CTM extends LDA_Variational {
 
         //print out prior parameter for mean: eta
         try{
-            PrintWriter etaWriter = new PrintWriter(new File(priorEtaPath));
+            PrintWriter muWriter = new PrintWriter(new File(priorMuPath));
             for(int i = 0; i < len2; i++)
-                etaWriter.format("%.8f\t", mu[i]);
-            etaWriter.close();
+                muWriter.format("%.8f\t", mu[i]);
+            muWriter.close();
         } catch(Exception ex){
-            System.err.format("File %s Not Found", priorEtaPath);
+            System.err.format("File %s Not Found", priorMuPath);
         }
 
         //print out posterior parameter of variance for each document: nu
@@ -705,9 +679,11 @@ public class CTM extends LDA_Variational {
             PrintWriter nuWriter = new PrintWriter(new File(postNuPath));
 
             for(int idx = 0; idx < m_trainSet.size(); idx++) {
-                nuWriter.write(String.format("No. %d DocID %s *********************\n", idx, m_trainSet.get(idx).getID()));
-                for (int i = 0; i < len2; i++)
-                    nuWriter.format("%.5f\t", ((_Doc4ETBIR) m_trainSet.get(idx)).m_mu[i]);
+                nuWriter.write(String.format("No. %d Doc(user: %s, item: %s) ***************\n", idx,
+                        ((_Doc4ETBIR) m_trainSet.get(idx)).getUserID(),
+                        ((_Doc4ETBIR) m_trainSet.get(idx)).getItemID()));
+                for (int i = 0; i < number_of_topics; i++)
+                    nuWriter.format("%.5f\t", ((_Doc4ETBIR) m_trainSet.get(idx)).m_Sigma[i]);
                 nuWriter.println();
             }
             nuWriter.close();
@@ -716,18 +692,27 @@ public class CTM extends LDA_Variational {
         }
 
         //print out posterior parameter of mean for each document: lambda
+        //print out estimated parameter of multinomial distribution: softmax(eta)
         try{
             PrintWriter lambdaWriter = new PrintWriter(new File(postLambdaPath));
+            PrintWriter softmaxWriter = new PrintWriter(new File(postSoftmaxPath));
 
             for(int idx = 0; idx < m_trainSet.size(); idx++) {
-                lambdaWriter.write(String.format("No. %d DocID %s *********************\n", idx, m_trainSet.get(idx).getID()));
-                for (int i = 0; i < len2; i++)
-                    lambdaWriter.format("%.5f\t", ((_Doc4ETBIR) m_trainSet.get(idx)).m_Sigma[i]);
+                lambdaWriter.write(String.format("No. %d Doc(user: %s, item: %s) ***************\n", idx,
+                        ((_Doc4ETBIR) m_trainSet.get(idx)).getUserID(),
+                        ((_Doc4ETBIR) m_trainSet.get(idx)).getItemID()));
+                double sum = Utils.logSum(((_Doc4ETBIR) m_trainSet.get(idx)).m_mu);
+                for (int i = 0; i < number_of_topics; i++) {
+                    lambdaWriter.format("%.5f\t", ((_Doc4ETBIR) m_trainSet.get(idx)).m_mu[i]);
+                    softmaxWriter.format("%.5f\t", Math.exp(((_Doc4ETBIR) m_trainSet.get(idx)).m_mu[i] - sum));
+                }
                 lambdaWriter.println();
+                softmaxWriter.println();
             }
             lambdaWriter.close();
+            softmaxWriter.close();
         } catch(Exception ex){
-            System.err.format("File %s Not Found", postLambdaPath);
+            System.err.format("File %s or %s Not Found", postLambdaPath, postSoftmaxPath);
         }
     }
 

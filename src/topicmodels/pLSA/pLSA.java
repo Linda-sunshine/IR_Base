@@ -14,11 +14,7 @@ import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.util.*;
 
-import structures.MyPriorityQueue;
-import structures._Corpus;
-import structures._Doc;
-import structures._RankItem;
-import structures._SparseFeature;
+import structures.*;
 import topicmodels.twoTopic;
 import utils.Utils;
 
@@ -335,21 +331,23 @@ public class pLSA extends twoTopic {
 	}
 
 	public void printParameterAggregation(int k, String folderName, String topicmodel){
-		String gammaPathByUser = folderName + topicmodel + "_gammaByUser.txt";
-		String gammaPathByItem = folderName + topicmodel + "_gammaByItem.txt";
+		String phiPathByUser = folderName + topicmodel + "_phiByUser.txt";
+		String phiPathByItem = folderName + topicmodel + "_phiByItem.txt";
 
 		//aggregate parameter \gamma by user/item
-		printTopWords(k, gammaPathByUser, getDocByUser());
-		printTopWords(k, gammaPathByItem, getDocByItem());
+		printTopWords(k, phiPathByUser, getDocByUser());
+		printTopWords(k, phiPathByItem, getDocByItem());
 
 		//overall topic words
 		printTopWords(k, folderName + topicmodel + "_topWords.txt");
 	}
 
+	//_Doc has no userID, _Review has
 	public HashMap<String, List<_Doc>> getDocByUser(){
 		HashMap<String, List<_Doc>> docByUser = new HashMap<>();
 		for(_Doc d:m_trainSet) {
-			String userName = d.getTitle();
+            _Review doc = (_Review) d;
+			String userName = doc.getUserID();
 			if(!docByUser.containsKey(userName)){
 				docByUser.put(userName, new ArrayList<_Doc>());
 			}
