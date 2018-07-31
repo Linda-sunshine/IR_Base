@@ -35,7 +35,7 @@ public class ETBIRMain {
         String topicmodel = "LDA_Variational"; // pLSA, LDA_Gibbs, LDA_Variational, ETBIR
         int number_of_topics = 20;
         int varMaxIter = 20;
-        double varConverge = 1e-5;
+        double varConverge = 1e-6;
         int emMaxIter = 30;
         double emConverge = 1e-10;
 

@@ -35,5 +35,7 @@ public class _Doc4ETBIR extends _Review{
             else
                 m_logZeta = Utils.logSum(m_logZeta, m_mu[i] + 0.5*m_Sigma[i]);
         }
+//        m_mu[k-1] = 0;
+//        m_Sigma[k-1] = 0;
     }
 }

@@ -24,6 +24,8 @@ public class ETBIR extends LDA_Variational {
 
     protected int number_of_users;
     protected int number_of_items;
+    protected int len1;
+    protected int len2;
 
     protected List<_User> m_users;
     protected List<_Product> m_items;
@@ -69,6 +71,20 @@ public class ETBIR extends LDA_Variational {
     }
 
     @Override
+    protected void createSpace() {
+        super.createSpace();
+
+        this.len1 = number_of_topics;
+        this.len2 = number_of_topics;
+        m_alpha = new double[len2];
+        m_alphaStat = new double[len2];
+        m_alphaG = new double[len2];
+        m_alphaH = new double[len2];
+
+        Arrays.fill(m_alpha, d_alpha);
+    }
+
+    @Override
     public String toString(){
         return String.format("ETBIR[k:%d, alpha:%.5f, beta:%.5f, simga:%.5f, rho:%.5f, item~N(%.5f, %.5f), user~N(%.5f, %.5f)]\n",
                 number_of_topics, d_alpha, d_beta, this.m_sigma, this.m_rho, d_mu, d_sigma_theta, d_nu, d_sigma_P);
@@ -87,13 +103,13 @@ public class ETBIR extends LDA_Variational {
 
     protected void updateStats4Item(_Product4ETBIR item){
         double digammaSum = Utils.digamma(Utils.sumOfArray(item.m_eta));
-        for(int k = 0; k < number_of_topics; k++)
+        for(int k = 0; k < len2; k++)
             m_alphaStat[k] += Utils.digamma(item.m_eta[k]) - digammaSum;
     }
 
     protected void updateStats4User(_User4ETBIR user){
-        for(int k = 0; k < number_of_topics; k++){
-            for(int l = 0; l < number_of_topics; l++){
+        for(int k = 0; k < len2; k++){
+            for(int l = 0; l < len2; l++){
                 m_pStats += user.m_SigmaP[k][l][l] + user.m_nuP[k][l] * user.m_nuP[k][l];
             }
             m_lambda_Stats += user.m_nuP[k][k];
@@ -977,8 +993,8 @@ public class ETBIR extends LDA_Variational {
         String muFile = folderName + topicmodel + "_postMu.txt";
         String sigmaThetaFile = folderName + topicmodel + "_postSigmaTheta.txt";
 
-        String innerFile = folderName + topicmodel + "postInnerProduct.txt";
-        String softmaxFile = folderName + topicmodel + "postSoftmax.txt";
+        String innerFile = folderName + topicmodel + "_postInnerProduct.txt";
+        String softmaxFile = folderName + topicmodel + "_postSoftmax.txt";
 
         //print out prior parameter of dirichlet: alpha
         try{
@@ -1088,6 +1104,7 @@ public class ETBIR extends LDA_Variational {
                     sigmaThetaWriter.format("%.5f\t", ((_Doc4ETBIR) m_trainSet.get(idx)).m_Sigma[i]);
                 }
                 muWriter.println();
+                sigmaThetaWriter.println();
             }
             muWriter.close();
         } catch(Exception ex){
