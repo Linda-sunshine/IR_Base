@@ -21,7 +21,6 @@ public class ETBIRCFMain {
         double trainRatio = 0, adaptRatio = 1;
         int[] ks = new int[]{2, 4, 6, 8, 10, 12, 14}; // top_k neighbors
         int crossV = 5;
-        String mode = "userP"; //row, column, userP, itemEta, productUserItem
         int numberOfCores = Runtime.getRuntime().availableProcessors();
         boolean enforceAdapt = true;
         String tokenModel = "./data/Model/en-token.bin"; // Token model.
@@ -78,7 +77,9 @@ public class ETBIRCFMain {
             /***Collaborative filtering starts here.***/
             boolean equalWeight = false;
             String saveAdjFolder = String.format("%s/%d/", outputFolder, i);
-            String dir, cfFile;
+            String dir, cfFile, model;
+            String[] models = new String[]{"ETBIR","LDA","CTM"};
+            String mode = "userP"; //row, column, userP, itemEta, productUserItem
             String suffix1 = "txt", suffix2 = "classifer";
             String neighborSelection = "all"; // "all"
 
@@ -90,7 +91,7 @@ public class ETBIRCFMain {
             // Step 1: construct ranking neighbors using the same CollaborativeFiltering.java
             CollaborativeFiltering cfInit = new CollaborativeFiltering(analyzer.getUsers(), analyzer.getFeatureSize() + 1);
             int dim = 20;
-            int[] threshold = new int[]{5};
+            int[] threshold = new int[]{3, 5, 7, 10};
 
             for (int th : threshold) {
                 dir = String.format("%s/%s_cf_%s_%d_", saveAdjFolder, dataset, neighborSelection, th);
@@ -108,23 +109,27 @@ public class ETBIRCFMain {
                     cfInit.loadRankingCandidates(cfFile);
 
                     int validUser = cfInit.getValidUserSize();
-                    System.out.format("\n-----------------run ETBIR %d neighbors-------------------------\n", ks[k]);
-                    CollaborativeFilteringWithETBIR cf = new CollaborativeFilteringWithETBIR(cfUsers, analyzer.getFeatureSize() + 1, ks[k], dim);
-                    cf.setValidUserSize(validUser);
-                    cf.setEqualWeightFlag(equalWeight);
-                    cf.setMode(mode);
 
-                    String userWeight = String.format("%s/%d/ETBIR_p4User.txt", outputFolder, i);
-                    String itemWeight = String.format("%s/%d/ETBIR_eta4Item.txt", outputFolder, i);
-                    cf.loadWeights(userWeight, "", suffix1, suffix2);
-                    cf.loadItemWeights(itemWeight);
+                    for(int m = 0; m < models.length; m++) {
+                        model = models[m];
+                        System.out.format("\n-----------------run %s %d neighbors-------------------------\n", model, ks[k]);
+                        CollaborativeFilteringWithETBIR cf = new CollaborativeFilteringWithETBIR(cfUsers, analyzer.getFeatureSize() + 1, ks[k], dim);
+                        cf.setValidUserSize(validUser);
+                        cf.setEqualWeightFlag(equalWeight);
+                        cf.setMode(mode);
 
-                    cf.calculateAllNDCGMAP();
-                    cf.calculateAvgNDCGMAP();
+                        String userWeight = String.format("%s/%d/ETBIR_p4User.txt", outputFolder, i);
+                        String itemWeight = String.format("%s/%d/ETBIR_eta4Item.txt", outputFolder, i);
+                        cf.loadWeights(userWeight, "", suffix1, suffix2);
+                        cf.loadItemWeights(itemWeight);
 
-                    System.out.format("\n[Info]NDCG: %.4f, MAP: %.4f\n", cf.getAvgNDCG(), cf.getAvgMAP());
-                    ndcg[k][i] = cf.getAvgNDCG();
-                    map[k][i] = cf.getAvgMAP();
+                        cf.calculateAllNDCGMAP();
+                        cf.calculateAvgNDCGMAP();
+
+                        System.out.format("\n[Info]NDCG: %.4f, MAP: %.4f\n", cf.getAvgNDCG(), cf.getAvgMAP());
+                        ndcg[k][i] = cf.getAvgNDCG();
+                        map[k][i] = cf.getAvgMAP();
+                    }
                 }
             }
         }
