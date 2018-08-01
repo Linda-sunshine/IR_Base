@@ -118,10 +118,15 @@ public class ETBIRCFMain {
                         cf.setEqualWeightFlag(equalWeight);
                         cf.setMode(mode);
 
-                        String userWeight = String.format("%s/%d/ETBIR_p4User.txt", outputFolder, i);
-                        String itemWeight = String.format("%s/%d/ETBIR_eta4Item.txt", outputFolder, i);
-                        cf.loadWeights(userWeight, "", suffix1, suffix2);
-                        cf.loadItemWeights(itemWeight);
+                        if(model.equals("ETBIR")) {
+                            String userWeight = String.format("%s/%d/%s_postNu.txt", outputFolder, i, model);//user embedding
+                            String itemWeight = String.format("%s/%d/%s_postEta.txt", outputFolder, i, model);//item embedding
+                            cf.loadWeights(userWeight, model, suffix1, suffix2);
+                            cf.loadItemWeights(itemWeight);
+                        } else if(model.equals("LDA")){
+                            String userWeight = String.format("%s/%d/%s_postByUser.txt", outputFolder, i, model);
+                            String itemWeight = String.format("%s/%d/%s_postByItem.txt", outputFolder, i, model);
+                        }
 
                         cf.calculateAllNDCGMAP();
                         cf.calculateAvgNDCGMAP();

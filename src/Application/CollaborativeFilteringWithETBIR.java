@@ -85,10 +85,8 @@ public class CollaborativeFilteringWithETBIR extends CollaborativeFiltering {
 				// skip the user without analysis, m_dim * 2 lines
 				if(!m_itemMap.containsKey(itemID)){
 					reader.readLine();
-					reader.readLine();
 				} else{				
 					// read the eta of each item
-					reader.readLine();
 					eta = reader.readLine().split("\\s+");
 					if(eta.length == m_dim){
 						for(int i=0; i<m_dim; i++){
