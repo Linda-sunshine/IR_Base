@@ -6,12 +6,7 @@ package topicmodels.pLSA;
  * Probabilistic Latent Semantic Analysis Topic Modeling 
  */
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.PrintWriter;
+import java.io.*;
 import java.util.*;
 
 import structures.*;
@@ -369,8 +364,16 @@ public class pLSA extends twoTopic {
 	}
 
 	public void printTopWords(int k, String topWordPath, HashMap<String, List<_Doc>> docCluster) {
+		File file = new File(topWordPath);
 		try{
-			PrintWriter topWordWriter = new PrintWriter(new File(topWordPath));
+			file.getParentFile().mkdirs();
+			file.createNewFile();
+		} catch(IOException e){
+			e.printStackTrace();
+		}
+
+		try{
+			PrintWriter topWordWriter = new PrintWriter(file);
 
 			for(Map.Entry<String, List<_Doc>> entryU : docCluster.entrySet()) {
 				double[] gamma = new double[number_of_topics];
@@ -394,7 +397,7 @@ public class pLSA extends twoTopic {
 				}
 			}
 			topWordWriter.close();
-		} catch(Exception ex){
+		} catch(FileNotFoundException ex){
 			System.err.println("File Not Found: " + topWordPath);
 		}
 	}

@@ -4,6 +4,8 @@
 package topicmodels.LDA;
 
 import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.*;
 
@@ -275,16 +277,23 @@ public class LDA_Variational extends pLSA {
 	}
 
     public void printAggreTopWords(int k, String topWordPath, HashMap<String, List<_Doc>> docCluster) {
-        try{
-            PrintWriter topWordWriter = new PrintWriter(new File(topWordPath));
+		File file = new File(topWordPath);
+		try{
+			file.getParentFile().mkdirs();
+			file.createNewFile();
+		} catch(IOException e){
+			e.printStackTrace();
+		}
 
+        try{
+            PrintWriter topWordWriter = new PrintWriter(file);
             for(Map.Entry<String, List<_Doc>> entryU : docCluster.entrySet()) {
                 double[] gamma = new double[number_of_topics];
                 Arrays.fill(gamma, 0);
                 for(_Doc d:entryU.getValue()) {
                     double sum = Utils.sumOfArray(d.m_sstat);
                     for (int i = 0; i < number_of_topics; i++) {
-                        gamma[i] += m_logSpace? Math.log(d.m_sstat[i]/sum):d.m_sstat[k]/sum;
+                        gamma[i] += d.m_sstat[i]/sum;
                     }
                 }
                 Utils.L1Normalization(gamma);
@@ -302,28 +311,67 @@ public class LDA_Variational extends pLSA {
                 }
             }
             topWordWriter.close();
-        } catch(Exception ex){
+        } catch(FileNotFoundException ex){
             System.err.println("File Not Found: " + topWordPath);
         }
     }
 
 	public void printParam(String folderName, String topicmodel){
 		String priorAlphaPath = folderName + topicmodel + "_priorAlpha.txt";
+		String priorBetaPath = folderName + topicmodel + "_priorBeta.txt";
 		String postGammaPath = folderName + topicmodel + "_postGamma.txt";
 
 		//print out prior parameter of dirichlet: alpha
+		File file = new File(priorAlphaPath);
 		try{
-			PrintWriter alphaWriter = new PrintWriter(new File(priorAlphaPath));
+			file.getParentFile().mkdirs();
+			file.createNewFile();
+		} catch(IOException e){
+			e.printStackTrace();
+		}
+		try{
+			PrintWriter alphaWriter = new PrintWriter(file);
 			for (int i = 0; i < number_of_topics; i++)
 				alphaWriter.format("%.5f\t", this.m_alpha[i]);
 			alphaWriter.close();
-		} catch(Exception ex){
+		} catch(FileNotFoundException ex){
+			System.err.format("File %s Not Found", priorAlphaPath);
+		}
+
+		//print out prior parameter of topic-word distribution: beta
+		file = new File(priorBetaPath);
+		try{
+			file.getParentFile().mkdirs();
+			file.createNewFile();
+		} catch(IOException e){
+			e.printStackTrace();
+		}
+		try{
+			PrintWriter betaWriter = new PrintWriter(file);
+			for(int i = 0; i < m_corpus.getFeatureSize(); i++) //first line is vocabulary
+				betaWriter.format("%s\t", m_corpus.getFeature(i));
+			betaWriter.println();
+
+			for (int i = 0; i < topic_term_probabilty.length; i++){//next is beta
+				for(int j = 0; j < vocabulary_size; j++)
+					betaWriter.format("%.5f\t", topic_term_probabilty[i][j]);
+				betaWriter.println();
+			}
+			betaWriter.close();
+		} catch(FileNotFoundException ex){
 			System.err.format("File %s Not Found", priorAlphaPath);
 		}
 
 		//print out posterior parameter of dirichlet for each document: gamma
+		file = new File(postGammaPath);
 		try{
-			PrintWriter gammaWriter = new PrintWriter(new File(postGammaPath));
+			file.getParentFile().mkdirs();
+			file.createNewFile();
+		} catch(IOException e){
+			e.printStackTrace();
+		}
+		try{
+			PrintWriter gammaWriter = new PrintWriter(file);
 
 			for(int idx = 0; idx < m_trainSet.size(); idx++) {
 				gammaWriter.write(String.format("No. %d Doc(user: %s, item: %s) ***************\n", idx,
@@ -334,7 +382,7 @@ public class LDA_Variational extends pLSA {
 				gammaWriter.println();
 			}
 			gammaWriter.close();
-		} catch(Exception ex){
+		} catch(FileNotFoundException ex){
 			System.err.format("File %s Not Found", postGammaPath);
 		}
 	}

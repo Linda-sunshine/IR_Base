@@ -177,7 +177,7 @@ public class ETBIR extends LDA_Variational {
 
             last = totalLikelihood;
 
-            System.out.format("[Info]Single-thread E-Step: %d iteration, likelihood=%.2f, converge to %.4f\n",
+            System.out.format("[Info]Single-thread E-Step: %d iteration, likelihood=%.2f, converge to %.8f\n",
                     iter, last, converge);
 
         }while(iter++ < m_varMaxIter*2 && converge > m_varConverge/3);
@@ -748,7 +748,7 @@ public class ETBIR extends LDA_Variational {
             calculate_M_step(iter);
 
             lastAllLikelihood = currentAllLikelihood;
-            System.out.format("[Info]EM iteration %d: likelihood is %.2f, converges to %.10f...\n\n",
+            System.out.format("[Info]EM iteration %d: likelihood is %.2f, converges to %.8f...\n\n",
                     iter, currentAllLikelihood, converge);
 
 //            printTopWords(10);//print out the top words every iteration
@@ -933,36 +933,72 @@ public class ETBIR extends LDA_Variational {
 
     @Override
     public void printAggreTopWords(int k, String topWordPath, HashMap<String, List<_Doc>> docCluster) {
+        File file = new File(topWordPath);
         try{
-            PrintWriter topWordWriter = new PrintWriter(new File(topWordPath));
+            file.getParentFile().mkdirs();
+            file.createNewFile();
+        } catch(IOException e){
+            e.printStackTrace();
+        }
+        File file2 = new File(topWordPath.replace(".txt", "_est.txt"));
+        try{
+            file2.getParentFile().mkdirs();
+            file2.createNewFile();
+        } catch(IOException e){
+            e.printStackTrace();
+        }
+        try{
+            PrintWriter topWordWriter = new PrintWriter(file);
+            PrintWriter topWordWriter2 = new PrintWriter(file2);
 
             for(Map.Entry<String, List<_Doc>> entryU : docCluster.entrySet()) {
                 double[] gamma = new double[number_of_topics];
-                Arrays.fill(gamma, 0);
+                double[] gamma_est = new double[number_of_topics];
+
                 for(_Doc d:entryU.getValue()) {
-                    double sum = Utils.logSum(((_Doc4ETBIR)d).m_mu);
-                    for (int i = 0; i < number_of_topics; i++) {
-                        gamma[i] += Math.exp(((_Doc4ETBIR)d).m_mu[i] - sum);
-                    }
+                    _Doc4ETBIR doc = (_Doc4ETBIR) d;
+                    double expSum = Utils.logSum(doc.m_mu);
+                    for (int i = 0; i < number_of_topics; i++)
+                        gamma[i] += Math.exp(doc.m_mu[i]-expSum);
+
+                    String userName = doc.getUserID();
+                    String itemName = doc.getItemID();
+                    _User4ETBIR user = (_User4ETBIR) m_users.get(m_usersIndex.get(userName));
+                    _Product4ETBIR item = (_Product4ETBIR) m_items.get(m_itemsIndex.get(itemName));
+                    double[] theta = new double[number_of_topics];
+                    for(int i = 0; i < number_of_topics; i++)
+                        theta[i] = Utils.dotProduct(user.m_nuP[i], item.m_eta);
+                    expSum = Utils.logSum(theta);
+                    for(int i = 0; i < number_of_topics; i++)
+                        gamma_est[i] += Math.exp(theta[i]-expSum);
+
                 }
                 Utils.L1Normalization(gamma);
+                Utils.L1Normalization(gamma_est);
 
-                topWordWriter.format("ID %s(%d reviews)\n", entryU.getKey(), entryU.getValue().size());
+                topWordWriter.format("UserID %s(%d reviews)\n", entryU.getKey(), entryU.getValue().size());
+                topWordWriter2.format("UserID %s(%d reviews)\n", entryU.getKey(), entryU.getValue().size());
                 for (int i = 0; i < topic_term_probabilty.length; i++) {
                     MyPriorityQueue<_RankItem> fVector = new MyPriorityQueue<_RankItem>(k);
                     for (int j = 0; j < vocabulary_size; j++)
                         fVector.add(new _RankItem(m_corpus.getFeature(j), topic_term_probabilty[i][j]));
 
                     topWordWriter.format("-- Topic %d(%.5f):\t", i, gamma[i]);
-                    for (_RankItem it : fVector)
+                    topWordWriter2.format("-- Topic %d(%.5f):\t", i, gamma_est[i]);
+                    for (_RankItem it : fVector) {
                         topWordWriter.format("%s(%.5f)\t", it.m_name, m_logSpace ? Math.exp(it.m_value) : it.m_value);
+                        topWordWriter2.format("%s(%.5f)\t", it.m_name, m_logSpace ? Math.exp(it.m_value) : it.m_value);
+                    }
                     topWordWriter.write("\n");
+                    topWordWriter2.write("\n");
                 }
             }
             topWordWriter.close();
+            topWordWriter2.close();
         } catch(Exception ex){
             System.err.println("File Not Found: " + topWordPath);
         }
+
     }
 
     public void printParam(String folderName, String topicmodel){
@@ -977,23 +1013,44 @@ public class ETBIR extends LDA_Variational {
         String muFile = folderName + topicmodel + "_postMu.txt";
         String sigmaThetaFile = folderName + topicmodel + "_postSigmaTheta.txt";
 
-        String innerFile = folderName + topicmodel + "postInnerProduct.txt";
-        String softmaxFile = folderName + topicmodel + "postSoftmax.txt";
+        String innerFile = folderName + topicmodel + "_postInnerProduct.txt";
+        String softmaxFile = folderName + topicmodel + "_postSoftmax.txt";
 
         //print out prior parameter of dirichlet: alpha
+        File file = new File(alphaFile);
         try{
-            PrintWriter alphaWriter = new PrintWriter(new File(alphaFile));
+            file.getParentFile().mkdirs();
+            file.createNewFile();
+        } catch(IOException e){
+            e.printStackTrace();
+        }
+        try{
+            PrintWriter alphaWriter = new PrintWriter(file);
             for (int i = 0; i < number_of_topics; i++)
                 alphaWriter.format("%.5f\t", this.m_alpha[i]);
             alphaWriter.close();
-        } catch(Exception ex){
+        } catch(FileNotFoundException ex){
             System.err.format("File %s Not Found", alphaFile);
         }
 
         //print out prior parameter of normal distribution for user matrix P: sigma and lambda
+        file = new File(sigmaFile);
         try{
-            PrintWriter sigmaWriter = new PrintWriter(new File(sigmaFile));
-            PrintWriter lambdaWriter = new PrintWriter(new File(lambdaFile));
+            file.getParentFile().mkdirs();
+            file.createNewFile();
+        } catch(IOException e){
+            e.printStackTrace();
+        }
+        File file2 = new File(lambdaFile);
+        try{
+            file2.getParentFile().mkdirs();
+            file2.createNewFile();
+        } catch(IOException e){
+            e.printStackTrace();
+        }
+        try{
+            PrintWriter sigmaWriter = new PrintWriter(file);
+            PrintWriter lambdaWriter = new PrintWriter(file2);
 
             for(int i = 0;i < number_of_topics; i++) {
                 lambdaWriter.format("%.5f\t", this.m_lambda);
@@ -1001,37 +1058,51 @@ public class ETBIR extends LDA_Variational {
                     if(j == i) {
                         sigmaWriter.format("%.5f\t", this.m_sigma);
                     }else{
-                        sigmaWriter.format("%.5f\t", 0);
+                        sigmaWriter.format("%.5f\t", (double) 0);
                     }
                 }
             }
             sigmaWriter.close();
             lambdaWriter.close();
-        } catch(Exception ex){
+        } catch(FileNotFoundException ex){
             System.err.format("File %s or %s Not Found", sigmaFile, lambdaFile);
         }
 
         //print out prior parameter of normal distribution for doc: rho
+        file = new File(rhoFile);
         try{
-            PrintWriter rhoWriter = new PrintWriter(new File(rhoFile));
+            file.getParentFile().mkdirs();
+            file.createNewFile();
+        } catch(IOException e){
+            e.printStackTrace();
+        }
+        try{
+            PrintWriter rhoWriter = new PrintWriter(file);
 
             for(int i = 0;i < number_of_topics; i++) {
                 for(int j = 0; j < number_of_topics; j++) {
                     if(j == i) {
                         rhoWriter.format("%.5f\t", this.m_rho);
                     }else{
-                        rhoWriter.format("%.5f\t", 0);
+                        rhoWriter.format("%.5f\t", (double) 0);
                     }
                 }
             }
             rhoWriter.close();
-        } catch(Exception ex){
+        } catch(FileNotFoundException ex){
             System.err.format("File %s Not Found", rhoFile);
         }
 
         //print out post parameter of dirichlet distribution for item: eta
+        file = new File(etaFile);
         try{
-            PrintWriter etaWriter = new PrintWriter(new File(etaFile));
+            file.getParentFile().mkdirs();
+            file.createNewFile();
+        } catch(IOException e){
+            e.printStackTrace();
+        }
+        try{
+            PrintWriter etaWriter = new PrintWriter(file);
 
             for(int idx = 0; idx < m_items.size(); idx++) {
                 etaWriter.write(String.format("item %d %s *********************\n", idx, m_items.get(idx).getID()));
@@ -1041,14 +1112,28 @@ public class ETBIR extends LDA_Variational {
                 etaWriter.write("\n");
             }
             etaWriter.close();
-        } catch(Exception ex){
+        } catch(FileNotFoundException ex){
             System.err.format("File %s Not Found", etaFile);
         }
 
         //print out post parameter of normal distribution for user matrix: nu and sigmaP
+        file = new File(nuFile);
         try{
-            PrintWriter nuWriter = new PrintWriter(new File(nuFile));
-            PrintWriter sigmaPWriter = new PrintWriter(new File(sigmaPFile));
+            file.getParentFile().mkdirs();
+            file.createNewFile();
+        } catch(IOException e){
+            e.printStackTrace();
+        }
+        file2 = new File(sigmaPFile);
+        try{
+            file2.getParentFile().mkdirs();
+            file2.createNewFile();
+        } catch(IOException e){
+            e.printStackTrace();
+        }
+        try{
+            PrintWriter nuWriter = new PrintWriter(file);
+            PrintWriter sigmaPWriter = new PrintWriter(file2);
 
             for(int idx = 0; idx < m_users.size(); idx++) {
                 nuWriter.write(String.format("No. %d UserID %s *********************\n", idx, m_users.get(idx).getUserID()));
@@ -1056,8 +1141,9 @@ public class ETBIR extends LDA_Variational {
                 _User4ETBIR user = (_User4ETBIR) m_users.get(idx);
                 for (int i = 0; i < number_of_topics; i++) {
                     sigmaPWriter.format("-- %d column:\n", i);
+                    nuWriter.format("-- %d column:\n", i);
                     for(int j = 0; j < number_of_topics; j++) {
-                        nuWriter.format("%.5f\t", user.m_nuP[j][i]);
+                        nuWriter.format("%.5f\t", user.m_nuP[i][j]);
                         for(int k = 0; k < number_of_topics; k++)
                             sigmaPWriter.format("%.5f\t", user.m_SigmaP[i][j][k]);
                         sigmaPWriter.println();
@@ -1067,14 +1153,28 @@ public class ETBIR extends LDA_Variational {
             }
             nuWriter.close();
             sigmaPWriter.close();
-        } catch(Exception ex){
+        } catch(FileNotFoundException ex){
             System.err.format("File %s or %s Not Found", nuFile, sigmaPFile);
         }
 
         //print out posterior parameter of normal distribution for each document: mu and sigmaTheta
+        file = new File(muFile);
         try{
-            PrintWriter muWriter = new PrintWriter(new File(muFile));
-            PrintWriter sigmaThetaWriter = new PrintWriter(new File(sigmaThetaFile));
+            file.getParentFile().mkdirs();
+            file.createNewFile();
+        } catch(IOException e){
+            e.printStackTrace();
+        }
+        file2 = new File(sigmaThetaFile);
+        try{
+            file2.getParentFile().mkdirs();
+            file2.createNewFile();
+        } catch(IOException e){
+            e.printStackTrace();
+        }
+        try{
+            PrintWriter muWriter = new PrintWriter(file);
+            PrintWriter sigmaThetaWriter = new PrintWriter(file2);
 
             for(int idx = 0; idx < m_trainSet.size(); idx++) {
                 muWriter.write(String.format("No. %d Doc(user: %s, item: %s) ***************\n", idx,
@@ -1090,14 +1190,28 @@ public class ETBIR extends LDA_Variational {
                 muWriter.println();
             }
             muWriter.close();
-        } catch(Exception ex){
+        } catch(FileNotFoundException ex){
             System.err.format("File %s or %s Not Found", muFile, sigmaThetaFile);
         }
 
         //print out estimated parameter of normal for doc: the inner product P\gamma and its softmax
+        file = new File(innerFile);
         try{
-            PrintWriter innerWriter = new PrintWriter(new File(innerFile));
-            PrintWriter softmaxWriter = new PrintWriter(new File(softmaxFile));
+            file.getParentFile().mkdirs();
+            file.createNewFile();
+        } catch(IOException e){
+            e.printStackTrace();
+        }
+        file2 = new File(softmaxFile);
+        try{
+            file2.getParentFile().mkdirs();
+            file2.createNewFile();
+        } catch(IOException e){
+            e.printStackTrace();
+        }
+        try{
+            PrintWriter innerWriter = new PrintWriter(file);
+            PrintWriter softmaxWriter = new PrintWriter(file2);
 
             for(int idx = 0; idx < m_trainSet.size(); idx++) {
                 _Doc4ETBIR doc = (_Doc4ETBIR) m_trainSet.get(idx);
@@ -1156,65 +1270,6 @@ public class ETBIR extends LDA_Variational {
             docByItem.put(itemName, docs);
         }
         return docByItem;
-    }
-
-    public void printTopWords(int k, String topWordPath, HashMap<String, List<_Doc>> docCluster) {
-        try{
-            PrintWriter topWordWriter = new PrintWriter(new File(topWordPath));
-            PrintWriter topWordWriter2 = new PrintWriter(new File(topWordPath.replace(".txt", "_est.txt")));
-
-            for(Map.Entry<String, List<_Doc>> entryU : docCluster.entrySet()) {
-                double[] gamma = new double[number_of_topics];
-                double[] gamma_est = new double[number_of_topics];
-
-                for(_Doc d:entryU.getValue()) {
-                    _Doc4ETBIR doc = (_Doc4ETBIR) d;
-                    double expSum = 0;
-                    for(int i = 0; i < number_of_topics; i++)
-                        expSum += Math.exp(doc.m_mu[i]);
-
-                    for (int i = 0; i < number_of_topics; i++)
-                        gamma[i] += Math.exp(doc.m_mu[i]) / expSum;
-
-                    String userName = doc.getUserID();
-                    String itemName = doc.getItemID();
-                    _User4ETBIR user = (_User4ETBIR) m_users.get(m_usersIndex.get(userName));
-                    _Product4ETBIR item = (_Product4ETBIR) m_items.get(m_itemsIndex.get(itemName));
-                    double[] theta = new double[number_of_topics];
-                    expSum = 0;
-                    for(int i = 0; i < number_of_topics; i++){
-                        theta[i] = Math.exp(Utils.dotProduct(user.m_nuP[i], item.m_eta));
-                        expSum += theta[i];
-                    }
-                    for(int i = 0; i < number_of_topics; i++)
-                        gamma_est[i] += theta[i] / expSum;
-
-                }
-                Utils.L1Normalization(gamma);
-                Utils.L1Normalization(gamma_est);
-
-                topWordWriter.format("UserID %s(%d reviews)\n", entryU.getKey(), entryU.getValue().size());
-                topWordWriter2.format("UserID %s(%d reviews)\n", entryU.getKey(), entryU.getValue().size());
-                for (int i = 0; i < topic_term_probabilty.length; i++) {
-                    MyPriorityQueue<_RankItem> fVector = new MyPriorityQueue<_RankItem>(k);
-                    for (int j = 0; j < vocabulary_size; j++)
-                        fVector.add(new _RankItem(m_corpus.getFeature(j), topic_term_probabilty[i][j]));
-
-                    topWordWriter.format("-- Topic %d(%.5f):\t", i, gamma[i]);
-                    topWordWriter2.format("-- Topic %d(%.5f):\t", i, gamma_est[i]);
-                    for (_RankItem it : fVector) {
-                        topWordWriter.format("%s(%.5f)\t", it.m_name, m_logSpace ? Math.exp(it.m_value) : it.m_value);
-                        topWordWriter2.format("%s(%.5f)\t", it.m_name, m_logSpace ? Math.exp(it.m_value) : it.m_value);
-                    }
-                    topWordWriter.write("\n");
-                    topWordWriter2.write("\n");
-                }
-            }
-            topWordWriter.close();
-            topWordWriter2.close();
-        } catch(Exception ex){
-            System.err.println("File Not Found: " + topWordPath);
-        }
     }
 
     public void loadParam(String filename){
