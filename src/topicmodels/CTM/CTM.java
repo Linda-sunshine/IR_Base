@@ -650,9 +650,9 @@ public class CTM extends LDA_Variational {
 
     @Override
     public void printParam(String folderName, String topicmodel){
-        String priorSigmaPath = folderName + topicmodel + "_priorSigma.txt";
-        String priorMuPath = folderName + topicmodel + "_priorMu.txt";
-        String postSoftmaxPath = folderName + topicmodel + "_postSoftmax.txt";
+        String priorSigmaPath = String.format("%s%s_priorSigma_%d.txt", folderName, topicmodel, number_of_topics);
+        String priorMuPath = String.format("%s%s_priorMu_%d.txt", folderName, topicmodel, number_of_topics);
+        String postSoftmaxPath = String.format("%s%s_postSoftmax_%d.txt", folderName, topicmodel, number_of_topics);
 
         //print out prior parameter for covariance: Sigma
         File file = new File(priorSigmaPath);

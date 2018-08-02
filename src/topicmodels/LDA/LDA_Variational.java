@@ -268,8 +268,8 @@ public class LDA_Variational extends pLSA {
 	public void printParameterAggregation(int k, String folderName, String topicmodel) {
 		super.printParameterAggregation(k, folderName, topicmodel);
 
-        String gammaPathByUser = folderName + topicmodel + "_postByUser.txt";
-        String gammaPathByItem = folderName + topicmodel + "_postByItem.txt";
+        String gammaPathByUser = String.format("%s%s_postByUser_%d.txt", folderName, topicmodel, number_of_topics);
+        String gammaPathByItem = String.format("%s%s_postByItem_%d.txt", folderName, topicmodel, number_of_topics);
         printAggreTopWords(k, gammaPathByUser, getDocByUser());
         printAggreTopWords(k, gammaPathByItem, getDocByItem());
 
@@ -318,9 +318,9 @@ public class LDA_Variational extends pLSA {
     }
 
 	public void printParam(String folderName, String topicmodel){
-		String priorAlphaPath = folderName + topicmodel + "_priorAlpha.txt";
-		String priorBetaPath = folderName + topicmodel + "_priorBeta.txt";
-		String postGammaPath = folderName + topicmodel + "_postGamma.txt";
+		String priorAlphaPath = String.format("%s%s_priorAlpha_%d.txt", folderName, topicmodel, number_of_topics);
+		String priorBetaPath = String.format("%s%s_priorBeta_%d.txt", folderName, topicmodel, number_of_topics);
+		String postGammaPath = String.format("%s%s_postGamma_%d.txt", folderName, topicmodel, number_of_topics);
 
 		//print out prior parameter of dirichlet: alpha
 		File file = new File(priorAlphaPath);

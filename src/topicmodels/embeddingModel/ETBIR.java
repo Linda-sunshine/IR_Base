@@ -992,15 +992,15 @@ public class ETBIR extends LDA_Variational {
 
     @Override
     public void printParam(String folderName, String topicmodel){
-        String alphaFile = folderName + topicmodel + "_priorAlpha.txt";
-        String sigmaFile = folderName + topicmodel + "_priorSigma.txt";
-        String lambdaFile = folderName + topicmodel + "_priorLambda.txt";
-        String rhoFile = folderName + topicmodel + "_priorRho.txt";
+        String alphaFile = String.format("%s%s_priorAlpha_%d.txt", folderName, topicmodel, number_of_topics);
+        String sigmaFile = String.format("%s%s_priorSigma_%d.txt", folderName, topicmodel, number_of_topics);
+        String lambdaFile = String.format("%s%s_priorLambda_%d.txt", folderName, topicmodel, number_of_topics);
+        String rhoFile = String.format("%s%s_priorRho_%d.txt", folderName, topicmodel, number_of_topics);
 
-        String etaFile = folderName + topicmodel + "_postEta.txt";
-        String nuFile = folderName + topicmodel + "_postNu.txt";
+        String etaFile = String.format("%s%s_postEta_%d.txt", folderName, topicmodel, number_of_topics);
+        String nuFile = String.format("%s%s_postNu_%d.txt", folderName, topicmodel, number_of_topics);
 
-        String softmaxFile = folderName + topicmodel + "_postSoftmax.txt";
+        String softmaxFile = String.format("%s%s_postSoftmax_%d.txt", folderName, topicmodel, number_of_topics);
 
         //print out prior parameter of dirichlet: alpha
         File file = new File(alphaFile);

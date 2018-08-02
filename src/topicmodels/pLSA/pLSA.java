@@ -326,9 +326,9 @@ public class pLSA extends twoTopic {
 	}
 
 	public void printParameterAggregation(int k, String folderName, String topicmodel){
-		String phiPathByUser = folderName + topicmodel + "_phiByUser.txt";
-		String phiPathByItem = folderName + topicmodel + "_phiByItem.txt";
-		String phiPath = folderName + topicmodel + "_phi.txt";
+		String phiPathByUser = String.format("%s%s_phiByUser_%d.txt", folderName, topicmodel, number_of_topics);
+		String phiPathByItem = String.format("%s%s_phiByItem_%d.txt", folderName, topicmodel, number_of_topics);
+		String phiPath = String.format("%s%s_phi_%d.txt", folderName, topicmodel, number_of_topics);
 
 		//print out phi per doc
 		printPhi(phiPath);
@@ -338,7 +338,7 @@ public class pLSA extends twoTopic {
 		printTopWords(k, phiPathByItem, getDocByItem());
 
 		//overall topic words
-		printTopWords(k, folderName + topicmodel + "_topWords.txt");
+		printTopWords(k, String.format("%s%s_topWords_%d.txt", folderName, topicmodel, number_of_topics));
 	}
 
 	public void printPhi(String topWordPath){
