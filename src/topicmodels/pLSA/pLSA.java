@@ -328,6 +328,10 @@ public class pLSA extends twoTopic {
 	public void printParameterAggregation(int k, String folderName, String topicmodel){
 		String phiPathByUser = folderName + topicmodel + "_phiByUser.txt";
 		String phiPathByItem = folderName + topicmodel + "_phiByItem.txt";
+		String phiPath = folderName + topicmodel + "_phi.txt";
+
+		//print out phi per doc
+		printPhi(phiPath);
 
 		//aggregate parameter \gamma by user/item
 		printTopWords(k, phiPathByUser, getDocByUser());
@@ -335,6 +339,36 @@ public class pLSA extends twoTopic {
 
 		//overall topic words
 		printTopWords(k, folderName + topicmodel + "_topWords.txt");
+	}
+
+	public void printPhi(String topWordPath){
+		File file = new File(topWordPath);
+		try{
+			file.getParentFile().mkdirs();
+			file.createNewFile();
+		} catch(IOException e){
+			e.printStackTrace();
+		}
+
+		try{
+			PrintWriter topWordWriter = new PrintWriter(file);
+
+			for(int i=0; i < m_trainSet.size(); i++) {
+				_Review doc = (_Review) m_trainSet.get(i);
+				String itemID = doc.getItemID();
+				String userID = doc.getUserID();
+
+				topWordWriter.format("No. %d Doc(user: %s, item: %s) ***************\n", i,
+						userID, itemID);
+				for (int k = 0; k < number_of_topics; k++) {
+					topWordWriter.format("%.5f\t", m_logSpace?Math.exp(doc.m_topics[k]):doc.m_topics[k]);
+				}
+				topWordWriter.write("\n");
+			}
+			topWordWriter.close();
+		} catch(FileNotFoundException ex){
+			System.err.println("File Not Found: " + topWordPath);
+		}
 	}
 
 	//_Doc has no userID, _Review has

@@ -291,12 +291,13 @@ public class LDA_Variational extends pLSA {
                 double[] gamma = new double[number_of_topics];
                 Arrays.fill(gamma, 0);
                 for(_Doc d:entryU.getValue()) {
-                    double sum = Utils.sumOfArray(d.m_sstat);
                     for (int i = 0; i < number_of_topics; i++) {
-                        gamma[i] += d.m_sstat[i]/sum;
+                        gamma[i] += d.m_sstat[i];
                     }
                 }
-                Utils.L1Normalization(gamma);
+                for(int i = 0; i < number_of_topics; i++){
+                	gamma[i] /= entryU.getValue().size();
+				}
 
                 topWordWriter.format("ID %s(%d reviews)\n", entryU.getKey(), entryU.getValue().size());
                 for (int i = 0; i < topic_term_probabilty.length; i++) {
@@ -312,7 +313,7 @@ public class LDA_Variational extends pLSA {
             }
             topWordWriter.close();
         } catch(FileNotFoundException ex){
-            System.err.println("File Not Found: " + topWordPath);
+			System.err.format("[Error]Failed to open file %s\n", topWordPath);
         }
     }
 
@@ -335,7 +336,7 @@ public class LDA_Variational extends pLSA {
 				alphaWriter.format("%.5f\t", this.m_alpha[i]);
 			alphaWriter.close();
 		} catch(FileNotFoundException ex){
-			System.err.format("File %s Not Found", priorAlphaPath);
+			System.err.format("[Error]Failed to open file %s\n", priorAlphaPath);
 		}
 
 		//print out prior parameter of topic-word distribution: beta
@@ -359,7 +360,7 @@ public class LDA_Variational extends pLSA {
 			}
 			betaWriter.close();
 		} catch(FileNotFoundException ex){
-			System.err.format("File %s Not Found", priorAlphaPath);
+			System.err.format("[Error]Failed to open file %s\n", priorBetaPath);
 		}
 
 		//print out posterior parameter of dirichlet for each document: gamma
@@ -383,7 +384,7 @@ public class LDA_Variational extends pLSA {
 			}
 			gammaWriter.close();
 		} catch(FileNotFoundException ex){
-			System.err.format("File %s Not Found", postGammaPath);
+			System.err.format("[Error]Failed to open file %s\n", postGammaPath);
 		}
 	}
 }

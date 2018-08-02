@@ -453,8 +453,6 @@ public abstract class TopicModel {
         EM();
         double[] results = Evaluation2();
         System.out.format("[Info]%s Train/Test finished in %.2f seconds...\n", this.toString(), (System.currentTimeMillis()-start)/1000.0);
-        m_trainSet.clear();
-        m_testSet.clear();
 
         return results;
     }
@@ -492,8 +490,9 @@ public abstract class TopicModel {
 
                 long start = System.currentTimeMillis();
 				EM();
-				perf[i] = Evaluation2()[0];
-				like[i] = Evaluation2()[1];
+				double[] results = Evaluation2();
+				perf[i] = results[0];
+				like[i] = results[1];
                 System.out.format("[Info]%s Train/Test finished in %.2f seconds...\n", this.toString(), (System.currentTimeMillis()-start)/1000.0);
 				m_trainSet.clear();
 				m_testSet.clear();

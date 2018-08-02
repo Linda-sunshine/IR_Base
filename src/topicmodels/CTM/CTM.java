@@ -1,9 +1,6 @@
 package topicmodels.CTM;
 
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.PrintStream;
-import java.io.PrintWriter;
+import java.io.*;
 import java.util.*;
 
 import Jama.Matrix;
@@ -324,7 +321,7 @@ public class CTM extends LDA_Variational {
 
             }
 
-            logSum = Utils.logSumOfExponentials(doc.m_phi[n]);
+            logSum = Utils.logSum(doc.m_phi[n]);
             for(int i=0; i<len1; i++){
                 doc.m_phi[n][i] = Math.exp(doc.m_phi[n][i]-logSum);
 
@@ -610,8 +607,15 @@ public class CTM extends LDA_Variational {
 
     @Override
     public void printAggreTopWords(int k, String topWordPath, HashMap<String, List<_Doc>> docCluster) {
+        File file = new File(topWordPath);
         try{
-            PrintWriter topWordWriter = new PrintWriter(new File(topWordPath));
+            file.getParentFile().mkdirs();
+            file.createNewFile();
+        } catch(IOException e){
+            e.printStackTrace();
+        }
+        try{
+            PrintWriter topWordWriter = new PrintWriter(file);
 
             for(Map.Entry<String, List<_Doc>> entryU : docCluster.entrySet()) {
                 double[] gamma = new double[number_of_topics];
@@ -622,7 +626,9 @@ public class CTM extends LDA_Variational {
                         gamma[i] += Math.exp(((_Doc4ETBIR)d).m_mu[i] - sum);
                     }
                 }
-                Utils.L1Normalization(gamma);
+                for(int i = 0; i < number_of_topics; i++){
+                    gamma[i] /= entryU.getValue().size();
+                }
 
                 topWordWriter.format("ID %s(%d reviews)\n", entryU.getKey(), entryU.getValue().size());
                 for (int i = 0; i < topic_term_probabilty.length; i++) {
@@ -638,12 +644,83 @@ public class CTM extends LDA_Variational {
             }
             topWordWriter.close();
         } catch(Exception ex){
-            System.err.println("File Not Found: " + topWordPath);
+            System.err.format("[Error]Failed to open file %s\n", topWordPath);
         }
     }
 
     @Override
     public void printParam(String folderName, String topicmodel){
+        String priorSigmaPath = folderName + topicmodel + "_priorSigma.txt";
+        String priorMuPath = folderName + topicmodel + "_priorMu.txt";
+        String postSoftmaxPath = folderName + topicmodel + "_postSoftmax.txt";
+
+        //print out prior parameter for covariance: Sigma
+        File file = new File(priorSigmaPath);
+        try{
+            file.getParentFile().mkdirs();
+            file.createNewFile();
+        } catch(IOException e){
+            e.printStackTrace();
+        }
+        try{
+            PrintWriter sigmaWriter = new PrintWriter(file);
+
+            for(int i = 0; i < len2; i++) {
+                for(int j = 0; j < len2; j++)
+                    sigmaWriter.format("%.8f\t", cov[i][j]);
+                sigmaWriter.write("\n");
+            }
+            sigmaWriter.close();
+        } catch(Exception ex){
+            System.err.format("[Error]Failed to open file %s\n", priorSigmaPath);
+        }
+
+        //print out prior parameter for mean: eta
+        file = new File(priorMuPath);
+        try{
+            file.getParentFile().mkdirs();
+            file.createNewFile();
+        } catch(IOException e){
+            e.printStackTrace();
+        }
+        try{
+            PrintWriter muWriter = new PrintWriter(file);
+            for(int i = 0; i < len2; i++)
+                muWriter.format("%.8f\t", mu[i]);
+            muWriter.close();
+        } catch(Exception ex){
+            System.err.format("[Error]Failed to open file %s\n", priorMuPath);
+        }
+
+
+        //print out estimated parameter of multinomial distribution: softmax(eta)
+        file = new File(postSoftmaxPath);
+        try{
+            file.getParentFile().mkdirs();
+            file.createNewFile();
+        } catch(IOException e){
+            e.printStackTrace();
+        }
+        try{
+            PrintWriter softmaxWriter = new PrintWriter(file);
+
+            for(int idx = 0; idx < m_trainSet.size(); idx++) {
+                softmaxWriter.write(String.format("No. %d Doc(user: %s, item: %s) ***************\n", idx,
+                        ((_Doc4ETBIR) m_trainSet.get(idx)).getUserID(),
+                        ((_Doc4ETBIR) m_trainSet.get(idx)).getItemID()));
+                double sum = Utils.logSum(((_Doc4ETBIR) m_trainSet.get(idx)).m_mu)+1;
+                for (int i = 0; i < number_of_topics; i++) {
+                    softmaxWriter.format("%.5f\t", Math.exp(((_Doc4ETBIR) m_trainSet.get(idx)).m_mu[i] - sum));
+                }
+                softmaxWriter.println();
+            }
+            softmaxWriter.close();
+        } catch(Exception ex){
+            System.err.format("[Error]Failed to open file %s\n", postSoftmaxPath);
+        }
+    }
+
+    public void printParam2(String folderName, String topicmodel){
         String priorSigmaPath = folderName + topicmodel + "_priorSigma.txt";
         String priorMuPath = folderName + topicmodel + "_priorMu.txt";
         String postNuPath = folderName + topicmodel + "_postNu.txt";
@@ -701,7 +778,10 @@ public class CTM extends LDA_Variational {
                 lambdaWriter.write(String.format("No. %d Doc(user: %s, item: %s) ***************\n", idx,
                         ((_Doc4ETBIR) m_trainSet.get(idx)).getUserID(),
                         ((_Doc4ETBIR) m_trainSet.get(idx)).getItemID()));
-                double sum = Utils.logSum(((_Doc4ETBIR) m_trainSet.get(idx)).m_mu);
+                softmaxWriter.write(String.format("No. %d Doc(user: %s, item: %s) ***************\n", idx,
+                        ((_Doc4ETBIR) m_trainSet.get(idx)).getUserID(),
+                        ((_Doc4ETBIR) m_trainSet.get(idx)).getItemID()));
+                double sum = Utils.logSum(((_Doc4ETBIR) m_trainSet.get(idx)).m_mu)+1;
                 for (int i = 0; i < number_of_topics; i++) {
                     lambdaWriter.format("%.5f\t", ((_Doc4ETBIR) m_trainSet.get(idx)).m_mu[i]);
                     softmaxWriter.format("%.5f\t", Math.exp(((_Doc4ETBIR) m_trainSet.get(idx)).m_mu[i] - sum));
