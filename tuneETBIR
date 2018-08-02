@@ -1,4 +1,5 @@
 #!/bin/sh
+
 nohup ./run -set byUser_70k_review -topicmodel ETBIR -nuOfTopics 10 > ./output/yelp_70k_ETBIR_10.output 2>&1 &
 nohup ./run -set byUser_70k_review -topicmodel ETBIR -nuOfTopics 20 > ./output/yelp_70k_ETBIR_20.output 2>&1 &
 nohup ./run -set byUser_70k_review -topicmodel ETBIR -nuOfTopics 30 > ./output/yelp_70k_ETBIR_30.output 2>&1 &

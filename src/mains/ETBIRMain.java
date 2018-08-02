@@ -32,18 +32,18 @@ public class ETBIRMain {
         String tokenModel = "./data/Model/en-token.bin";
 
         /*****parameters for topic model*****/
-        String topicmodel = "ETBIR"; // pLSA, LDA_Gibbs, LDA_Variational, ETBIR
+        String topicmodel = "LDA_Variational"; // CTM, LDA_Variational, ETBIR
         int number_of_topics = 20;
         int varMaxIter = 20;
         double varConverge = 1e-6;
-        int emMaxIter = 50;
+        int emMaxIter = 30;
         double emConverge = 1e-10;
 
-        double alpha = 1.1, beta = 1 + 1e-3, lambda = 1 + 1e-3;//these two parameters must be larger than 1!!!
+        double alpha = 1 + 1e-2, beta = 1 + 1e-3, lambda = 1 + 1e-3;//these two parameters must be larger than 1!!!
         double sigma = 1.1, rho = 1.1;
 
         int topK = 50;
-        int crossV = 5;
+        int crossV = 2;
         boolean setRandomFold = false;
 
         /*****data setting*****/
@@ -52,7 +52,7 @@ public class ETBIRMain {
         String dataset = "./myData/" + source + "/" + trainset + "/";
         String outputFolder = dataset + "output/" + crossV + "foldsCV" + "/";
 
-        PrintStream out = new PrintStream(new FileOutputStream(outputFolder + topicmodel + "_log.txt"));
+        PrintStream out = new PrintStream(new FileOutputStream("log.txt"));
 //        System.setOut(out);
 
         String[] fvFiles = new String[4];
@@ -77,7 +77,7 @@ public class ETBIRMain {
         analyzer.loadUserDir(reviewFolder);
         _Corpus corpus = analyzer.getCorpus();
 
-        if(crossV>1 && setRandomFold==false){
+        if(setRandomFold==false){
             reviewFolder = dataset + crossV + "foldsCV/";
             //if no data, generate
             File testFile = new File(reviewFolder + 0 + "/");
@@ -147,13 +147,13 @@ public class ETBIRMain {
                 tModel.setCorpus(analyzer.getCorpus());
 
                 System.out.format("====================\n[Info]Fold No. %d: ", k);
-                perf[k] = tModel.oneFoldValidation()[0];
-                like[k] = tModel.oneFoldValidation()[1];
+                double[] results = tModel.oneFoldValidation();
+                perf[k] = results[0];
+                like[k] = results[1];
 
                 String resultFolder = outputFolder + k + "/";
                 new File(resultFolder).mkdirs();
                 tModel.printParameterAggregation(topK, resultFolder, topicmodel);
-                tModel.printTopWords(topK);
             }
 
             //output the performance statistics

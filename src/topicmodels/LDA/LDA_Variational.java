@@ -3,12 +3,13 @@
  */
 package topicmodels.LDA;
 
-import java.util.Arrays;
-import java.util.Collection;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.util.*;
 
-import structures._Corpus;
-import structures._Doc;
-import structures._SparseFeature;
+import structures.*;
 import topicmodels.pLSA.pLSA;
 import utils.Utils;
 
@@ -189,6 +190,9 @@ public class LDA_Variational extends pLSA {
 			}
 			diff /= number_of_topics;
 		} while(++i<m_varMaxIter && diff>m_varConverge);
+
+		// update per-document topic distribution vectors
+		finalEst();
 	}
 	
 	protected int getCorpusSize() {
@@ -198,7 +202,7 @@ public class LDA_Variational extends pLSA {
 	@Override
 	protected void finalEst() {	
 		//estimate p(z|d) from all the collected samples
-		for(_Doc d:m_trainSet) 
+		for(_Doc d:m_trainSet)
 			estThetaInDoc(d);
 	}
 	
@@ -225,6 +229,31 @@ public class LDA_Variational extends pLSA {
 
 		return logLikelihood;
 	}
+
+
+	@Override
+	protected void estThetaInDoc(_Doc doc) {
+		double sum = 0;
+		Arrays.fill(doc.m_topics, 0);
+
+		_SparseFeature[] fv = doc.getSparse();
+		for (int n = 0; n < fv.length; n++) {
+			int wid = fv[n].getIndex();
+			double v = fv[n].getValue();
+			for(int i=0; i < number_of_topics; i++){
+				doc.m_topics[i] += v*doc.m_phi[n][i];//here should multiply v
+			}
+		}
+
+		sum = Utils.sumOfArray(doc.m_topics);
+		for(int i=0; i < number_of_topics; i++){
+			if (m_logSpace){
+				doc.m_topics[i] = Math.log(doc.m_topics[i]/sum);
+			}else{
+				doc.m_topics[i] = doc.m_topics[i]/sum;
+			}
+		}
+	}
 	
 	// perform inference of topic distribution in the document
 	@Override
@@ -233,5 +262,129 @@ public class LDA_Variational extends pLSA {
 		double likelihood = calculate_E_step(d);
 		estThetaInDoc(d);
 		return likelihood;
+	}
+
+	@Override
+	public void printParameterAggregation(int k, String folderName, String topicmodel) {
+		super.printParameterAggregation(k, folderName, topicmodel);
+
+        String gammaPathByUser = String.format("%s%s_postByUser_%d.txt", folderName, topicmodel, number_of_topics);
+        String gammaPathByItem = String.format("%s%s_postByItem_%d.txt", folderName, topicmodel, number_of_topics);
+        printAggreTopWords(k, gammaPathByUser, getDocByUser());
+        printAggreTopWords(k, gammaPathByItem, getDocByItem());
+
+		printParam(folderName, topicmodel);
+	}
+
+    public void printAggreTopWords(int k, String topWordPath, HashMap<String, List<_Doc>> docCluster) {
+		File file = new File(topWordPath);
+		try{
+			file.getParentFile().mkdirs();
+			file.createNewFile();
+		} catch(IOException e){
+			e.printStackTrace();
+		}
+
+        try{
+            PrintWriter topWordWriter = new PrintWriter(file);
+            for(Map.Entry<String, List<_Doc>> entryU : docCluster.entrySet()) {
+                double[] gamma = new double[number_of_topics];
+                Arrays.fill(gamma, 0);
+                for(_Doc d:entryU.getValue()) {
+                    for (int i = 0; i < number_of_topics; i++) {
+                        gamma[i] += d.m_sstat[i];
+                    }
+                }
+                for(int i = 0; i < number_of_topics; i++){
+                	gamma[i] /= entryU.getValue().size();
+				}
+
+                topWordWriter.format("ID %s(%d reviews)\n", entryU.getKey(), entryU.getValue().size());
+                for (int i = 0; i < topic_term_probabilty.length; i++) {
+                    MyPriorityQueue<_RankItem> fVector = new MyPriorityQueue<_RankItem>(k);
+                    for (int j = 0; j < vocabulary_size; j++)
+                        fVector.add(new _RankItem(m_corpus.getFeature(j), topic_term_probabilty[i][j]));
+
+                    topWordWriter.format("-- Topic %d(%.5f):\t", i, gamma[i]);
+                    for (_RankItem it : fVector)
+                        topWordWriter.format("%s(%.5f)\t", it.m_name, m_logSpace ? Math.exp(it.m_value) : it.m_value);
+                    topWordWriter.write("\n");
+                }
+            }
+            topWordWriter.close();
+        } catch(FileNotFoundException ex){
+			System.err.format("[Error]Failed to open file %s\n", topWordPath);
+        }
+    }
+
+	public void printParam(String folderName, String topicmodel){
+		String priorAlphaPath = String.format("%s%s_priorAlpha_%d.txt", folderName, topicmodel, number_of_topics);
+		String priorBetaPath = String.format("%s%s_priorBeta_%d.txt", folderName, topicmodel, number_of_topics);
+		String postGammaPath = String.format("%s%s_postGamma_%d.txt", folderName, topicmodel, number_of_topics);
+
+		//print out prior parameter of dirichlet: alpha
+		File file = new File(priorAlphaPath);
+		try{
+			file.getParentFile().mkdirs();
+			file.createNewFile();
+		} catch(IOException e){
+			e.printStackTrace();
+		}
+		try{
+			PrintWriter alphaWriter = new PrintWriter(file);
+			for (int i = 0; i < number_of_topics; i++)
+				alphaWriter.format("%.5f\t", this.m_alpha[i]);
+			alphaWriter.close();
+		} catch(FileNotFoundException ex){
+			System.err.format("[Error]Failed to open file %s\n", priorAlphaPath);
+		}
+
+		//print out prior parameter of topic-word distribution: beta
+		file = new File(priorBetaPath);
+		try{
+			file.getParentFile().mkdirs();
+			file.createNewFile();
+		} catch(IOException e){
+			e.printStackTrace();
+		}
+		try{
+			PrintWriter betaWriter = new PrintWriter(file);
+			for(int i = 0; i < m_corpus.getFeatureSize(); i++) //first line is vocabulary
+				betaWriter.format("%s\t", m_corpus.getFeature(i));
+			betaWriter.println();
+
+			for (int i = 0; i < topic_term_probabilty.length; i++){//next is beta
+				for(int j = 0; j < vocabulary_size; j++)
+					betaWriter.format("%.5f\t", topic_term_probabilty[i][j]);
+				betaWriter.println();
+			}
+			betaWriter.close();
+		} catch(FileNotFoundException ex){
+			System.err.format("[Error]Failed to open file %s\n", priorBetaPath);
+		}
+
+		//print out posterior parameter of dirichlet for each document: gamma
+		file = new File(postGammaPath);
+		try{
+			file.getParentFile().mkdirs();
+			file.createNewFile();
+		} catch(IOException e){
+			e.printStackTrace();
+		}
+		try{
+			PrintWriter gammaWriter = new PrintWriter(file);
+
+			for(int idx = 0; idx < m_trainSet.size(); idx++) {
+				gammaWriter.write(String.format("No. %d Doc(user: %s, item: %s) ***************\n", idx,
+                        ((_Doc4ETBIR) m_trainSet.get(idx)).getUserID(),
+                        ((_Doc4ETBIR) m_trainSet.get(idx)).getItemID()));
+				for (int i = 0; i < number_of_topics; i++)
+					gammaWriter.format("%.5f\t", ((_Doc4ETBIR) m_trainSet.get(idx)).m_sstat[i]);
+				gammaWriter.println();
+			}
+			gammaWriter.close();
+		} catch(FileNotFoundException ex){
+			System.err.format("[Error]Failed to open file %s\n", postGammaPath);
+		}
 	}
 }

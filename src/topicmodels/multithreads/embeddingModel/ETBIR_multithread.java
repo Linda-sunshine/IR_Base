@@ -167,6 +167,7 @@ public class ETBIR_multithread extends ETBIR {
 
     public class User_worker extends EmbedModel_worker {
         double pStats;
+        double lambda_Stats;
 
         public User_worker(int number_of_topics, int vocabulary_size) {
             super(number_of_topics, vocabulary_size);
@@ -203,18 +204,21 @@ public class ETBIR_multithread extends ETBIR {
                 for(int l = 0; l < number_of_topics; l++){
                     pStats += user.m_SigmaP[k][l][l] + user.m_nuP[k][l] * user.m_nuP[k][l];
                 }
+                lambda_Stats += user.m_nuP[k][k];
             }
         }
 
         @Override
         public double accumluateStats() {
             m_pStats += pStats;
+            m_lambda_Stats += lambda_Stats;
             return m_likelihood;
         }
 
         @Override
         public void resetStats() {
             pStats = 0.0;
+            lambda_Stats = 0.0;
         }
 
     }
@@ -312,7 +316,7 @@ public class ETBIR_multithread extends ETBIR {
             likelihood += multithread_general(m_itemWorkers);
 
             if(Double.isNaN(likelihood)){
-                System.out.println("! E_step produces NaN likelihood...");
+                System.err.println("[Warning]E_step produces NaN likelihood!");
                 break;
             }
 
@@ -325,7 +329,7 @@ public class ETBIR_multithread extends ETBIR {
 
             if(converge < m_varConverge)
                 break;
-            System.out.format("[Info]Multi-thread E-Step: %d iteration, likelihood=%.2f, converge to %.4f\n",
+            System.out.format("[Info]Multi-thread E-Step: %d iteration, likelihood=%.2f, converge to %.8f\n",
                     iter, last, converge);
         }while(iter++ < m_varMaxIter);
         System.out.print(String.format("Current likelihood: %.4f\n", likelihood));
