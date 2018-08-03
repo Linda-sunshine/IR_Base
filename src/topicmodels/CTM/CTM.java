@@ -166,6 +166,11 @@ public class CTM extends LDA_Variational {
         doc.m_topics = new double[len1];
     }
 
+    @Override
+    protected void initTestDoc(_Doc d) {
+        initDoc(d);
+    }
+
     public double calculate_E_step(_Doc d) {
         ArrayList<_Doc> lineSearchFailDoc = new ArrayList<_Doc>();
 
