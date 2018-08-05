@@ -32,8 +32,8 @@ public class ETBIRMain {
         String tokenModel = "./data/Model/en-token.bin";
 
         /*****parameters for topic model*****/
-        String topicmodel = "LDA_Variational"; // CTM, LDA_Variational, ETBIR
-        int number_of_topics = 20;
+        String topicmodel = "CTM"; // CTM, LDA_Variational, ETBIR
+        int number_of_topics = 40;
         int varMaxIter = 20;
         double varConverge = 1e-6;
         int emMaxIter = 30;

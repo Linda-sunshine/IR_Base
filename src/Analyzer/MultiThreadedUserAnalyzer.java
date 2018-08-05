@@ -206,7 +206,7 @@ public class MultiThreadedUserAnalyzer extends UserAnalyzer {
 	}
 	
 	//Given a long string, tokenize it, normalie it and stem it, return back the string array.
-	protected TokenizeResult TokenizerNormalizeStemmer(String source, int core){
+	public TokenizeResult TokenizerNormalizeStemmer(String source, int core){
 		String[] tokens = Tokenizer(source, core); //Original tokens.
 		TokenizeResult result = new TokenizeResult(tokens);
 
