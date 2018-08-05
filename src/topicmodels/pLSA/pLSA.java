@@ -329,9 +329,11 @@ public class pLSA extends twoTopic {
 		String phiPathByUser = String.format("%s%s_phiByUser_%d.txt", folderName, topicmodel, number_of_topics);
 		String phiPathByItem = String.format("%s%s_phiByItem_%d.txt", folderName, topicmodel, number_of_topics);
 		String phiPath = String.format("%s%s_phi_%d.txt", folderName, topicmodel, number_of_topics);
+		String betaPath = String.format("%s%s_beta_%d.txt", folderName, topicmodel, number_of_topics);
 
-		//print out phi per doc
+		//print out phi per doc, and beta
 		printPhi(phiPath);
+		printBeta(betaPath);
 
 		//aggregate parameter \gamma by user/item
 		printTopWords(k, phiPathByUser, getDocByUser());
@@ -368,6 +370,32 @@ public class pLSA extends twoTopic {
 			topWordWriter.close();
 		} catch(FileNotFoundException ex){
 			System.err.println("File Not Found: " + topWordPath);
+		}
+	}
+
+	public void printBeta(String betaFile){
+		//print out prior parameter of topic-word distribution: beta
+		File file = new File(betaFile);
+		try{
+			file.getParentFile().mkdirs();
+			file.createNewFile();
+		} catch(IOException e){
+			e.printStackTrace();
+		}
+		try{
+			PrintWriter betaWriter = new PrintWriter(file);
+			for(int i = 0; i < m_corpus.getFeatureSize(); i++) //first line is vocabulary
+				betaWriter.format("%s\t", m_corpus.getFeature(i));
+			betaWriter.println();
+
+			for (int i = 0; i < topic_term_probabilty.length; i++){//next is beta
+				for(int j = 0; j < vocabulary_size; j++)
+					betaWriter.format("%.5f\t",  m_logSpace ? Math.exp(topic_term_probabilty[i][j]) : topic_term_probabilty[i][j]);
+				betaWriter.println();
+			}
+			betaWriter.close();
+		} catch(FileNotFoundException ex){
+			System.err.format("[Error]Failed to open file %s\n", betaFile);
 		}
 	}
 
