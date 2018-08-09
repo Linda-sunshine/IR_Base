@@ -319,7 +319,6 @@ public class LDA_Variational extends pLSA {
 
 	public void printParam(String folderName, String topicmodel){
 		String priorAlphaPath = String.format("%s%s_priorAlpha_%d.txt", folderName, topicmodel, number_of_topics);
-		String priorBetaPath = String.format("%s%s_priorBeta_%d.txt", folderName, topicmodel, number_of_topics);
 		String postGammaPath = String.format("%s%s_postGamma_%d.txt", folderName, topicmodel, number_of_topics);
 
 		//print out prior parameter of dirichlet: alpha
@@ -337,30 +336,6 @@ public class LDA_Variational extends pLSA {
 			alphaWriter.close();
 		} catch(FileNotFoundException ex){
 			System.err.format("[Error]Failed to open file %s\n", priorAlphaPath);
-		}
-
-		//print out prior parameter of topic-word distribution: beta
-		file = new File(priorBetaPath);
-		try{
-			file.getParentFile().mkdirs();
-			file.createNewFile();
-		} catch(IOException e){
-			e.printStackTrace();
-		}
-		try{
-			PrintWriter betaWriter = new PrintWriter(file);
-			for(int i = 0; i < m_corpus.getFeatureSize(); i++) //first line is vocabulary
-				betaWriter.format("%s\t", m_corpus.getFeature(i));
-			betaWriter.println();
-
-			for (int i = 0; i < topic_term_probabilty.length; i++){//next is beta
-				for(int j = 0; j < vocabulary_size; j++)
-					betaWriter.format("%.5f\t", topic_term_probabilty[i][j]);
-				betaWriter.println();
-			}
-			betaWriter.close();
-		} catch(FileNotFoundException ex){
-			System.err.format("[Error]Failed to open file %s\n", priorBetaPath);
 		}
 
 		//print out posterior parameter of dirichlet for each document: gamma

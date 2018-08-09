@@ -969,6 +969,23 @@ public class Utils {
 		}
 		return Utils.createSpVct(vct);
 	}
+
+	static public HashMap<Integer, Double> MergeFeatureMap(ArrayList<_SparseFeature[]> vcts) {
+		HashMap<Integer, Double> vct = new HashMap<Integer, Double>();
+
+		for(_SparseFeature[] fv:vcts) {
+			for(_SparseFeature f:fv) {
+				int x = f.getIndex();
+				if (vct.containsKey(x)) {
+					vct.put(x, vct.get(x) + f.getValue());
+				} else {
+					vct.put(x, f.getValue());
+				}
+			}
+		}
+		return vct;
+	}
+
 	//Find the max value's index of an array, return Index of the maximum.
 	public static int maxOfArrayIndex(double[] probs){
 		return maxOfArrayIndex(probs, probs.length);

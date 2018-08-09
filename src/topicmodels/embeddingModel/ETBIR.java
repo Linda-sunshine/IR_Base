@@ -57,6 +57,8 @@ public class ETBIR extends LDA_Variational {
     double d_mu = 1.0, d_sigma_theta = 1.0;
     double d_nu = 1.0, d_sigma_P = 1.0;
 
+    protected String m_mode;
+
     public ETBIR(int emMaxIter, double emConverge,
                  double beta, _Corpus corpus, double lambda,
                  int number_of_topics, double alpha, int varMaxIter, double varConverge, //LDA_variational
@@ -67,7 +69,12 @@ public class ETBIR extends LDA_Variational {
 
         this.m_sigma = sigma;
         this.m_rho = rho;
+        this.m_mode = "Normal";
         m_logSpace = true;
+    }
+
+    public void setMode(String mode){
+        this.m_mode = mode;
     }
 
     @Override
@@ -86,8 +93,8 @@ public class ETBIR extends LDA_Variational {
 
     @Override
     public String toString(){
-        return String.format("ETBIR[k:%d, alpha:%.5f, beta:%.5f, simga:%.5f, rho:%.5f, item~N(%.5f, %.5f), user~N(%.5f, %.5f)]\n",
-                number_of_topics, d_alpha, d_beta, this.m_sigma, this.m_rho, d_mu, d_sigma_theta, d_nu, d_sigma_P);
+        return String.format("ETBIR_%s[k:%d, alpha:%.5f, beta:%.5f, simga:%.5f, rho:%.5f, item~N(%.5f, %.5f), user~N(%.5f, %.5f)]\n",
+                m_mode, number_of_topics, d_alpha, d_beta, this.m_sigma, this.m_rho, d_mu, d_sigma_theta, d_nu, d_sigma_P);
     }
 
     @Override
@@ -110,7 +117,7 @@ public class ETBIR extends LDA_Variational {
     protected void updateStats4User(_User4ETBIR user){
         for(int k = 0; k < len2; k++){
             for(int l = 0; l < len2; l++){
-                m_pStats += user.m_SigmaP[k][l][l] + user.m_nuP[k][l] * user.m_nuP[k][l];
+                m_pStats += user.m_SigmaP[k][l][l] + user.m_nuP[k][l] * user.m_nuP[k][l] - 2 * m_lambda * user.m_nuP[k][k] + m_lambda * m_lambda;
             }
             m_lambda_Stats += user.m_nuP[k][k];
         }
@@ -176,14 +183,18 @@ public class ETBIR extends LDA_Variational {
                 totalLikelihood += varInference4Doc(d, u, i);
             }
 
-            for (int u_idx:m_mapByUser.keySet()) {
-                u = (_User4ETBIR) m_users.get(u_idx);
-                totalLikelihood += varInference4User(u);
+            if(!m_mode.equals("Item")) {
+                for (int u_idx : m_mapByUser.keySet()) {
+                    u = (_User4ETBIR) m_users.get(u_idx);
+                    totalLikelihood += varInference4User(u);
+                }
             }
 
-            for (int i_idx:m_mapByItem.keySet()) {
-                i = (_Product4ETBIR) m_items.get(i_idx);
-                totalLikelihood += varInference4Item(i);
+            if(!m_mode.equals("User")) {
+                for (int i_idx : m_mapByItem.keySet()) {
+                    i = (_Product4ETBIR) m_items.get(i_idx);
+                    totalLikelihood += varInference4Item(i);
+                }
             }
 
             if(iter > 0)
@@ -193,7 +204,8 @@ public class ETBIR extends LDA_Variational {
 
             last = totalLikelihood;
 
-            System.out.format("[Info]Single-thread E-Step: %d iteration, likelihood=%.2f, converge to %.8f\n",
+            if(iter % 10 == 0)
+                System.out.format("[Info]Single-thread E-Step: %d iteration, likelihood=%.2f, converge to %.8f\n",
                     iter, last, converge);
 
         }while(iter++ < m_varMaxIter*2 && converge > m_varConverge/3);
@@ -594,11 +606,11 @@ public class ETBIR extends LDA_Variational {
                     + 0.5 * (number_of_topics * Math.log(m_sigma) + Math.log(det));
         }
 
-        if (Double.isNaN(log_likelihood)) {
-            System.err.format("[Warning]User %s likelihood encounters NaN!\n", u.getUserID());
-        } else if (Double.isInfinite(log_likelihood)) {
-            System.err.format("[Warning]User %s likelihood encounters infinity!\n", u.getUserID());
-        }
+//        if (Double.isNaN(log_likelihood)) {
+//            System.err.format("[Warning]User %s likelihood encounters NaN!\n", u.getUserID());
+//        } else if (Double.isInfinite(log_likelihood)) {
+//            System.err.format("[Warning]User %s likelihood encounters infinity!\n", u.getUserID());
+//        }
 
         return log_likelihood;
     }
@@ -614,18 +626,18 @@ public class ETBIR extends LDA_Variational {
             log_likelihood -= Utils.lgamma(m_alpha[k]) - Utils.lgamma(i.m_eta[k]);
         }
 
-        if (Double.isNaN(log_likelihood)) {
-            System.err.format("[Warning]Item %s likelihood encounters NaN!\n", i.getID());
-        } else if (Double.isInfinite(log_likelihood)) {
-            System.err.format("[Warning]Item %s likelihood encounters infinite!\n", i.getID());
-        }
+//        if (Double.isNaN(log_likelihood)) {
+//            System.err.format("[Warning]Item %s likelihood encounters NaN!\n", i.getID());
+//        } else if (Double.isInfinite(log_likelihood)) {
+//            System.err.format("[Warning]Item %s likelihood encounters infinite!\n", i.getID());
+//        }
 
         return log_likelihood;
     }
 
     // calculate the likelihood of doc-related terms (term3-term8 + term4-term9 + term5)
     protected double calc_log_likelihood_per_doc(_Doc4ETBIR doc, _User4ETBIR currentU, _Product4ETBIR currentI) {
-        double log_likelihood = 0.5 * number_of_topics * (Math.log(m_rho) - 1) - doc.getDocLength() * doc.m_logZeta;
+        double log_likelihood = 0.5 * number_of_topics * (Math.log(m_rho) + 1)  - doc.getDocLength() * doc.m_logZeta;
         double eta0 = Utils.sumOfArray(currentI.m_eta);
 
         //likelihood from topic proportion
@@ -650,6 +662,7 @@ public class ETBIR extends LDA_Variational {
         double v;
         _SparseFeature[] fv = doc.getSparse();
         for(int k = 0; k < number_of_topics; k++) {
+            log_likelihood += Math.log(2 * Math.PI) + Math.log(doc.m_Sigma[k]);
             for (int n = 0; n < fv.length; n++) {
                 wid = fv[n].getIndex();
                 v = fv[n].getValue() * doc.m_phi[n][k];
@@ -657,11 +670,11 @@ public class ETBIR extends LDA_Variational {
             }
         }
 
-        if (Double.isNaN(log_likelihood)) {
-            System.err.format("[Warning]Encounter likelihood NaN in document %s for item %s!\n", doc.getID(), currentI.getID());
-        } else if (Double.isInfinite(log_likelihood)) {
-            System.err.format("[Warning]Encounter likelihood infinity in document %s for item %s!\n", doc.getID(), currentI.getID());
-        }
+//        if (Double.isNaN(log_likelihood)) {
+//            System.err.format("[Warning]Encounter likelihood NaN in document %s for item %s!\n", doc.getID(), currentI.getID());
+//        } else if (Double.isInfinite(log_likelihood)) {
+//            System.err.format("[Warning]Encounter likelihood infinity in document %s for item %s!\n", doc.getID(), currentI.getID());
+//        }
 
         return log_likelihood;
     }
@@ -772,7 +785,7 @@ public class ETBIR extends LDA_Variational {
     public void calculate_M_step(int iter) {
         super.calculate_M_step(iter);
 
-//        m_lambda = m_lambda_Stats / (m_mapByUser.size() * number_of_topics);
+        m_lambda = m_lambda_Stats / (m_mapByUser.size() * number_of_topics);
 //        m_rho = m_trainSet.size() * number_of_topics / (m_thetaStats + m_eta_p_Stats - 2 * m_eta_mean_Stats); //maximize likelihood for \rho of p(\theta|P\gamma, \rho)
 //        m_sigma = m_mapByUser.size() * number_of_topics * number_of_topics / m_pStats; //maximize likelihood for \sigma
 

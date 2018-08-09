@@ -18,7 +18,9 @@ import javax.rmi.CORBA.Util;
 public class CollaborativeFilteringWithETBIR extends CollaborativeFiltering {
 	int m_dim;  // the number of dimension for low-dimension representation
 	double[][] m_itemWeights;
+	HashMap<String, double[]> m_docWeights; //store phi for each doc: key: userIndex_itemIndex; value: m_dim dimension vector
 	String m_mode;
+	String m_model;
 	
 	public CollaborativeFilteringWithETBIR(ArrayList<_User> users, int fs, int k, int dim) {
 		super(users, fs, k);
@@ -26,43 +28,108 @@ public class CollaborativeFilteringWithETBIR extends CollaborativeFiltering {
 	}
 
 	public void setMode(String mode){ m_mode=mode;}
+
+	public void setModel(String model){m_model = model;}
+
+	public void loadReviewTopicWeights(String filename){
+		try{
+			BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(filename), "UTF-8"));
+			m_docWeights = new HashMap<>();
+			String line;
+			String userID, itemID;
+			int userIndex, itemIndex;
+			String p[];
+			while((line = reader.readLine()) != null){
+				//read doc weight (format: No. 0 Doc(user: T5KBc5QbwZ-Oj9ApE4vZJA, item: P7pxQFqr7yBKMMI2J51udw)...)
+				userID = line.split("\\s+")[3].replace(",","");
+				itemID = line.split("\\s+")[5].replace(")","");
+
+				if(!m_userIDIndex.containsKey(userID) || !m_itemIDIndex.containsKey(itemID)){
+					reader.readLine();
+				}else{
+					//find out the index of user and item
+					userIndex = m_userIDIndex.get(userID);
+					itemIndex = m_itemIDIndex.get(itemID);
+
+					// read the p value, dim
+                    p = reader.readLine().split("\\s+");
+                    if (p.length == m_dim) {
+                        double[] temp_weight = new double[m_dim];
+                        for (int i = 0; i < m_dim; i++) {
+                            temp_weight[i] = Double.valueOf(p[i]);
+                        }
+                        m_docWeights.put(String.format("%d_%d", userIndex, itemIndex), temp_weight);
+                    }
+				}
+			}
+			reader.close();
+			System.out.format("[Info]Finish loading %d docs' weights.\n",m_docWeights.size());
+		} catch(IOException e){
+			System.err.format("[Error]Failed to open file %s!!", filename);
+			e.printStackTrace();
+		}
+	}
 	
 	// load the P of all the users at once
 	@Override
 	public void loadUserWeights(String filename, String model, String suffix1, String suffix2){
-		m_userWeights = new double[m_users.size()][m_dim*m_dim];
-		
 		try{
 			BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(filename), "UTF-8"));
 			int userIndex = 0;
-			String line, p[];
-			while((line = reader.readLine()) != null){
-				String userID = line.split("\\s+")[3]; // read user ID (format: No. x UserID xxx)
-				
-				// skip the user without analysis, m_dim * 2 lines
-				if(!m_userIDIndex.containsKey(userID)){
-					for(int d = 0; d < m_dim; d++){
-						reader.readLine();
-						reader.readLine();
-					}
-				} else{
-					// find out the user index
-					userIndex = m_userIDIndex.get(userID);
-				
-					// read the p value, dim * dim
-					for(int d = 0; d < m_dim; d++){
-						reader.readLine();
-						p = reader.readLine().split("\\s+");
-						if(p.length == m_dim){
-							for(int i=0; i<m_dim; i++){
-								m_userWeights[userIndex][m_dim*d + i] = Double.valueOf(p[i]);
+			String line;
+			if(model.equals("ETBIR") && (m_mode.equals("userEmbed") || m_mode.equals("itemEmbed")
+                    || m_mode.equals("rowProduct") || m_mode.equals("columnProduct"))) {
+				m_userWeights = new double[m_users.size()][m_dim*m_dim];
+				String p[];
+				while ((line = reader.readLine()) != null) {
+					String userID = line.split("\\s+")[3]; // read user ID (format: No. x UserID xxx)
+
+					// skip the user without analysis, m_dim * 2 lines
+					if (!m_userIDIndex.containsKey(userID)) {
+						for (int d = 0; d < m_dim; d++) {
+							reader.readLine();
+							reader.readLine();
+						}
+					} else {
+						// find out the user index
+						userIndex = m_userIDIndex.get(userID);
+
+						// read the p value, dim * dim
+						for (int d = 0; d < m_dim; d++) {
+							reader.readLine();
+							p = reader.readLine().split("\\s+");
+							if (p.length == m_dim) {
+								for (int i = 0; i < m_dim; i++) {
+									m_userWeights[userIndex][m_dim * d + i] = Double.valueOf(p[i]);
+								}
 							}
+						}
+					}
+				}
+			} else {
+				m_userWeights = new double[m_users.size()][m_dim];
+				while ((line = reader.readLine()) != null) {
+					String userID = line.split("[\\(|\\)|\\s]+")[1]; // read user ID (format: ID xxx(30 reviews))
+
+					// skip the user without analysis, m_dim * 2 lines
+					if (!m_userIDIndex.containsKey(userID)) {
+						for (int d = 0; d < m_dim; d++) {
+							reader.readLine();
+						}
+					} else {
+						// find out the user index
+						userIndex = m_userIDIndex.get(userID);
+
+						// read the p value, dim * dim
+						for (int d = 0; d < m_dim; d++) {
+							String p = reader.readLine().split("[\\(|\\)]+")[1];// read weight (format: -- Topic 0(0.03468):	...)
+							m_userWeights[userIndex][d] = Double.valueOf(p);
 						}
 					}
 				}
 			}
 			reader.close();
-			System.out.format("[Info]Finish loading %d users' weights!\n", m_userWeights.length);
+			System.out.format("[Info]Finish loading %d users' weights.\n", m_userWeights.length);
 		} catch(IOException e){
 			System.err.format("[Error]Failed to open file %s!!", filename);
 			e.printStackTrace();
@@ -70,30 +137,61 @@ public class CollaborativeFilteringWithETBIR extends CollaborativeFiltering {
 	}	
 	
 	// load the learned traits of items 
-	public void loadItemWeights(String filename){
+	public void loadItemWeights(String filename, String model){
 		m_itemWeights = new double[m_itemMap.size()][m_dim];
+		m_itemIDIndex = new HashMap<String, Integer>();
+		m_items = new ArrayList<>();
 		
 		try{
 			BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(filename), "UTF-8"));
 			int itemIndex = 0;
 			String line, itemID;
 			String[] eta;
-			while((line = reader.readLine()) != null){
-				itemIndex = Integer.valueOf(line.split("\\s+")[1]); // read item index
-				itemID = line.split("\\s+")[2]; // read item ID
-				
-				// skip the user without analysis, m_dim * 2 lines
-				if(!m_itemMap.containsKey(itemID)){
-					reader.readLine();
-				} else{				
-					// read the eta of each item
-					eta = reader.readLine().split("\\s+");
-					if(eta.length == m_dim){
-						for(int i=0; i<m_dim; i++){
-							m_itemWeights[itemIndex][i] = Double.valueOf(eta[i]);
+			if(model.equals("ETBIR") && (m_mode.equals("userEmbed") || m_mode.equals("itemEmbed")
+                    || m_mode.equals("rowProduct") || m_mode.equals("columnProduct"))){
+				while ((line = reader.readLine()) != null) {
+					itemIndex = Integer.valueOf(line.split("\\s+")[1]); // read item index
+					itemID = line.split("\\s+")[2]; // read item ID
+					m_itemIDIndex.put(itemID, itemIndex);
+					if(itemIndex == m_items.size())
+					    m_items.add(m_itemMap.get(itemID));
+					else
+					    System.err.println("[Warning]Load item weights: item index and doc not match.");
+
+					// skip the item without analysis, 1 lines
+					if (!m_itemMap.containsKey(itemID)) {
+						reader.readLine();
+					} else {
+						// read the eta of each item
+						eta = reader.readLine().split("\\s+");
+						if (eta.length == m_dim) {
+							for (int i = 0; i < m_dim; i++) {
+								m_itemWeights[itemIndex][i] = Double.valueOf(eta[i]);
+							}
+							m_itemMap.get(itemID).setItemWeights(m_itemWeights[itemIndex]);
+						}
+					}
+				}
+			} else{
+				while ((line = reader.readLine()) != null) {
+					itemID = line.split("[\\(|\\)|\\s]+")[1]; // // read item ID (format: ID xxx(30 reviews))
+					m_itemIDIndex.put(itemID, itemIndex);
+                    m_items.add(m_itemMap.get(itemID));
+					// skip the item without analysis, m_dim lines
+					if (!m_itemMap.containsKey(itemID)) {
+						for (int d = 0; d < m_dim; d++) {
+							reader.readLine();
+						}
+					} else {
+						// read the eta of each item
+						// read the p value, dim * dim
+						for (int d = 0; d < m_dim; d++) {
+							String p = reader.readLine().split("[\\(|\\)]+")[1];// read weight (format: -- Topic 0(0.03468):	...)
+							m_itemWeights[itemIndex][d] = Double.valueOf(p);
 						}
 						m_itemMap.get(itemID).setItemWeights(m_itemWeights[itemIndex]);
 					}
+					itemIndex++;
 				}
 			}
 			reader.close();
@@ -109,6 +207,7 @@ public class CollaborativeFilteringWithETBIR extends CollaborativeFiltering {
 	@Override
 	public double calculateRankScore(_User u, String item){
 		int userIndex = m_userIDIndex.get(u.getUserID());
+		int itemIndex = m_itemIDIndex.get(item);
 		double rankSum = 0;
 		double simSum = 0;
 			
@@ -117,18 +216,27 @@ public class CollaborativeFilteringWithETBIR extends CollaborativeFiltering {
 		}
 		//select top k users who have purchased this item.
 		ArrayList<String> neighbors;
-		if(m_mode.equals("productUserItem") || m_mode.equals("userP") || m_mode.equals("column"))
-			neighbors = m_trainMap.get(item);
-		else
-			neighbors = u.getTrainItems();
+		if(m_mode.equals("columnPhi") || m_mode.equals("columnPost") || m_mode.equals("columnProduct") || m_mode.equals("userEmbed"))
+			neighbors = m_trainMap.get(item); // ID of column users
+		else {
+			neighbors = u.getTrainItems(); //ID of row items
+		}
 
 		if(m_avgFlag){
-			for(String nei: neighbors){
-				int neiIndex = m_userIDIndex.get(nei);
-				if(neiIndex == userIndex) continue;
-				double label = m_users.get(neiIndex).getItemRating(item)+1;
-				rankSum += label;
-				simSum++;
+			if(m_mode.equals("columnPhi") || m_mode.equals("columnPost") || m_mode.equals("columnProduct") || m_mode.equals("userEmbed")) {
+				for (String nei : neighbors) {//column users
+					int neiIndex = m_userIDIndex.get(nei);
+					if (neiIndex == userIndex) continue;
+					double label = m_users.get(neiIndex).getItemRating(item) + 1;
+					rankSum += label;
+					simSum++;
+				}
+			} else{
+				for (String nei : neighbors) {//row items
+					double label = u.getItemRating(nei) + 1;
+					rankSum += label;
+					simSum++;
+				}
 			}
 			if(simSum == 0){
 				return 0;
@@ -140,24 +248,77 @@ public class CollaborativeFilteringWithETBIR extends CollaborativeFiltering {
 				topKNeighbors = new MyPriorityQueue<_RankItem>(neighbors.size());
 			else
 				topKNeighbors = new MyPriorityQueue<_RankItem>(m_k);
+            double[] p1Gamma, p2Gamma;
 			//collect k nearest neighbors for each item of the user.
 			for(String nei: neighbors){
 				int neiIndex;
-				if(m_mode.equals("productUserItem")) {
+				if(m_mode.equals("columnPhi") || m_mode.equals("columnPost")){
+					/*
+					across column users
+					columnPhi: compare \phi of doc(userIndex_itemIndex) and \phi of user
+					columnPost: compare posterior parameter (\gamma for LDA, softmax(\mu) for CTM and ETBIR)
+					 */
+					neiIndex = m_userIDIndex.get(nei);
+					if(neiIndex == userIndex) continue;
+					topKNeighbors.add(new _RankItem(neiIndex,
+							Utils.cosine(m_docWeights.get(String.format("%d_%d", neiIndex, itemIndex)), m_userWeights[userIndex])));
+				} else if(m_mode.equals("columnProduct")) {
+				    /*
+				    across column users
+				    columnProduct: compare the inner product of user's P and item's \eta
+				     */
 					neiIndex = m_userIDIndex.get(nei);
 					if (neiIndex == userIndex) continue;
+                    p1Gamma = matrixVectorProduct(m_userWeights[userIndex], m_itemMap.get(item).getItemWeights());
+                    p2Gamma = matrixVectorProduct(m_userWeights[neiIndex], m_itemMap.get(item).getItemWeights());
 					topKNeighbors.add(new _RankItem(neiIndex,
-							calculateUserItemSimilarity(m_userWeights[userIndex], m_itemMap.get(item).getItemWeights(), m_userWeights[neiIndex])));
-				}
-				else if(m_mode.equals("userP")){
+                            Utils.cosine(p1Gamma, p2Gamma)));
+				} else if(m_mode.equals("userEmbed")){
+				    /*
+				    across column users
+				    userEmbed: P for ETBIR, average over documents across users for LDA (\gamma) and CTM (softmax(\mu))
+				     */
 					neiIndex = m_userIDIndex.get(nei);
 					if (neiIndex == userIndex) continue;
 					topKNeighbors.add(new _RankItem(neiIndex, getSimilarity(userIndex, neiIndex)));
+				} else if(m_mode.equals("rowPhi") || m_mode.equals("rowPost")){
+				    /*
+					across row items
+					rowPhi: compare \phi of doc(userIndex_itemIndex) and \phi of item
+					rowPost: compare posterior parameter (\gamma for LDA, softmax(\mu) for CTM and ETBIR)
+					 */
+                    neiIndex = m_itemIDIndex.get(nei);
+                    if(neiIndex == itemIndex) continue;
+                    topKNeighbors.add(new _RankItem(nei,//store item ID rather than index
+                            Utils.cosine(m_docWeights.get(String.format("%d_%d", userIndex, neiIndex)), m_itemWeights[itemIndex])));
+				} else if(m_mode.equals("rowProduct")){
+				    /*
+				    across row items
+				    rowProduct: compare the inner product of user's P and item's \eta
+				     */
+                    neiIndex = m_itemIDIndex.get(nei);
+                    if (neiIndex == itemIndex) continue;
+                    p1Gamma = matrixVectorProduct(m_userWeights[userIndex], m_itemWeights[itemIndex]);
+                    p2Gamma = matrixVectorProduct(m_userWeights[userIndex], m_itemWeights[neiIndex]);
+                    topKNeighbors.add(new _RankItem(nei,
+                            Utils.cosine(p1Gamma, p2Gamma)));
+				} else if(m_mode.equals("itemEmbed")){
+				    /*
+				    across row items
+				    itemEmbed: \eta for ETBIR, average over documents across items for LDA (\gamma) and CTM (softmax(\mu))
+				     */
+                    neiIndex = m_itemIDIndex.get(nei);
+                    if (neiIndex == itemIndex) continue;
+                    topKNeighbors.add(new _RankItem(nei, Utils.cosine(m_itemWeights[itemIndex], m_itemWeights[neiIndex])));
 				}
 			}
 			//Calculate the value given by the neighbors and similarity;
+            int label;
 			for(_RankItem ri: topKNeighbors){
-				int label = m_users.get(ri.m_index).getItemRating(item)+1;
+			    if(m_mode.equals("columnPhi") || m_mode.equals("columnPost") || m_mode.equals("columnProduct") || m_mode.equals("userEmbed"))
+				    label = m_users.get(ri.m_index).getItemRating(item)+1;//ri.index is user's
+			    else //ri.index is item's
+			        label = u.getItemRating(ri.m_name)+1;
 				rankSum += m_equalWeight ? label:ri.m_value*label;//If equal weight, add label, otherwise, add weighted label.
 				simSum += m_equalWeight ? 1: ri.m_value;
 			}
@@ -167,17 +328,6 @@ public class CollaborativeFilteringWithETBIR extends CollaborativeFiltering {
 		} else
 			return rankSum/simSum;
 	}
-
-	protected double calculateItemSimilarity(double[] item1, double[] item2){
-		return Utils.cosine(item1, item2);
-	}
-
-	// calculate the similarity between two users based on their P_i^T \gamma
-	protected double calculateUserItemSimilarity(double[] ui, double[] item, double[] uj){
-		double[] p1Gamma = matrixVectorProduct(ui, item);
-		double[] p2Gamma = matrixVectorProduct(uj, item);
-		return Utils.cosine(p1Gamma, p2Gamma);
-	}	
 	
 	// P * item_traits, aggregate P in one dimension
 	protected double[] matrixVectorProduct(double[] ui, double[] item){
@@ -199,17 +349,9 @@ public class CollaborativeFilteringWithETBIR extends CollaborativeFiltering {
 	}
 	
 	public static void main(String[] args){
-		CollaborativeFilteringWithETBIR test = new CollaborativeFilteringWithETBIR(null, 0, 0, 0);
-		int dim = 5;
-		double[] ui = new double[dim * dim];
-		double[] item = new double[dim];
-		
-		for(int i=0; i< ui.length; i++)
-			ui[i] = Math.random();
-		
-		for(int i=0; i<dim; i++)
-			item[i] = Math.random();
-		
-		test.matrixVectorProduct(ui, item);
+		String file = "d/fe/jfos_10_30.txt";
+		String[] tokens = file.split("\\.|\\_");
+		int dim = Integer.valueOf(tokens[tokens.length-2]);
+		System.out.println(dim);
 	}
 }

@@ -33,6 +33,7 @@ public class CollaborativeFiltering {
 	protected int m_k, m_featureSize;
 	protected int m_validUser = 0;
 	protected ArrayList<_User> m_users;
+	protected ArrayList<_Item> m_items;
 	protected HashMap<Integer, _User> m_userMap;
 	// All the reviews for ranking
 	protected ArrayList<_Review> m_trainReviews;
@@ -554,7 +555,6 @@ public class CollaborativeFiltering {
 	}
 
 	public void init(){
-				
 		m_userIDIndex = new HashMap<String, Integer>();
 		for(int i=0; i<m_users.size(); i++){
 			m_userIDIndex.put(m_users.get(i).getUserID(), i);

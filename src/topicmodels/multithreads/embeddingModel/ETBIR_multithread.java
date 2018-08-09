@@ -202,7 +202,7 @@ public class ETBIR_multithread extends ETBIR {
         protected void updateStats4User(_User4ETBIR user){
             for(int k = 0; k < number_of_topics; k++){
                 for(int l = 0; l < number_of_topics; l++){
-                    pStats += user.m_SigmaP[k][l][l] + user.m_nuP[k][l] * user.m_nuP[k][l];
+                    pStats += user.m_SigmaP[k][l][l] + user.m_nuP[k][l] * user.m_nuP[k][l]- 2 * m_lambda * user.m_nuP[k][k] + m_lambda * m_lambda;
                 }
                 lambda_Stats += user.m_nuP[k][k];
             }
@@ -310,10 +310,12 @@ public class ETBIR_multithread extends ETBIR {
             likelihood = super.multithread_E_step();
 
             //users
-            likelihood += multithread_general(m_userWorkers);
+            if(!m_mode.equals("Item"))
+                likelihood += multithread_general(m_userWorkers);
 
             //items
-            likelihood += multithread_general(m_itemWorkers);
+            if(!m_mode.equals("User"))
+                likelihood += multithread_general(m_itemWorkers);
 
             if(Double.isNaN(likelihood)){
                 System.err.println("[Warning]E_step produces NaN likelihood!");
@@ -329,7 +331,8 @@ public class ETBIR_multithread extends ETBIR {
 
             if(converge < m_varConverge)
                 break;
-            System.out.format("[Info]Multi-thread E-Step: %d iteration, likelihood=%.2f, converge to %.8f\n",
+            if(iter % 10 == 0)
+                System.out.format("[Info]Multi-thread E-Step: %d iteration, likelihood=%.2f, converge to %.8f\n",
                     iter, last, converge);
         }while(iter++ < m_varMaxIter);
         System.out.print(String.format("Current likelihood: %.4f\n", likelihood));
@@ -392,26 +395,32 @@ public class ETBIR_multithread extends ETBIR {
                     e.printStackTrace();
                 }
             }
-            for (int i = 0; i < m_userWorkers.length; i++) {
-                m_threadpool[i] = new Thread(m_userWorkers[i]);
-                m_threadpool[i].start();
-            }
-            for (Thread thread : m_threadpool) {
-                try {
-                    thread.join();
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
+
+            if(!m_mode.equals("Item")) {
+                for (int i = 0; i < m_userWorkers.length; i++) {
+                    m_threadpool[i] = new Thread(m_userWorkers[i]);
+                    m_threadpool[i].start();
+                }
+                for (Thread thread : m_threadpool) {
+                    try {
+                        thread.join();
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
                 }
             }
-            for (int i = 0; i < m_itemWorkers.length; i++) {
-                m_threadpool[i] = new Thread(m_itemWorkers[i]);
-                m_threadpool[i].start();
-            }
-            for (Thread thread : m_threadpool) {
-                try {
-                    thread.join();
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
+
+            if(!m_mode.equals("User")) {
+                for (int i = 0; i < m_itemWorkers.length; i++) {
+                    m_threadpool[i] = new Thread(m_itemWorkers[i]);
+                    m_threadpool[i].start();
+                }
+                for (Thread thread : m_threadpool) {
+                    try {
+                        thread.join();
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
                 }
             }
 
@@ -437,7 +446,7 @@ public class ETBIR_multithread extends ETBIR {
             System.out.print("---likelihood: " + last + "\n");
         }while(iter++ < m_varMaxIter);
 
-        System.out.print(String.format("Current likelihood: %.4f", likelihood));
+        System.out.print(String.format("Current likelihood: %.4f\n", likelihood));
 
         return likelihood_doc; //only calculate document related likelihood
     }

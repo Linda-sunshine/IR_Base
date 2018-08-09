@@ -49,6 +49,7 @@ public class _User {
 
 	private ArrayList<_Review> m_trainReviews;
 	private ArrayList<_Review> m_testReviews;
+	private ArrayList<String> m_trainItems;
 	protected int m_trainReviewSize = -1;
 	protected int m_testReviewSize = -1;
 
@@ -449,11 +450,17 @@ public class _User {
 	}
 	public void constructTrainTestReviews(){
 		m_trainReviews = new ArrayList<>();
+		m_trainItems = new ArrayList<>();
 		m_testReviews = new ArrayList<>();
 		m_testReviewMap = new HashMap<String, _Review>();
 		for(_Review r: m_reviews){
-			if(r.getType() == rType.ADAPTATION)
+			if(r.getType() == rType.ADAPTATION) {
 				m_trainReviews.add(r);
+				if (!m_trainItems.contains(r.getItemID()))
+					m_trainItems.add(r.getItemID());
+				else
+					System.err.println("[Warning]One user reviewed item twice!");
+			}
 			else{
 				m_testReviews.add(r);
 				m_testReviewMap.put(r.getItemID(), r);
@@ -461,6 +468,10 @@ public class _User {
 		}
 		m_trainReviewSize = m_trainReviews.size();
 		m_testReviewSize = m_testReviews.size();
+	}
+
+	public ArrayList<String> getTrainItems(){
+		return m_trainItems;
 	}
 
 	// set the test reveiws for the current user
@@ -526,20 +537,6 @@ public class _User {
 				m_rankingItems[index++] = item;
 			}
 		}
-	}
-
-	ArrayList<String> m_trainItems = new ArrayList<>();
-	public ArrayList<String> getTrainItems(){
-		if(m_trainItems == null) {
-			for (_Review rv : m_trainReviews) {
-				if (!m_trainItems.contains(rv.getItemID()))
-					m_trainItems.add(rv.getItemID());
-				else
-					System.err.println("[Warning]One user reviewed item twice!");
-			}
-		}
-
-		return m_trainItems;
 	}
 
 	// load the candidates from file instead of constructing online

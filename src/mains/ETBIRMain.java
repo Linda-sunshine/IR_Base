@@ -10,6 +10,7 @@ import structures._Doc;
 import structures._Review;
 import topicmodels.CTM.CTM;
 import topicmodels.LDA.LDA_Gibbs;
+import topicmodels.multithreads.LDA.LDA_Focus_multithread;
 import topicmodels.multithreads.LDA.LDA_Variational_multithread;
 import topicmodels.multithreads.embeddingModel.ETBIR_multithread;
 import topicmodels.multithreads.pLSA.pLSA_multithread;
@@ -32,7 +33,7 @@ public class ETBIRMain {
         String tokenModel = "./data/Model/en-token.bin";
 
         /*****parameters for topic model*****/
-        String topicmodel = "LDA_Variational"; // CTM, LDA_Variational, ETBIR
+        String topicmodel = "ETBIR1"; // CTM, LDA_Variational, LDA_User, LDA_Item, ETBIR, ETBIR_User, ETBIR_Item
         int number_of_topics = 20;
         int varMaxIter = 20;
         double varConverge = 1e-6;
@@ -101,9 +102,20 @@ public class ETBIRMain {
         }  else if (topicmodel.equals("LDA_Variational")) {
             tModel = new LDA_Variational_multithread(emMaxIter, emConverge, beta, corpus,
                     lambda, number_of_topics, alpha, varMaxIter, varConverge); //set this negative!! or likelihood will not change
-        } else if (topicmodel.equals("ETBIR")){
+        }else if (topicmodel.equals("LDA_User") || topicmodel.equals("LDA_Item")) {
+            tModel = new LDA_Focus_multithread(emMaxIter, emConverge, beta, corpus,
+                    lambda, number_of_topics, alpha, varMaxIter, varConverge); //set this negative!! or likelihood will not change
+            if(topicmodel.equals("LDA_User"))
+                ((LDA_Focus_multithread) tModel).setMode("User");
+            else if(topicmodel.equals("LDA_Item"))
+                ((LDA_Focus_multithread) tModel).setMode("Item");
+        } else if (topicmodel.equals("ETBIR") || topicmodel.equals("ETBIR1") || topicmodel.equals("ETBIR_User") || topicmodel.equals("ETBIR_Item")){
             tModel = new ETBIR_multithread(emMaxIter, emConverge, beta, corpus, lambda,
                     number_of_topics, alpha, varMaxIter, varConverge, sigma, rho);
+            if(tokenModel.equals("ETBIR_User"))
+                ((ETBIR_multithread) tModel).setMode("User");
+            else if(tokenModel.equals("ETBIR_Item"))
+                ((ETBIR_multithread) tModel).setMode("Item");
         } else if(topicmodel.equals("CTM")){
             tModel = new CTM(emMaxIter, emConverge, beta, corpus,
                     lambda, number_of_topics, alpha, varMaxIter, varConverge);
