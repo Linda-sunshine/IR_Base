@@ -390,7 +390,7 @@ public class pLSA extends twoTopic {
 
 			for (int i = 0; i < topic_term_probabilty.length; i++){//next is beta
 				for(int j = 0; j < vocabulary_size; j++)
-					betaWriter.format("%.5f\t",  m_logSpace ? Math.exp(topic_term_probabilty[i][j]) : topic_term_probabilty[i][j]);
+					betaWriter.format("%.10f\t",  m_logSpace ? Math.exp(topic_term_probabilty[i][j]) : topic_term_probabilty[i][j]);
 				betaWriter.println();
 			}
 			betaWriter.close();
