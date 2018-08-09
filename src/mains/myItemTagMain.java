@@ -2,6 +2,7 @@ package mains;
 
 import Analyzer.BipartiteAnalyzer;
 import Analyzer.MultiThreadedReviewAnalyzer;
+import Application.ItemTagging;
 import structures._Corpus;
 import structures._Doc;
 import structures._Review;
@@ -33,6 +34,9 @@ public class myItemTagMain {
         String source = "yelp";
         String dataset = "./myData/" + source + "/" + trainset + "/";
         String outputFolder = dataset + "output/" + crossV + "foldsCV" + "/";
+        String model = "ETBIR1";
+        String mode = "Embed";
+        int number_of_topics = 20;
 
         String[] fvFiles = new String[4];
         fvFiles[0] = "./data/Features/fv_2gram_IG_yelp_byUser_30_50_25.txt";
@@ -48,11 +52,12 @@ public class myItemTagMain {
             fvFile_point = 3;
         }
 
-        String reviewFolder = dataset + "data/"; //2foldsCV/folder0/train/, data/
-        MultiThreadedReviewAnalyzer analyzer = new MultiThreadedReviewAnalyzer(tokenModel, classNumber, fvFiles[fvFile_point],
+        String reviewFolder = dataset + crossV + "foldsCV/";
+        ItemTagging analyzer = new ItemTagging(tokenModel, classNumber, fvFiles[fvFile_point],
                 Ngram, lengthThreshold, numberOfCores, true, source);
-        double[] perf = new double[crossV];
-        double[] like = new double[crossV];
+        analyzer.setMode(mode);
+        analyzer.setModel(model);
+        analyzer.setTopK(10);
         System.out.println("[Info]Start FIXED cross validation...");
         for (int k = 0; k < crossV; k++) {
             analyzer.getCorpus().reset();
@@ -69,8 +74,11 @@ public class myItemTagMain {
                     analyzer.loadUserDir(trainFolder);
                 }
             }
-
-
+            analyzer.loadItemWeight(String.format("%s%d/%s_postEta_%d.txt", outputFolder, k, model, number_of_topics));
+            analyzer.buildItemProfile();
+            analyzer.constructTagSet("./myData/" + source + "/business.json");//construct tagset
+            analyzer.loadModel(String.format("%s%d/%s_beta_%d.txt", outputFolder, k, model, number_of_topics));
+            analyzer.calculateTagging(String.format("%s%d/ItemTag/", outputFolder, k));
         }
     }
 }
