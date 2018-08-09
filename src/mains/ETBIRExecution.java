@@ -65,15 +65,17 @@ public class ETBIRExecution {
 		} else if (param.m_topicmodel.equals("LDA_Gibbs")) {
 			tModel = new LDA_Gibbs(param.m_emIter, param.m_emConverge, param.m_beta, corpus,
 					param.m_lambda, param.m_number_of_topics, param.m_alpha, 0.4, 50);
-		}  else if (param.m_topicmodel.equals("LDA_Variational") ||
-                param.m_topicmodel.equals("LDA_User") || param.m_topicmodel.equals("LDA_Item")) {
+		}  else if (param.m_topicmodel.equals("LDA_Variational")) {
 			tModel = new LDA_Variational_multithread(param.m_emIter, param.m_emConverge, param.m_beta, corpus,
 					param.m_lambda, param.m_number_of_topics, param.m_alpha, param.m_varMaxIter, param.m_varConverge);
-			if(param.m_topicmodel.equals("LDA_User"))
+		}else if (param.m_topicmodel.equals("LDA_User") || param.m_topicmodel.equals("LDA_Item")) {
+            tModel = new LDA_Focus_multithread(param.m_emIter, param.m_emConverge, param.m_beta, corpus,
+                    param.m_lambda, param.m_number_of_topics, param.m_alpha, param.m_varMaxIter, param.m_varConverge);
+            if(param.m_topicmodel.equals("LDA_User"))
                 ((LDA_Focus_multithread) tModel).setMode("User");
-			else if(param.m_topicmodel.equals("LDA_Item"))
+            else if(param.m_topicmodel.equals("LDA_Item"))
                 ((LDA_Focus_multithread) tModel).setMode("Item");
-		} else if(param.m_topicmodel.equals("ETBIR") || param.m_topicmodel.equals("ETBIR_User") || param.m_topicmodel.equals("ETBIR_Item")){
+        } else if(param.m_topicmodel.equals("ETBIR") || param.m_topicmodel.equals("ETBIR_User") || param.m_topicmodel.equals("ETBIR_Item")){
 			tModel = new ETBIR_multithread(param.m_emIter, param.m_emConverge, param.m_beta, corpus, param.m_lambda,
 					param.m_number_of_topics, param.m_alpha, param.m_varMaxIter, param.m_varConverge, param.m_sigma, param.m_rho);
 			if(param.m_topicmodel.equals("ETBIR_User"))
