@@ -102,7 +102,7 @@ public class _Corpus {
 	 corpus into k folders. The function is used in cross validation.
 	*/
 	public void shuffle(int k) {
-		Random rand = new Random(543265);
+		Random rand = new Random();
 		for(int i=0; i< m_mask.length; i++) {
 			this.m_mask[i] = rand.nextInt(k);
 		}
