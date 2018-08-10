@@ -21,7 +21,7 @@ public class ETBIRCFMain {
         int Ngram = 2; // The default value is unigram.
         int lengthThreshold = 5; // Document length threshold
         double trainRatio = 0, adaptRatio = 1;
-        int crossV = 2;
+        int crossV = 5;
         int numberOfCores = Runtime.getRuntime().availableProcessors();
         boolean enforceAdapt = true;
         String tokenModel = "./data/Model/en-token.bin"; // Token model.
@@ -31,9 +31,10 @@ public class ETBIRCFMain {
 //        String lmFvFile = String.format("./data/CoLinAdapt/%s/fv_lm_%s_%d.txt", dataset, fs, lmTopK);
 
         /*****data setting*****/
-        String scaleset = "byUser_4k_review";
+        String locate = "/zf18/ll5fy/lab/dataset";
+        String scaleset = "byUser_70k_review";
         String dataset = "yelp";
-        String folder = String.format("./myData/%s/%s", dataset, scaleset);
+        String folder = String.format("%s/%s/%s",locate, dataset, scaleset);
         String inputFolder = String.format("%s/%dfoldsCV", folder, crossV);
         String outputFolder = String.format("%s/output/%dfoldsCV", folder, crossV);
 
@@ -55,8 +56,8 @@ public class ETBIRCFMain {
         int[] neighborK = new int[]{2, 4, 6}; // top_k neighbors
         int[] threshold = new int[]{10, 20, 30}; // popularity of item or time
 //        int[] topicNums = new int[]{10, 20, 30, 40, 50, 60, 70, 80, 90, 100};// number of topics
-        int[] topicNums = new int[]{20, 40};// number of topics
-        String[] models = new String[]{"ETBIR", "LDA_Variational", "CTM"};
+        int[] topicNums = new int[]{5, 15, 20, 25, 30, 35, 40, 45, 50};// number of topics
+        String[] models = new String[]{"LDA_User", "LDA_Item", "LDA_Variational", "CTM"};
         /***meaning of different modes:
          columnPhi: compare phi of document of the same item across different users (rowPhi: same user across different items)
          columnPost: compare posterior parameter (\gamma or softmax(\mu)) of the same item across different users (rowPost: same user across different items)
@@ -82,7 +83,7 @@ public class ETBIRCFMain {
 
                         //name: threshold-nk-mode-model.txt
                         //content: line1 is NDCG-mean, line2 is NDCG-var, line3 is MAP-mean, line4 is MAP-var
-                        String resultFile = String.format("%s/CF/%d-%d-%s-%s.txt", outputFolder, th, nk, mode, model);
+                        String resultFile = String.format("%s/CF/%d_%d_%s_%s.txt", outputFolder, th, nk, mode, model);
                         File file = new File(resultFile);
                         try {
                             file.getParentFile().mkdirs();

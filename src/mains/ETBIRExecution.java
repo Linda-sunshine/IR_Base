@@ -145,18 +145,20 @@ public class ETBIRExecution {
                 if(Double.isNaN(like[i]))
                     invalid.add(i);
             }
+            int validLen = like.length - invalid.size();
+            System.out.format("[Info]Valid folds: %d\n", validLen);
 
             double mean = 0, var = 0;
             for(int i = 0; i < like.length; i++){
                 if(!invalid.contains(i))
                     mean += like[i];
             }
-            mean /= like.length - invalid.size();
+            mean /= validLen;
             for(int i=0; i<like.length; i++) {
                 if(!invalid.contains(i))
                     var += (like[i] - mean) * (like[i] - mean);
             }
-            var = Math.sqrt(var/(like.length - invalid.size()));
+            var = Math.sqrt(var/validLen);
             System.out.format("[Stat]Loglikelihood %.3f+/-%.3f\n", mean, var);
 
             mean = 0;
@@ -165,12 +167,12 @@ public class ETBIRExecution {
                 if(!invalid.contains(i))
                     mean += perf[i];
             }
-            mean /= perf.length - invalid.size();
+            mean /= validLen;
             for(int i=0; i<perf.length; i++) {
                 if(!invalid.contains(i))
                     var += (perf[i] - mean) * (perf[i] - mean);
             }
-            var = Math.sqrt(var/(perf.length - invalid.size()));
+            var = Math.sqrt(var/validLen);
             System.out.format("[Stat]Perplexity %.3f+/-%.3f\n", mean, var);
         }
     }
