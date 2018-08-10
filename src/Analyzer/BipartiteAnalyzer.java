@@ -9,6 +9,7 @@ import java.io.FileWriter;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Random;
 
 public class BipartiteAnalyzer {
     int m_k;
@@ -119,7 +120,7 @@ public class BipartiteAnalyzer {
             mapByUser.get(u_index).add(i_index);
             mapByItem.get(i_index).add(u_index);
         }
-        System.out.format("--%s graph: review size: %d, item size: %d, user size: %d\n",
+        System.out.format("-- %s graph: review size: %d, item size: %d, user size: %d\n",
                 source, docs.size(), mapByItem.size(), mapByUser.size());
         if(source.equals("train") && (mapByItem.size()<m_items.size() || mapByUser.size()<m_users.size())){
             System.err.format("[Error]Poor split detected, train set does not contain all users/items.\n");

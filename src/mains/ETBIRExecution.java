@@ -3,6 +3,8 @@ package mains;
 import java.io.File;
 import java.io.IOException;
 import java.text.ParseException;
+import java.util.HashSet;
+import java.util.Set;
 
 import Analyzer.BipartiteAnalyzer;
 import structures.TopicModelParameter;
@@ -138,17 +140,37 @@ public class ETBIRExecution {
             }
 
             //output the performance statistics
-            double mean = Utils.sumOfArray(like)/param.m_crossV, var = 0;
-            for(int i=0; i<like.length; i++)
-                var += (like[i]-mean) * (like[i]-mean);
-            var = Math.sqrt(var/param.m_crossV);
+            Set invalid = new HashSet();
+            for(int i = 0; i < like.length; i++){
+                if(Double.isNaN(like[i]))
+                    invalid.add(i);
+            }
+
+            double mean = 0, var = 0;
+            for(int i = 0; i < like.length; i++){
+                if(!invalid.contains(i))
+                    mean += like[i];
+            }
+            mean /= like.length - invalid.size();
+            for(int i=0; i<like.length; i++) {
+                if(!invalid.contains(i))
+                    var += (like[i] - mean) * (like[i] - mean);
+            }
+            var = Math.sqrt(var/(like.length - invalid.size()));
             System.out.format("[Stat]Loglikelihood %.3f+/-%.3f\n", mean, var);
 
-            mean = Utils.sumOfArray(perf)/param.m_crossV;
+            mean = 0;
             var = 0;
-            for(int i=0; i<perf.length; i++)
-                var += (perf[i]-mean) * (perf[i]-mean);
-            var = Math.sqrt(var/param.m_crossV);
+            for(int i = 0; i < perf.length; i++){
+                if(!invalid.contains(i))
+                    mean += perf[i];
+            }
+            mean /= perf.length - invalid.size();
+            for(int i=0; i<perf.length; i++) {
+                if(!invalid.contains(i))
+                    var += (perf[i] - mean) * (perf[i] - mean);
+            }
+            var = Math.sqrt(var/(perf.length - invalid.size()));
             System.out.format("[Stat]Perplexity %.3f+/-%.3f\n", mean, var);
         }
     }
