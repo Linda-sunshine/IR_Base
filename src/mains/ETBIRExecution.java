@@ -53,7 +53,9 @@ public class ETBIRExecution {
 				System.err.format("[Warning]Cross validation dataset %s not exist! Now generating...", cvFolder);
 				BipartiteAnalyzer cv = new BipartiteAnalyzer(corpus); // split corpus into folds
 				cv.analyzeCorpus();
-				cv.splitCorpus(param.m_crossV, dataset + param.m_crossV + "foldsCV/");
+                while(cv.splitCorpus(param.m_crossV,dataset + param.m_crossV + "foldsCV/")==false){
+                    System.err.format("[Info]Split again...\n");
+                }
 			}
 		}
 
