@@ -93,11 +93,11 @@ public class BipartiteAnalyzer {
                 m_corpus.getFeatureSize(), size,  m_items.size(),  m_users.size());
     }
 
-    public void analyzeBipartite(ArrayList<_Doc> docs, String source){
+    public boolean analyzeBipartite(ArrayList<_Doc> docs, String source){
         HashMap<Integer, ArrayList<Integer>> mapByUser = source.equals("train")?m_mapByUser:m_mapByUser_test;
         HashMap<Integer, ArrayList<Integer>> mapByItem = source.equals("train")?m_mapByItem:m_mapByItem_test;
 
-        System.out.format("[Info]Analying bipartie graph: ");
+        System.out.format("[Info]Analying bipartie graph: \n");
         mapByItem.clear();
         mapByUser.clear();
 
@@ -119,11 +119,16 @@ public class BipartiteAnalyzer {
             mapByUser.get(u_index).add(i_index);
             mapByItem.get(i_index).add(u_index);
         }
-        System.out.format("-- graph: review size: %d, item size: %d, user size: %d\n",
-                docs.size(), mapByItem.size(), mapByUser.size());
+        System.out.format("--%s graph: review size: %d, item size: %d, user size: %d\n",
+                source, docs.size(), mapByItem.size(), mapByUser.size());
+        if(source.equals("train") && (mapByItem.size()<m_items.size() || mapByUser.size()<m_users.size())){
+            System.err.format("[Error]Poor split detected, train set does not contain all users/items.\n");
+            return false;
+        }
+        return true;
     }
 
-    public void splitCorpus(int k, String outFolder) {
+    public boolean splitCorpus(int k, String outFolder) {
         System.out.format("[Info]Splitting corpus into %d folds: ", m_k);
 
         this.m_k = k;
@@ -148,7 +153,11 @@ public class BipartiteAnalyzer {
             }
 
             // generate bipartie for training set
-            analyzeBipartite(m_trainSet, "train");
+            if(analyzeBipartite(m_trainSet, "train")==false){//false means poor split
+                System.err.format("[Error]Split corpus abort! Delete all generated cross validation folds.\n");
+                deleteDir(outFolder);
+                return false;
+            }
 //            save2File(outFolder + "folder" + i + "/", "train");
 
             // generate bipartie for testing set
@@ -160,6 +169,21 @@ public class BipartiteAnalyzer {
             m_testSet.clear();
         }
 
+        return true;
+    }
+
+    public boolean deleteDir(String outFolder){
+        File dir = new File(outFolder);
+        if(dir.isDirectory()){
+            String[] children = dir.list();
+            for(int i=0; i<children.length; i++){
+                boolean success = deleteDir(children[i]);
+                if(!success){
+                    return false;
+                }
+            }
+        }
+        return dir.delete();
     }
 
     public void save2File(String outFolder, String mode){

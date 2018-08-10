@@ -33,7 +33,7 @@ public class ETBIRMain {
         String tokenModel = "./data/Model/en-token.bin";
 
         /*****parameters for topic model*****/
-        String topicmodel = "ETBIR_User"; // CTM, LDA_Variational, LDA_User, LDA_Item, ETBIR, ETBIR_User, ETBIR_Item
+        String topicmodel = "ETBIR_Item"; // CTM, LDA_Variational, LDA_User, LDA_Item, ETBIR, ETBIR_User, ETBIR_Item
         int number_of_topics = 20;
         int varMaxIter = 20;
         double varConverge = 1e-6;
@@ -86,7 +86,9 @@ public class ETBIRMain {
                 System.err.println("[Warning]Cross validation dataset not exist! Now generating...");
                 BipartiteAnalyzer cv = new BipartiteAnalyzer(corpus); // split corpus into folds
                 cv.analyzeCorpus();
-                cv.splitCorpus(crossV,dataset + crossV + "foldsCV/");
+                while(cv.splitCorpus(crossV,dataset + crossV + "foldsCV/")==false){
+                    System.err.format("[Info]Split again...\n");
+                }
             }
         }
 //        corpus.save2File(dataset + "yelp_4k.dat");//for CTM
