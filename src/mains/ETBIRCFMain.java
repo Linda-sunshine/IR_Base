@@ -53,7 +53,7 @@ public class ETBIRCFMain {
         }
 
         /*****experiment setting*****/
-        int[] neighborK = new int[]{2, 4, 6}; // top_k neighbors
+        int[] neighborK = new int[]{Integer.valueOf(args[0])}; // top_k neighbors
         int[] threshold = new int[]{10, 20, 30}; // popularity of item or time
 //        int[] topicNums = new int[]{10, 20, 30, 40, 50, 60, 70, 80, 90, 100};// number of topics
         int[] topicNums = new int[]{5, 15, 20, 25, 30, 35, 40, 45, 50};// number of topics
