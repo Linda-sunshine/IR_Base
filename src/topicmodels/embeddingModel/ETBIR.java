@@ -981,9 +981,14 @@ public class ETBIR extends LDA_Variational {
             totalWords = getTotalLength();
         }
 
-        results[0] = Math.exp(-perplexity/totalWords);
-        results[1] = likelihood / m_testSet.size();
-        System.out.format("Test set perplexity is %.3f and log-likelihood is %.3f\n", results[0], results[1]);
+        if(Double.isNaN(likelihood) || Double.isInfinite(likelihood)){
+            results[0] = Double.NaN;
+            results[1] = Double.NaN;
+        }else {
+            results[0] = Math.exp(-perplexity / totalWords);
+            results[1] = likelihood / m_testSet.size();
+        }
+        System.out.format("[Stat]Test set perplexity is %.3f and log-likelihood is %.3f\n", results[0], results[1]);
 
         return results;
     }

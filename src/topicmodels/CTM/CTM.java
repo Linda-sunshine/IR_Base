@@ -521,7 +521,7 @@ public class CTM extends LDA_Variational {
     }
 
     @Override
-    public void EM(){
+    public boolean EM(){
         initModel();
         initStats();
         for(_Doc d: m_trainSet){
@@ -556,6 +556,8 @@ public class CTM extends LDA_Variational {
         }while((iter++<number_of_iteration)&&(converge>m_converge));
 
         finalEst();
+
+        return true;
     }
 
     //k-fold Cross Validation.
