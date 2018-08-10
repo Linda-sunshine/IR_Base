@@ -264,7 +264,7 @@ public class CollaborativeFilteringWithETBIR extends CollaborativeFiltering {
 							Utils.cosine(m_docWeights.get(String.format("%d_%d", neiIndex, itemIndex)), m_userWeights[userIndex])));
 				} else if(m_mode.equals("columnProduct")) {
 				    /*
-				    across column users
+				    ETBIR: across column users
 				    columnProduct: compare the inner product of user's P and item's \eta
 				     */
 					neiIndex = m_userIDIndex.get(nei);
