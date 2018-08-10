@@ -125,8 +125,9 @@ public class ETBIRExecution {
                 tModel.setCorpus(analyzer.getCorpus());
 
                 System.out.format("====================\n[Info]Fold No. %d: ", k);
-                perf[k] = tModel.oneFoldValidation()[0];
-                like[k] = tModel.oneFoldValidation()[1];
+                double[] results = tModel.oneFoldValidation();
+                perf[k] = results[0];
+                like[k] = results[1];
 
                 String resultFolder = outputFolder + k + "/";
                 new File(resultFolder).mkdirs();
