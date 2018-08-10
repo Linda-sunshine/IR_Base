@@ -57,7 +57,7 @@ public class ACCTM_CZLR extends ACCTM_CZ{
 	}
 	
 	@Override
-	public void EM() {
+	public boolean EM() {
 		System.out.format("Starting %s...\n", toString());
 		
 		long starttime = System.currentTimeMillis();
@@ -117,7 +117,8 @@ public class ACCTM_CZLR extends ACCTM_CZ{
 		
 		long endtime = System.currentTimeMillis() - starttime;
 		System.out.format("Likelihood %.3f after step %s converge to %f after %d seconds...\n", current, i, delta, endtime/1000);	
-		infoWriter.format("Likelihood %.3f after step %s converge to %f after %d seconds...\n", current, i, delta, endtime/1000);	
+		infoWriter.format("Likelihood %.3f after step %s converge to %f after %d seconds...\n", current, i, delta, endtime/1000);
+		return true;
 	}
 	
 	protected void calculate_M_step(int iter, File weightFolder){
