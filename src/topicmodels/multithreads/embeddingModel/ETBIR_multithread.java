@@ -303,20 +303,35 @@ public class ETBIR_multithread extends ETBIR {
         int iter = 0;
         double likelihood = 0.0, last = -1.0, converge = 0.0;
 
+        boolean warning;
         do {
             init();
+            warning = false;
 
             //doc
             likelihood = super.multithread_E_step();
 
+            if(Double.isNaN(likelihood) || Double.isInfinite(likelihood)){
+                System.err.println("[Error]E_step for document produces NaN likelihood...");
+                warning = true;
+                break;
+            }
+
             //users
             likelihood += multithread_general(m_userWorkers);
+
+            if(Double.isNaN(likelihood) || Double.isInfinite(likelihood)){
+                System.err.println("[Error]E_step for user produces NaN likelihood...");
+                warning = true;
+                break;
+            }
 
             //items
             likelihood += multithread_general(m_itemWorkers);
 
-            if(Double.isNaN(likelihood)){
-                System.err.println("[Warning]E_step produces NaN likelihood!");
+            if(Double.isNaN(likelihood) || Double.isInfinite(likelihood)){
+                System.err.println("[Error]E_step for item produces NaN likelihood...");
+                warning = true;
                 break;
             }
 
@@ -332,8 +347,8 @@ public class ETBIR_multithread extends ETBIR {
             if(iter % 10 == 0)
                 System.out.format("[Info]Multi-thread E-Step: %d iteration, likelihood=%.2f, converge to %.8f\n",
                     iter, last, converge);
-        }while(iter++ < m_varMaxIter);
-        System.out.print(String.format("Current likelihood: %.4f\n", likelihood));
+        }while(iter++ < m_varMaxIter && !warning);
+        System.out.print(String.format("[Info]Finish E-Step: %d iteration, likelihood: %.4f\n", iter, likelihood));
 
         return likelihood;
     }
@@ -342,6 +357,7 @@ public class ETBIR_multithread extends ETBIR {
     protected double multithread_inference() {
         int iter = 0;
         double likelihood = 0.0, likelihood_doc = 0.0, last = -1.0, converge = 0.0;
+        boolean warning;
 
         //clear up for adding new testing documents
         for(int i=0; i<m_workers.length; i++) {
@@ -379,6 +395,7 @@ public class ETBIR_multithread extends ETBIR {
         do {
             init();
             likelihood = 0.0;
+            warning = false;
             //run
             for (int i = 0; i < m_workers.length; i++) {
                 m_threadpool[i] = new Thread(m_workers[i]);
@@ -429,6 +446,12 @@ public class ETBIR_multithread extends ETBIR {
                 likelihood += worker.getLogLikelihood();
             }
 
+            if(Double.isNaN(likelihood) || Double.isInfinite(likelihood)){
+                System.err.format("[Error]Inference generate NaN\n");
+                warning = true;
+                break;
+            }
+
             if(iter > 0)
                 converge = Math.abs((likelihood - last) / last);
             else
@@ -440,7 +463,7 @@ public class ETBIR_multithread extends ETBIR {
             System.out.print("---likelihood: " + last + "\n");
         }while(iter++ < m_varMaxIter);
 
-        System.out.print(String.format("Current likelihood: %.4f\n", likelihood));
+        System.out.print(String.format("[Info]Inference finished: likelihood: %.4f\n", likelihood));
 
         return likelihood; //only calculate document related likelihood
     }
