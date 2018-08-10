@@ -310,12 +310,10 @@ public class ETBIR_multithread extends ETBIR {
             likelihood = super.multithread_E_step();
 
             //users
-            if(!m_mode.equals("Item"))
-                likelihood += multithread_general(m_userWorkers);
+            likelihood += multithread_general(m_userWorkers);
 
             //items
-            if(!m_mode.equals("User"))
-                likelihood += multithread_general(m_itemWorkers);
+            likelihood += multithread_general(m_itemWorkers);
 
             if(Double.isNaN(likelihood)){
                 System.err.println("[Warning]E_step produces NaN likelihood!");
@@ -396,31 +394,27 @@ public class ETBIR_multithread extends ETBIR {
                 }
             }
 
-            if(!m_mode.equals("Item")) {
-                for (int i = 0; i < m_userWorkers.length; i++) {
-                    m_threadpool[i] = new Thread(m_userWorkers[i]);
-                    m_threadpool[i].start();
-                }
-                for (Thread thread : m_threadpool) {
-                    try {
-                        thread.join();
-                    } catch (InterruptedException e) {
-                        e.printStackTrace();
-                    }
+            for (int i = 0; i < m_userWorkers.length; i++) {
+                m_threadpool[i] = new Thread(m_userWorkers[i]);
+                m_threadpool[i].start();
+            }
+            for (Thread thread : m_threadpool) {
+                try {
+                    thread.join();
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
                 }
             }
 
-            if(!m_mode.equals("User")) {
-                for (int i = 0; i < m_itemWorkers.length; i++) {
-                    m_threadpool[i] = new Thread(m_itemWorkers[i]);
-                    m_threadpool[i].start();
-                }
-                for (Thread thread : m_threadpool) {
-                    try {
-                        thread.join();
-                    } catch (InterruptedException e) {
-                        e.printStackTrace();
-                    }
+            for (int i = 0; i < m_itemWorkers.length; i++) {
+                m_threadpool[i] = new Thread(m_itemWorkers[i]);
+                m_threadpool[i].start();
+            }
+            for (Thread thread : m_threadpool) {
+                try {
+                    thread.join();
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
                 }
             }
 
@@ -448,7 +442,7 @@ public class ETBIR_multithread extends ETBIR {
 
         System.out.print(String.format("Current likelihood: %.4f\n", likelihood));
 
-        return likelihood_doc; //only calculate document related likelihood
+        return likelihood; //only calculate document related likelihood
     }
 
 }

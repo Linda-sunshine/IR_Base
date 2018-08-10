@@ -33,7 +33,7 @@ public class ETBIRMain {
         String tokenModel = "./data/Model/en-token.bin";
 
         /*****parameters for topic model*****/
-        String topicmodel = "ETBIR1"; // CTM, LDA_Variational, LDA_User, LDA_Item, ETBIR, ETBIR_User, ETBIR_Item
+        String topicmodel = "ETBIR_User"; // CTM, LDA_Variational, LDA_User, LDA_Item, ETBIR, ETBIR_User, ETBIR_Item
         int number_of_topics = 20;
         int varMaxIter = 20;
         double varConverge = 1e-6;
@@ -112,9 +112,9 @@ public class ETBIRMain {
         } else if (topicmodel.equals("ETBIR") || topicmodel.equals("ETBIR1") || topicmodel.equals("ETBIR_User") || topicmodel.equals("ETBIR_Item")){
             tModel = new ETBIR_multithread(emMaxIter, emConverge, beta, corpus, lambda,
                     number_of_topics, alpha, varMaxIter, varConverge, sigma, rho);
-            if(tokenModel.equals("ETBIR_User"))
+            if(topicmodel.equals("ETBIR_User"))
                 ((ETBIR_multithread) tModel).setMode("User");
-            else if(tokenModel.equals("ETBIR_Item"))
+            else if(topicmodel.equals("ETBIR_Item"))
                 ((ETBIR_multithread) tModel).setMode("Item");
         } else if(topicmodel.equals("CTM")){
             tModel = new CTM(emMaxIter, emConverge, beta, corpus,
