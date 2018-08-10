@@ -183,18 +183,15 @@ public class ETBIR extends LDA_Variational {
                 totalLikelihood += varInference4Doc(d, u, i);
             }
 
-            if(!m_mode.equals("Item")) {
-                for (int u_idx : m_mapByUser.keySet()) {
-                    u = (_User4ETBIR) m_users.get(u_idx);
-                    totalLikelihood += varInference4User(u);
-                }
+            for (int u_idx : m_mapByUser.keySet()) {
+                u = (_User4ETBIR) m_users.get(u_idx);
+                totalLikelihood += varInference4User(u);
             }
 
-            if(!m_mode.equals("User")) {
-                for (int i_idx : m_mapByItem.keySet()) {
-                    i = (_Product4ETBIR) m_items.get(i_idx);
-                    totalLikelihood += varInference4Item(i);
-                }
+
+            for (int i_idx : m_mapByItem.keySet()) {
+                i = (_Product4ETBIR) m_items.get(i_idx);
+                totalLikelihood += varInference4Item(i);
             }
 
             if(iter > 0)
@@ -242,8 +239,10 @@ public class ETBIR extends LDA_Variational {
 
     protected double varInference4User(_User4ETBIR u){
         // since updating nu will not influence sigmaP, we do not need loop outside
-        update_SigmaP(u);
-        update_nu(u);
+        if(!m_mode.equals("Item")) {
+            update_SigmaP(u);
+            update_nu(u);
+        }
         return calc_log_likelihood_per_user(u);
     }
 
@@ -267,7 +266,9 @@ public class ETBIR extends LDA_Variational {
             }
         }
 
-        update_eta(i, pNuStats, pSumStats);
+        if(!m_mode.equals("User"))
+            update_eta(i, pNuStats, pSumStats);
+
         return calc_log_likelihood_per_item(i);
     }
 
@@ -662,7 +663,6 @@ public class ETBIR extends LDA_Variational {
         double v;
         _SparseFeature[] fv = doc.getSparse();
         for(int k = 0; k < number_of_topics; k++) {
-            log_likelihood += Math.log(2 * Math.PI) + Math.log(doc.m_Sigma[k]);
             for (int n = 0; n < fv.length; n++) {
                 wid = fv[n].getIndex();
                 v = fv[n].getValue() * doc.m_phi[n][k];
@@ -946,7 +946,7 @@ public class ETBIR extends LDA_Variational {
                     break;
                 System.out.print("---likelihood: " + last + "\n");
             }while(iter++<m_varMaxIter);
-            likelihood = likelihood_doc;
+//            likelihood = likelihood_doc;
             perplexity = likelihood;
             totalWords = getTotalLength();
         }
