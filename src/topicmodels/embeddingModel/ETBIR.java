@@ -4,6 +4,7 @@ import java.io.*;
 import java.util.*;
 
 import Analyzer.BipartiteAnalyzer;
+import hep.aida.tdouble.DoubleIAxis;
 import org.apache.commons.math3.linear.LUDecomposition;
 import org.apache.commons.math3.linear.MatrixUtils;
 import org.apache.commons.math3.linear.RealMatrix;
@@ -170,7 +171,9 @@ public class ETBIR extends LDA_Variational {
         _Product4ETBIR i;
 
         init();
+        boolean warning;
         do {
+            warning=false;
             totalLikelihood = 0.0;
             for (_Doc doc:m_trainSet) {
                 d = (_Doc4ETBIR)doc;
@@ -194,6 +197,9 @@ public class ETBIR extends LDA_Variational {
                 totalLikelihood += varInference4Item(i);
             }
 
+            if(Double.isNaN(totalLikelihood) || Double.isInfinite(totalLikelihood))
+                warning = true;
+
             if(iter > 0)
                 converge = Math.abs((totalLikelihood - last) / last);
             else
@@ -205,7 +211,7 @@ public class ETBIR extends LDA_Variational {
                 System.out.format("[Info]Single-thread E-Step: %d iteration, likelihood=%.2f, converge to %.8f\n",
                     iter, last, converge);
 
-        }while(iter++ < m_varMaxIter*2 && converge > m_varConverge/3);
+        }while(iter++ < m_varMaxIter*2 && converge > m_varConverge/3 && !warning);
 
         //collect sufficient statistics for model update
         if (m_collectCorpusStats) {
@@ -276,7 +282,9 @@ public class ETBIR extends LDA_Variational {
         double current = 0.0, last = 1.0, converge = 0.0;
         int iter = 0;
 
+        boolean warning;
         do {
+            warning = false;
             update_phi(d);
             update_zeta(d);
             update_mu(d, u ,i);
@@ -286,13 +294,17 @@ public class ETBIR extends LDA_Variational {
 //            update_mu_sigmaTheta(d, u ,i);
 
             current = calc_log_likelihood_per_doc(d, u, i);
+
+            if(Double.isNaN(current) || Double.isInfinite(current))
+                warning = true;
+
             if (iter > 0)
                 converge = (last-current) / last;
             else
                 converge = 1.0;
 
             last = current;
-        } while (++iter < m_varMaxIter && Math.abs(converge) > m_varConverge);
+        } while (++iter < m_varMaxIter && Math.abs(converge) > m_varConverge && !warning);
 
         return current;
     }
@@ -360,14 +372,14 @@ public class ETBIR extends LDA_Variational {
                 doc.m_mu[k] += stepsize/Math.sqrt(muH[k]) * muG;//ada gradient
                 muH[k] += muG * muG;
 
-//                if (Math.abs(doc.m_mu[k])>50) {
-//                    System.err.format("[Warning]%s has a potentially too large mu: %.3f!\n", doc.getID(), doc.m_mu[k]);
-//                    warning = true;
-//                }
+                if (Double.isNaN(fValue) || Double.isInfinite(fValue)) {
+                    warning = true;
+                    break;
+                }
             }
 
             diff = (lastFValue - fValue) / lastFValue;
-        } while (!warning && iter++ < iterMax && Math.abs(diff) > cvg);
+        } while (!warning && iter++ < iterMax && Math.abs(diff) > cvg && !warning);
     }
 
     void update_SigmaTheta(_Doc4ETBIR d){
@@ -402,14 +414,14 @@ public class ETBIR extends LDA_Variational {
 
                 sigmaH[k] += sigmaG * sigmaG;
 
-//                if (Math.abs(d.m_sigmaSqrt[k])>50) {
-//                    System.err.format("[Warning]%s has a potentially too large Sigma: %.3f!\n", d.getID(), d.m_sigmaSqrt[k]*d.m_sigmaSqrt[k]);
-//                    warning = true;
-//                }
+                if (Double.isNaN(fValue) || Double.isInfinite(fValue)) {
+                    warning = true;
+                    break;
+                }
             }
 
             diff = (lastFValue - fValue) / lastFValue;
-        } while(!warning && iter++ < iterMax && Math.abs(diff) > cvg);
+        } while(!warning && iter++ < iterMax && Math.abs(diff) > cvg && !warning);
     }
 
     // alternative: line search / fixed-stepsize gradient descent
@@ -540,7 +552,9 @@ public class ETBIR extends LDA_Variational {
             etaH[k] = 1.0;
         }
 
+        boolean warning;
         do{
+            warning = false;
             double eta0 = Utils.sumOfArray(i.m_eta);
             double diGammaEta0 = Utils.digamma(eta0);
             double triGammaEta0 = Utils.trigamma(eta0);
@@ -574,6 +588,11 @@ public class ETBIR extends LDA_Variational {
                         + Utils.lgamma(i.m_eta[k])
                         + m_rho * i.m_eta[k] * pNuStates[k] / eta0
                         - m_rho * i.m_eta[k] * term3 / (2 * eta0 * (eta0 + 1.0));
+
+                if(Double.isNaN(fValue) || Double.isInfinite(fValue)){
+                    warning = true;
+                    break;
+                }
             }
 
             // fix stepsize
@@ -584,7 +603,7 @@ public class ETBIR extends LDA_Variational {
             }
 
             diff = (lastFValue - fValue) / lastFValue;
-        }while(iter++ < iterMax && Math.abs(diff) > cvg);
+        }while(iter++ < iterMax && Math.abs(diff) > cvg && !warning);
     }
 
     @Override
@@ -743,7 +762,7 @@ public class ETBIR extends LDA_Variational {
     }
 
     @Override
-    public void EM(){
+    public boolean EM(){
         System.out.format("%s\n", toString());
         initialize_probability(m_trainSet);
 
@@ -753,16 +772,18 @@ public class ETBIR extends LDA_Variational {
         double currentAllLikelihood;
         double converge = 0.0;
 
+        boolean warning;
         do{
+            warning=false;
             System.out.format("====================\n[Info]Start EM iteration %d....\n", iter);
             if(m_multithread)
                 currentAllLikelihood = multithread_E_step();
             else
                 currentAllLikelihood = E_step();
 
-            if(Double.isNaN(currentAllLikelihood)){
+            if(Double.isNaN(currentAllLikelihood) || Double.isInfinite(currentAllLikelihood)){
                 System.err.println("[Error]E_step produces NaN likelihood...");
-                break;
+                warning = true;
             }
 
             if(iter > 0)
@@ -778,7 +799,9 @@ public class ETBIR extends LDA_Variational {
                     iter, currentAllLikelihood, converge);
 
 //            printTopWords(10);//print out the top words every iteration
-        }while(++iter < number_of_iteration && converge > m_converge);
+        }while(++iter < number_of_iteration && converge > m_converge && !warning);
+
+        return !warning;
     }
 
     @Override
@@ -813,15 +836,22 @@ public class ETBIR extends LDA_Variational {
         m_bipartite.analyzeBipartite(m_trainSet, "train");
         m_mapByUser = m_bipartite.getMapByUser();
         m_mapByItem = m_bipartite.getMapByItem();
-        EM();
+        boolean success = EM();
 
         //test
         m_bipartite.analyzeBipartite(m_testSet, "test");
         m_mapByUser_test = m_bipartite.getMapByUser_test();
         m_mapByItem_test = m_bipartite.getMapByItem_test();
 
-        double[] results = Evaluation2();
-        System.out.format("[Info]%s Train/Test finished in %.2f seconds...\n", this.toString(), (System.currentTimeMillis()-start)/1000.0);
+        double[] results = new double[2];
+        if(success) {
+            results = Evaluation2();
+            System.out.format("[Info]%s Train/Test SUCCEED in %.2f seconds...\n", this.toString(), (System.currentTimeMillis() - start) / 1000.0);
+        }else{
+            results[0] = Double.NaN;
+            results[1] = Double.NaN;
+            System.err.format("[Error]%s Train/Test FAIL in %.2f seconds...\n", this.toString(), (System.currentTimeMillis() - start) / 1000.0);
+        }
 
         return results;
     }

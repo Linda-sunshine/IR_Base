@@ -243,7 +243,7 @@ public abstract class TopicModel {
 		return 0;
 	}
 
-	public void EM() {	
+	public boolean EM() {
 		System.out.format("[Info]EM Starting %s...\n", toString());
 		
 		long starttime = System.currentTimeMillis();
@@ -302,6 +302,8 @@ public abstract class TopicModel {
 		long endtime = System.currentTimeMillis() - starttime;
 		System.out.format("[Info]Likelihood %.3f after step %s converge to %f after %d seconds...\n", current, i, delta, endtime/1000);
 		infoWriter.format("[Info]Likelihood %.3f after step %s converge to %f after %d seconds...\n", current, i, delta, endtime/1000);
+
+		return true;
 	}
 
 	public double Evaluation() {
