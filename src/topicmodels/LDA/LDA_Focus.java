@@ -3,6 +3,9 @@ package topicmodels.LDA;
 import Analyzer.BipartiteAnalyzer;
 import structures.*;
 import topicmodels.LDA.LDA_Variational;
+import topicmodels.markovmodel.HTSM;
+import topicmodels.multithreads.LDA.LDA_Focus_multithread;
+import topicmodels.multithreads.TopicModelWorker;
 import utils.Utils;
 
 import java.util.*;
@@ -29,6 +32,10 @@ public class LDA_Focus extends LDA_Variational {
 
     protected double[][] m_alphaList; // we can estimate a vector of alphas as in p(\theta|\alpha)
     protected double[][] m_alphaStatList; // statistics for alpha estimation
+
+    protected double m_likelihood_coldstart=0;
+    protected double m_docSize_coldstart=0;
+    protected double m_wordNum_coldstart=0;
 
     public LDA_Focus(int number_of_iteration, double converge,
                            double beta, _Corpus c, double lambda,
@@ -179,20 +186,20 @@ public class LDA_Focus extends LDA_Variational {
         }
 
         //we need to estimate p(\theta|\alpha) as well later on
-        for(int j = 0; j < m_alphaList.length; j++) {
-            int docSize = m_mode.equals("User") ? m_mapByUser.get(j).size() : m_mapByItem.get(j).size();
+        for(Integer idx : m_mode.equals("User") ? m_mapByUser.keySet() : m_mapByItem.keySet()) {
+            int docSize = m_mode.equals("User") ? m_mapByUser.get(idx).size() : m_mapByItem.get(idx).size();
             int i = 0;
             double alphaSum, diAlphaSum, z, c, c1, c2, diff, deltaAlpha;
             do {
-                alphaSum = Utils.sumOfArray(m_alphaList[j]);
+                alphaSum = Utils.sumOfArray(m_alphaList[idx]);
                 diAlphaSum = Utils.digamma(alphaSum);
                 z = docSize * Utils.trigamma(alphaSum);
 
                 c1 = 0;
                 c2 = 0;
                 for (int k = 0; k < number_of_topics; k++) {
-                    m_alphaG[k] = docSize * (diAlphaSum - Utils.digamma(m_alphaList[j][k])) + m_alphaStatList[j][k];
-                    m_alphaH[k] = -docSize * Utils.trigamma(m_alphaList[j][k]);
+                    m_alphaG[k] = docSize * (diAlphaSum - Utils.digamma(m_alphaList[idx][k])) + m_alphaStatList[idx][k];
+                    m_alphaH[k] = -docSize * Utils.trigamma(m_alphaList[idx][k]);
 
                     c1 += m_alphaG[k] / m_alphaH[k];
                     c2 += 1.0 / m_alphaH[k];
@@ -202,7 +209,7 @@ public class LDA_Focus extends LDA_Variational {
                 diff = 0;
                 for (int k = 0; k < number_of_topics; k++) {
                     deltaAlpha = (m_alphaG[k] - c) / m_alphaH[k];
-                    m_alphaList[j][k] -= 0.001 * deltaAlpha; // set small stepsize, so the value won't jump too much
+                    m_alphaList[idx][k] -= 0.001 * deltaAlpha; // set small stepsize, so the value won't jump too much
                     diff += deltaAlpha * deltaAlpha;
                 }
                 diff /= number_of_topics;
@@ -282,6 +289,83 @@ public class LDA_Focus extends LDA_Variational {
         double[] results = Evaluation2();
         System.out.format("[Info]%s Train/Test finished in %.2f seconds...\n", this.toString(), (System.currentTimeMillis()-start)/1000.0);
 
+        return results;
+    }
+
+    @Override
+    public double[] Evaluation2() {
+        m_collectCorpusStats = false;
+        double loglikelihood, log2 = Math.log(2.0);
+
+        //coldstart_all, coldstart_user, coldstart_item, normal;
+        double[] likelihood_array = new double[5];
+        double[] perplexity_array = new double[5];
+        double[] totalWords_array = new double[5];
+        double[] docSize_array = new double[5];
+
+        if (m_multithread) {
+            multithread_inference();
+            System.out.println("[Info]Start evaluation in thread");
+            for(TopicModelWorker worker:m_workers) {
+                worker = (LDA_Focus_multithread.LDA_Focus_worker) worker;
+                Utils.add2Array(likelihood_array, ((LDA_Focus_multithread.LDA_Focus_worker) worker).getLogLikelihoodArray(), 1);
+                Utils.add2Array(perplexity_array, ((LDA_Focus_multithread.LDA_Focus_worker) worker).getPerplexityArray(), 1);
+                Utils.add2Array(totalWords_array, ((LDA_Focus_multithread.LDA_Focus_worker) worker).getTotalWordsArray(), 1);
+                Utils.add2Array(docSize_array, ((LDA_Focus_multithread.LDA_Focus_worker) worker).getDocSizeArray(), 1);
+            }
+        } else {
+            System.out.println("[Info]Start evaluation in Normal");
+            Arrays.fill(likelihood_array, 0);
+            Arrays.fill(perplexity_array, 0);
+            Arrays.fill(totalWords_array,0);
+            Arrays.fill(docSize_array, 0);
+            for(_Doc d:m_testSet) {
+                loglikelihood = inference(d);
+
+                if(!m_mapByUser.containsKey(((_Review)d).getUserID()) && !m_mapByItem.containsKey(((_Review)d).getItemID())){//all coldstart
+                    likelihood_array[0] += loglikelihood;
+                    perplexity_array[0] += loglikelihood;
+                    totalWords_array[0] += d.getTotalDocLength();
+                    docSize_array[0] += 1;
+                }else if(!m_mapByUser.containsKey(((_Review)d).getUserID()) && m_mapByItem.containsKey(((_Review)d).getItemID())){//user coldstart
+                    likelihood_array[1] += loglikelihood;
+                    perplexity_array[1] += loglikelihood;
+                    totalWords_array[1] += d.getTotalDocLength();
+                    docSize_array[1] += 1;
+                }else if(m_mapByUser.containsKey(((_Review)d).getUserID()) && !m_mapByItem.containsKey(((_Review)d).getItemID())){//item coldstart
+                    likelihood_array[2] += loglikelihood;
+                    perplexity_array[2] += loglikelihood;
+                    totalWords_array[2] += d.getTotalDocLength();
+                    docSize_array[2] += 1;
+                }else {
+                    likelihood_array[3] += loglikelihood;
+                    perplexity_array[3] += loglikelihood;
+                    totalWords_array[3] += d.getTotalDocLength();
+                    docSize_array[3] += 1;
+                }
+
+                likelihood_array[4] += loglikelihood;
+                perplexity_array[4] += loglikelihood;
+                totalWords_array[4] += d.getTotalDocLength();
+                docSize_array[4] += 1;
+            }
+
+        }
+        System.out.format("[Stat]Test evaluation finished: %d docs\n", m_testSet.size());
+
+        //0,1: perplexity_coldstart_all, likelihood_coldstart_all
+        //2,3: perplexity_coldstart_user, likelihood_coldstart_user
+        //4,5: perplexity_coldstart_item, likelihood_coldstart_item
+        //6,7: perplexity_normal, likelihood_normal
+        //8,9: perplexity, likelihood
+        double[] results = new double[10];
+        for(int i = 0; i < 5; i++){
+            if(totalWords_array[i] > 0){
+                results[2*i] = Math.exp(-perplexity_array[i] /totalWords_array[i]);
+                results[2*i+1] = likelihood_array[i] / docSize_array[i];
+            }
+            System.out.format("[Stat]%d part has %d docs: perplexity is %.3f and log-likelihood is %.3f\n", i, docSize_array[i], results[2*i], results[2*i+1]);
+        }
         return results;
     }
 

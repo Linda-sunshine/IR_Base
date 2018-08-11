@@ -55,9 +55,7 @@ public class ETBIRExecution {
 				System.err.format("[Warning]Cross validation dataset %s not exist! Now generating...", cvFolder);
 				BipartiteAnalyzer cv = new BipartiteAnalyzer(corpus); // split corpus into folds
 				cv.analyzeCorpus();
-                while(cv.splitCorpus(param.m_crossV,dataset + param.m_crossV + "foldsCV/")==false){
-                    System.err.format("[Info]Split again...\n");
-                }
+                cv.splitCorpus(param.m_crossV,dataset + param.m_crossV + "foldsCV/");
 			}
 		}
 
@@ -111,8 +109,8 @@ public class ETBIRExecution {
             tModel.setPerplexityProportion(testProportion);
             tModel.crossValidation(param.m_crossV);
         } else{//cross validation with fixed folds
-            double[] perf = new double[param.m_crossV];
-            double[] like = new double[param.m_crossV];
+            double[][] perf = new double[param.m_crossV][5];
+            double[][] like = new double[param.m_crossV][5];
             System.out.println("[Info]Start FIXED cross validation...");
             for(int k = 0; k <param.m_crossV; k++){
                 analyzer.getCorpus().reset();
@@ -133,50 +131,63 @@ public class ETBIRExecution {
 
                 System.out.format("====================\n[Info]Fold No. %d: ", k);
                 double[] results = tModel.oneFoldValidation();
-                perf[k] = results[0];
-                like[k] = results[1];
+                for(int i = 0; i < 5; i++){
+                    perf[k][i] = results[2*i];
+                    like[k][i] = results[2*i+1];
+                }
 
                 String resultFolder = outputFolder + k + "/";
                 new File(resultFolder).mkdirs();
                 tModel.printParameterAggregation(param.m_topk, resultFolder, param.m_topicmodel);
                 tModel.printTopWords(param.m_topk);
+
+                if(param.m_flag_tune){
+                    System.out.format("[Info]Tuning mode: only run one fold to save time.\n");
+                    break;
+                }
             }
 
             //output the performance statistics
-            Set invalid = new HashSet();
-            for(int i = 0; i < like.length; i++){
-                if(Double.isNaN(like[i]) || Double.isNaN(perf[i]))
-                    invalid.add(i);
-            }
-            int validLen = like.length - invalid.size();
-            System.out.format("[Info]Valid folds: %d\n", validLen);
-
+            System.out.println();
             double mean = 0, var = 0;
-            for(int i = 0; i < like.length; i++){
-                if(!invalid.contains(i))
-                    mean += like[i];
-            }
-            mean /= validLen;
-            for(int i=0; i<like.length; i++) {
-                if(!invalid.contains(i))
-                    var += (like[i] - mean) * (like[i] - mean);
-            }
-            var = Math.sqrt(var/validLen);
-            System.out.format("[Stat]Loglikelihood %.3f+/-%.3f\n", mean, var);
+            for(int j = 0; j < 5; j++) {
+                System.out.format("Part %d -----------------", j);
+                Set invalid = new HashSet();
+                for (int i = 0; i < like.length; i++) {
+                    if (Double.isNaN(like[i][j]) || Double.isNaN(perf[i][j]) || perf[i][j] <0 || like[i][j] < 0)
+                        invalid.add(i);
+                }
+                int validLen = like.length - invalid.size();
+                System.out.format("Valid folds: %d\n", validLen);
 
-            mean = 0;
-            var = 0;
-            for(int i = 0; i < perf.length; i++){
-                if(!invalid.contains(i))
-                    mean += perf[i];
+                mean=0;
+                var=0;
+                for (int i = 0; i < like.length; i++) {
+                    if (!invalid.contains(i))
+                        mean += like[i][j];
+                }
+                mean /= validLen;
+                for (int i = 0; i < like.length; i++) {
+                    if (!invalid.contains(i))
+                        var += (like[i][j] - mean) * (like[i][j] - mean);
+                }
+                var = Math.sqrt(var / validLen);
+                System.out.format("[Stat]Loglikelihood %.3f+/-%.3f\n", mean, var);
+
+                mean = 0;
+                var = 0;
+                for (int i = 0; i < perf.length; i++) {
+                    if (!invalid.contains(i))
+                        mean += perf[i][j];
+                }
+                mean /= validLen;
+                for (int i = 0; i < perf.length; i++) {
+                    if (!invalid.contains(i))
+                        var += (perf[i][j] - mean) * (perf[i][j] - mean);
+                }
+                var = Math.sqrt(var / validLen);
+                System.out.format("[Stat]Perplexity %.3f+/-%.3f\n", mean, var);
             }
-            mean /= validLen;
-            for(int i=0; i<perf.length; i++) {
-                if(!invalid.contains(i))
-                    var += (perf[i] - mean) * (perf[i] - mean);
-            }
-            var = Math.sqrt(var/validLen);
-            System.out.format("[Stat]Perplexity %.3f+/-%.3f\n", mean, var);
         }
     }
 }
