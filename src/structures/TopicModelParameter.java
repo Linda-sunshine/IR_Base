@@ -29,6 +29,8 @@ public class TopicModelParameter {
 
 	public boolean m_flag_gd = false;
 	public boolean m_flag_fix_lambda = false;
+
+	public boolean m_flag_tune = false;
 		
 	public TopicModelParameter(String argv[]){
 		
@@ -83,6 +85,8 @@ public class TopicModelParameter {
 				m_flag_gd = argv[i].equals("true") ? true : false;
 			else if (argv[i-1].equals("-flagFixLambda"))
 				m_flag_fix_lambda = argv[i].equals("true") ? true : false;
+			else if (argv[i-1].equals("-flagTune"))
+				m_flag_tune = argv[i].equals("true") ? true : false;
 			else
 				System.exit(1);
 		}
