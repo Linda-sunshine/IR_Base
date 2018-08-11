@@ -135,6 +135,10 @@ public class BipartiteAnalyzer {
         this.m_k = k;
         m_trainSet = new ArrayList<>();
         m_testSet = new ArrayList<>();
+
+        //split corpus with some cold start user and item
+
+
         m_corpus.shuffle(m_k);
         int[] masks = m_corpus.getMasks();
         ArrayList<_Doc> docs = m_corpus.getCollection();
