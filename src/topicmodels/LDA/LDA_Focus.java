@@ -322,17 +322,20 @@ public class LDA_Focus extends LDA_Variational {
             for(_Doc d:m_testSet) {
                 loglikelihood = inference(d);
 
-                if(!m_mapByUser.containsKey(((_Review)d).getUserID()) && !m_mapByItem.containsKey(((_Review)d).getItemID())){//all coldstart
+                if(!m_mapByUser.containsKey(m_usersIndex.get(((_Review)d).getUserID()))
+                        && !m_mapByItem.containsKey(m_itemsIndex.get(((_Review)d).getItemID()))){//all coldstart
                     likelihood_array[0] += loglikelihood;
                     perplexity_array[0] += loglikelihood;
                     totalWords_array[0] += d.getTotalDocLength();
                     docSize_array[0] += 1;
-                }else if(!m_mapByUser.containsKey(((_Review)d).getUserID()) && m_mapByItem.containsKey(((_Review)d).getItemID())){//user coldstart
+                }else if(!m_mapByUser.containsKey(m_usersIndex.get(((_Review)d).getUserID()))
+                        && m_mapByItem.containsKey(m_itemsIndex.get(((_Review)d).getItemID()))){//user coldstart
                     likelihood_array[1] += loglikelihood;
                     perplexity_array[1] += loglikelihood;
                     totalWords_array[1] += d.getTotalDocLength();
                     docSize_array[1] += 1;
-                }else if(m_mapByUser.containsKey(((_Review)d).getUserID()) && !m_mapByItem.containsKey(((_Review)d).getItemID())){//item coldstart
+                }else if(m_mapByUser.containsKey(m_usersIndex.get(((_Review)d).getUserID()))
+                        && !m_mapByItem.containsKey(m_itemsIndex.get(((_Review)d).getItemID()))){//item coldstart
                     likelihood_array[2] += loglikelihood;
                     perplexity_array[2] += loglikelihood;
                     totalWords_array[2] += d.getTotalDocLength();
@@ -364,7 +367,7 @@ public class LDA_Focus extends LDA_Variational {
                 results[2*i] = Math.exp(-perplexity_array[i] /totalWords_array[i]);
                 results[2*i+1] = likelihood_array[i] / docSize_array[i];
             }
-            System.out.format("[Stat]%d part has %d docs: perplexity is %.3f and log-likelihood is %.3f\n", i, docSize_array[i], results[2*i], results[2*i+1]);
+            System.out.format("[Stat]%d part has %f docs: perplexity is %.3f and log-likelihood is %.3f\n", i, docSize_array[i], results[2*i], results[2*i+1]);
         }
         return results;
     }

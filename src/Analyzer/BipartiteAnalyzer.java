@@ -154,12 +154,12 @@ public class BipartiteAnalyzer {
             }
 
             // generate bipartie for training set
-            if(analyzeBipartite(m_trainSet, "train")==false){//false means poor split
-                System.err.format("[Error]Split corpus abort! Delete all generated cross validation folds.\n");
-                deleteDir(outFolder);
-                return false;
-            }
-//            save2File(outFolder + "folder" + i + "/", "train");
+            analyzeBipartite(m_trainSet, "train");
+//            if(analyzeBipartite(m_trainSet, "train")==false){//false means poor split
+//                System.err.format("[Error]Split corpus abort! Delete all generated cross validation folds.\n");
+//                deleteDir(outFolder);
+//                return false;
+//            }
 
             // generate bipartie for testing set
             analyzeBipartite(m_testSet, "test");
