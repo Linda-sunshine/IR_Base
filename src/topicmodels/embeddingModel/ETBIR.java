@@ -729,18 +729,18 @@ public class ETBIR extends LDA_Variational {
     @Override
     protected void initialize_probability(Collection<_Doc> docs) {
         System.out.println("[Info]Initializing documents...");
-        for(_Doc doc : docs)
+        for(_Doc doc : m_corpus.getCollection())
             ((_Doc4ETBIR) doc).setTopics4Variational(number_of_topics, d_alpha, d_mu, d_sigma_theta);
 
         System.out.println("[Info]Initializing users...");
-        for(int u_idx:m_mapByUser.keySet()){
-            _User4ETBIR user = (_User4ETBIR) m_users.get(u_idx);
+        for(_User u : m_users){
+            _User4ETBIR user = (_User4ETBIR) u;
             user.setTopics4Variational(number_of_topics, d_nu, d_sigma_P);
         }
 
         System.out.println("[Info]Initializing items...");
-        for(int i_idx : m_mapByItem.keySet()) {
-            _Product4ETBIR item = (_Product4ETBIR) m_items.get(i_idx);
+        for(_Product i : m_items) {
+            _Product4ETBIR item = (_Product4ETBIR) i;
             item.setTopics4Variational(number_of_topics, d_alpha);
         }
 
@@ -955,7 +955,6 @@ public class ETBIR extends LDA_Variational {
     @Override
     public double[] Evaluation2() {
         m_collectCorpusStats = false;
-        double[] results = new double[10];
         double loglikelihood;
         double totalWords = 0.0;
 
@@ -1008,10 +1007,20 @@ public class ETBIR extends LDA_Variational {
         }
         System.out.format("[Stat]Test evaluation finished: %d docs\n", m_testSet.size());
 
-
-
-        System.out.format("[Stat]Test set perplexity is %.3f and log-likelihood is %.3f\n", results[0], results[1]);
-
+        //0,1: perplexity_coldstart_all, likelihood_coldstart_all
+        //2,3: perplexity_coldstart_user, likelihood_coldstart_user
+        //4,5: perplexity_coldstart_item, likelihood_coldstart_item
+        //6,7: perplexity_normal, likelihood_normal
+        //8,9: perplexity, likelihood
+        double[] results = new double[10];
+        //coldstart_all, coldstart_user, coldstart_item, normal;
+        for(int i = 0; i < 5; i++){
+            if(m_totalWords_array[i] > 0){
+                results[2*i] = Math.exp(-m_perplexity_array[i] /m_totalWords_array[i]);
+                results[2*i+1] = m_likelihood_array[i] / m_docSize_array[i];
+            }
+            System.out.format("[Stat]%d part has %f docs: perplexity is %.3f and log-likelihood is %.3f\n", i, m_docSize_array[i], results[2*i], results[2*i+1]);
+        }
         return results;
     }
 

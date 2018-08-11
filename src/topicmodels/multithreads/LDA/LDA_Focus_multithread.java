@@ -55,11 +55,6 @@ public class LDA_Focus_multithread extends LDA_Focus {
         
         @Override
         public void run() {
-            Arrays.fill(m_likelihood_array, 0);
-            Arrays.fill(m_perplexity_array, 0);
-            Arrays.fill(m_totalWords_array,0);
-            Arrays.fill(m_docSize_array, 0);
-
             double loglikelihood = 0, log2 = Math.log(2.0);
             // System.out.println("thread corpus size\t" + m_corpus.size());
             long eStartTime = System.currentTimeMillis();
