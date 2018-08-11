@@ -154,7 +154,7 @@ public class ETBIRExecution {
                 System.out.format("Part %d -----------------", j);
                 Set invalid = new HashSet();
                 for (int i = 0; i < like.length; i++) {
-                    if (Double.isNaN(like[i][j]) || Double.isNaN(perf[i][j]) || perf[i][j] <0 || like[i][j] < 0)
+                    if (Double.isNaN(like[i][j]) || Double.isNaN(perf[i][j]) || perf[i][j] <= 0 )
                         invalid.add(i);
                 }
                 int validLen = like.length - invalid.size();
@@ -166,12 +166,14 @@ public class ETBIRExecution {
                     if (!invalid.contains(i))
                         mean += like[i][j];
                 }
-                mean /= validLen;
+                if(validLen>0)
+                    mean /= validLen;
                 for (int i = 0; i < like.length; i++) {
                     if (!invalid.contains(i))
                         var += (like[i][j] - mean) * (like[i][j] - mean);
                 }
-                var = Math.sqrt(var / validLen);
+                if(validLen>0)
+                    var = Math.sqrt(var / validLen);
                 System.out.format("[Stat]Loglikelihood %.3f+/-%.3f\n", mean, var);
 
                 mean = 0;
@@ -180,12 +182,14 @@ public class ETBIRExecution {
                     if (!invalid.contains(i))
                         mean += perf[i][j];
                 }
-                mean /= validLen;
+                if(validLen>0)
+                    mean /= validLen;
                 for (int i = 0; i < perf.length; i++) {
                     if (!invalid.contains(i))
                         var += (perf[i][j] - mean) * (perf[i][j] - mean);
                 }
-                var = Math.sqrt(var / validLen);
+                if(validLen>0)
+                    var = Math.sqrt(var / validLen);
                 System.out.format("[Stat]Perplexity %.3f+/-%.3f\n", mean, var);
             }
         }
