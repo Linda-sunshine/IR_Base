@@ -6,10 +6,7 @@ import java.io.File;
 import java.io.FileDescriptor;
 import java.io.FileNotFoundException;
 import java.io.FileWriter;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Random;
+import java.util.*;
 
 public class BipartiteAnalyzer {
     int m_k;
@@ -24,8 +21,10 @@ public class BipartiteAnalyzer {
     protected HashMap<String, Integer> m_itemsIndex; //(itemID, index in m_items)
     protected HashMap<String, Integer> m_reviewIndex; //(itemIndex_userIndex, index in m_corpus.m_collection)
 
-    protected HashMap<Integer, ArrayList<Integer>>  m_mapByUser; //adjacent list for user, controlled by m_testFlag.
+    protected HashMap<Integer, ArrayList<Integer>>  m_mapByUser; //train
     protected HashMap<Integer, ArrayList<Integer>> m_mapByItem;
+    protected HashMap<Integer, ArrayList<Integer>>  m_mapByUser_global; //global
+    protected HashMap<Integer, ArrayList<Integer>> m_mapByItem_global;
     protected HashMap<Integer, ArrayList<Integer>> m_mapByUser_test; //test
     protected HashMap<Integer, ArrayList<Integer>> m_mapByItem_test;
 
@@ -40,6 +39,8 @@ public class BipartiteAnalyzer {
         m_mapByItem = new HashMap<>();
         m_mapByUser_test = new HashMap<>();
         m_mapByItem_test = new HashMap<>();
+        m_mapByUser_global = new HashMap<>();
+        m_mapByItem_global = new HashMap<>();
     }
 
     public void reset(){
@@ -53,6 +54,8 @@ public class BipartiteAnalyzer {
         m_mapByItem.clear();
         m_mapByUser_test.clear();
         m_mapByItem_test.clear();
+        m_mapByUser_global.clear();
+        m_mapByItem_global.clear();
     }
 
     public void analyzeCorpus(){
@@ -95,8 +98,18 @@ public class BipartiteAnalyzer {
     }
 
     public boolean analyzeBipartite(ArrayList<_Doc> docs, String source){
-        HashMap<Integer, ArrayList<Integer>> mapByUser = source.equals("train")?m_mapByUser:m_mapByUser_test;
-        HashMap<Integer, ArrayList<Integer>> mapByItem = source.equals("train")?m_mapByItem:m_mapByItem_test;
+        HashMap<Integer, ArrayList<Integer>> mapByUser = new HashMap<>();
+        HashMap<Integer, ArrayList<Integer>> mapByItem = new HashMap<>();
+        if(source.equals("train")){
+            mapByUser = m_mapByUser;
+            mapByItem = m_mapByItem;
+        }else if(source.equals("test")){
+            mapByUser = m_mapByUser_test;
+            mapByItem = m_mapByItem_test;
+        }else{
+            mapByUser = m_mapByUser_global;
+            mapByItem = m_mapByItem_global;
+        }
 
         System.out.format("[Info]Analying bipartie graph: \n");
         mapByItem.clear();
@@ -122,10 +135,100 @@ public class BipartiteAnalyzer {
         }
         System.out.format("-- %s graph: review size: %d, item size: %d, user size: %d\n",
                 source, docs.size(), mapByItem.size(), mapByUser.size());
-        if(source.equals("train") && (mapByItem.size()<m_items.size() || mapByUser.size()<m_users.size())){
-            System.err.format("[Error]Poor split detected, train set does not contain all users/items.\n");
-            return false;
+
+        return true;
+    }
+
+    public boolean splitCorpusColdStart(int k, String outFolder){
+        System.out.format("[Info]Splitting corpus into %d folds: ", m_k);
+
+        this.m_k = k;
+        m_trainSet = new ArrayList<>();
+        m_testSet = new ArrayList<>();
+
+        ArrayList<_Doc> docs = m_corpus.getCollection();
+
+        if(m_usersIndex == null){
+            System.err.println("[Warning]Analysing corpus first! Analyzing with cold start...");
+            analyzeCorpus();
         }
+
+        analyzeBipartite(docs, "global");
+
+        //split corpus with some cold start user and item
+        Random rand = new Random();
+        int[] mask_user = new int[m_users.size()];
+        for(int i=0; i< mask_user.length; i++) {
+            mask_user[i] = rand.nextInt(k*3);
+        }
+
+        Random rand2 = new Random();
+        int[] mask_item = new int[m_items.size()];
+        for(int i=0; i< mask_item.length; i++) {
+            mask_item[i] = rand.nextInt(k*3);
+        }
+
+        //rest will be random doc
+        m_corpus.shuffle(k*3);
+        int[] masks = m_corpus.getMasks();
+
+        //Use this loop to iterate all the ten folders, set the train set and test set.
+        int[] label = new int[docs.size()];
+        for (int i = 0; i < m_k; i++) {
+            Arrays.fill(label, 0);
+            //cold start item
+            for (int j = 0; j < mask_item.length; j++) {
+                if( mask_item[j]==i ) {
+                    ArrayList<Integer> Ui = new ArrayList<>();
+                    if(m_mapByItem_global.containsKey(j))
+                        Ui = m_mapByItem_global.get(j);
+                    for(Integer uIdx : Ui) {
+                        int docIdx = m_reviewIndex.get(String.format("%d_%d", j, uIdx));
+                        m_testSet.add(docs.get(docIdx));
+                        label[docIdx] = 1;
+                    }
+                }
+            }
+            //cold start user
+            for (int j = 0; j < mask_user.length; j++) {
+                if( mask_user[j]==i ) {
+                    ArrayList<Integer> Iu = new ArrayList<>();
+                    if(m_mapByUser_global.containsKey(j))
+                        Iu = m_mapByItem_global.get(j);
+                    for(Integer iIdx : Iu) {
+                        int docIdx = m_reviewIndex.get(String.format("%d_%d", iIdx, j));
+                        m_testSet.add(docs.get(docIdx));
+                        label[docIdx] = 1;
+                    }
+                }
+            }
+            //rest is filled with random doc
+            for (int j = 0; j < masks.length; j++) {
+                if(label[j]>=1)
+                    continue;
+                if( masks[j]==i)
+                    m_testSet.add(docs.get(j));
+                else
+                    m_trainSet.add(docs.get(j));
+            }
+
+            // generate bipartie for training set
+            analyzeBipartite(m_trainSet, "train");
+//            if(analyzeBipartite(m_trainSet, "train")==false){//false means poor split
+//                System.err.format("[Error]Split corpus abort! Delete all generated cross validation folds.\n");
+//                deleteDir(outFolder);
+//                return false;
+//            }
+
+            // generate bipartie for testing set
+            analyzeBipartite(m_testSet, "test");
+            save2File(outFolder, String.valueOf(i));
+
+            System.out.format("-- Fold No. %d: train size = %d, test size = %d\n", i, m_trainSet.size(), m_testSet.size());
+            m_trainSet.clear();
+            m_testSet.clear();
+        }
+
         return true;
     }
 
@@ -135,9 +238,6 @@ public class BipartiteAnalyzer {
         this.m_k = k;
         m_trainSet = new ArrayList<>();
         m_testSet = new ArrayList<>();
-
-        //split corpus with some cold start user and item
-
 
         m_corpus.shuffle(m_k);
         int[] masks = m_corpus.getMasks();
