@@ -31,10 +31,10 @@ public class LDA_Focus_multithread extends LDA_Focus {
             }else if(m_mode.equals("Item")){
                 alphaStatList = new double[m_items.size()][number_of_topics];
             }
-            m_likelihood_array = new double[4];
-            m_perplexity_array = new double[4];
-            m_totalWords_array = new double[4];
-            m_docSize_array = new double[4];
+            m_likelihood_array = new double[5];
+            m_perplexity_array = new double[5];
+            m_totalWords_array = new double[5];
+            m_docSize_array = new double[5];
         }
         
         public double[] getLogLikelihoodArray() {
@@ -70,17 +70,20 @@ public class LDA_Focus_multithread extends LDA_Focus {
                 else if (m_type == TopicModel_worker.RunType.RT_inference) {
                     loglikelihood = inference(d);
 
-                    if(!m_mapByUser.containsKey(((_Review)d).getUserID()) && !m_mapByItem.containsKey(((_Review)d).getItemID())){//all coldstart
+                    if(!m_mapByUser.containsKey(m_usersIndex.get(((_Review)d).getUserID()))
+                            && !m_mapByItem.containsKey(m_itemsIndex.get(((_Review)d).getItemID()))){//all coldstart
                         m_likelihood_array[0] += loglikelihood;
                         m_perplexity_array[0] += loglikelihood;
                         m_totalWords_array[0] += d.getTotalDocLength();
                         m_docSize_array[0] += 1;
-                    }else if(!m_mapByUser.containsKey(((_Review)d).getUserID()) && m_mapByItem.containsKey(((_Review)d).getItemID())){//user coldstart
+                    }else if(!m_mapByUser.containsKey(m_usersIndex.get(((_Review)d).getUserID()))
+                            && m_mapByItem.containsKey(m_itemsIndex.get(((_Review)d).getItemID()))){//user coldstart
                         m_likelihood_array[1] += loglikelihood;
                         m_perplexity_array[1] += loglikelihood;
                         m_totalWords_array[1] += d.getTotalDocLength();
                         m_docSize_array[1] += 1;
-                    }else if(m_mapByUser.containsKey(((_Review)d).getUserID()) && !m_mapByItem.containsKey(((_Review)d).getItemID())){//item coldstart
+                    }else if(m_mapByUser.containsKey(m_usersIndex.get(((_Review)d).getUserID()))
+                            && !m_mapByItem.containsKey(m_itemsIndex.get(((_Review)d).getItemID()))){//item coldstart
                         m_likelihood_array[2] += loglikelihood;
                         m_perplexity_array[2] += loglikelihood;
                         m_totalWords_array[2] += d.getTotalDocLength();
@@ -95,6 +98,12 @@ public class LDA_Focus_multithread extends LDA_Focus {
                     m_likelihood += loglikelihood;
                     m_perplexity += loglikelihood;
                     m_totalWords += d.getTotalDocLength();
+
+                    m_likelihood_array[4] += loglikelihood;
+                    m_perplexity_array[4] += loglikelihood;
+                    m_totalWords_array[4] += d.getTotalDocLength();
+                    m_docSize_array[4] += 1;
+
                 }
             }
             long eEndTime = System.currentTimeMillis();

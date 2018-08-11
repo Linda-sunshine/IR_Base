@@ -5,6 +5,7 @@ import topicmodels.TopicModel;
 import topicmodels.embeddingModel.ETBIR;
 import topicmodels.multithreads.EmbedModelWorker;
 import topicmodels.multithreads.EmbedModel_worker;
+import topicmodels.multithreads.LDA.LDA_Focus_multithread;
 import topicmodels.multithreads.LDA.LDA_Variational_multithread;
 import topicmodels.multithreads.TopicModelWorker;
 import topicmodels.multithreads.TopicModel_worker;
@@ -20,12 +21,98 @@ public class ETBIR_multithread extends ETBIR {
     protected EmbedModelWorker[] m_itemWorkers = null;
 
     public class Doc_worker extends TopicModel_worker {
+        //coldstart_all, coldstart_user, coldstart_item, normal;
+        protected double[] m_likelihood_array;
+        protected double[] m_perplexity_array;
+        protected double[] m_totalWords_array;
+        protected double[] m_docSize_array;
+
         protected double thetaStats;
         protected double eta_mean_Stats;
         protected double eta_p_Stats;
 
         public Doc_worker(int number_of_topics, int vocabulary_size) {
             super(number_of_topics, vocabulary_size);
+            m_likelihood_array = new double[5];
+            m_perplexity_array = new double[5];
+            m_totalWords_array = new double[5];
+            m_docSize_array = new double[5];
+        }
+
+        public double[] getLogLikelihoodArray() {
+            return m_likelihood_array;
+        }
+
+        public double[] getPerplexityArray() {
+            return m_perplexity_array;
+        }
+
+        public double[] getTotalWordsArray(){
+            return m_totalWords_array;
+        }
+
+        public double[] getDocSizeArray(){
+            return m_docSize_array;
+        }
+
+        @Override
+        public void run() {
+            Arrays.fill(m_likelihood_array, 0);
+            Arrays.fill(m_perplexity_array, 0);
+            Arrays.fill(m_totalWords_array,0);
+            Arrays.fill(m_docSize_array, 0);
+
+            double loglikelihood = 0, log2 = Math.log(2.0);
+            // System.out.println("thread corpus size\t" + m_corpus.size());
+            long eStartTime = System.currentTimeMillis();
+
+            for(_Doc d:m_corpus) {
+                if (m_type == TopicModel_worker.RunType.RT_EM)
+                    m_likelihood += calculate_E_step(d);
+                else if (m_type == TopicModel_worker.RunType.RT_inference) {
+                    loglikelihood = inference(d);
+
+                    if(!m_mapByUser.containsKey(m_usersIndex.get(((_Review)d).getUserID()))
+                            && !m_mapByItem.containsKey(m_itemsIndex.get(((_Review)d).getItemID()))){//all coldstart
+                        m_likelihood_array[0] += loglikelihood;
+                        m_perplexity_array[0] += loglikelihood;
+                        m_totalWords_array[0] += d.getTotalDocLength();
+                        m_docSize_array[0] += 1;
+                    }else if(!m_mapByUser.containsKey(m_usersIndex.get(((_Review)d).getUserID()))
+                            && m_mapByItem.containsKey(m_itemsIndex.get(((_Review)d).getItemID()))){//user coldstart
+                        m_likelihood_array[1] += loglikelihood;
+                        m_perplexity_array[1] += loglikelihood;
+                        m_totalWords_array[1] += d.getTotalDocLength();
+                        m_docSize_array[1] += 1;
+                    }else if(m_mapByUser.containsKey(m_usersIndex.get(((_Review)d).getUserID()))
+                            && !m_mapByItem.containsKey(m_itemsIndex.get(((_Review)d).getItemID()))){//item coldstart
+                        m_likelihood_array[2] += loglikelihood;
+                        m_perplexity_array[2] += loglikelihood;
+                        m_totalWords_array[2] += d.getTotalDocLength();
+                        m_docSize_array[2] += 1;
+                    }else {
+                        m_likelihood_array[3] += loglikelihood;
+                        m_perplexity_array[3] += loglikelihood;
+                        m_totalWords_array[3] += d.getTotalDocLength();
+                        m_docSize_array[3] += 1;
+                    }
+//				m_perplexity += Math.pow(2.0, -loglikelihood/d.getTotalDocLength() / log2);
+                    m_likelihood += loglikelihood;
+                    m_perplexity += loglikelihood;
+                    m_totalWords += d.getTotalDocLength();
+
+                    m_likelihood_array[4] += loglikelihood;
+                    m_perplexity_array[4] += loglikelihood;
+                    m_totalWords_array[4] += d.getTotalDocLength();
+                    m_docSize_array[4] += 1;
+
+                }
+            }
+            long eEndTime = System.currentTimeMillis();
+
+            // System.out.println("per thread per iteration e step time\t"
+            // + (eEndTime - eStartTime));
+
         }
 
         @Override
@@ -112,17 +199,31 @@ public class ETBIR_multithread extends ETBIR {
     }
 
     public class Item_worker extends EmbedModel_worker {
+        protected double[] m_likelihood_array;
+        protected double[] m_perplexity_array;
+
         protected double[] alphaStat;
 
         public Item_worker(int number_of_topics, int vocabulary_size) {
             super(number_of_topics, vocabulary_size);
             alphaStat = new double[number_of_topics];
+            m_likelihood_array = new double[3];
+            m_perplexity_array = new double[3];
+        }
+
+        public double[] getLogLikelihoodArray() { return m_likelihood_array; }
+
+        public double[] getPerplexityArray() {
+            return m_perplexity_array;
         }
 
         @Override
         public void run() {
             m_likelihood = 0;
             m_perplexity = 0;
+
+            Arrays.fill(m_likelihood_array, 0);
+            Arrays.fill(m_perplexity_array, 0);
 
             double loglikelihood = 0;
             for (Object o : m_objects) {
@@ -131,6 +232,18 @@ public class ETBIR_multithread extends ETBIR {
                     m_likelihood += calculate_E_step(i);
                 else if (m_type == TopicModel_worker.RunType.RT_inference) {
                     loglikelihood = inference(i);
+
+                    if(!m_mapByItem.containsKey(m_itemsIndex.get(i.getID()))){//item coldstart
+                        m_likelihood_array[0] += loglikelihood;
+                        m_perplexity_array[0] += loglikelihood;
+                    }else {
+                        m_likelihood_array[1] += loglikelihood;
+                        m_perplexity_array[1] += loglikelihood;
+
+                    }
+
+                    m_likelihood_array[3] += loglikelihood;
+                    m_perplexity_array[3] += loglikelihood;
                     m_likelihood += loglikelihood;
                     m_perplexity += loglikelihood;
                 }
@@ -166,11 +279,24 @@ public class ETBIR_multithread extends ETBIR {
     }
 
     public class User_worker extends EmbedModel_worker {
+        protected double[] m_likelihood_array;
+        protected double[] m_perplexity_array;
+
         double pStats;
         double lambda_Stats;
 
         public User_worker(int number_of_topics, int vocabulary_size) {
             super(number_of_topics, vocabulary_size);
+            m_likelihood_array = new double[3];
+            m_perplexity_array = new double[3];
+        }
+
+        public double[] getLogLikelihoodArray() {
+            return m_likelihood_array;
+        }
+
+        public double[] getPerplexityArray() {
+            return m_perplexity_array;
         }
 
         @Override
@@ -185,6 +311,18 @@ public class ETBIR_multithread extends ETBIR {
                     m_likelihood += calculate_E_step(u);
                 else if (m_type == TopicModel_worker.RunType.RT_inference) {
                     loglikelihood = inference(u);
+
+                    if(!m_mapByUser.containsKey(m_usersIndex.get(u.getUserID()))){//user coldstart
+                        m_likelihood_array[0] += loglikelihood;
+                        m_perplexity_array[0] += loglikelihood;
+                    }else {
+                        m_likelihood_array[1] += loglikelihood;
+                        m_perplexity_array[1] += loglikelihood;
+
+                    }
+
+                    m_likelihood_array[3] += loglikelihood;
+                    m_perplexity_array[3] += loglikelihood;
                     m_likelihood += loglikelihood;
                     m_perplexity += loglikelihood;
                 }
@@ -380,13 +518,13 @@ public class ETBIR_multithread extends ETBIR {
             workerID++;
         }
         workerID = 0;
-        for(int i_idx:m_mapByItem.keySet()){
+        for(int i_idx:m_mapByItem_test.keySet()){
             _Product4ETBIR i = (_Product4ETBIR) m_items.get(i_idx);
             m_itemWorkers[workerID%m_itemWorkers.length].addObject(i);
             workerID++;
         }
         workerID = 0;
-        for(int u_idx:m_mapByUser.keySet()){
+        for(int u_idx:m_mapByUser_test.keySet()){
             _User4ETBIR u = (_User4ETBIR) m_users.get(u_idx);
             m_userWorkers[workerID%m_userWorkers.length].addObject(u);
             workerID++;
@@ -436,13 +574,38 @@ public class ETBIR_multithread extends ETBIR {
             }
 
             for (TopicModelWorker worker : m_workers) {
-                likelihood += worker.getLogLikelihood();
-            }
-            likelihood_doc = likelihood;
-            for (EmbedModelWorker worker : m_itemWorkers) {
+                Utils.add2Array(m_likelihood_array, ((Doc_worker) worker).getLogLikelihoodArray(), 1);
+                Utils.add2Array(m_perplexity_array, ((Doc_worker) worker).getPerplexityArray(), 1);
+                Utils.add2Array(m_totalWords_array, ((Doc_worker) worker).getTotalWordsArray(), 1);
+                Utils.add2Array(m_docSize_array, ((Doc_worker) worker).getDocSizeArray(), 1);
                 likelihood += worker.getLogLikelihood();
             }
             for (EmbedModelWorker worker : m_userWorkers) {
+                m_likelihood_array[0] += (((User_worker)worker).getLogLikelihoodArray())[0];
+                m_likelihood_array[1] += (((User_worker)worker).getLogLikelihoodArray())[0];
+                m_likelihood_array[2] += (((User_worker)worker).getLogLikelihoodArray())[1];
+                m_likelihood_array[3] += (((User_worker)worker).getLogLikelihoodArray())[1];
+                m_likelihood_array[4] += (((User_worker)worker).getLogLikelihoodArray())[2];
+
+                m_perplexity_array[0] += (((User_worker)worker).getPerplexityArray())[0];
+                m_perplexity_array[1] += (((User_worker)worker).getPerplexityArray())[0];
+                m_perplexity_array[2] += (((User_worker)worker).getPerplexityArray())[1];
+                m_perplexity_array[3] += (((User_worker)worker).getPerplexityArray())[1];
+                m_perplexity_array[4] += (((User_worker)worker).getPerplexityArray())[2];
+                likelihood += worker.getLogLikelihood();
+            }
+            for (EmbedModelWorker worker : m_itemWorkers) {
+                m_likelihood_array[0] += (((Item_worker)worker).getLogLikelihoodArray())[0];
+                m_likelihood_array[1] += (((Item_worker)worker).getLogLikelihoodArray())[1];
+                m_likelihood_array[2] += (((Item_worker)worker).getLogLikelihoodArray())[0];
+                m_likelihood_array[3] += (((Item_worker)worker).getLogLikelihoodArray())[1];
+                m_likelihood_array[4] += (((Item_worker)worker).getLogLikelihoodArray())[2];
+
+                m_perplexity_array[0] += (((Item_worker)worker).getPerplexityArray())[0];
+                m_perplexity_array[1] += (((Item_worker)worker).getPerplexityArray())[1];
+                m_perplexity_array[2] += (((Item_worker)worker).getPerplexityArray())[0];
+                m_perplexity_array[3] += (((Item_worker)worker).getPerplexityArray())[1];
+                m_perplexity_array[4] += (((Item_worker)worker).getPerplexityArray())[2];
                 likelihood += worker.getLogLikelihood();
             }
 

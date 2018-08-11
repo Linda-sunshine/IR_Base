@@ -12,6 +12,7 @@ import org.apache.commons.math3.linear.RealMatrix;
 import structures.*;
 import topicmodels.LDA.LDA_Variational;
 import topicmodels.markovmodel.HTSM;
+import topicmodels.multithreads.LDA.LDA_Focus_multithread;
 import topicmodels.multithreads.TopicModelWorker;
 import utils.Utils;
 import LBFGS.LBFGS;
@@ -61,6 +62,12 @@ public class ETBIR extends LDA_Variational {
     protected String m_mode;
     protected boolean m_flag_fix_lambda;
     protected boolean m_flag_gd;
+
+    //coldstart_all, coldstart_user, coldstart_item, normal;
+    protected double[] m_likelihood_array;
+    protected double[] m_perplexity_array;
+    protected double[] m_totalWords_array;
+    protected double[] m_docSize_array;
 
     public ETBIR(int emMaxIter, double emConverge,
                  double beta, _Corpus corpus, double lambda,
@@ -398,7 +405,7 @@ public class ETBIR extends LDA_Variational {
         } while (!warning && iter++ < iterMax && Math.abs(diff) > cvg);
     }
 
-    void update_SigmaTheta(_Doc4ETBIR d){
+    private void update_SigmaTheta(_Doc4ETBIR d){
         double fValue = 1.0, lastFValue = 1.0, cvg = 1e-6, diff, iterMax = 20, iter = 0;
         double stepsize = 1e-3, moment;
         double sigmaG; // gradient for Sigma
@@ -439,7 +446,7 @@ public class ETBIR extends LDA_Variational {
             }
 
             diff = (lastFValue - fValue) / lastFValue;
-        } while(!warning && iter++ < iterMax && Math.abs(diff) > cvg && !warning);
+        } while(!warning && iter++ < iterMax && Math.abs(diff) > cvg);
     }
 
     // alternative: line search / fixed-stepsize gradient descent
@@ -506,7 +513,7 @@ public class ETBIR extends LDA_Variational {
     }
 
     //variational inference for p(P|\nu,\Sigma) for each user
-    void update_SigmaP(_User4ETBIR u){
+    private void update_SigmaP(_User4ETBIR u){
         ArrayList<Integer> Iu = m_mapByUser.get(m_usersIndex.get(u.getUserID()));//all the items reviewed by this user
         RealMatrix eta_stat_sigma = MatrixUtils.createRealIdentityMatrix(number_of_topics).scalarMultiply(m_sigma);
 
@@ -526,7 +533,7 @@ public class ETBIR extends LDA_Variational {
     }
 
     //variational inference for p(P|\nu,\Sigma) for each user
-    void update_nu(_User4ETBIR u){
+    private void update_nu(_User4ETBIR u){
         ArrayList<Integer> Iu = m_mapByUser.get(m_usersIndex.get(u.getUserID()));
         double[][] etaMu = new double[number_of_topics][number_of_topics];
         double eta0;
@@ -558,7 +565,7 @@ public class ETBIR extends LDA_Variational {
     }
 
     // update eta with non-negative constraint using fix step graident descent
-    void update_eta(_Product4ETBIR i, double[] pNuStates, double[][] pSumStates){
+    private void update_eta(_Product4ETBIR i, double[] pNuStates, double[][] pSumStates){
         double fValue = 1.0, lastFValue, cvg = 1e-6, diff, iterMax = 20, iter = 0, alpha0 = Utils.sumOfArray(m_alpha);
         double stepsize = 1e-3;
 
@@ -633,7 +640,7 @@ public class ETBIR extends LDA_Variational {
     }
 
     // calculate the likelihood of user-related terms (term2-term7)
-    protected double calc_log_likelihood_per_user(_User4ETBIR u){
+    private double calc_log_likelihood_per_user(_User4ETBIR u){
         double log_likelihood = 0.0;
 
         for(int k = 0; k < number_of_topics; k++){
@@ -657,7 +664,7 @@ public class ETBIR extends LDA_Variational {
     }
 
     // calculate the likelihood of item-related terms (term1-term6)
-    protected double calc_log_likelihood_per_item(_Product4ETBIR i){
+    private double calc_log_likelihood_per_item(_Product4ETBIR i){
         double eta0 = Utils.sumOfArray(i.m_eta);
         double diGammaEtaSum = Utils.digamma(eta0);
 
@@ -677,7 +684,7 @@ public class ETBIR extends LDA_Variational {
     }
 
     // calculate the likelihood of doc-related terms (term3-term8 + term4-term9 + term5)
-    protected double calc_log_likelihood_per_doc(_Doc4ETBIR doc, _User4ETBIR currentU, _Product4ETBIR currentI) {
+    private double calc_log_likelihood_per_doc(_Doc4ETBIR doc, _User4ETBIR currentU, _Product4ETBIR currentI) {
         double log_likelihood = 0.5 * number_of_topics * (Math.log(m_rho) + 1)  - doc.getDocLength() * doc.m_logZeta;
         double eta0 = Utils.sumOfArray(currentI.m_eta);
 
@@ -812,7 +819,7 @@ public class ETBIR extends LDA_Variational {
             else
                 converge = 1.0;
 
-            System.out.format("[Info]M-step....\n--------------------------\n", iter);
+            System.out.format("[Info]M-step %d....\n--------------------------\n", iter);
             calculate_M_step(iter);
 
             lastAllLikelihood = currentAllLikelihood;
@@ -870,8 +877,7 @@ public class ETBIR extends LDA_Variational {
             results = Evaluation2();
             System.out.format("[Info]%s Train/Test SUCCEED in %.2f seconds...\n", this.toString(), (System.currentTimeMillis() - start) / 1000.0);
         }else{
-            results[0] = Double.NaN;
-            results[1] = Double.NaN;
+            Arrays.fill(results, Double.NaN);
             System.err.format("[Error]%s Train/Test FAIL in %.2f seconds...\n", this.toString(), (System.currentTimeMillis() - start) / 1000.0);
         }
 
@@ -888,7 +894,7 @@ public class ETBIR extends LDA_Variational {
         double[] perf = new double[k];
         double[] like = new double[k];
         System.out.println("[Info]Start RANDOM cross validation...");
-        if(m_randomFold==true){
+        if(m_randomFold){
             m_corpus.shuffle(k);
             int[] masks = m_corpus.getMasks();
             ArrayList<_Doc> docs = m_corpus.getCollection();
@@ -939,7 +945,7 @@ public class ETBIR extends LDA_Variational {
         System.out.format("[Stat]Loglikelihood %.3f+/-%.3f\n", mean, var);
     }
 
-    public int getTotalLength(){
+    private int getTotalLength(){
         int length = 0;
         for(_Doc d:m_testSet)
             length += d.getTotalDocLength();
@@ -949,68 +955,61 @@ public class ETBIR extends LDA_Variational {
     @Override
     public double[] Evaluation2() {
         m_collectCorpusStats = false;
-        double[] results = new double[2];
-        double perplexity = 0, likelihood=0, likelihood_doc = 0;
+        double[] results = new double[10];
+        double loglikelihood;
         double totalWords = 0.0;
 
-        for(int u_idx : m_mapByUser_test.keySet())
-            m_mapByUser.get(u_idx).addAll(m_mapByUser_test.get(u_idx));
-
-        for(int i_idx : m_mapByItem_test.keySet())
-            m_mapByItem.get(i_idx).addAll(m_mapByItem_test.get(i_idx));
-
+        //coldstart_all, coldstart_user, coldstart_item, normal;
+        m_likelihood_array = new double[5];
+        m_perplexity_array = new double[5];
+        m_totalWords_array = new double[5];
+        m_docSize_array = new double[5];
 
         if (m_multithread) {
-            System.out.println("In thread");
-            likelihood_doc = multithread_inference();
-            likelihood = likelihood_doc;
-            perplexity = likelihood;
-            totalWords = getTotalLength();
+            System.out.println("[Info]Start evaluation in thread");
+            multithread_inference();//split the perplexity in this function
+        } else {//did not split yet. deprecated
+            System.out.println("[Info]Start evaluation in Normal");
 
-        } else {
-            System.out.println("In Normal");
             int iter=0;
             double last = -1.0, converge = 0.0;
             do {
                 init();
-                likelihood = 0.0;
-                for (_Doc d : m_testSet)
-                    likelihood += inference(d);
-                likelihood_doc = likelihood; //only count doc related likelihood for perplexity
+                loglikelihood = 0.0;
+                Arrays.fill(m_likelihood_array, 0);
+                Arrays.fill(m_perplexity_array, 0);
+                Arrays.fill(m_totalWords_array,0);
+                Arrays.fill(m_docSize_array, 0);
+
+                for (_Doc d : m_testSet) {
+                    loglikelihood += inference(d);
+                }
 
                 for (int u_idx : m_mapByUser_test.keySet()) {
                     _User4ETBIR user = (_User4ETBIR) m_users.get(u_idx);
-
-                    likelihood += varInference4User(user);
+                    loglikelihood += varInference4User(user);
                 }
 
                 for (int i_idx : m_mapByItem_test.keySet()) {
                     _Product4ETBIR item = (_Product4ETBIR) m_items.get(i_idx);
-                    likelihood += varInference4Item(item);
+                    loglikelihood += varInference4Item(item);
                 }
 
                 if(iter > 0)
-                    converge = Math.abs((likelihood - last) / last);
+                    converge = Math.abs((loglikelihood - last) / last);
                 else
                     converge = 1.0;
 
-                last = likelihood;
+                last = loglikelihood;
                 if(converge < m_varConverge)
                     break;
                 System.out.print("---likelihood: " + last + "\n");
             }while(iter++<m_varMaxIter);
-//            likelihood = likelihood_doc;
-            perplexity = likelihood;
-            totalWords = getTotalLength();
         }
+        System.out.format("[Stat]Test evaluation finished: %d docs\n", m_testSet.size());
 
-        if(Double.isNaN(likelihood) || Double.isInfinite(likelihood)){
-            results[0] = Double.NaN;
-            results[1] = Double.NaN;
-        }else {
-            results[0] = Math.exp(-perplexity / totalWords);
-            results[1] = likelihood / m_testSet.size();
-        }
+
+
         System.out.format("[Stat]Test set perplexity is %.3f and log-likelihood is %.3f\n", results[0], results[1]);
 
         return results;
