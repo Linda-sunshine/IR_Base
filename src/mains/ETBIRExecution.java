@@ -3,6 +3,7 @@ package mains;
 import java.io.File;
 import java.io.IOException;
 import java.text.ParseException;
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -34,10 +35,10 @@ public class ETBIRExecution {
 		int numberOfCores = Runtime.getRuntime().availableProcessors();
 
 		String tokenModel = "./data/Model/en-token.bin";
-		String dataset = String.format("%s/%s/%s/", param.m_prefix, param.m_source, param.m_set);
+		String dataset = String.format("%s/%s/%s", param.m_prefix, param.m_source, param.m_set);
 		String fvFile = String.format("%s/%s/%s_features.txt", param.m_prefix, param.m_source, param.m_source);
-		String reviewFolder = dataset + "data/";
-		String outputFolder = dataset + "output/" + param.m_crossV + "foldsCV" + "/";
+		String reviewFolder = String.format("%s/data/", dataset);
+		String outputFolder = String.format("%s/output/%dfoldsCV%s/", dataset, param.m_crossV, param.m_flag_coldstart?"Coldstart":"");
 
 		MultiThreadedReviewAnalyzer analyzer = new MultiThreadedReviewAnalyzer(tokenModel, classNumber, fvFile,
 				Ngram, lengthThreshold, numberOfCores, true, param.m_source);
@@ -47,15 +48,18 @@ public class ETBIRExecution {
 		_Corpus corpus = analyzer.getCorpus();
 
 		if(param.m_crossV>1 && setRandomFold==false){
-			reviewFolder = dataset + param.m_crossV + "foldsCV/";
+			reviewFolder = String.format("%s/%dfoldsCV%s/", dataset, param.m_crossV, param.m_crossV, param.m_flag_coldstart?"Coldstart":"");
 			//if no data, generate
-            String cvFolder = reviewFolder + 0 + "/";
+            String cvFolder = String.format("%s/0/", reviewFolder);
 			File testFile = new File(cvFolder);
 			if(!testFile.exists() && !testFile.isDirectory()){
 				System.err.format("[Warning]Cross validation dataset %s not exist! Now generating...", cvFolder);
 				BipartiteAnalyzer cv = new BipartiteAnalyzer(corpus); // split corpus into folds
 				cv.analyzeCorpus();
-                cv.splitCorpus(param.m_crossV,dataset + param.m_crossV + "foldsCV/");
+				if(param.m_flag_coldstart)
+				    cv.splitCorpusColdStart(param.m_crossV, reviewFolder);
+				else
+                    cv.splitCorpus(param.m_crossV, reviewFolder);
 			}
 		}
 
@@ -150,26 +154,27 @@ public class ETBIRExecution {
             //output the performance statistics
             System.out.println();
             double mean = 0, var = 0;
+            int[] invalid_label = new int[like.length];
             for(int j = 0; j < 5; j++) {
                 System.out.format("Part %d -----------------", j);
-                Set invalid = new HashSet();
+                Arrays.fill(invalid_label, 0);
                 for (int i = 0; i < like.length; i++) {
                     if (Double.isNaN(like[i][j]) || Double.isNaN(perf[i][j]) || perf[i][j] <= 0 )
-                        invalid.add(i);
+                        invalid_label[i]=1;
                 }
-                int validLen = like.length - invalid.size();
+                int validLen = like.length - Utils.sumOfArray(invalid_label);
                 System.out.format("Valid folds: %d\n", validLen);
 
                 mean=0;
                 var=0;
                 for (int i = 0; i < like.length; i++) {
-                    if (!invalid.contains(i))
+                    if (invalid_label[i]<1)
                         mean += like[i][j];
                 }
                 if(validLen>0)
                     mean /= validLen;
                 for (int i = 0; i < like.length; i++) {
-                    if (!invalid.contains(i))
+                    if (invalid_label[i]<1)
                         var += (like[i][j] - mean) * (like[i][j] - mean);
                 }
                 if(validLen>0)
@@ -179,13 +184,13 @@ public class ETBIRExecution {
                 mean = 0;
                 var = 0;
                 for (int i = 0; i < perf.length; i++) {
-                    if (!invalid.contains(i))
+                    if (invalid_label[i]<1)
                         mean += perf[i][j];
                 }
                 if(validLen>0)
                     mean /= validLen;
                 for (int i = 0; i < perf.length; i++) {
-                    if (!invalid.contains(i))
+                    if (invalid_label[i]<1)
                         var += (perf[i][j] - mean) * (perf[i][j] - mean);
                 }
                 if(validLen>0)
