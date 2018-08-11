@@ -59,6 +59,8 @@ public class ETBIR extends LDA_Variational {
     double d_nu = 1.0, d_sigma_P = 1.0;
 
     protected String m_mode;
+    protected boolean m_flag_fix_lambda;
+    protected boolean m_flag_gd;
 
     public ETBIR(int emMaxIter, double emConverge,
                  double beta, _Corpus corpus, double lambda,
@@ -71,12 +73,18 @@ public class ETBIR extends LDA_Variational {
         this.m_sigma = sigma;
         this.m_rho = rho;
         this.m_mode = "Normal";
+        this.m_flag_fix_lambda = false;
+        this.m_flag_gd = false;
         m_logSpace = true;
     }
 
     public void setMode(String mode){
         this.m_mode = mode;
     }
+
+    public void setFlagLambda(boolean flagLambda){ this.m_flag_fix_lambda = flagLambda; }
+
+    public void setFlagGd(boolean flagGd){ this.m_flag_gd = flagGd; }
 
     @Override
     protected void createSpace() {
@@ -243,6 +251,14 @@ public class ETBIR extends LDA_Variational {
         ((_Doc4ETBIR) d).setTopics4Variational(number_of_topics, d_alpha, d_mu, d_sigma_theta);
     }
 
+    protected void initTestUser(_User4ETBIR user){
+        user.setTopics4Variational(number_of_topics, d_nu, d_sigma_P);
+    }
+
+    protected void initTestItem(_Product4ETBIR item){
+        item.setTopics4Variational(number_of_topics, d_alpha);
+    }
+
     protected double varInference4User(_User4ETBIR u){
         // since updating nu will not influence sigmaP, we do not need loop outside
         if(!m_mode.equals("Item")) {
@@ -341,8 +357,8 @@ public class ETBIR extends LDA_Variational {
 
     // alternative: line search / fixed-stepsize gradient descent
     void update_mu(_Doc4ETBIR doc, _User4ETBIR user, _Product4ETBIR item){
-        double fValue = 1.0, lastFValue = 1.0, cvg = 1e-4, diff, iterMax = 30, iter = 0;
-        double stepsize = 1e-2, muG; // gradient for mu
+        double fValue = 1.0, lastFValue = 1.0, cvg = 1e-6, diff, iterMax = 30, iter = 0;
+        double stepsize = 1e-3, muG; // gradient for mu
         int N = doc.getTotalDocLength();
 
         double moment, norm, check1, check2, check3;
@@ -360,16 +376,16 @@ public class ETBIR extends LDA_Variational {
                 moment = N * Math.exp(doc.m_mu[k] + 0.5 * doc.m_Sigma[k]-doc.m_logZeta);
                 norm = Utils.dotProduct(item.m_eta, user.m_nuP[k]) / etaSum;
 
-                check1 = doc.m_mu[k] - norm;
-                check2 = doc.m_sstat[k] - moment;
                 muG = -m_rho * (doc.m_mu[k] - norm)
                         + doc.m_sstat[k] - moment;
 
                 fValue += -0.5 * m_rho * (doc.m_mu[k] * doc.m_mu[k] - 2 * doc.m_mu[k] * norm)
                         + doc.m_mu[k] * doc.m_sstat[k] - moment;
 
-//                doc.m_mu[k] += stepsize * muG;//fixed stepsize
-                doc.m_mu[k] += stepsize/Math.sqrt(muH[k]) * muG;//ada gradient
+                if(m_flag_gd)
+                    doc.m_mu[k] += stepsize * muG;//fixed stepsize
+                else
+                    doc.m_mu[k] += stepsize/Math.sqrt(muH[k]) * muG;//ada gradient
                 muH[k] += muG * muG;
 
                 if (Double.isNaN(fValue) || Double.isInfinite(fValue)) {
@@ -379,11 +395,11 @@ public class ETBIR extends LDA_Variational {
             }
 
             diff = (lastFValue - fValue) / lastFValue;
-        } while (!warning && iter++ < iterMax && Math.abs(diff) > cvg && !warning);
+        } while (!warning && iter++ < iterMax && Math.abs(diff) > cvg);
     }
 
     void update_SigmaTheta(_Doc4ETBIR d){
-        double fValue = 1.0, lastFValue = 1.0, cvg = 1e-4, diff, iterMax = 20, iter = 0;
+        double fValue = 1.0, lastFValue = 1.0, cvg = 1e-6, diff, iterMax = 20, iter = 0;
         double stepsize = 1e-3, moment;
         double sigmaG; // gradient for Sigma
         int N = d.getTotalDocLength();
@@ -408,8 +424,10 @@ public class ETBIR extends LDA_Variational {
                         + 1.0 / d.m_sigmaSqrt[k];
                 fValue += -0.5 * m_rho * d.m_Sigma[k] - N * moment + 0.5 * Math.log(d.m_Sigma[k]);
 
-//                d.m_sigmaSqrt[k] += stepsize * SigmaG[k];//fixed stepsize
-                d.m_sigmaSqrt[k] += stepsize/Math.sqrt(sigmaH[k]) * sigmaG;//ada gradient
+                if(m_flag_gd)
+                    d.m_sigmaSqrt[k] += stepsize * sigmaG;//fixed stepsize
+                else
+                    d.m_sigmaSqrt[k] += stepsize/Math.sqrt(sigmaH[k]) * sigmaG;//ada gradient
                 d.m_Sigma[k] = d.m_sigmaSqrt[k] * d.m_sigmaSqrt[k];
 
                 sigmaH[k] += sigmaG * sigmaG;
@@ -541,8 +559,8 @@ public class ETBIR extends LDA_Variational {
 
     // update eta with non-negative constraint using fix step graident descent
     void update_eta(_Product4ETBIR i, double[] pNuStates, double[][] pSumStates){
-        double fValue = 1.0, lastFValue, cvg = 1e-4, diff, iterMax = 20, iter = 0, alpha0 = Utils.sumOfArray(m_alpha);
-        double stepsize = 1e-2;
+        double fValue = 1.0, lastFValue, cvg = 1e-6, diff, iterMax = 20, iter = 0, alpha0 = Utils.sumOfArray(m_alpha);
+        double stepsize = 1e-3;
 
         double[] etaG = new double[number_of_topics], etaH = new double[number_of_topics];
         double[] eta_log = new double[number_of_topics];
@@ -597,7 +615,10 @@ public class ETBIR extends LDA_Variational {
 
             // fix stepsize
             for(int k = 0; k < number_of_topics; k++) {
-                eta_log[k] += stepsize/Math.sqrt(etaH[k]) * etaG[k];//ada gradient update
+                if(m_flag_gd)
+                    eta_log[k] += stepsize * etaG[k];//gd
+                else
+                    eta_log[k] += stepsize/Math.sqrt(etaH[k]) * etaG[k];//ada gradient update
                 i.m_eta[k] = Math.exp(eta_log[k]);
                 etaH[k] += etaG[k] * etaG[k];
             }
@@ -808,7 +829,8 @@ public class ETBIR extends LDA_Variational {
     public void calculate_M_step(int iter) {
         super.calculate_M_step(iter);
 
-        m_lambda = m_lambda_Stats / (m_mapByUser.size() * number_of_topics);
+        if(!m_flag_fix_lambda)
+            m_lambda = m_lambda_Stats / (m_mapByUser.size() * number_of_topics);
 //        m_rho = m_trainSet.size() * number_of_topics / (m_thetaStats + m_eta_p_Stats - 2 * m_eta_mean_Stats); //maximize likelihood for \rho of p(\theta|P\gamma, \rho)
 //        m_sigma = m_mapByUser.size() * number_of_topics * number_of_topics / m_pStats; //maximize likelihood for \sigma
 
@@ -958,6 +980,7 @@ public class ETBIR extends LDA_Variational {
 
                 for (int u_idx : m_mapByUser_test.keySet()) {
                     _User4ETBIR user = (_User4ETBIR) m_users.get(u_idx);
+
                     likelihood += varInference4User(user);
                 }
 

@@ -26,6 +26,9 @@ public class TopicModelParameter {
 	public double m_emConverge = 1e-10;
 	
 	public String m_output = String.format("%s/%s/%s/output", m_prefix, m_source, m_set);// output directory
+
+	public boolean m_flag_gd = false;
+	public boolean m_flag_fix_lambda = false;
 		
 	public TopicModelParameter(String argv[]){
 		
@@ -75,6 +78,11 @@ public class TopicModelParameter {
 				m_emConverge = Double.valueOf(argv[i]);
 			else if (argv[i-1].equals("-output"))
 				m_output = argv[i];
+
+			else if (argv[i-1].equals("-flagGd"))
+				m_flag_gd = argv[i].equals("true") ? true : false;
+			else if (argv[i-1].equals("-flagFixLambda"))
+				m_flag_fix_lambda = argv[i].equals("true") ? true : false;
 			else
 				System.exit(1);
 		}

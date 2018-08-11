@@ -86,6 +86,9 @@ public class ETBIRExecution {
 			    ((ETBIR_multithread) tModel).setMode("User");
 			else if(param.m_topicmodel.equals("ETBIR_Item"))
 			    ((ETBIR_multithread) tModel).setMode("Item");
+
+			((ETBIR_multithread) tModel).setFlagGd(param.m_flag_gd);
+            ((ETBIR_multithread) tModel).setFlagLambda(param.m_flag_fix_lambda);
 		} else if(param.m_topicmodel.equals("CTM")){
 			tModel = new CTM(param.m_emIter, param.m_emConverge, param.m_beta, corpus,
 					param.m_lambda, param.m_number_of_topics, param.m_alpha, param.m_varMaxIter, param.m_varConverge);
@@ -142,7 +145,7 @@ public class ETBIRExecution {
             //output the performance statistics
             Set invalid = new HashSet();
             for(int i = 0; i < like.length; i++){
-                if(Double.isNaN(like[i]))
+                if(Double.isNaN(like[i]) || Double.isNaN(perf[i]))
                     invalid.add(i);
             }
             int validLen = like.length - invalid.size();
