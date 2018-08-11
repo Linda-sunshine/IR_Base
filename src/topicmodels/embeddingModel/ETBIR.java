@@ -178,7 +178,7 @@ public class ETBIR extends LDA_Variational {
         m_eta_p_Stats += eta_p_temp / (eta0 * (eta0 + 1.0));
     }
 
-    protected double E_step(){
+    protected double E_step(){//problematic!!!
         int iter = 0, docIndex = 0;
         double totalLikelihood = 0.0, last = -1.0, converge = 0.0;
         _Doc4ETBIR d;
@@ -281,7 +281,10 @@ public class ETBIR extends LDA_Variational {
         double[] pNuStats = new double[number_of_topics];
         double[][] pSumStats = new double[number_of_topics][number_of_topics];
 
-        ArrayList<Integer> Ui = m_mapByItem.get(itemIdx);//all users associated with this item
+        ArrayList<Integer> Ui = new ArrayList<>();
+        if(m_mapByItem.containsKey(itemIdx))
+            m_mapByItem.get(itemIdx);//all users associated with this item
+
         for (Integer userIdx : Ui) {
             _User4ETBIR user = (_User4ETBIR) m_users.get(userIdx);
             _Doc4ETBIR doc = (_Doc4ETBIR) m_corpus.getCollection().get(m_reviewIndex.get(itemIdx + "_" + userIdx));
@@ -514,9 +517,12 @@ public class ETBIR extends LDA_Variational {
 
     //variational inference for p(P|\nu,\Sigma) for each user
     private void update_SigmaP(_User4ETBIR u){
-        ArrayList<Integer> Iu = m_mapByUser.get(m_usersIndex.get(u.getUserID()));//all the items reviewed by this user
-        RealMatrix eta_stat_sigma = MatrixUtils.createRealIdentityMatrix(number_of_topics).scalarMultiply(m_sigma);
+        int idx = m_usersIndex.get(u.getUserID());
+        ArrayList<Integer> Iu = new ArrayList<>();
+        if(m_mapByUser.containsKey(idx))
+            Iu = m_mapByUser.get(idx);//all the items reviewed by this user
 
+        RealMatrix eta_stat_sigma = MatrixUtils.createRealIdentityMatrix(number_of_topics).scalarMultiply(m_sigma);
         for (Integer itemIdx : Iu) {
             _Product4ETBIR item = (_Product4ETBIR) m_items.get(itemIdx);
 
@@ -534,7 +540,11 @@ public class ETBIR extends LDA_Variational {
 
     //variational inference for p(P|\nu,\Sigma) for each user
     private void update_nu(_User4ETBIR u){
-        ArrayList<Integer> Iu = m_mapByUser.get(m_usersIndex.get(u.getUserID()));
+        int idx = m_usersIndex.get(u.getUserID());
+        ArrayList<Integer> Iu = new ArrayList<>();
+        if(m_mapByUser.containsKey(idx))
+            m_mapByUser.get(idx);
+
         double[][] etaMu = new double[number_of_topics][number_of_topics];
         double eta0;
 
