@@ -36,7 +36,7 @@ public class ETBIRMain {
         String tokenModel = "./data/Model/en-token.bin";
 
         /*****parameters for topic model*****/
-        String topicmodel = "ETBIR_Item"; // CTM, LDA_Variational, LDA_User, LDA_Item, ETBIR, ETBIR_User, ETBIR_Item
+        String topicmodel = "LDA_Item"; // CTM, LDA_Variational, LDA_User, LDA_Item, ETBIR, ETBIR_User, ETBIR_Item
         int number_of_topics = 20;
         int varMaxIter = 20;
         double varConverge = 1e-6;
@@ -180,7 +180,7 @@ public class ETBIRMain {
                 System.out.format("Part %d -----------------", j);
                 Set invalid = new HashSet();
                 for (int i = 0; i < like.length; i++) {
-                    if (Double.isNaN(like[i][j]) || Double.isNaN(perf[i][j]) || perf[i][j] <0 || like[i][j] < 0)
+                    if (Double.isNaN(like[i][j]) || Double.isNaN(perf[i][j]) || perf[i][j] <= 0 )
                         invalid.add(i);
                 }
                 int validLen = like.length - invalid.size();
@@ -192,12 +192,14 @@ public class ETBIRMain {
                     if (!invalid.contains(i))
                         mean += like[i][j];
                 }
-                mean /= validLen;
+                if(validLen>0)
+                    mean /= validLen;
                 for (int i = 0; i < like.length; i++) {
                     if (!invalid.contains(i))
                         var += (like[i][j] - mean) * (like[i][j] - mean);
                 }
-                var = Math.sqrt(var / validLen);
+                if(validLen>0)
+                    var = Math.sqrt(var / validLen);
                 System.out.format("[Stat]Loglikelihood %.3f+/-%.3f\n", mean, var);
 
                 mean = 0;
@@ -206,12 +208,14 @@ public class ETBIRMain {
                     if (!invalid.contains(i))
                         mean += perf[i][j];
                 }
-                mean /= validLen;
+                if(validLen>0)
+                    mean /= validLen;
                 for (int i = 0; i < perf.length; i++) {
                     if (!invalid.contains(i))
                         var += (perf[i][j] - mean) * (perf[i][j] - mean);
                 }
-                var = Math.sqrt(var / validLen);
+                if(validLen>0)
+                    var = Math.sqrt(var / validLen);
                 System.out.format("[Stat]Perplexity %.3f+/-%.3f\n", mean, var);
             }
         }
