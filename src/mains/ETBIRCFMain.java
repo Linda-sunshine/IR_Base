@@ -31,7 +31,7 @@ public class ETBIRCFMain {
 //        String lmFvFile = String.format("./data/CoLinAdapt/%s/fv_lm_%s_%d.txt", dataset, fs, lmTopK);
 
         /*****data setting*****/
-        String locate = "/zf18/ll5fy/lab/dataset";
+        String locate = "./myData";
         String scaleset = "byUser_70k_review";
         String dataset = "yelp";
         String folder = String.format("%s/%s/%s",locate, dataset, scaleset);

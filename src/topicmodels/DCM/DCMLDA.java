@@ -117,7 +117,7 @@ public class DCMLDA extends LDA_Gibbs {
 	}
 
 	@Override
-	public void EM() {
+	public boolean EM() {
 		System.out.format("Starting %s...\n", toString());
 
 		long starttime = System.currentTimeMillis();
@@ -201,6 +201,8 @@ public class DCMLDA extends LDA_Gibbs {
 		infoWriter
 				.format("Likelihood %.3f after step %s converge to %f after %d seconds...\n",
 						current, i, delta, endtime / 1000);
+
+		return true;
 	}
 
 	

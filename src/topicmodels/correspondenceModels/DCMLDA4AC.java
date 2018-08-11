@@ -48,7 +48,7 @@ public class DCMLDA4AC extends LDAGibbs4AC {
 		return String.format("DCMLDA4AC[k:%d, alphaA:%.2f, beta:%.2f, Gibbs Sampling]", number_of_topics, d_alpha, d_beta);
 	}
 	
-	public void EM() {
+	public boolean EM() {
 		System.out.format("Starting %s...\n", toString());
 
 		long starttime = System.currentTimeMillis();
@@ -131,6 +131,8 @@ public class DCMLDA4AC extends LDAGibbs4AC {
 		infoWriter
 				.format("Likelihood %.3f after step %s converge to %f after %d seconds...\n",
 						current, i, delta, endtime / 1000);
+
+		return true;
 	}
 
 	protected void initialize_probability(Collection<_Doc>collection){
