@@ -82,14 +82,9 @@ public class MultiThreadedReviewAnalyzer extends MultiThreadedUserAnalyzer {
 					category = reader.readLine(); // review category
 					ylabel = Integer.valueOf(reader.readLine());
 					timestamp = Long.valueOf(reader.readLine());
-
-					// Construct the new review.
-					if(ylabel != 3){
-						ylabel = (ylabel >= 4) ? 1:0;
-						review = new _Doc4ETBIR(m_corpus.getSize(), category, productID, userID, source, ylabel, timestamp);
-						if(AnalyzeDoc(review,core)){ //Create the sparse vector for the review.
-							reviews.add(review);
-						}
+					review = new _Doc4ETBIR(m_corpus.getSize(), category, productID, userID, source, ylabel, timestamp);
+					if(AnalyzeDoc(review,core)){ //Create the sparse vector for the review.
+						reviews.add(review);
 					}
 				}
 

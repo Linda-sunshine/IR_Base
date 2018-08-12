@@ -59,7 +59,7 @@ public class BipartiteAnalyzer {
     }
 
     public void analyzeCorpus(){
-        System.out.print("[Info]Analzying corpus: ");
+        System.out.println("[Info]Analzying corpus: ");
 
         m_users.clear();
         m_items.clear();
@@ -93,7 +93,7 @@ public class BipartiteAnalyzer {
                 System.out.print(".");//every 10%
         }
 
-        System.out.format("-- Corpus: vocabulary size: %d, review size: %d, item size: %d, user size: %d\n",
+        System.out.format("-- Global corpus: vocabulary size: %d, review size: %d, item size: %d, user size: %d\n",
                 m_corpus.getFeatureSize(), size,  m_items.size(),  m_users.size());
     }
 
@@ -155,59 +155,88 @@ public class BipartiteAnalyzer {
 
         analyzeBipartite(docs, "global");
 
-        //split corpus with some cold start user and item
+        //for cold start user
         Random rand = new Random();
         int[] mask_user = new int[m_users.size()];
         for(int i=0; i< mask_user.length; i++) {
-            mask_user[i] = rand.nextInt(k*3);
+            mask_user[i] = rand.nextInt(k);
+        }
+        //inverted index
+        HashMap<Integer, ArrayList<Integer>> divid_user = new HashMap<>();//key: mask, value: idx of user
+        for(int i = 0; i < mask_user.length; i++){
+            if(!divid_user.containsKey(mask_user[i]))
+                divid_user.put(mask_user[i], new ArrayList<Integer>());
+            divid_user.get(mask_user[i]).add(i);
+        }
+        //half index for each mask should be disabled for other mask
+        HashMap<Integer, Set<Integer>> exclusive_user = new HashMap<>();
+        for(Integer mask : divid_user.keySet()){
+            int half_mark = (divid_user.get(mask).size()+1) / 2;
+            exclusive_user.put(mask, new HashSet<>());
+            for(int i = 0; i < half_mark; i++){
+                exclusive_user.get(mask).add(divid_user.get(mask).get(i));
+            }
         }
 
+        //for cold start item
         Random rand2 = new Random();
         int[] mask_item = new int[m_items.size()];
         for(int i=0; i< mask_item.length; i++) {
-            mask_item[i] = rand.nextInt(k*3);
+            mask_item[i] = rand2.nextInt(k);
         }
-
-        //rest will be random doc
-        m_corpus.shuffle(k*3);
-        int[] masks = m_corpus.getMasks();
+        //inverted index
+        HashMap<Integer, ArrayList<Integer>> divid_item = new HashMap<>();//key: mask, value: idx of user
+        for(int i = 0; i < mask_item.length; i++){
+            if(!divid_item.containsKey(mask_item[i]))
+                divid_item.put(mask_item[i], new ArrayList<Integer>());
+            divid_item.get(mask_item[i]).add(i);
+        }
+        //half index for each mask should be disabled for other mask
+        HashMap<Integer, Set<Integer>> exclusive_item = new HashMap<>();
+        for(Integer mask : divid_item.keySet()){
+            int half_mark = (divid_item.get(mask).size()+1) / 2;
+            exclusive_item.put(mask, new HashSet<>());
+            for(int i = 0; i < half_mark; i++){
+                exclusive_item.get(mask).add(divid_item.get(mask).get(i));
+            }
+        }
 
         //Use this loop to iterate all the ten folders, set the train set and test set.
         int[] label = new int[docs.size()];
+        Arrays.fill(label, 0);
         for (int i = 0; i < m_k; i++) {
-            Arrays.fill(label, 0);
             //cold start item
+            ArrayList<Integer> user_valid = new ArrayList<>();
             for (int j = 0; j < mask_item.length; j++) {
-                if( mask_item[j]==i ) {
-                    ArrayList<Integer> Ui = new ArrayList<>();
-                    if(m_mapByItem_global.containsKey(j))
-                        Ui = m_mapByItem_global.get(j);
-                    for(Integer uIdx : Ui) {
-                        int docIdx = m_reviewIndex.get(String.format("%d_%d", j, uIdx));
-                        m_testSet.add(docs.get(docIdx));
-                        label[docIdx] = 1;
-                    }
+                if( mask_item[j]==i
+                        || (i!=m_k-1 && mask_item[j]==i+1 && !exclusive_item.get(i+1).contains(j))
+                        || (i==m_k-1 && mask_item[j]==0 && !exclusive_item.get(0).contains(j))) {
+                    user_valid.add(j);
                 }
             }
             //cold start user
+            ArrayList<Integer> item_valid = new ArrayList<>();
             for (int j = 0; j < mask_user.length; j++) {
-                if( mask_user[j]==i ) {
-                    ArrayList<Integer> Iu = new ArrayList<>();
-                    if(m_mapByUser_global.containsKey(j))
-                        Iu = m_mapByItem_global.get(j);
-                    for(Integer iIdx : Iu) {
-                        int docIdx = m_reviewIndex.get(String.format("%d_%d", iIdx, j));
+                if( mask_user[j]==i
+                        || (i!=m_k-1 && mask_user[j]==i+1 && !exclusive_user.get(i+1).contains(j))
+                        || (i==m_k-1 && mask_user[j]==0 && !exclusive_user.get(0).contains(j))) {
+                    item_valid.add(j);
+                }
+            }
+            //test
+            for(Integer iIdx : item_valid){
+                for(Integer uIdx : user_valid){
+                    if(m_reviewIndex.containsKey(String.format("%d_%d", iIdx, uIdx))){
+                        int docIdx = m_reviewIndex.get(String.format("%d_%d", iIdx, uIdx));
                         m_testSet.add(docs.get(docIdx));
                         label[docIdx] = 1;
                     }
                 }
             }
             //rest is filled with random doc
-            for (int j = 0; j < masks.length; j++) {
+            for (int j = 0; j < docs.size(); j++) {
                 if(label[j]>=1)
                     continue;
-                if( masks[j]==i)
-                    m_testSet.add(docs.get(j));
                 else
                     m_trainSet.add(docs.get(j));
             }
@@ -224,7 +253,8 @@ public class BipartiteAnalyzer {
             analyzeBipartite(m_testSet, "test");
             save2File(outFolder, String.valueOf(i));
 
-            System.out.format("-- Fold No. %d: train size = %d, test size = %d\n", i, m_trainSet.size(), m_testSet.size());
+            System.out.format("-- Fold No. %d: train size = %d, test size = %d, cold user size = %d, cold item size = %d\n",
+                    i, m_trainSet.size(), m_testSet.size(), exclusive_user.get(i).size(), exclusive_item.get(i).size());
             m_trainSet.clear();
             m_testSet.clear();
         }
