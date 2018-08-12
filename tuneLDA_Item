@@ -1,0 +1,11 @@
+#!/bin/sh
+nohup ./run -topicmodel LDA_Item -nuOfTopics 5 -source yelp -emIter 30 -set byUser_70k_review -flagColdstart true > ./output/yelp_70k_LDA_Item_5.output 2>&1 &
+nohup ./run -topicmodel LDA_Item -nuOfTopics 10 -source yelp -emIter 30 -set byUser_70k_review -flagColdstart true > ./output/yelp_70k_LDA_Item_10.output 2>&1 &
+nohup ./run -topicmodel LDA_Item -nuOfTopics 15 -source yelp -emIter 30 -set byUser_70k_review -flagColdstart true > ./output/yelp_70k_LDA_Item_15.output 2>&1 &
+nohup ./run -topicmodel LDA_Item -nuOfTopics 20 -source yelp -emIter 30 -set byUser_70k_review -flagColdstart true > ./output/yelp_70k_LDA_Item_20.output 2>&1 &
+nohup ./run -topicmodel LDA_Item -nuOfTopics 25 -source yelp -emIter 30 -set byUser_70k_review -flagColdstart true > ./output/yelp_70k_LDA_Item_25.output 2>&1 &
+nohup ./run -topicmodel LDA_Item -nuOfTopics 30 -source yelp -emIter 30 -set byUser_70k_review -flagColdstart true > ./output/yelp_70k_LDA_Item_30.output 2>&1 &
+nohup ./run -topicmodel LDA_Item -nuOfTopics 35 -source yelp -emIter 30 -set byUser_70k_review -flagColdstart true > ./output/yelp_70k_LDA_Item_35.output 2>&1 &
+nohup ./run -topicmodel LDA_Item -nuOfTopics 40 -source yelp -emIter 30 -set byUser_70k_review -flagColdstart true > ./output/yelp_70k_LDA_Item_40.output 2>&1 &
+nohup ./run -topicmodel LDA_Item -nuOfTopics 45 -source yelp -emIter 30 -set byUser_70k_review -flagColdstart true > ./output/yelp_70k_LDA_Item_45.output 2>&1 &
+nohup ./run -topicmodel LDA_Item -nuOfTopics 50 -source yelp -emIter 30 -set byUser_70k_review -flagColdstart true > ./output/yelp_70k_LDA_Item_50.output 2>&1 &
