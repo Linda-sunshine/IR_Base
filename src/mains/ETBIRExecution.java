@@ -63,6 +63,7 @@ public class ETBIRExecution {
 			}
 		}
 
+        int result_dim = 1;
 		pLSA tModel = null;
 		long current = System.currentTimeMillis();
 		if (param.m_topicmodel.equals("pLSA")) {
@@ -81,6 +82,8 @@ public class ETBIRExecution {
                 ((LDA_Focus_multithread) tModel).setMode("User");
             else if(param.m_topicmodel.equals("LDA_Item"))
                 ((LDA_Focus_multithread) tModel).setMode("Item");
+
+            result_dim = 5;
         } else if(param.m_topicmodel.equals("ETBIR") || param.m_topicmodel.equals("ETBIR_User") || param.m_topicmodel.equals("ETBIR_Item")){
 			tModel = new ETBIR_multithread(param.m_emIter, param.m_emConverge, param.m_beta, corpus, param.m_lambda,
 					param.m_number_of_topics, param.m_alpha, param.m_varMaxIter, param.m_varConverge, param.m_sigma, param.m_rho);
@@ -91,6 +94,8 @@ public class ETBIRExecution {
 
 			((ETBIR_multithread) tModel).setFlagGd(param.m_flag_gd);
             ((ETBIR_multithread) tModel).setFlagLambda(param.m_flag_fix_lambda);
+
+            result_dim = 5;
 		} else if(param.m_topicmodel.equals("CTM")){
 			tModel = new CTM(param.m_emIter, param.m_emConverge, param.m_beta, corpus,
 					param.m_lambda, param.m_number_of_topics, param.m_alpha, param.m_varMaxIter, param.m_varConverge);
@@ -113,8 +118,8 @@ public class ETBIRExecution {
             tModel.setPerplexityProportion(testProportion);
             tModel.crossValidation(param.m_crossV);
         } else{//cross validation with fixed folds
-            double[][] perf = new double[param.m_crossV][5];
-            double[][] like = new double[param.m_crossV][5];
+            double[][] perf = new double[param.m_crossV][result_dim];
+            double[][] like = new double[param.m_crossV][result_dim];
             System.out.println("[Info]Start FIXED cross validation...");
             for(int k = 0; k <param.m_crossV; k++){
                 analyzer.getCorpus().reset();
@@ -135,7 +140,7 @@ public class ETBIRExecution {
 
                 System.out.format("====================\n[Info]Fold No. %d: \n", k);
                 double[] results = tModel.oneFoldValidation();
-                for(int i = 0; i < 5; i++){
+                for(int i = 0; i < result_dim; i++){
                     perf[k][i] = results[2*i];
                     like[k][i] = results[2*i+1];
                 }
@@ -155,7 +160,7 @@ public class ETBIRExecution {
             System.out.println();
             double mean = 0, var = 0;
             int[] invalid_label = new int[like.length];
-            for(int j = 0; j < 5; j++) {
+            for(int j = 0; j < result_dim; j++) {
                 System.out.format("Part %d -----------------", j);
                 Arrays.fill(invalid_label, 0);
                 for (int i = 0; i < like.length; i++) {
