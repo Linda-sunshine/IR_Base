@@ -48,7 +48,7 @@ public class ETBIRExecution {
 		_Corpus corpus = analyzer.getCorpus();
 
 		if(param.m_crossV>1 && setRandomFold==false){
-			reviewFolder = String.format("%s/%dfoldsCV%s/", dataset, param.m_crossV, param.m_crossV, param.m_flag_coldstart?"Coldstart":"");
+			reviewFolder = String.format("%s/%dfoldsCV%s/", dataset, param.m_crossV, param.m_flag_coldstart?"Coldstart":"");
 			//if no data, generate
             String cvFolder = String.format("%s/0/", reviewFolder);
 			File testFile = new File(cvFolder);
