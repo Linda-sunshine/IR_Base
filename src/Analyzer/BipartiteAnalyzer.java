@@ -172,7 +172,7 @@ public class BipartiteAnalyzer {
         HashMap<Integer, HashSet<Integer>> exclusive_user = new HashMap<>();
         for(Integer mask : divid_user.keySet()){
             int half_mark = (divid_user.get(mask).size()+1) / 2;
-            exclusive_user.put(mask, new HashSet<>());
+            exclusive_user.put(mask, new HashSet<Integer>());
             for(int i = 0; i < half_mark; i++){
                 exclusive_user.get(mask).add(divid_user.get(mask).get(i));
             }
@@ -195,7 +195,7 @@ public class BipartiteAnalyzer {
         HashMap<Integer, HashSet<Integer>> exclusive_item = new HashMap<>();
         for(Integer mask : divid_item.keySet()){
             int half_mark = (divid_item.get(mask).size()+1) / 2;
-            exclusive_item.put(mask, new HashSet<>());
+            exclusive_item.put(mask, new HashSet<Integer>());
             for(int i = 0; i < half_mark; i++){
                 exclusive_item.get(mask).add(divid_item.get(mask).get(i));
             }
