@@ -169,7 +169,7 @@ public class BipartiteAnalyzer {
             divid_user.get(mask_user[i]).add(i);
         }
         //half index for each mask should be disabled for other mask
-        HashMap<Integer, Set<Integer>> exclusive_user = new HashMap<>();
+        HashMap<Integer, HashSet<Integer>> exclusive_user = new HashMap<>();
         for(Integer mask : divid_user.keySet()){
             int half_mark = (divid_user.get(mask).size()+1) / 2;
             exclusive_user.put(mask, new HashSet<>());
@@ -192,7 +192,7 @@ public class BipartiteAnalyzer {
             divid_item.get(mask_item[i]).add(i);
         }
         //half index for each mask should be disabled for other mask
-        HashMap<Integer, Set<Integer>> exclusive_item = new HashMap<>();
+        HashMap<Integer, HashSet<Integer>> exclusive_item = new HashMap<>();
         for(Integer mask : divid_item.keySet()){
             int half_mark = (divid_item.get(mask).size()+1) / 2;
             exclusive_item.put(mask, new HashSet<>());

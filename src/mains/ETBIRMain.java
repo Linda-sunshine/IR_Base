@@ -49,7 +49,7 @@ public class ETBIRMain {
         int topK = 50;
         int crossV = 5;
         boolean setRandomFold = false;
-        boolean flag_coldstart = true;
+        boolean flag_coldstart = false;
 
         /*****data setting*****/
         String trainset = "byUser_4k_review";
