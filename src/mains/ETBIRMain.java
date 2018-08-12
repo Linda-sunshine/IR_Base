@@ -36,7 +36,7 @@ public class ETBIRMain {
         String tokenModel = "./data/Model/en-token.bin";
 
         /*****parameters for topic model*****/
-        String topicmodel = "ETBIR"; // CTM, LDA_Variational, LDA_User, LDA_Item, ETBIR, ETBIR_User, ETBIR_Item
+        String topicmodel = "LDA_User"; // CTM, LDA_Variational, LDA_User, LDA_Item, ETBIR, ETBIR_User, ETBIR_Item
         int number_of_topics = 20;
         int varMaxIter = 20;
         double varConverge = 1e-6;
@@ -47,14 +47,15 @@ public class ETBIRMain {
         double sigma = 1.1, rho = 1.1;
 
         int topK = 50;
-        int crossV = 2;
+        int crossV = 5;
         boolean setRandomFold = false;
+        boolean flag_coldstart = true;
 
         /*****data setting*****/
         String trainset = "byUser_4k_review";
         String source = "yelp";
         String dataset = "./myData/" + source + "/" + trainset + "/";
-        String outputFolder = dataset + "output/" + crossV + "foldsCV" + "/";
+        String outputFolder = String.format("%soutput/%dfoldsCV%s/", dataset, crossV, flag_coldstart?"Coldstart":"");
 
         PrintStream out = new PrintStream(new FileOutputStream("log.txt"));
 //        System.setOut(out);
@@ -82,19 +83,23 @@ public class ETBIRMain {
         _Corpus corpus = analyzer.getCorpus();
 
         if(setRandomFold==false){
-            reviewFolder = dataset + crossV + "foldsCV/";
+            reviewFolder = String.format("%s%dfoldsCV%s/", dataset, crossV, flag_coldstart?"Coldstart":"");
             //if no data, generate
             File testFile = new File(reviewFolder + 0 + "/");
             if(!testFile.exists() && !testFile.isDirectory()){
                 System.err.println("[Warning]Cross validation dataset not exist! Now generating...");
                 BipartiteAnalyzer cv = new BipartiteAnalyzer(corpus); // split corpus into folds
                 cv.analyzeCorpus();
-                cv.splitCorpus(crossV,dataset + crossV + "foldsCV/");
+                if(flag_coldstart)
+                    cv.splitCorpusColdStart(crossV, reviewFolder);
+                else
+                    cv.splitCorpus(crossV,reviewFolder);
             }
         }
 //        corpus.save2File(dataset + "yelp_4k.dat");//for CTM
 
         /*****model loading*****/
+        int result_dim = 1;
         pLSA tModel = null;
         if (topicmodel.equals("pLSA")) {
             tModel = new pLSA_multithread(emMaxIter, emConverge, beta, corpus,
@@ -112,6 +117,8 @@ public class ETBIRMain {
                 ((LDA_Focus_multithread) tModel).setMode("User");
             else if(topicmodel.equals("LDA_Item"))
                 ((LDA_Focus_multithread) tModel).setMode("Item");
+
+            result_dim = 5;
         } else if (topicmodel.equals("ETBIR") || topicmodel.equals("ETBIR1") || topicmodel.equals("ETBIR_User") || topicmodel.equals("ETBIR_Item")){
             tModel = new ETBIR_multithread(emMaxIter, emConverge, beta, corpus, lambda,
                     number_of_topics, alpha, varMaxIter, varConverge, sigma, rho);
@@ -119,6 +126,8 @@ public class ETBIRMain {
                 ((ETBIR_multithread) tModel).setMode("User");
             else if(topicmodel.equals("ETBIR_Item"))
                 ((ETBIR_multithread) tModel).setMode("Item");
+
+            result_dim = 5;
         } else if(topicmodel.equals("CTM")){
             tModel = new CTM(emMaxIter, emConverge, beta, corpus,
                     lambda, number_of_topics, alpha, varMaxIter, varConverge);
@@ -141,8 +150,8 @@ public class ETBIRMain {
             tModel.setPerplexityProportion(testProportion);
             tModel.crossValidation(crossV);
         } else{//cross validation with fixed folds
-            double[][] perf = new double[crossV][5];
-            double[][] like = new double[crossV][5];
+            double[][] perf = new double[crossV][result_dim];
+            double[][] like = new double[crossV][result_dim];
             System.out.println("[Info]Start FIXED cross validation...");
             for(int k = 0; k <crossV; k++){
                 analyzer.getCorpus().reset();
@@ -161,9 +170,9 @@ public class ETBIRMain {
                 }
                 tModel.setCorpus(analyzer.getCorpus());
 
-                System.out.format("====================\n[Info]Fold No. %d: ", k);
+                System.out.format("====================\n[Info]Fold No. %d: \n", k);
                 double[] results = tModel.oneFoldValidation();
-                for(int i = 0; i < 5; i++){
+                for(int i = 0; i < result_dim; i++){
                     perf[k][i] = results[2*i];
                     like[k][i] = results[2*i+1];
                 }
@@ -176,7 +185,7 @@ public class ETBIRMain {
             //output the performance statistics
             System.out.println();
             double mean = 0, var = 0;
-            for(int j = 0; j < 5; j++) {
+            for(int j = 0; j < result_dim; j++) {
                 System.out.format("Part %d -----------------", j);
                 Set invalid = new HashSet();
                 for (int i = 0; i < like.length; i++) {
