@@ -77,8 +77,7 @@ public class CollaborativeFilteringWithETBIR extends CollaborativeFiltering {
 			BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(filename), "UTF-8"));
 			int userIndex = 0;
 			String line;
-			if(model.equals("ETBIR") && (m_mode.equals("userEmbed") || m_mode.equals("itemEmbed")
-                    || m_mode.equals("rowProduct") || m_mode.equals("columnProduct"))) {
+			if(model.contains("ETBIR") && (m_mode.contains("Embed") || m_mode.contains("Product"))) {
 				m_userWeights = new double[m_users.size()][m_dim*m_dim];
 				String p[];
 				while ((line = reader.readLine()) != null) {
@@ -147,8 +146,7 @@ public class CollaborativeFilteringWithETBIR extends CollaborativeFiltering {
 			int itemIndex = 0;
 			String line, itemID;
 			String[] eta;
-			if(model.equals("ETBIR") && (m_mode.equals("userEmbed") || m_mode.equals("itemEmbed")
-                    || m_mode.equals("rowProduct") || m_mode.equals("columnProduct"))){
+			if(model.contains("ETBIR") && (m_mode.contains("Embed") || m_mode.contains("Product"))){
 				while ((line = reader.readLine()) != null) {
 					itemIndex = Integer.valueOf(line.split("\\s+")[1]); // read item index
 					itemID = line.split("\\s+")[2]; // read item ID
@@ -216,14 +214,14 @@ public class CollaborativeFilteringWithETBIR extends CollaborativeFiltering {
 		}
 		//select top k users who have purchased this item.
 		ArrayList<String> neighbors;
-		if(m_mode.equals("columnPhi") || m_mode.equals("columnPost") || m_mode.equals("columnProduct") || m_mode.equals("userEmbed"))
+		if(m_mode.contains("column") || m_mode.equals("userEmbed"))
 			neighbors = m_trainMap.get(item); // ID of column users
 		else {
 			neighbors = u.getTrainItems(); //ID of row items
 		}
 
 		if(m_avgFlag){
-			if(m_mode.equals("columnPhi") || m_mode.equals("columnPost") || m_mode.equals("columnProduct") || m_mode.equals("userEmbed")) {
+			if(m_mode.contains("column") || m_mode.equals("userEmbed")) {
 				for (String nei : neighbors) {//column users
 					int neiIndex = m_userIDIndex.get(nei);
 					if (neiIndex == userIndex) continue;
