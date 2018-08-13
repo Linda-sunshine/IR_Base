@@ -86,7 +86,7 @@ public class ItemTagging extends MultiThreadedReviewAnalyzer{
                             tagIdxSet.add(idx);
 
                         if( !duplicate.containsKey(tagIdxSet) ) {
-                            _Review doc = new _Review(m_corpus.getSize(), String.join(" ", tokens), 0);
+                            _Review doc = new _Review(m_corpus.getSize(), categoryArray.getString(i), 0);
                             doc.createSpVct(spVct);
                             m_corpus.addDoc(doc);
                             duplicate.put(tagIdxSet, doc.getID());
