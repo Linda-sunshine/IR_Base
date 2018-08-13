@@ -52,6 +52,7 @@ public class ItemTagging extends MultiThreadedReviewAnalyzer{
         try{
             BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(itemFileName), "UTF-8"));
             String line;
+            HashMap<Set<Integer>, Integer> duplicate = new HashMap<>();
             while((line=reader.readLine()) != null){
                 JSONObject obj = new JSONObject(line.toString());
                 if(obj.has("business_id")){
@@ -65,21 +66,34 @@ public class ItemTagging extends MultiThreadedReviewAnalyzer{
                     }
 
                     JSONArray categoryArray = obj.getJSONArray("categories");
+                    Set<Integer> curTag = new HashSet<>();
                     for(int i = 0; i < categoryArray.length();i++) {
                         TokenizeResult result = TokenizerNormalizeStemmer(categoryArray.getString(i),0);// Three-step analysis.
                         String[] tokens = result.getTokens();
                         // Construct the sparse vector.
                         HashMap<Integer, Double> spVct = constructSpVct(tokens, 0, null);
-                        for(String tk : tokens) {
-                            expandVocabulary(tk);
-                            int index = m_featureNameIndex.get(tk);
-                            spVct.put(index, 1.0);
+//                        for(String tk : tokens) {
+//                            expandVocabulary(tk);
+//                            int index = m_featureNameIndex.get(tk);
+//                            spVct.put(index, 1.0);
+//
+//                        }
+                        if(spVct.size()<=0)
+                            continue;
 
+                        Set<Integer> tagIdxSet = new HashSet<>();
+                        for (Integer idx : spVct.keySet())
+                            tagIdxSet.add(idx);
+
+                        if( !duplicate.containsKey(tagIdxSet) ) {
+                            _Review doc = new _Review(m_corpus.getSize(), String.join(" ", tokens), 0);
+                            doc.createSpVct(spVct);
+                            m_corpus.addDoc(doc);
+                            duplicate.put(tagIdxSet, doc.getID());
                         }
-                        _Review doc = new _Review(m_corpus.getSize(), String.join(" ", tokens), 0);
-                        doc.createSpVct(spVct);
-                        m_corpus.addDoc(doc);
+                        curTag.add(duplicate.get(tagIdxSet));
                     }
+                    m_items.get(m_itemIDIndex.get(itemID)).setTag(curTag);
                 }
             }
             System.out.format("[Info]Load %d tags, with %d features.\n", m_corpus.getCollection().size(), m_featureNames.size());
@@ -88,10 +102,10 @@ public class ItemTagging extends MultiThreadedReviewAnalyzer{
         }
     }
 
-    public void loadItemWeight(String weightFile){
+    public void loadItemWeight(String weightFile, int mode){
         //load item weights
         m_validItemIndex = new HashSet<>();
-        String[] tokens = weightFile.split(".|_");
+        String[] tokens = weightFile.split("\\.|\\_");
         int dim = Integer.valueOf(tokens[tokens.length-2]);
         m_embed_dim = dim;
         try{
@@ -108,6 +122,25 @@ public class ItemTagging extends MultiThreadedReviewAnalyzer{
                     for (int i = 0; i < eta.length; i++) {
                         weight[i] = Double.valueOf(eta[i]);
                     }
+                    //only enable top-k topic
+                    if(mode>0) {
+                        Set<Integer> topIdx = new HashSet<>();
+                        for (int k = 0; k < mode; k++) {
+                            double max = 0;
+                            int idx = 0;
+                            for (int i = 0; i < weight.length; i++) {
+                                if (weight[i] > max && !topIdx.contains(i)) {
+                                    idx = i;
+                                    max = weight[i];
+                                }
+                            }
+                            topIdx.add(idx);
+                        }
+                        for (int i = 0; i < weight.length; i++) {
+                            if (!topIdx.contains(i))
+                                weight[i] = 0;
+                        }
+                    }
                     m_items.get(m_itemIDIndex.get(itemID)).setItemWeights(weight);
                     m_validItemIndex.add(m_itemIDIndex.get(itemID));
                 }
@@ -119,6 +152,25 @@ public class ItemTagging extends MultiThreadedReviewAnalyzer{
                     for (int d = 0; d < dim; d++) {
                         String p = reader.readLine().split("[(|)]+")[1];// read weight (format: -- Topic 0(0.03468):	...)
                         weight[d] = Double.valueOf(p);
+                    }
+                    //only enable top-k topic
+                    if(mode>0) {
+                        Set<Integer> topIdx = new HashSet<>();
+                        for (int k = 0; k < mode; k++) {
+                            double max = 0;
+                            int idx = 0;
+                            for (int i = 0; i < weight.length; i++) {
+                                if (weight[i] > max && !topIdx.contains(i)) {
+                                    idx = i;
+                                    max = weight[i];
+                                }
+                            }
+                            topIdx.add(idx);
+                        }
+                        for (int i = 0; i < weight.length; i++) {
+                            if (!topIdx.contains(i))
+                                weight[i] = 0;
+                        }
                     }
                     m_items.get(m_itemIDIndex.get(itemID)).setItemWeights(weight);
                     m_validItemIndex.add(m_itemIDIndex.get(itemID));
@@ -196,19 +248,15 @@ public class ItemTagging extends MultiThreadedReviewAnalyzer{
         for(Integer idx : m_idf.keySet()) {
             m_idf.put(idx, Math.log(m_corpus.getSize() / m_idf.get(idx)));
         }
-        for(Integer idx : m_ref.keySet())
-            m_ref.put(idx, m_ref.get(idx) / m_avedl);
 
         m_avedl /= m_corpus.getSize();
     }
 
-    public void calculateTagging(String rankfile){
-        if(m_mode.equals("") || m_model.equals("")){
-            System.err.format("[Error]Item tagging model or mode not initialized...\n");
-            return;
-        }
+    public double[] calculateTagging(String rankfile){
+        System.out.format("[Info]Begin tagging %d items with %s %s............\n", m_validItemIndex.size(), m_model, m_mode);
 
         double map_ave = 0, precision_ave = 0;
+        int progress=0, invalid = 0;
         for(Integer validIdx : m_validItemIndex) {
             _Item item = m_items.get(validIdx);
             MyPriorityQueue<_RankItem> fVector = new MyPriorityQueue<_RankItem>(m_corpus.getSize());
@@ -233,10 +281,11 @@ public class ItemTagging extends MultiThreadedReviewAnalyzer{
                     }
                 } else if (m_mode.equals("LM")) {
                     calcStat();
-                    double lambda = 0.7;
+                    double lambda = 0.5, delta = 0.1;
                     for (Map.Entry<Integer, Double> entry : item.getFeature().entrySet()) {//for each word in review, aka query
-                        double mle_prob = doc.getTotalDocLength() != 0 && fv_doc.containsKey(entry.getKey()) ? fv_doc.get(entry.getKey()) / doc.getTotalDocLength() : 0;
-                        double ref_prob = m_ref.containsKey(entry.getKey()) ? m_ref.get(entry.getKey()) : 0;
+                        double mle_prob = doc.getTotalDocLength() >= 0 && fv_doc.containsKey(entry.getKey()) ? fv_doc.get(entry.getKey()) / doc.getTotalDocLength() : 0;
+                        double ref_prob = m_ref.containsKey(entry.getKey()) ? (m_ref.get(entry.getKey())+delta)/(m_avedl+delta*m_featureNames.size()): delta/(m_avedl+delta*m_featureNames.size());
+                        double smooth_prob = (1 - lambda) * mle_prob + lambda * ref_prob;
                         loglikelihood += entry.getValue() * Math.log((1 - lambda) * mle_prob + lambda * ref_prob);
                     }
                 } else if (m_mode.equals("Embed")) {
@@ -249,7 +298,6 @@ public class ItemTagging extends MultiThreadedReviewAnalyzer{
                     loglikelihood /= doc.getTotalDocLength();
                 }else{
                     System.err.format("[Error]Mode %s for item tagging has not been developed\n", m_mode);
-                    return;
                 }
 
                 fVector.add(new _RankItem(doc.getID(), loglikelihood));
@@ -257,51 +305,81 @@ public class ItemTagging extends MultiThreadedReviewAnalyzer{
 
             //calculate precision@k
             double map=0, rel=0;
-            double hit = 0, precisionK = 0;
-            for (int i = 0; i < m_top_k; i++) {
+            double hit = 0, trueTopK=0, precisionK = 0;
+            int i=0;
+            for (i = 0; i < m_top_k; i++) {
                 if (item.getTag().contains(fVector.get(i).m_index)) {
                     hit += 1;
-                    rel += hit/(i+1);
+                }
+                if(hit == item.getTag().size()){
+                    break;
                 }
             }
-            precisionK = hit/m_top_k;
-            map = rel/hit;
-
+            precisionK = hit/(i+1);
             precision_ave += precisionK;
+
+            i = 0;
+            hit=0;
+            rel=0;
+            for(_RankItem it : fVector){
+                i++;
+                if(item.getTag().contains(it.m_index)){
+                    hit += 1;
+                    rel += hit/i;
+                }
+                if(hit == item.getTag().size()){
+                    break;
+                }
+            }
+            map = item.getTag().size() > 0? rel/hit : 0;
             map_ave += map;
 
-            //print out ranking list
-            File file = new File(String.format("%s%s-Embed-%d-%s.txt", rankfile, m_model, m_embed_dim, item.getID()));
-            try {
-                file.getParentFile().mkdirs();
-                file.createNewFile();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-            try {
-                PrintWriter rankWriter = new PrintWriter(file);
-                //first line is the true tag of this item: true, itemID, tag_lenght, word1_idx(word1),...
-                rankWriter.format("true, %s, %d, ", item.getID(), item.getTag().size());
-                for (Integer idx : item.getTag()) {
-                    rankWriter.format("%d(%s), ", idx, m_corpus.getCollection().get(idx).getSource());
-                }
-                rankWriter.println();
+            if(progress++ % 50 == 0)
+                System.out.format("---- item %d: map is %.5f, precision@k is %.5f\n", progress++, map, precisionK);
 
-                int i = 0;
-                for (_RankItem it : fVector) {
-                    rankWriter.format("%d, %d, %s, %f \n", i++, it.m_index, m_corpus.getCollection().get(it.m_index).getSource(), it.m_value);
-                }
-                rankWriter.close();
-            } catch (Exception ex) {
-                System.err.format("[Error]File %s Not Found", rankfile);
-            }
+            //print out ranking list
+//            File file = new File(String.format("%s%s-%s-%d-%s.txt", rankfile, m_model, m_mode, m_embed_dim, item.getID()));
+//            try {
+//                file.getParentFile().mkdirs();
+//                file.createNewFile();
+//            } catch (IOException e) {
+//                e.printStackTrace();
+//            }
+//            try {
+//                PrintWriter rankWriter = new PrintWriter(file);
+//                //first line is the true tag of this item: true, itemID, tag_lenght, word1_idx(word1),...
+//                rankWriter.format("true, %s, %d, ", item.getID(), item.getTag().size());
+//                for (Integer idx : item.getTag()) {
+//                    rankWriter.format("%d(%s), ", idx, m_corpus.getCollection().get(idx).getSource());
+//                }
+//                rankWriter.println();
+//
+//                i = 0;
+//                for (_RankItem it : fVector) {
+//                    rankWriter.format("%d, %d, true: %s, %f, filtered: ", i++, it.m_index, m_corpus.getCollection().get(it.m_index).getSource(), it.m_value);
+//                    _SparseFeature[] fv = m_corpus.getCollection().get(it.m_index).getSparse();
+//                    for(int m = 0;m < fv.length; m++){
+//                        rankWriter.format("%s, ", m_featureNames.get(fv[m].getIndex()));
+//                    }
+//                    rankWriter.println();
+//                }
+//                rankWriter.close();
+//            } catch (Exception ex) {
+//                System.err.format("[Error]File %s Not Found", rankfile);
+//            }
         }
 
-        map_ave /= m_validItemIndex.size();
-        precision_ave /= m_validItemIndex.size();
+        map_ave /= m_validItemIndex.size() - invalid;
+        precision_ave /= m_validItemIndex.size() - invalid;
 
         //printout results
-        System.out.format("[Stat]%s model, %s mode item tagging: Precision@K is %.5ff, MAP is: %.5f, in top %d tags\n", m_model, m_mode, precision_ave, map_ave, m_top_k);
+        System.out.format("[Stat]%s model, %s mode item tagging: Precision@K is %.5f, MAP is: %.5f, in top %d tags\n", m_model, m_mode, precision_ave, map_ave, m_top_k);
+
+        double[] result = new double[2];
+        result[0] = map_ave;
+        result[1] = precision_ave;
+
+        return result;
     }
 
 }
