@@ -436,7 +436,7 @@ public class CollaborativeFiltering {
 				ArrayList<String> trainNeis = m_trainMap.get(itemID);
 				for(String nid: trainNeis){
 					if(nid.equals(user.getUserID())){
-						System.out.println("The user has rated the same item twice!");
+//						System.out.println("The user has rated the same item twice!");
 						continue;
 					}
 					int nIdx = m_userIDIndex.get(nid);
