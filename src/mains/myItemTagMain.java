@@ -8,6 +8,8 @@ import structures._Doc;
 import structures._Review;
 
 import java.io.*;
+import java.text.DecimalFormat;
+import java.text.NumberFormat;
 import java.text.ParseException;
 
 /***
@@ -15,28 +17,25 @@ import java.text.ParseException;
  */
 public class myItemTagMain {
     public static void main(String[] args) throws IOException, ParseException {
-        int classNumber = 5;
-        int Ngram = 2; // The default value is unigram.
-        int lengthThreshold = 5; // Document length threshold
-        double trainRatio = 0, adaptRatio = 1;
-        int crossV = 2;
+        int classNumber = 6; //Define the number of classes in this Naive Bayes.
+        int Ngram = 2; //The default value is unigram.
+        String featureValue = "TF"; //The way of calculating the feature value, which can also be "TFIDF", "BM25"
+        int norm = 0;//The way of normalization.(only 1 and 2)
+        int lengthThreshold = 5; //Document length threshold
         int numberOfCores = Runtime.getRuntime().availableProcessors();
-        boolean enforceAdapt = true;
-        String tokenModel = "./data/Model/en-token.bin"; // Token model.
-        String fs = "DF";//"IG_CHI"
-        int lmTopK = 1000; // topK for language model.
-        String lmFvFile = null;
+        String tokenModel = "./data/Model/en-token.bin";
 
         /***parameter setting***/
 
         /***data setting***/
+        int crossV = 2;
         String trainset = "byUser_4k_review";
         String source = "yelp";
         String dataset = "./myData/" + source + "/" + trainset + "/";
         String outputFolder = dataset + "output/" + crossV + "foldsCV" + "/";
         String model = "LDA_Variational";
         String mode = "Embed";
-        int number_of_topics = 20;
+        int number_of_topics = 40;
 
         String[] fvFiles = new String[4];
         fvFiles[0] = "./data/Features/fv_2gram_IG_yelp_byUser_30_50_25.txt";
@@ -44,21 +43,32 @@ public class myItemTagMain {
         fvFiles[2] = "./data/Features/fv_2gram_IG_amazon_electronic_byUser_20_20_5.txt";
         fvFiles[3] = "./data/Features/fv_2gram_IG_amazon_book_byUser_40_50_12.txt";
         int fvFile_point = 0;
-        if (source.equals("amazon_movie")) {
+        if(source.equals("amazon_movie")){
             fvFile_point = 1;
-        } else if (source.equals("amazon_electronic")) {
+        }else if(source.equals("amazon_electronic")){
             fvFile_point = 2;
-        } else if (source.equals("amazon_book")) {
+        }else if(source.equals("amazon_book")){
             fvFile_point = 3;
         }
 
-        String reviewFolder = dataset + crossV + "foldsCV/";
-        ItemTagging analyzer = new ItemTagging(tokenModel, classNumber, fvFiles[fvFile_point],
+        String reviewFolder = String.format("%s%dfoldsCV/", dataset, crossV); //2foldsCV/folder0/train/, data/
+        MultiThreadedReviewAnalyzer analyzer = new MultiThreadedReviewAnalyzer(tokenModel, classNumber, fvFiles[fvFile_point],
                 Ngram, lengthThreshold, numberOfCores, true, source);
-        analyzer.setMode(mode);
-        analyzer.setModel(model);
-        analyzer.setTopK(10);
+//        analyzer.setReleaseContent(false);//Remember to set it as false when generating crossfolders!!!
+//        analyzer.loadUserDir(reviewFolder);
+
+        ItemTagging tagger = new ItemTagging(tokenModel, classNumber, fvFiles[fvFile_point],
+                Ngram, lengthThreshold, numberOfCores, true, source);
+        tagger.setMode(mode);
+        tagger.setModel(model);
+        tagger.setTopK(10);
+
         System.out.println("[Info]Start FIXED cross validation...");
+        tagger.loadCorpus("./myData/" + source + "/business.json");
+        double[] map = new double[crossV];
+        double[] precision = new double[crossV];
+
+        long starttime = System.currentTimeMillis();
         for (int k = 0; k < crossV; k++) {
             analyzer.getCorpus().reset();
             //load test set
@@ -74,11 +84,42 @@ public class myItemTagMain {
                     analyzer.loadUserDir(trainFolder);
                 }
             }
-            analyzer.loadItemWeight(String.format("%s%d/%s_postByItem_%d.txt", outputFolder, k, model, number_of_topics));
-            analyzer.buildItemProfile();
-            analyzer.constructTagSet("./myData/" + source + "/business.json");//construct tagset
-            analyzer.loadModel(String.format("%s%d/%s_beta_%d.txt", outputFolder, k, model, number_of_topics));
-            analyzer.calculateTagging(String.format("%s%d/ItemTag/", outputFolder, k));
+            //first load corpus, aka tags
+            tagger.loadItemWeight(String.format("%s%d/%s_postByItem_%d.txt", outputFolder, k, model, number_of_topics), 40);
+            tagger.buildItemProfile(analyzer.getCorpus().getCollection());
+            tagger.loadModel(String.format("%s%d/%s_beta_%d.txt", outputFolder, k, model, number_of_topics));
+            double[] results = tagger.calculateTagging(String.format("%s%d/ItemTag/", outputFolder, k));
+            map[k] = results[0];
+            precision[k] = results[1];
         }
+        System.out.println();
+
+        long endtime = System.currentTimeMillis();
+        NumberFormat formatter = new DecimalFormat("#0.00000");
+        System.out.format("[Stat]Running time (seconds) %s\n", formatter.format((endtime-starttime) / 1000d));
+
+        double mean = 0, var = 0;
+        for (int i = 0; i < map.length; i++) {
+            mean += map[i];
+        }
+        mean /= map.length;
+        for (int i = 0; i < map.length; i++) {
+            var += (map[i] - mean) * (map[i] - mean);
+        }
+        var = Math.sqrt(var / map.length);
+        System.out.format("[Stat]MAP %.3f+/-%.3f\n", mean, var);
+
+        mean = 0;
+        var = 0;
+        for (int i = 0; i < precision.length; i++) {
+            mean += precision[i];
+        }
+        mean /= map.length;
+        for (int i = 0; i < precision.length; i++) {
+            var += (precision[i] - mean) * (precision[i] - mean);
+        }
+        var = Math.sqrt(var / precision.length);
+        System.out.format("[Stat]Precision %.3f+/-%.3f\n", mean, var);
+
     }
 }

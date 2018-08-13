@@ -33,6 +33,9 @@ public class TopicModelParameter {
 	public boolean m_flag_tune = false;
 
 	public boolean m_flag_coldstart = false;
+
+	//item tagging
+	public String m_mode;
 		
 	public TopicModelParameter(String argv[]){
 		
@@ -91,6 +94,9 @@ public class TopicModelParameter {
 				m_flag_tune = argv[i].equals("true");
 			else if (argv[i-1].equals("-flagColdstart"))
 				m_flag_coldstart = argv[i].equals("true");
+
+			else if(argv[i-1].equals("-mode"))
+				m_mode = argv[i];
 			else
 				System.exit(1);
 		}
