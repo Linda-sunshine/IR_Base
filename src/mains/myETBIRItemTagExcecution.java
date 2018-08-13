@@ -43,6 +43,7 @@ public class myETBIRItemTagExcecution {
         tagger.loadCorpus(String.format("%s/%s/business.json",param.m_prefix, param.m_source));
         double[] map = new double[param.m_crossV];
         double[] precision = new double[param.m_crossV];
+        double[] mrr = new double[param.m_crossV];
 
         long starttime = System.currentTimeMillis();
         for (int k = 0; k < param.m_crossV; k++) {
@@ -71,9 +72,10 @@ public class myETBIRItemTagExcecution {
 
             tagger.buildItemProfile(analyzer.getCorpus().getCollection());
             tagger.loadModel(modelFile);
-            double[] results = tagger.calculateTagging(String.format("%s/%d/ItemTag/", outputFolder, k));
+            double[] results = tagger.calculateTagging(String.format("%s/%d/ItemTag/", outputFolder, k), param.m_lambda);
             map[k] = results[0];
-            precision[k] = results[1];
+            mrr[k] = results[1];
+            precision[k] = results[2];
         }
         System.out.println();
 
@@ -91,6 +93,18 @@ public class myETBIRItemTagExcecution {
         }
         var = Math.sqrt(var / map.length);
         System.out.format("[Stat]MAP %.3f+/-%.3f\n", mean, var);
+
+        mean = 0;
+        var = 0;
+        for (int i = 0; i < mrr.length; i++) {
+            mean += mrr[i];
+        }
+        mean /= mrr.length;
+        for (int i = 0; i < mrr.length; i++) {
+            var += (mrr[i] - mean) * (mrr[i] - mean);
+        }
+        var = Math.sqrt(var / mrr.length);
+        System.out.format("[Stat]MRR %.3f+/-%.3f\n", mean, var);
 
         mean = 0;
         var = 0;
