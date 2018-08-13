@@ -35,7 +35,7 @@ public class ETBIRCFExecution {
         String outputFolder = String.format("%s/output/%dfoldsCV%s", folder,  param.m_crossV, param.m_flag_coldstart?"Coldstart":"");
 
         /*****experiment setting*****/
-        int[] neighborK = new int[]{2,4,6}; // top_k neighbors
+        int[] neighborK = new int[]{2}; // top_k neighbors
         int[] threshold = new int[]{(int)param.m_lambda}; // popularity of item or time
 //        int[] topicNums = new int[]{10, 20, 30, 40, 50, 60, 70, 80, 90, 100};// number of topics
         int[] topicNums = new int[]{5, 10, 15, 20, 25, 30, 35, 40, 45, 50};// number of topics
@@ -46,7 +46,7 @@ public class ETBIRCFExecution {
          columnProduct: compare the inner product of user's P and item's \eta of the same item across different users (rowProduct: same user across different items)
          userEmbded: P for ETBIR, average over documents across users for LDA (\gamma) and CTM (softmax(\mu))
          itemEmbed: \eta for ETBIR, average over documents across items for LDA (\gamma) and CTM (softmax(\mu)) */
-        String[] modes = new String[]{"rowPost", "columnPost", "userEmbed", "itemEmbed", "rowProduct", "columnProduct"};
+        String[] modes = new String[]{"userEmbed", "itemEmbed", "rowProduct", "columnProduct"};
 
         double[] ndcg, map;
         int dim;
