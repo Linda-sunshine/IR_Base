@@ -34,7 +34,7 @@ public class myItemTagMain {
         String dataset = "./myData/" + source + "/" + trainset + "/";
         String outputFolder = dataset + "output/" + crossV + "foldsCV" + "/";
         String model = "LDA_Variational";
-        String mode = "LM";
+        String mode = "Interpolation";
         int number_of_topics = 20;
 
         String[] fvFiles = new String[4];

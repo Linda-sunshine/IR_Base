@@ -296,7 +296,7 @@ public class ItemTagging extends MultiThreadedReviewAnalyzer{
                         loglikelihood += entry.getValue() * Math.log(p_w_on_item);
                     }
                     loglikelihood /= doc.getTotalDocLength();
-                } else if(m_mode.equals("InterpBM25Embed")){
+                } else if(m_mode.equals("Interpolation")){
                     double score1 = 0, score2=0;
                     //first calc BM25
                     calcStat();
