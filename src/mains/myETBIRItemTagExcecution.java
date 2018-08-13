@@ -24,8 +24,8 @@ public class myETBIRItemTagExcecution {
         String tokenModel = "./data/Model/en-token.bin";
         String dataset = String.format("%s/%s/%s", param.m_prefix, param.m_source, param.m_set);
         String fvFile = String.format("%s/%s/%s_features.txt", param.m_prefix, param.m_source, param.m_source);
-        String reviewFolder = String.format("%s/%dfoldsCV%s/", dataset, param.m_crossV, param.m_flag_coldstart?"Coldstart":"");
-        String outputFolder = String.format("%s/output/%dfoldsCV%s/", dataset, param.m_crossV, param.m_flag_coldstart?"Coldstart":"");
+        String reviewFolder = String.format("%s/%dfoldsCV%s", dataset, param.m_crossV, param.m_flag_coldstart?"Coldstart":"");
+        String outputFolder = String.format("%s/output/%dfoldsCV%s", dataset, param.m_crossV, param.m_flag_coldstart?"Coldstart":"");
 
         MultiThreadedReviewAnalyzer analyzer = new MultiThreadedReviewAnalyzer(tokenModel, classNumber, fvFile,
                 Ngram, lengthThreshold, numberOfCores, true, param.m_source);
@@ -48,7 +48,7 @@ public class myETBIRItemTagExcecution {
         for (int k = 0; k < param.m_crossV; k++) {
             analyzer.getCorpus().reset();
             //load test set
-            String testFolder = reviewFolder + k + "/";
+            String testFolder = String.format("%s/%d/", reviewFolder, k);
             analyzer.loadUserDir(testFolder);
             for (_Doc d : analyzer.getCorpus().getCollection()) {
                 d.setType(_Review.rType.TEST);
@@ -56,7 +56,7 @@ public class myETBIRItemTagExcecution {
             //load train set
             for (int i = 0; i < param.m_crossV; i++) {
                 if (i != k) {
-                    String trainFolder = reviewFolder + i + "/";
+                    String trainFolder = String.format("%s/%d/", reviewFolder, i);
                     analyzer.loadUserDir(trainFolder);
                 }
             }
