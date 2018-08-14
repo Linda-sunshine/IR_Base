@@ -143,53 +143,50 @@ public class CollaborativeFilteringWithETBIR extends CollaborativeFiltering {
 		
 		try{
 			BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(filename), "UTF-8"));
-			int itemIndex = 0;
 			String line, itemID;
 			String[] eta;
 			if(model.contains("ETBIR") && (m_mode.contains("Embed") || m_mode.contains("Product"))){
 				while ((line = reader.readLine()) != null) {
-					itemIndex = Integer.valueOf(line.split("\\s+")[1]); // read item index
+//					itemIndex = Integer.valueOf(line.split("\\s+")[1]); // read item index
 					itemID = line.split("\\s+")[2]; // read item ID
-					m_itemIDIndex.put(itemID, itemIndex);
-					if(itemIndex == m_items.size())
-					    m_items.add(m_itemMap.get(itemID));
-					else
-					    System.err.println("[Warning]Load item weights: item index and doc not match.");
 
 					// skip the item without analysis, 1 lines
 					if (!m_itemMap.containsKey(itemID)) {
 						reader.readLine();
+						continue;
 					} else {
+						m_itemIDIndex.put(itemID, m_items.size());
+						m_items.add(m_itemMap.get(itemID));
 						// read the eta of each item
 						eta = reader.readLine().split("\\s+");
 						if (eta.length == m_dim) {
 							for (int i = 0; i < m_dim; i++) {
-								m_itemWeights[itemIndex][i] = Double.valueOf(eta[i]);
+								m_itemWeights[m_itemIDIndex.get(itemID)][i] = Double.valueOf(eta[i]);
 							}
-							m_itemMap.get(itemID).setItemWeights(m_itemWeights[itemIndex]);
+							m_itemMap.get(itemID).setItemWeights(m_itemWeights[m_itemIDIndex.get(itemID)]);
 						}
 					}
 				}
 			} else{
 				while ((line = reader.readLine()) != null) {
 					itemID = line.split("[\\(|\\)|\\s]+")[1]; // // read item ID (format: ID xxx(30 reviews))
-					m_itemIDIndex.put(itemID, itemIndex);
-                    m_items.add(m_itemMap.get(itemID));
 					// skip the item without analysis, m_dim lines
 					if (!m_itemMap.containsKey(itemID)) {
 						for (int d = 0; d < m_dim; d++) {
 							reader.readLine();
 						}
+						continue;
 					} else {
+						m_itemIDIndex.put(itemID, m_items.size());
+						m_items.add(m_itemMap.get(itemID));
 						// read the eta of each item
 						// read the p value, dim * dim
 						for (int d = 0; d < m_dim; d++) {
 							String p = reader.readLine().split("[\\(|\\)]+")[1];// read weight (format: -- Topic 0(0.03468):	...)
-							m_itemWeights[itemIndex][d] = Double.valueOf(p);
+							m_itemWeights[m_itemIDIndex.get(itemID)][d] = Double.valueOf(p);
 						}
-						m_itemMap.get(itemID).setItemWeights(m_itemWeights[itemIndex]);
+						m_itemMap.get(itemID).setItemWeights(m_itemWeights[m_itemIDIndex.get(itemID)]);
 					}
-					itemIndex++;
 				}
 			}
 			reader.close();

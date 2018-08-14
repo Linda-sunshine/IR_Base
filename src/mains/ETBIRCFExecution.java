@@ -93,6 +93,7 @@ public class ETBIRCFExecution {
                                         }
                                     }
                                     //need to explicitly allocate train-test for each user
+                                    //here are all training users
                                     for (_User u : analyzer.getUsers()) {
                                         u.constructTrainTestReviews();
                                     }
