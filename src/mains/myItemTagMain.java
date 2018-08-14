@@ -33,9 +33,9 @@ public class myItemTagMain {
         String source = "yelp";
         String dataset = "./myData/" + source + "/" + trainset + "/";
         String outputFolder = dataset + "output/" + crossV + "foldsCV" + "/";
-        String model = "LDA_Variational";
+        String model = "ETBIR";
         String mode = "Embed";
-        int number_of_topics = 40;
+        int number_of_topics = 20;
 
         String[] fvFiles = new String[4];
         fvFiles[0] = "./data/Features/fv_2gram_IG_yelp_byUser_30_50_25.txt";
@@ -67,6 +67,7 @@ public class myItemTagMain {
         tagger.loadCorpus("./myData/" + source + "/business.json");
         double[] map = new double[crossV];
         double[] precision = new double[crossV];
+        double[] mrr = new double[crossV];
 
         long starttime = System.currentTimeMillis();
         for (int k = 0; k < crossV; k++) {
@@ -88,9 +89,10 @@ public class myItemTagMain {
             tagger.loadItemWeight(String.format("%s%d/%s_postByItem_%d.txt", outputFolder, k, model, number_of_topics), 40);
             tagger.buildItemProfile(analyzer.getCorpus().getCollection());
             tagger.loadModel(String.format("%s%d/%s_beta_%d.txt", outputFolder, k, model, number_of_topics));
-            double[] results = tagger.calculateTagging(String.format("%s%d/ItemTag/", outputFolder, k));
+            double[] results = tagger.calculateTagging(String.format("%s%d/ItemTag/", outputFolder, k), 0.5);
             map[k] = results[0];
-            precision[k] = results[1];
+            mrr[k] = results[1];
+            precision[k] = results[2];
         }
         System.out.println();
 
@@ -108,6 +110,18 @@ public class myItemTagMain {
         }
         var = Math.sqrt(var / map.length);
         System.out.format("[Stat]MAP %.3f+/-%.3f\n", mean, var);
+
+        mean = 0;
+        var = 0;
+        for (int i = 0; i < mrr.length; i++) {
+            mean += mrr[i];
+        }
+        mean /= mrr.length;
+        for (int i = 0; i < mrr.length; i++) {
+            var += (mrr[i] - mean) * (mrr[i] - mean);
+        }
+        var = Math.sqrt(var / mrr.length);
+        System.out.format("[Stat]MRR %.3f+/-%.3f\n", mean, var);
 
         mean = 0;
         var = 0;

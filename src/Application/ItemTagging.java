@@ -252,10 +252,10 @@ public class ItemTagging extends MultiThreadedReviewAnalyzer{
         m_avedl /= m_corpus.getSize();
     }
 
-    public double[] calculateTagging(String rankfile){
+    public double[] calculateTagging(String rankfile, double lambda){//lambda is for interpolation or smoothing
         System.out.format("[Info]Begin tagging %d items with %s %s............\n", m_validItemIndex.size(), m_model, m_mode);
 
-        double map_ave = 0, precision_ave = 0;
+        double map_ave = 0, precision_ave = 0, mrr_ave = 0;
         int progress=0, invalid = 0;
         for(Integer validIdx : m_validItemIndex) {
             _Item item = m_items.get(validIdx);
@@ -281,7 +281,7 @@ public class ItemTagging extends MultiThreadedReviewAnalyzer{
                     }
                 } else if (m_mode.equals("LM")) {
                     calcStat();
-                    double lambda = 0.5, delta = 0.1;
+                    double delta = 0.1;
                     for (Map.Entry<Integer, Double> entry : item.getFeature().entrySet()) {//for each word in review, aka query
                         double mle_prob = doc.getTotalDocLength() >= 0 && fv_doc.containsKey(entry.getKey()) ? fv_doc.get(entry.getKey()) / doc.getTotalDocLength() : 0;
                         double ref_prob = m_ref.containsKey(entry.getKey()) ? (m_ref.get(entry.getKey())+delta)/(m_avedl+delta*m_featureNames.size()): delta/(m_avedl+delta*m_featureNames.size());
@@ -296,7 +296,34 @@ public class ItemTagging extends MultiThreadedReviewAnalyzer{
                         loglikelihood += entry.getValue() * Math.log(p_w_on_item);
                     }
                     loglikelihood /= doc.getTotalDocLength();
-                }else{
+                } else if(m_mode.equals("Interpolation")){
+                    double score1 = 0, score2=0;
+                    //first calc BM25
+                    calcStat();
+                    double idf = 0, tf = 0, qtf = 0, b = 1.0, k1 = 1.5, k2 = 500;
+                    for (Map.Entry<Integer, Double> entry : item.getFeature().entrySet()) {//for each word in its' review, aka query
+                        //calc idf
+                        idf = m_idf.containsKey(entry.getKey()) ? m_idf.get(entry.getKey()) : 0;
+                        //calc tf
+                        tf = fv_doc.containsKey(entry.getKey()) ? fv_doc.get(entry.getKey()) / doc.getTotalDocLength() : 0;
+                        //calc qtf from item's review
+                        qtf = entry.getValue() / item.getLength();
+
+                        score1 += entry.getValue() * idf * tf * (k1 + 1) /
+                                (tf + k1 * (1 - b + b * doc.getTotalDocLength() / m_avedl)) * qtf * (k2 + 1) / (k2 + qtf);
+                    }
+                    //then calc Embed
+                    for (Map.Entry<Integer, Double> entry : fv_doc.entrySet()) {
+                        double p_w_on_item = 0;
+                        for (int i = 0; i < m_embed_dim; i++)
+                            p_w_on_item += m_topic_word_probability[i][entry.getKey()] * item.getItemWeights()[i];
+                        score2 += entry.getValue() * Math.log(p_w_on_item);
+                    }
+                    score2 /= doc.getTotalDocLength();
+                    //interpolation
+                    loglikelihood = lambda * score1 + (1-lambda) * score2;
+                }
+                else{
                     System.err.format("[Error]Mode %s for item tagging has not been developed\n", m_mode);
                 }
 
@@ -304,7 +331,7 @@ public class ItemTagging extends MultiThreadedReviewAnalyzer{
             }
 
             //calculate precision@k
-            double map=0, rel=0;
+            double map=0, rel=0, mrr=0, firstHit=0;
             double hit = 0, trueTopK=0, precisionK = 0;
             int i=0;
             for (i = 0; i < m_top_k; i++) {
@@ -318,12 +345,15 @@ public class ItemTagging extends MultiThreadedReviewAnalyzer{
             precisionK = hit/(i+1);
             precision_ave += precisionK;
 
+            //calc map
             i = 0;
             hit=0;
             rel=0;
             for(_RankItem it : fVector){
                 i++;
                 if(item.getTag().contains(it.m_index)){
+                    if(hit==0)
+                        firstHit = i;
                     hit += 1;
                     rel += hit/i;
                 }
@@ -333,9 +363,11 @@ public class ItemTagging extends MultiThreadedReviewAnalyzer{
             }
             map = item.getTag().size() > 0? rel/hit : 0;
             map_ave += map;
+            mrr = item.getTag().size() > 0? 1/firstHit : 0;
+            mrr_ave += mrr;
 
             if(progress++ % 50 == 0)
-                System.out.format("---- item %d: map is %.5f, precision@k is %.5f\n", progress++, map, precisionK);
+                System.out.format("---- item %d: map is %.5f, precision@k is %.5f, mrr is %.5f\n", progress++, map, precisionK, mrr);
 
             //print out ranking list
 //            File file = new File(String.format("%s%s-%s-%d-%s.txt", rankfile, m_model, m_mode, m_embed_dim, item.getID()));
@@ -371,13 +403,15 @@ public class ItemTagging extends MultiThreadedReviewAnalyzer{
 
         map_ave /= m_validItemIndex.size() - invalid;
         precision_ave /= m_validItemIndex.size() - invalid;
+        mrr_ave /= m_validItemIndex.size() - invalid;
 
         //printout results
-        System.out.format("[Stat]%s model, %s mode item tagging: Precision@K is %.5f, MAP is: %.5f, in top %d tags\n", m_model, m_mode, precision_ave, map_ave, m_top_k);
+        System.out.format("[Stat]%s model, %s mode item tagging: Precision@K is %.5f, MAP is: %.5f, MRR is: %.5f, in top %d tags\n", m_model, m_mode, precision_ave, map_ave, mrr_ave, m_top_k);
 
-        double[] result = new double[2];
+        double[] result = new double[3];
         result[0] = map_ave;
-        result[1] = precision_ave;
+        result[1] = mrr_ave;
+        result[2] = precision_ave;
 
         return result;
     }

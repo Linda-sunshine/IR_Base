@@ -35,7 +35,7 @@ public class ETBIRCFExecution {
         String outputFolder = String.format("%s/output/%dfoldsCV%s", folder,  param.m_crossV, param.m_flag_coldstart?"Coldstart":"");
 
         /*****experiment setting*****/
-        int[] neighborK = new int[]{2,4,6}; // top_k neighbors
+        int[] neighborK = new int[]{2}; // top_k neighbors
         int[] threshold = new int[]{(int)param.m_lambda}; // popularity of item or time
 //        int[] topicNums = new int[]{10, 20, 30, 40, 50, 60, 70, 80, 90, 100};// number of topics
         int[] topicNums = new int[]{5, 10, 15, 20, 25, 30, 35, 40, 45, 50};// number of topics
@@ -46,7 +46,7 @@ public class ETBIRCFExecution {
          columnProduct: compare the inner product of user's P and item's \eta of the same item across different users (rowProduct: same user across different items)
          userEmbded: P for ETBIR, average over documents across users for LDA (\gamma) and CTM (softmax(\mu))
          itemEmbed: \eta for ETBIR, average over documents across items for LDA (\gamma) and CTM (softmax(\mu)) */
-        String[] modes = new String[]{"rowPost", "columnPost", "userEmbed", "itemEmbed", "rowProduct", "columnProduct"};
+        String[] modes = new String[]{"userEmbed", "itemEmbed", "rowProduct", "columnProduct"};
 
         double[] ndcg, map;
         int dim;
@@ -64,10 +64,6 @@ public class ETBIRCFExecution {
                         System.out.format("===== %d threshould, %d neighbors, %s mode, %s model =====\n", th, nk, mode, model);
                         for (int n = 0; n < topicNums.length; n++) {
                             dim = topicNums[n];
-                            if ((mode.equals("columnProduct") || mode.equals("rowProduct")) && (!model.equals("ETBIR"))) {
-                                System.err.format("[Warning]%s mode is only for ETBIR, not for %s.\n", mode, model);
-                                continue;
-                            }
 
                             String resultFile = String.format("%s/CF/CF_%s_%d_%d_%s_%s_%d.txt", outputFolder, param.m_source, th, nk, model, mode, dim);
                             File file = new File(resultFile);
@@ -97,6 +93,7 @@ public class ETBIRCFExecution {
                                         }
                                     }
                                     //need to explicitly allocate train-test for each user
+                                    //here are all training users
                                     for (_User u : analyzer.getUsers()) {
                                         u.constructTrainTestReviews();
                                     }
@@ -138,19 +135,19 @@ public class ETBIRCFExecution {
                                     cf.setModel(model);
 
                                     String userWeight = "", itemWeight = "", docWeight = "";
-                                    if (mode.equals("rowPhi") || mode.equals("columnPhi")) {
+                                    if (mode.contains("Phi")) {
                                         userWeight = String.format("%s/%d/%s_phiByUser_%d.txt", outputFolder, i, model, dim);//user embedding
                                         itemWeight = String.format("%s/%d/%s_phiByItem_%d.txt", outputFolder, i, model, dim);//item embedding
                                         docWeight = String.format("%s/%d/%s_phi_%d.txt", outputFolder, i, model, dim);//doc embedding
-                                    } else if (mode.equals("rowPost") || mode.equals("columnPost")) {
+                                    } else if (mode.contains("Post")) {
                                         userWeight = String.format("%s/%d/%s_postByUser_%d.txt", outputFolder, i, model, dim);//user embedding
                                         itemWeight = String.format("%s/%d/%s_postByItem_%d.txt", outputFolder, i, model, dim);//item embedding
-                                        if (model.equals("LDA_Variational"))
+                                        if (model.contains("LDA"))
                                             docWeight = String.format("%s/%d/%s_postGamma_%d.txt", outputFolder, i, model, dim);//doc embedding
                                         else
                                             docWeight = String.format("%s/%d/%s_postSoftmax_%d.txt", outputFolder, i, model, dim);//doc embedding
-                                    } else if (mode.equals("userEmbed") || mode.equals("itemEmbed")) {
-                                        if (model.equals("ETBIR")) {
+                                    } else if (mode.contains("Embed")) {
+                                        if (model.contains("ETBIR")) {
                                             userWeight = String.format("%s/%d/%s_postNu_%d.txt", outputFolder, i, model, dim);//user embedding
                                             itemWeight = String.format("%s/%d/%s_postEta_%d.txt", outputFolder, i, model, dim);//item embedding
                                             docWeight = String.format("%s/%d/%s_phi_%d.txt", outputFolder, i, model, dim);//doc embedding, here won't be used
@@ -159,10 +156,20 @@ public class ETBIRCFExecution {
                                             itemWeight = String.format("%s/%d/%s_postByItem_%d.txt", outputFolder, i, model, dim);//item embedding
                                             docWeight = String.format("%s/%d/%s_phi_%d.txt", outputFolder, i, model, dim);//doc embedding, here won't be used
                                         }
-                                    } else if (mode.equals("rowProduct") || mode.equals("columnProduct")) {
-                                        userWeight = String.format("%s/%d/%s_postNu_%d.txt", outputFolder, i, model, dim);//user embedding
-                                        itemWeight = String.format("%s/%d/%s_postEta_%d.txt", outputFolder, i, model, dim);//item embedding
-                                        docWeight = String.format("%s/%d/%s_phi_%d.txt", outputFolder, i, model, dim);//doc embedding, here won't be used
+                                    } else if (mode.contains("Product")) {
+                                        if(model.contains("ETBIR")) {
+                                            userWeight = String.format("%s/%d/%s_postNu_%d.txt", outputFolder, i, model, dim);//user embedding
+                                            itemWeight = String.format("%s/%d/%s_postEta_%d.txt", outputFolder, i, model, dim);//item embedding
+                                            docWeight = String.format("%s/%d/%s_phi_%d.txt", outputFolder, i, model, dim);//doc embedding, here won't be used
+                                        }else{
+                                            cf.setMode(mode.contains("row")?"rowPost":"columnPost");
+                                            userWeight = String.format("%s/%d/%s_postByUser_%d.txt", outputFolder, i, model, dim);//user embedding
+                                            itemWeight = String.format("%s/%d/%s_postByItem_%d.txt", outputFolder, i, model, dim);//item embedding
+                                            if (model.contains("LDA"))
+                                                docWeight = String.format("%s/%d/%s_postGamma_%d.txt", outputFolder, i, model, dim);//doc embedding
+                                            else
+                                                docWeight = String.format("%s/%d/%s_postSoftmax_%d.txt", outputFolder, i, model, dim);//doc embedding
+                                        }
                                     }
 
                                     cf.loadWeights(userWeight, model, suffix1, suffix2);

@@ -77,8 +77,7 @@ public class CollaborativeFilteringWithETBIR extends CollaborativeFiltering {
 			BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(filename), "UTF-8"));
 			int userIndex = 0;
 			String line;
-			if(model.equals("ETBIR") && (m_mode.equals("userEmbed") || m_mode.equals("itemEmbed")
-                    || m_mode.equals("rowProduct") || m_mode.equals("columnProduct"))) {
+			if(model.contains("ETBIR") && (m_mode.contains("Embed") || m_mode.contains("Product"))) {
 				m_userWeights = new double[m_users.size()][m_dim*m_dim];
 				String p[];
 				while ((line = reader.readLine()) != null) {
@@ -144,54 +143,50 @@ public class CollaborativeFilteringWithETBIR extends CollaborativeFiltering {
 		
 		try{
 			BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(filename), "UTF-8"));
-			int itemIndex = 0;
 			String line, itemID;
 			String[] eta;
-			if(model.equals("ETBIR") && (m_mode.equals("userEmbed") || m_mode.equals("itemEmbed")
-                    || m_mode.equals("rowProduct") || m_mode.equals("columnProduct"))){
+			if(model.contains("ETBIR") && (m_mode.contains("Embed") || m_mode.contains("Product"))){
 				while ((line = reader.readLine()) != null) {
-					itemIndex = Integer.valueOf(line.split("\\s+")[1]); // read item index
+//					itemIndex = Integer.valueOf(line.split("\\s+")[1]); // read item index
 					itemID = line.split("\\s+")[2]; // read item ID
-					m_itemIDIndex.put(itemID, itemIndex);
-					if(itemIndex == m_items.size())
-					    m_items.add(m_itemMap.get(itemID));
-					else
-					    System.err.println("[Warning]Load item weights: item index and doc not match.");
 
 					// skip the item without analysis, 1 lines
 					if (!m_itemMap.containsKey(itemID)) {
 						reader.readLine();
+						continue;
 					} else {
+						m_itemIDIndex.put(itemID, m_items.size());
+						m_items.add(m_itemMap.get(itemID));
 						// read the eta of each item
 						eta = reader.readLine().split("\\s+");
 						if (eta.length == m_dim) {
 							for (int i = 0; i < m_dim; i++) {
-								m_itemWeights[itemIndex][i] = Double.valueOf(eta[i]);
+								m_itemWeights[m_itemIDIndex.get(itemID)][i] = Double.valueOf(eta[i]);
 							}
-							m_itemMap.get(itemID).setItemWeights(m_itemWeights[itemIndex]);
+							m_itemMap.get(itemID).setItemWeights(m_itemWeights[m_itemIDIndex.get(itemID)]);
 						}
 					}
 				}
 			} else{
 				while ((line = reader.readLine()) != null) {
 					itemID = line.split("[\\(|\\)|\\s]+")[1]; // // read item ID (format: ID xxx(30 reviews))
-					m_itemIDIndex.put(itemID, itemIndex);
-                    m_items.add(m_itemMap.get(itemID));
 					// skip the item without analysis, m_dim lines
 					if (!m_itemMap.containsKey(itemID)) {
 						for (int d = 0; d < m_dim; d++) {
 							reader.readLine();
 						}
+						continue;
 					} else {
+						m_itemIDIndex.put(itemID, m_items.size());
+						m_items.add(m_itemMap.get(itemID));
 						// read the eta of each item
 						// read the p value, dim * dim
 						for (int d = 0; d < m_dim; d++) {
 							String p = reader.readLine().split("[\\(|\\)]+")[1];// read weight (format: -- Topic 0(0.03468):	...)
-							m_itemWeights[itemIndex][d] = Double.valueOf(p);
+							m_itemWeights[m_itemIDIndex.get(itemID)][d] = Double.valueOf(p);
 						}
-						m_itemMap.get(itemID).setItemWeights(m_itemWeights[itemIndex]);
+						m_itemMap.get(itemID).setItemWeights(m_itemWeights[m_itemIDIndex.get(itemID)]);
 					}
-					itemIndex++;
 				}
 			}
 			reader.close();
@@ -216,14 +211,14 @@ public class CollaborativeFilteringWithETBIR extends CollaborativeFiltering {
 		}
 		//select top k users who have purchased this item.
 		ArrayList<String> neighbors;
-		if(m_mode.equals("columnPhi") || m_mode.equals("columnPost") || m_mode.equals("columnProduct") || m_mode.equals("userEmbed"))
+		if(m_mode.contains("column") || m_mode.equals("userEmbed"))
 			neighbors = m_trainMap.get(item); // ID of column users
 		else {
 			neighbors = u.getTrainItems(); //ID of row items
 		}
 
 		if(m_avgFlag){
-			if(m_mode.equals("columnPhi") || m_mode.equals("columnPost") || m_mode.equals("columnProduct") || m_mode.equals("userEmbed")) {
+			if(m_mode.contains("column") || m_mode.equals("userEmbed")) {
 				for (String nei : neighbors) {//column users
 					int neiIndex = m_userIDIndex.get(nei);
 					if (neiIndex == userIndex) continue;
