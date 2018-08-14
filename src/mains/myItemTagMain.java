@@ -33,8 +33,8 @@ public class myItemTagMain {
         String source = "yelp";
         String dataset = "./myData/" + source + "/" + trainset + "/";
         String outputFolder = dataset + "output/" + crossV + "foldsCV" + "/";
-        String model = "LDA_Variational";
-        String mode = "Interpolation";
+        String model = "ETBIR";
+        String mode = "Embed";
         int number_of_topics = 20;
 
         String[] fvFiles = new String[4];

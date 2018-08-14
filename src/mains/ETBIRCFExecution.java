@@ -119,10 +119,10 @@ public class ETBIRCFExecution {
 
                                     // Step 2: perform collaborative filtering
                                     // load candidate items from the saved neighbor file
-//                                    cfInit.saveUserItemPairs(dir);
-//                                    cfFile = String.format("%s/%s_cf_%s_%d_test.csv", saveAdjFolder, param.m_source, neighborSelection, th);
-//                                    cfInit.loadRankingCandidates(cfFile);
-                                    cfInit.constructRankingCandidates();
+                                    cfInit.saveUserItemPairs(dir);
+                                    cfFile = String.format("%s/%s_cf_%s_%d_test.csv", saveAdjFolder, param.m_source, neighborSelection, th);
+                                    cfInit.loadRankingCandidates(cfFile);
+//                                    cfInit.constructRankingCandidates();
 
                                     ArrayList<_User> cfUsers = cfInit.getUsers();
                                     int validUser = cfInit.getValidUserSize();
