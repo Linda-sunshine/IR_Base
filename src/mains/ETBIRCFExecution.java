@@ -119,10 +119,10 @@ public class ETBIRCFExecution {
 
                                     // Step 2: perform collaborative filtering
                                     // load candidate items from the saved neighbor file
-                                    cfInit.saveUserItemPairs(dir);
-                                    cfFile = String.format("%s/%s_cf_%s_%d_test.csv", saveAdjFolder, param.m_source, neighborSelection, th);
-                                    cfInit.loadRankingCandidates(cfFile);
-//                                    cfInit.constructRankingCandidates();
+//                                    cfInit.saveUserItemPairs(dir);
+//                                    cfFile = String.format("%s/%s_cf_%s_%d_test.csv", saveAdjFolder, param.m_source, neighborSelection, th);
+//                                    cfInit.loadRankingCandidates(cfFile);
+                                    cfInit.constructRankingCandidates();
 
                                     ArrayList<_User> cfUsers = cfInit.getUsers();
                                     int validUser = cfInit.getValidUserSize();
@@ -156,7 +156,7 @@ public class ETBIRCFExecution {
                                             docWeight = String.format("%s/%d/%s_phi_%d.txt", outputFolder, i, model, dim);//doc embedding, here won't be used
                                         }
                                     } else if (mode.contains("Product")) {
-                                        if(mode.contains("ETBIR")) {
+                                        if(model.contains("ETBIR")) {
                                             userWeight = String.format("%s/%d/%s_postNu_%d.txt", outputFolder, i, model, dim);//user embedding
                                             itemWeight = String.format("%s/%d/%s_postEta_%d.txt", outputFolder, i, model, dim);//item embedding
                                             docWeight = String.format("%s/%d/%s_phi_%d.txt", outputFolder, i, model, dim);//doc embedding, here won't be used
@@ -164,7 +164,7 @@ public class ETBIRCFExecution {
                                             cf.setMode(mode.contains("row")?"rowPost":"columnPost");
                                             userWeight = String.format("%s/%d/%s_postByUser_%d.txt", outputFolder, i, model, dim);//user embedding
                                             itemWeight = String.format("%s/%d/%s_postByItem_%d.txt", outputFolder, i, model, dim);//item embedding
-                                            if (mode.contains("LDA"))
+                                            if (model.contains("LDA"))
                                                 docWeight = String.format("%s/%d/%s_postGamma_%d.txt", outputFolder, i, model, dim);//doc embedding
                                             else
                                                 docWeight = String.format("%s/%d/%s_postSoftmax_%d.txt", outputFolder, i, model, dim);//doc embedding

@@ -458,8 +458,8 @@ public class _User {
 				m_trainReviews.add(r);
 				if (!m_trainItems.contains(r.getItemID()))
 					m_trainItems.add(r.getItemID());
-				else
-					System.err.println("[Warning]One user reviewed item twice!");
+//				else
+//					System.err.println("[Warning]One user reviewed item twice!");
 			}
 			else{
 				m_testReviews.add(r);
