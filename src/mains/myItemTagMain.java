@@ -1,9 +1,7 @@
 package mains;
 
-import Analyzer.BipartiteAnalyzer;
 import Analyzer.MultiThreadedReviewAnalyzer;
 import Application.ItemTagging;
-import structures._Corpus;
 import structures._Doc;
 import structures._Review;
 
