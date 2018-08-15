@@ -17,6 +17,8 @@ import topicmodels.multithreads.TopicModelWorker;
 import utils.Utils;
 import LBFGS.LBFGS;
 
+import javax.rmi.CORBA.Util;
+
 /**
  * @author Lu Lin
  * Variational inference for Explainable Topic-Based Item Recommendation (ETBIR) model
@@ -61,6 +63,7 @@ public class ETBIR extends LDA_Variational {
 
     protected String m_mode;
     protected boolean m_flag_fix_lambda;
+    protected boolean m_flag_diagonal_lambda;
     protected boolean m_flag_gd;
 
     //coldstart_all, coldstart_user, coldstart_item, normal;
@@ -81,6 +84,7 @@ public class ETBIR extends LDA_Variational {
         this.m_rho = rho;
         this.m_mode = "Normal";
         this.m_flag_fix_lambda = false;
+        this.m_flag_diagonal_lambda = false;
         this.m_flag_gd = false;
         m_logSpace = true;
     }
@@ -90,6 +94,8 @@ public class ETBIR extends LDA_Variational {
     }
 
     public void setFlagLambda(boolean flagLambda){ this.m_flag_fix_lambda = flagLambda; }
+
+    public void setFlagDiagonal(boolean flagDiagonal){ this.m_flag_diagonal_lambda = flagDiagonal; }
 
     public void setFlagGd(boolean flagGd){ this.m_flag_gd = flagGd; }
 
@@ -133,9 +139,16 @@ public class ETBIR extends LDA_Variational {
     protected void updateStats4User(_User4ETBIR user){
         for(int k = 0; k < len2; k++){
             for(int l = 0; l < len2; l++){
-                m_pStats += user.m_SigmaP[k][l][l] + user.m_nuP[k][l] * user.m_nuP[k][l] - 2 * m_lambda * user.m_nuP[k][k] + m_lambda * m_lambda;
+                if(!m_flag_diagonal_lambda)
+                    m_pStats += user.m_SigmaP[k][l][l] + user.m_nuP[k][l] * user.m_nuP[k][l]
+                            - 2 * m_lambda * number_of_topics * Utils.sumOfArray(user.m_nuP[k]) + m_lambda * m_lambda * number_of_topics;
+                else
+                    m_pStats += user.m_SigmaP[k][l][l] + user.m_nuP[k][l] * user.m_nuP[k][l] - 2 * m_lambda * user.m_nuP[k][k] + m_lambda * m_lambda;
             }
-            m_lambda_Stats += user.m_nuP[k][k];
+            if(!m_flag_diagonal_lambda)
+                m_lambda_Stats += Utils.sumOfArray(user.m_nuP[k]);
+            else
+                m_lambda_Stats += user.m_nuP[k][k];
         }
     }
 
@@ -368,7 +381,7 @@ public class ETBIR extends LDA_Variational {
     // alternative: line search / fixed-stepsize gradient descent
     void update_mu(_Doc4ETBIR doc, _User4ETBIR user, _Product4ETBIR item){
         double fValue = 1.0, lastFValue = 1.0, cvg = 1e-6, diff, iterMax = 30, iter = 0;
-        double stepsize = 1e-3, muG; // gradient for mu
+        double stepsize = 1e-4, muG; // gradient for mu
         int N = doc.getTotalDocLength();
 
         double moment, norm, check1, check2, check3;
@@ -410,7 +423,7 @@ public class ETBIR extends LDA_Variational {
 
     private void update_SigmaTheta(_Doc4ETBIR d){
         double fValue = 1.0, lastFValue = 1.0, cvg = 1e-6, diff, iterMax = 20, iter = 0;
-        double stepsize = 1e-3, moment;
+        double stepsize = 1e-4, moment;
         double sigmaG; // gradient for Sigma
         int N = d.getTotalDocLength();
 
@@ -566,8 +579,12 @@ public class ETBIR extends LDA_Variational {
                 u.m_nuP[k][l] = 0;
                 for(int j=0; j<number_of_topics; j++) {
                     u.m_nuP[k][l] += etaMu[k][j] * Sigma[l][j];
-                    if(j == k){
-                        u.m_nuP[k][l] += m_sigma * m_lambda * Sigma[l][j];
+                    if(!m_flag_diagonal_lambda){
+                        u.m_nuP[k][l] += m_sigma * m_lambda * Utils.sumOfArray(Sigma[l]);
+                    }else {
+                        if (j == k) {
+                            u.m_nuP[k][l] += m_sigma * m_lambda * Sigma[l][j];
+                        }
                     }
                 }
             }
@@ -577,7 +594,7 @@ public class ETBIR extends LDA_Variational {
     // update eta with non-negative constraint using fix step graident descent
     private void update_eta(_Product4ETBIR i, double[] pNuStates, double[][] pSumStates){
         double fValue = 1.0, lastFValue, cvg = 1e-6, diff, iterMax = 20, iter = 0, alpha0 = Utils.sumOfArray(m_alpha);
-        double stepsize = 1e-3;
+        double stepsize = 1e-4;
 
         double[] etaG = new double[number_of_topics], etaH = new double[number_of_topics];
         double[] eta_log = new double[number_of_topics];
@@ -657,7 +674,10 @@ public class ETBIR extends LDA_Variational {
             double temp1 = 0.0;
             for(int l = 0; l < number_of_topics; l++)
                 temp1 += u.m_SigmaP[k][l][l] + u.m_nuP[k][l] * u.m_nuP[k][l];
-            temp1 += m_lambda * m_lambda - 2 * m_lambda * u.m_nuP[k][k];
+            if(!m_flag_diagonal_lambda)
+                temp1 += m_lambda * m_lambda * number_of_topics - 2 * m_lambda * number_of_topics * Utils.sumOfArray(u.m_nuP[k]);
+            else
+                temp1 += m_lambda * m_lambda - 2 * m_lambda * u.m_nuP[k][k];
 
             double det = new LUDecomposition(MatrixUtils.createRealMatrix(u.m_SigmaP[k])).getDeterminant();
             log_likelihood += -0.5 * (temp1 * m_sigma - number_of_topics)

@@ -29,6 +29,7 @@ public class TopicModelParameter {
 
 	public boolean m_flag_gd = false;
 	public boolean m_flag_fix_lambda = false;
+	public boolean m_flag_diagonal = false;
 
 	public boolean m_flag_tune = false;
 
@@ -90,6 +91,8 @@ public class TopicModelParameter {
 				m_flag_gd = argv[i].equals("true");
 			else if (argv[i-1].equals("-flagFixLambda"))
 				m_flag_fix_lambda = argv[i].equals("true");
+			else if (argv[i-1].equals("-flagDiagonal"))
+				m_flag_diagonal = argv[i].equals("true");
 			else if (argv[i-1].equals("-flagTune"))
 				m_flag_tune = argv[i].equals("true");
 			else if (argv[i-1].equals("-flagColdstart"))
