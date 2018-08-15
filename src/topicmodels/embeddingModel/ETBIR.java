@@ -141,7 +141,7 @@ public class ETBIR extends LDA_Variational {
             for(int l = 0; l < len2; l++){
                 if(!m_flag_diagonal_lambda)
                     m_pStats += user.m_SigmaP[k][l][l] + user.m_nuP[k][l] * user.m_nuP[k][l]
-                            - 2 * m_lambda * number_of_topics * Utils.sumOfArray(user.m_nuP[k]) + m_lambda * m_lambda * number_of_topics;
+                            - 2 * m_lambda * Utils.sumOfArray(user.m_nuP[k]) + m_lambda * m_lambda * number_of_topics;
                 else
                     m_pStats += user.m_SigmaP[k][l][l] + user.m_nuP[k][l] * user.m_nuP[k][l] - 2 * m_lambda * user.m_nuP[k][k] + m_lambda * m_lambda;
             }
@@ -675,7 +675,7 @@ public class ETBIR extends LDA_Variational {
             for(int l = 0; l < number_of_topics; l++)
                 temp1 += u.m_SigmaP[k][l][l] + u.m_nuP[k][l] * u.m_nuP[k][l];
             if(!m_flag_diagonal_lambda)
-                temp1 += m_lambda * m_lambda * number_of_topics - 2 * m_lambda * number_of_topics * Utils.sumOfArray(u.m_nuP[k]);
+                temp1 += m_lambda * m_lambda * number_of_topics - 2 * m_lambda * Utils.sumOfArray(u.m_nuP[k]);
             else
                 temp1 += m_lambda * m_lambda - 2 * m_lambda * u.m_nuP[k][k];
 
