@@ -88,7 +88,7 @@ public class myDataProcessMain {
         }
     }
 
-    public static void save2File(String prefix, String source, String mode, int k){
+    public static void save2File(String prefix, String source, String mode, int k) throws IOException{
         ArrayList<_Doc> docs = new ArrayList<>();
         ArrayList<int[]> links = new ArrayList<>();
         for(Map.Entry<Integer, ArrayList<Integer>> entry : m_mapByUser.entrySet()){
@@ -104,10 +104,32 @@ public class myDataProcessMain {
                 }
             }
         }
-        String docFile = String.format("%s/%s_user_corpus_%s_%d", prefix,source, mode, k);
-        String linkFile = String.format("%s/%s_user_link_%s_%d", prefix, source, mode, k);
+        String docFile = String.format("%s/%s_user_corpus_%s_%d.txt", prefix,source, mode, k);
+        String linkFile = mode.equals("test") ? String.format("%s/%s_user_link_%s_train_%d.txt", prefix, source, mode, k) : String.format("%s/%s_user_link_%s_%d.txt", prefix, source, mode, k);
         saveDoc(docFile, docs);
         saveLink(linkFile, links);
+        if(mode.equals("test"))
+            (new File(String.format("%s/%s_user_link_%s_test_%d.txt", prefix, source, mode, k))).createNewFile();
+
+        for(Map.Entry<Integer, ArrayList<Integer>> entry : m_mapByItem.entrySet()){
+            ArrayList<Integer> cluster = new ArrayList<>();
+            for(Integer uIdx : entry.getValue()) {
+                _Doc temp = m_bipartite.getCorpus().getCollection().get(m_reviewIndex.get(String.format("%d_%d", entry.getKey(), uIdx)));
+                cluster.add(docs.size());
+                docs.add(temp);
+            }
+            for(int i = 0; i < cluster.size(); i++){
+                for(int j = i+1; j < cluster.size(); j++){
+                    links.add(new int[]{i,j});
+                }
+            }
+        }
+        docFile = String.format("%s/%s_item_corpus_%s_%d.txt", prefix,source, mode, k);
+        linkFile = mode.equals("test") ? String.format("%s/%s_item_link_%s_train_%d.txt", prefix, source, mode, k) : String.format("%s/%s_item_link_%s_%d.txt", prefix, source, mode, k);
+        saveDoc(docFile, docs);
+        saveLink(linkFile, links);
+        if(mode.equals("test"))
+            (new File(String.format("%s/%s_item_link_%s_test_%d.txt", prefix, source, mode, k))).createNewFile();
     }
 
     public static void saveDoc(String filename, ArrayList<_Doc> docs) {
