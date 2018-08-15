@@ -9,7 +9,6 @@ import java.util.ArrayList;
 import opennlp.tools.util.InvalidFormatException;
 import structures._User;
 import Analyzer.MultiThreadedLMAnalyzer;
-import Analyzer.MultiThreadedReviewAnalyzer;
 import Application.CollaborativeFiltering;
 import Application.CollaborativeFilteringWithETBIR;
 import utils.Utils;

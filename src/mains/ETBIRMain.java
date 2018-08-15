@@ -2,7 +2,6 @@ package mains;
 
 import java.io.*;
 import java.text.ParseException;
-import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -18,7 +17,6 @@ import topicmodels.multithreads.LDA.LDA_Variational_multithread;
 import topicmodels.multithreads.embeddingModel.ETBIR_multithread;
 import topicmodels.multithreads.pLSA.pLSA_multithread;
 import topicmodels.pLSA.pLSA;
-import utils.Utils;
 
 
 /**

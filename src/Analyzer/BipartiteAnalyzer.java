@@ -349,6 +349,7 @@ public class BipartiteAnalyzer {
         }
     }
 
+    public _Corpus getCorpus(){ return this.m_corpus; }
     public List<_User> getUsers(){ return this.m_users; }
     public List<_Product> getItems(){ return this.m_items; }
     public HashMap<String, Integer> getUsersIndex() { return this.m_usersIndex; }
