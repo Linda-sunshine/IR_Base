@@ -36,24 +36,24 @@ public class ETBIRMain {
         String tokenModel = "./data/Model/en-token.bin";
 
         /*****parameters for topic model*****/
-        String topicmodel = "LDA_User"; // CTM, LDA_Variational, LDA_User, LDA_Item, ETBIR, ETBIR_User, ETBIR_Item
+        String topicmodel = "ETBIR"; // CTM, LDA_Variational, LDA_User, LDA_Item, ETBIR, ETBIR_User, ETBIR_Item
         int number_of_topics = 20;
         int varMaxIter = 20;
         double varConverge = 1e-6;
-        int emMaxIter = 10;
+        int emMaxIter = 30;
         double emConverge = 1e-10;
 
         double alpha = 1 + 1e-2, beta = 1 + 1e-3, lambda = 1 + 1e-3;//these two parameters must be larger than 1!!!
-        double sigma = 1.1, rho = 1.1;
+        double sigma = 0.1, rho = 0.1;
 
         int topK = 50;
-        int crossV = 5;
+        int crossV = 1;
         boolean setRandomFold = false;
         boolean flag_coldstart = false;
 
         /*****data setting*****/
-        String trainset = "byUser_4k_review";
-        String source = "yelp";
+        String trainset = "byUser_9k_reviews";
+        String source = "amazon_movie";
         String dataset = "./myData/" + source + "/" + trainset + "/";
         String outputFolder = String.format("%soutput/%dfoldsCV%s/", dataset, crossV, flag_coldstart?"Coldstart":"");
 
