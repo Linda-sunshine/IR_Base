@@ -36,7 +36,7 @@ public class myDataProcessMain {
         /*****data setting*****/
         String folder = String.format("%s/%s/%s", param.m_prefix, param.m_source, param.m_set);
         String fvFile = String.format("%s/%s/%s_features.txt", param.m_prefix, param.m_source, param.m_source);
-        String outputFolder = String.format("%s/RTM/", folder);
+        String outputFolder = String.format("%s/CTPE/", folder);
         new File(outputFolder).mkdirs();
 
         String reviewFolder =  String.format("%s/%dfoldsCV%s/", folder, crossV, flag_coldstart?"Coldstart":"");
@@ -50,9 +50,19 @@ public class myDataProcessMain {
             for(_Doc d : analyzer.getCorpus().getCollection()){
                 d.setType(_Review.rType.TEST);
             }
+            //load validation set
+            int val=0;
+            if(k < crossV-1)
+                val = k + 1;
+            String validationFolder = reviewFolder + val + "/";
+            analyzer.loadUserDir(testFolder);
+            for(_Doc d : analyzer.getCorpus().getCollection()){
+                if(d.getType()!=_Review.rType.TEST)
+                    d.setType(_Review.rType.ADAPTATION);
+            }
             //load train set
             for(int i = 0; i < crossV; i++){
-                if(i!=k){
+                if(i!=k && i!=val){
                     String trainFolder = reviewFolder + i + "/";
                     analyzer.loadUserDir(trainFolder);
                 }
@@ -68,27 +78,47 @@ public class myDataProcessMain {
 
             ArrayList<_Doc> m_trainSet = new ArrayList<_Doc>();
             ArrayList<_Doc> m_testSet = new ArrayList<_Doc>();
+            ArrayList<_Doc> m_validationSet = new ArrayList<>();
             for(_Doc d:analyzer.getCorpus().getCollection()){
                 if(d.getType() == _Doc.rType.TRAIN){
                     m_trainSet.add(d);
                 }else if(d.getType() == _Doc.rType.TEST){
                     m_testSet.add(d);
+                }else if(d.getType() == _Doc.rType.ADAPTATION){
+                    m_validationSet.add(d);
                 }
             }
 
-            m_bipartite.analyzeBipartite(m_trainSet, "train");
-            m_mapByUser = m_bipartite.getMapByUser();
-            m_mapByItem = m_bipartite.getMapByItem();
-            save2File(outputFolder, param.m_source, "train", k);
-
-            m_bipartite.analyzeBipartite(m_trainSet, "test");
-            m_mapByUser = m_bipartite.getMapByUser();
-            m_mapByItem = m_bipartite.getMapByItem();
-            save2File(outputFolder, param.m_source, "test", k);
+            String[] modes = new String[]{"train","validation","test"};
+            for(String mode : modes) {
+                m_bipartite.analyzeBipartite(m_trainSet, mode);
+                m_mapByUser = m_bipartite.getMapByUser();
+                m_mapByItem = m_bipartite.getMapByItem();
+                save2FileCTPE(outputFolder, param.m_source, mode, k);
+            }
         }
     }
 
-    public static void save2File(String prefix, String source, String mode, int k) throws IOException{
+    public static void save2FileCTPE(String prefix, String source, String mode, int k) throws IOException{
+        ArrayList<_Doc> docs = new ArrayList<>();
+        for(Map.Entry<Integer, ArrayList<Integer>> entry : m_mapByUser.entrySet()){
+            for(Integer iIdx : entry.getValue()) {
+                _Doc temp = m_bipartite.getCorpus().getCollection().get(m_reviewIndex.get(String.format("%d_%d", iIdx, entry.getKey())));
+                docs.add(temp);
+            }
+        }
+        String rateFile = String.format("%s/%s/%d/%s.tsv", prefix, source, k, mode);
+        String userFile = String.format("%s/%s/%d/%s_users.tsv", prefix, source, k, mode);
+        String docFile = String.format("%s/%s/%d/%s_mult.dat", prefix, source, k, mode);
+        if(mode.equals("train"))
+            docFile = String.format("%s/%s/%d/mult.dat", prefix, source, k, mode);
+        (new File(docFile)).getParentFile().mkdirs();
+        saveRate(rateFile, docs);
+        saveUser(userFile, docs);
+        saveDoc(docFile, docs);
+    }
+
+    public static void save2FileRTM(String prefix, String source, String mode, int k) throws IOException{
         ArrayList<_Doc> docs = new ArrayList<>();
         ArrayList<int[]> links = new ArrayList<>();
         for(Map.Entry<Integer, ArrayList<Integer>> entry : m_mapByUser.entrySet()){
@@ -130,6 +160,53 @@ public class myDataProcessMain {
         saveLink(linkFile, links);
         if(mode.equals("test"))
             (new File(String.format("%s/%s_item_link_%s_test_%d.txt", prefix, source, mode, k))).createNewFile();
+    }
+
+    public static void saveRate(String filename, ArrayList<_Doc> docs) {
+        if (filename==null || filename.isEmpty()) {
+            System.out.println("Please specify the file name to save the vectors!");
+            return;
+        }
+
+        try {
+            BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(filename)));
+            for(_Doc doc:docs) {
+                _Review r = (_Review) doc;
+                String userID = r.getUserID();
+                String itemID = r.getItemID();
+                int rate = r.getYLabel();
+                writer.write(String.format("%s\t%s\t%d\n", userID, itemID, rate));
+            }
+            writer.close();
+
+            System.out.format("[Info]%d rates saved to %s\n", docs.size(), filename);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public static void saveUser(String filename, ArrayList<_Doc> docs) {
+        if (filename==null || filename.isEmpty()) {
+            System.out.println("Please specify the file name to save the vectors!");
+            return;
+        }
+
+        try {
+            BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(filename)));
+            Set<String> users = new HashSet<>();
+            for(_Doc doc:docs) {
+                _Review r = (_Review) doc;
+                String userID = r.getUserID();
+                users.add(userID);
+            }
+            for(String uid : users)
+                writer.write(String.format("%s\n", uid));
+            writer.close();
+
+            System.out.format("[Info]%d users saved to %s\n", docs.size(), filename);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     public static void saveDoc(String filename, ArrayList<_Doc> docs) {
