@@ -441,7 +441,7 @@ iterFilterReview {
 
         int userMinCount = 40;
         int itemMinCount = 60;
-        int filtIterNum = 12;
+        int filtIterNum = 15;
 
         //yelp
 //        String itemFileName = "../myData/yelp/business.json";

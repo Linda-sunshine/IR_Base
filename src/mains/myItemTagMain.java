@@ -32,7 +32,7 @@ public class myItemTagMain {
         String dataset = "./myData/" + source + "/" + trainset + "/";
         String outputFolder = dataset + "output/" + crossV + "foldsCV" + "/";
         String model = "ETBIR";
-        String mode = "Embed";
+        String mode = "LM";
         int number_of_topics = 20;
 
         String[] fvFiles = new String[4];

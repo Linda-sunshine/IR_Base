@@ -1,0 +1,5 @@
+#!/bin/sh
+model="ETBIR"
+src="amazon_movie"
+nohup ./run -topicmodel $model -source $src -nuOfTopics 20 -emIter 30 -set byUser_70k_review -flagColdstart true -flagGd true > ./output/$source_70k_$model_20.output 2>&1 &
+
