@@ -31,7 +31,7 @@ public class ETBIRCFMain {
 
         /*****data setting*****/
         String locate = "./myData";
-        String scaleset = "byUser_70k_review";
+        String scaleset = "byUser_4k_review";
         String dataset = "yelp";
         String folder = String.format("%s/%s/%s",locate, dataset, scaleset);
         String inputFolder = String.format("%s/%dfoldsCV", folder, crossV);
