@@ -1,6 +1,6 @@
 bin/*
 data/*
-data/Features/
+data/Features/*
 .DS_Store
 .classpath
 compile
