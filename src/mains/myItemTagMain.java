@@ -34,8 +34,8 @@ public class myItemTagMain {
         String source = "yelp";
         String dataset = "./myData/" + source + "/" + trainset + "/";
         String outputFolder = dataset + "output/" + crossV + "foldsCV" + "/";
-        String model = "LDA_Variational";
-        String mode = "Embed";
+        String model = "ETBIR";
+        String mode = "BM25";
         int number_of_topics = 20;
 
         String[] fvFiles = new String[4];
@@ -74,7 +74,7 @@ public class myItemTagMain {
                     analyzer.loadUserDir(trainFolder);
                 }
             }
-            analyzer.loadItemWeight(String.format("%s%d/%s_postByItem_%d.txt", outputFolder, k, model, number_of_topics));
+            analyzer.loadItemWeight(String.format("%s%d/%s_postEta_%d.txt", outputFolder, k, model, number_of_topics));
             analyzer.buildItemProfile();
             analyzer.constructTagSet("./myData/" + source + "/business.json");//construct tagset
             analyzer.loadModel(String.format("%s%d/%s_beta_%d.txt", outputFolder, k, model, number_of_topics));
