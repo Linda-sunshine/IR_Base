@@ -2,6 +2,7 @@ package structures;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Set;
 
 import utils.Utils;
 
@@ -11,6 +12,7 @@ public class _Item {
 	protected _SparseFeature[] m_BoWProfile; //The BoW representation of a item.
 	protected HashMap<Integer, Double> m_feature;//hashmap representation of item profile
 	protected double[] m_itemWeights; // the learned eta from ETBIR
+	private Set<Integer> m_tag;
 	protected double m_delta = 0.01;
 	protected double m_D = 0; //length of all reviews
 
@@ -28,6 +30,10 @@ public class _Item {
 	public void addOneReview(_Review r){
 		m_reviews.add(r);
 	}
+
+	public void setTag(Set<Integer> tagID){ this.m_tag = tagID; }
+
+	public Set<Integer> getTag(){ return this.m_tag; }
 	
 	// build the profile for the user
 	public void buildProfile(String model){

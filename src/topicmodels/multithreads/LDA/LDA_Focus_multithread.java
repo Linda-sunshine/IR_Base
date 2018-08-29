@@ -2,18 +2,26 @@ package topicmodels.multithreads.LDA;
 
 import structures._Corpus;
 import structures._Doc;
+import structures._Review;
 import structures._SparseFeature;
 import topicmodels.LDA.LDA_Focus;
 import topicmodels.multithreads.TopicModelWorker;
 import topicmodels.multithreads.TopicModel_worker;
 import utils.Utils;
 
+import java.lang.reflect.Array;
 import java.util.Arrays;
 import java.util.Collection;
 
 public class LDA_Focus_multithread extends LDA_Focus {
 
     public class LDA_Focus_worker extends TopicModel_worker {
+        //coldstart_all, coldstart_user, coldstart_item, normal;
+        protected double[] likelihood_array;
+        protected double[] perplexity_array;
+        protected double[] totalWords_array;
+        protected double[] docSize_array;
+
         protected double[][] alphaStatList;
 
         public LDA_Focus_worker(int number_of_topics, int vocabulary_size) {
@@ -23,6 +31,87 @@ public class LDA_Focus_multithread extends LDA_Focus {
             }else if(m_mode.equals("Item")){
                 alphaStatList = new double[m_items.size()][number_of_topics];
             }
+            likelihood_array = new double[5];
+            perplexity_array = new double[5];
+            totalWords_array = new double[5];
+            docSize_array = new double[5];
+        }
+        
+        public double[] getLogLikelihoodArray() {
+            return likelihood_array;
+        }
+
+        public double[] getPerplexityArray() {
+            return perplexity_array;
+        }
+
+        public double[] getTotalWordsArray(){
+            return totalWords_array;
+        }
+
+        public double[] getDocSizeArray(){
+            return docSize_array;
+        }
+        
+        @Override
+        public void run() {
+            m_likelihood = 0;
+            Arrays.fill(likelihood_array, 0);
+            Arrays.fill(perplexity_array, 0);
+            Arrays.fill(totalWords_array,0);
+            Arrays.fill(docSize_array, 0);
+
+            double loglikelihood = 0, log2 = Math.log(2.0);
+            // System.out.println("thread corpus size\t" + m_corpus.size());
+            long eStartTime = System.currentTimeMillis();
+
+            for(_Doc d:m_corpus) {
+                if (m_type == TopicModel_worker.RunType.RT_EM)
+                    m_likelihood += calculate_E_step(d);
+                else if (m_type == TopicModel_worker.RunType.RT_inference) {
+                    loglikelihood = inference(d);
+
+                    if(!m_mapByUser.containsKey(m_usersIndex.get(((_Review)d).getUserID()))
+                            && !m_mapByItem.containsKey(m_itemsIndex.get(((_Review)d).getItemID()))){//all coldstart
+                        likelihood_array[0] += loglikelihood;
+                        perplexity_array[0] += loglikelihood;
+                        totalWords_array[0] += d.getTotalDocLength();
+                        docSize_array[0] += 1;
+                    }else if(!m_mapByUser.containsKey(m_usersIndex.get(((_Review)d).getUserID()))
+                            && m_mapByItem.containsKey(m_itemsIndex.get(((_Review)d).getItemID()))){//user coldstart
+                        likelihood_array[1] += loglikelihood;
+                        perplexity_array[1] += loglikelihood;
+                        totalWords_array[1] += d.getTotalDocLength();
+                        docSize_array[1] += 1;
+                    }else if(m_mapByUser.containsKey(m_usersIndex.get(((_Review)d).getUserID()))
+                            && !m_mapByItem.containsKey(m_itemsIndex.get(((_Review)d).getItemID()))){//item coldstart
+                        likelihood_array[2] += loglikelihood;
+                        perplexity_array[2] += loglikelihood;
+                        totalWords_array[2] += d.getTotalDocLength();
+                        docSize_array[2] += 1;
+                    }else {
+                        likelihood_array[3] += loglikelihood;
+                        perplexity_array[3] += loglikelihood;
+                        totalWords_array[3] += d.getTotalDocLength();
+                        docSize_array[3] += 1;
+                    }
+//				m_perplexity += Math.pow(2.0, -loglikelihood/d.getTotalDocLength() / log2);
+                    m_likelihood += loglikelihood;
+                    m_perplexity += loglikelihood;
+                    m_totalWords += d.getTotalDocLength();
+
+                    likelihood_array[4] += loglikelihood;
+                    perplexity_array[4] += loglikelihood;
+                    totalWords_array[4] += d.getTotalDocLength();
+                    docSize_array[4] += 1;
+
+                }
+            }
+            long eEndTime = System.currentTimeMillis();
+
+            // System.out.println("per thread per iteration e step time\t"
+            // + (eEndTime - eStartTime));
+
         }
 
         @Override

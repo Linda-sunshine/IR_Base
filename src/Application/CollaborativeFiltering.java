@@ -436,7 +436,7 @@ public class CollaborativeFiltering {
 				ArrayList<String> trainNeis = m_trainMap.get(itemID);
 				for(String nid: trainNeis){
 					if(nid.equals(user.getUserID())){
-						System.out.println("The user has rated the same item twice!");
+//						System.out.println("The user has rated the same item twice!");
 						continue;
 					}
 					int nIdx = m_userIDIndex.get(nid);
@@ -570,6 +570,23 @@ public class CollaborativeFiltering {
 		m_avgNDCG = 0;
 		m_avgMAP = 0;
 	}
+
+	public void constructRankingCandidates(){
+        for(_User u: m_users){
+            String[] rankingItems = u.getRankingItems();
+            if(rankingItems == null)
+                continue;
+
+            for(String item: rankingItems){
+                String uid = u.getUserID();
+                int userIndex = m_userIDIndex.get(uid);
+                if(!m_userMap.containsKey(userIndex))
+                    System.err.println("The user does not exist!");
+                m_userMap.get(userIndex).addOneCandidate(item);
+            }
+            u.setRankingItems(m_trainMap);
+        }
+    }
 	
 	// load pre-selected ranking candidates
 	public void loadRankingCandidates(String filename){

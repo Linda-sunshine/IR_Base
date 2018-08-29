@@ -3,6 +3,7 @@ package mains;
 import java.io.File;
 import java.io.IOException;
 import java.text.ParseException;
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -34,10 +35,10 @@ public class ETBIRExecution {
 		int numberOfCores = Runtime.getRuntime().availableProcessors();
 
 		String tokenModel = "./data/Model/en-token.bin";
-		String dataset = String.format("%s/%s/%s/", param.m_prefix, param.m_source, param.m_set);
+		String dataset = String.format("%s/%s/%s", param.m_prefix, param.m_source, param.m_set);
 		String fvFile = String.format("%s/%s/%s_features.txt", param.m_prefix, param.m_source, param.m_source);
-		String reviewFolder = dataset + "data/";
-		String outputFolder = dataset + "output/" + param.m_crossV + "foldsCV" + "/";
+		String reviewFolder = String.format("%s/data/", dataset);
+		String outputFolder = String.format("%s/output/%dfoldsCV%s/", dataset, param.m_crossV, param.m_flag_coldstart?"Coldstart":"");
 
 		MultiThreadedReviewAnalyzer analyzer = new MultiThreadedReviewAnalyzer(tokenModel, classNumber, fvFile,
 				Ngram, lengthThreshold, numberOfCores, true, param.m_source);
@@ -47,20 +48,22 @@ public class ETBIRExecution {
 		_Corpus corpus = analyzer.getCorpus();
 
 		if(param.m_crossV>1 && setRandomFold==false){
-			reviewFolder = dataset + param.m_crossV + "foldsCV/";
+			reviewFolder = String.format("%s/%dfoldsCV%s/", dataset, param.m_crossV, param.m_flag_coldstart?"Coldstart":"");
 			//if no data, generate
-            String cvFolder = reviewFolder + 0 + "/";
+            String cvFolder = String.format("%s/0/", reviewFolder);
 			File testFile = new File(cvFolder);
 			if(!testFile.exists() && !testFile.isDirectory()){
 				System.err.format("[Warning]Cross validation dataset %s not exist! Now generating...", cvFolder);
 				BipartiteAnalyzer cv = new BipartiteAnalyzer(corpus); // split corpus into folds
 				cv.analyzeCorpus();
-                while(cv.splitCorpus(param.m_crossV,dataset + param.m_crossV + "foldsCV/")==false){
-                    System.err.format("[Info]Split again...\n");
-                }
+				if(param.m_flag_coldstart)
+				    cv.splitCorpusColdStart(param.m_crossV, reviewFolder);
+				else
+                    cv.splitCorpus(param.m_crossV, reviewFolder);
 			}
 		}
 
+        int result_dim = 1;
 		pLSA tModel = null;
 		long current = System.currentTimeMillis();
 		if (param.m_topicmodel.equals("pLSA")) {
@@ -79,6 +82,8 @@ public class ETBIRExecution {
                 ((LDA_Focus_multithread) tModel).setMode("User");
             else if(param.m_topicmodel.equals("LDA_Item"))
                 ((LDA_Focus_multithread) tModel).setMode("Item");
+
+            result_dim = 5;
         } else if(param.m_topicmodel.equals("ETBIR") || param.m_topicmodel.equals("ETBIR_User") || param.m_topicmodel.equals("ETBIR_Item")){
 			tModel = new ETBIR_multithread(param.m_emIter, param.m_emConverge, param.m_beta, corpus, param.m_lambda,
 					param.m_number_of_topics, param.m_alpha, param.m_varMaxIter, param.m_varConverge, param.m_sigma, param.m_rho);
@@ -86,6 +91,11 @@ public class ETBIRExecution {
 			    ((ETBIR_multithread) tModel).setMode("User");
 			else if(param.m_topicmodel.equals("ETBIR_Item"))
 			    ((ETBIR_multithread) tModel).setMode("Item");
+
+			((ETBIR_multithread) tModel).setFlagGd(param.m_flag_gd);
+            ((ETBIR_multithread) tModel).setFlagLambda(param.m_flag_fix_lambda);
+
+            result_dim = 5;
 		} else if(param.m_topicmodel.equals("CTM")){
 			tModel = new CTM(param.m_emIter, param.m_emConverge, param.m_beta, corpus,
 					param.m_lambda, param.m_number_of_topics, param.m_alpha, param.m_varMaxIter, param.m_varConverge);
@@ -108,8 +118,8 @@ public class ETBIRExecution {
             tModel.setPerplexityProportion(testProportion);
             tModel.crossValidation(param.m_crossV);
         } else{//cross validation with fixed folds
-            double[] perf = new double[param.m_crossV];
-            double[] like = new double[param.m_crossV];
+            double[][] perf = new double[param.m_crossV][result_dim];
+            double[][] like = new double[param.m_crossV][result_dim];
             System.out.println("[Info]Start FIXED cross validation...");
             for(int k = 0; k <param.m_crossV; k++){
                 analyzer.getCorpus().reset();
@@ -128,52 +138,70 @@ public class ETBIRExecution {
                 }
                 tModel.setCorpus(analyzer.getCorpus());
 
-                System.out.format("====================\n[Info]Fold No. %d: ", k);
+                System.out.format("====================\n[Info]Fold No. %d: \n", k);
                 double[] results = tModel.oneFoldValidation();
-                perf[k] = results[0];
-                like[k] = results[1];
+                for(int i = 0; i < result_dim; i++){
+                    perf[k][i] = results[2*i];
+                    like[k][i] = results[2*i+1];
+                }
 
                 String resultFolder = outputFolder + k + "/";
                 new File(resultFolder).mkdirs();
                 tModel.printParameterAggregation(param.m_topk, resultFolder, param.m_topicmodel);
                 tModel.printTopWords(param.m_topk);
+
+                if(param.m_flag_tune){
+                    System.out.format("[Info]Tuning mode: only run one fold to save time.\n");
+                    break;
+                }
             }
 
             //output the performance statistics
-            Set invalid = new HashSet();
-            for(int i = 0; i < like.length; i++){
-                if(Double.isNaN(like[i]))
-                    invalid.add(i);
-            }
-            int validLen = like.length - invalid.size();
-            System.out.format("[Info]Valid folds: %d\n", validLen);
-
+            System.out.println();
             double mean = 0, var = 0;
-            for(int i = 0; i < like.length; i++){
-                if(!invalid.contains(i))
-                    mean += like[i];
-            }
-            mean /= validLen;
-            for(int i=0; i<like.length; i++) {
-                if(!invalid.contains(i))
-                    var += (like[i] - mean) * (like[i] - mean);
-            }
-            var = Math.sqrt(var/validLen);
-            System.out.format("[Stat]Loglikelihood %.3f+/-%.3f\n", mean, var);
+            int[] invalid_label = new int[like.length];
+            for(int j = 0; j < result_dim; j++) {
+                System.out.format("Part %d -----------------", j);
+                Arrays.fill(invalid_label, 0);
+                for (int i = 0; i < like.length; i++) {
+                    if (Double.isNaN(like[i][j]) || Double.isNaN(perf[i][j]) || perf[i][j] <= 0 )
+                        invalid_label[i]=1;
+                }
+                int validLen = like.length - Utils.sumOfArray(invalid_label);
+                System.out.format("Valid folds: %d\n", validLen);
 
-            mean = 0;
-            var = 0;
-            for(int i = 0; i < perf.length; i++){
-                if(!invalid.contains(i))
-                    mean += perf[i];
+                mean=0;
+                var=0;
+                for (int i = 0; i < like.length; i++) {
+                    if (invalid_label[i]<1)
+                        mean += like[i][j];
+                }
+                if(validLen>0)
+                    mean /= validLen;
+                for (int i = 0; i < like.length; i++) {
+                    if (invalid_label[i]<1)
+                        var += (like[i][j] - mean) * (like[i][j] - mean);
+                }
+                if(validLen>0)
+                    var = Math.sqrt(var / validLen);
+                System.out.format("[Stat]Loglikelihood %.3f+/-%.3f\n", mean, var);
+
+                mean = 0;
+                var = 0;
+                for (int i = 0; i < perf.length; i++) {
+                    if (invalid_label[i]<1)
+                        mean += perf[i][j];
+                }
+                if(validLen>0)
+                    mean /= validLen;
+                for (int i = 0; i < perf.length; i++) {
+                    if (invalid_label[i]<1)
+                        var += (perf[i][j] - mean) * (perf[i][j] - mean);
+                }
+                if(validLen>0)
+                    var = Math.sqrt(var / validLen);
+                System.out.format("[Stat]Perplexity %.3f+/-%.3f\n", mean, var);
             }
-            mean /= validLen;
-            for(int i=0; i<perf.length; i++) {
-                if(!invalid.contains(i))
-                    var += (perf[i] - mean) * (perf[i] - mean);
-            }
-            var = Math.sqrt(var/validLen);
-            System.out.format("[Stat]Perplexity %.3f+/-%.3f\n", mean, var);
         }
     }
 }

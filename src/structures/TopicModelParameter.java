@@ -26,6 +26,17 @@ public class TopicModelParameter {
 	public double m_emConverge = 1e-10;
 	
 	public String m_output = String.format("%s/%s/%s/output", m_prefix, m_source, m_set);// output directory
+
+	public boolean m_flag_gd = false;
+	public boolean m_flag_fix_lambda = false;
+	public boolean m_flag_diagonal = false;
+
+	public boolean m_flag_tune = false;
+
+	public boolean m_flag_coldstart = false;
+
+	//item tagging
+	public String m_mode;
 		
 	public TopicModelParameter(String argv[]){
 		
@@ -75,6 +86,20 @@ public class TopicModelParameter {
 				m_emConverge = Double.valueOf(argv[i]);
 			else if (argv[i-1].equals("-output"))
 				m_output = argv[i];
+
+			else if (argv[i-1].equals("-flagGd"))
+				m_flag_gd = argv[i].equals("true");
+			else if (argv[i-1].equals("-flagFixLambda"))
+				m_flag_fix_lambda = argv[i].equals("true");
+			else if (argv[i-1].equals("-flagDiagonal"))
+				m_flag_diagonal = argv[i].equals("true");
+			else if (argv[i-1].equals("-flagTune"))
+				m_flag_tune = argv[i].equals("true");
+			else if (argv[i-1].equals("-flagColdstart"))
+				m_flag_coldstart = argv[i].equals("true");
+
+			else if(argv[i-1].equals("-mode"))
+				m_mode = argv[i];
 			else
 				System.exit(1);
 		}
