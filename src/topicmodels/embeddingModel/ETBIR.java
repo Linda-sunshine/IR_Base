@@ -24,44 +24,44 @@ import javax.rmi.CORBA.Util;
  * Variational inference for Explainable Topic-Based Item Recommendation (ETBIR) model
  */
 public class ETBIR extends LDA_Variational {
-    final static double log2PI = Math.log(2*Math.PI);
+    /*****data structures*****/
+    protected List<_User> m_users; //all the users in training and test set
+    protected List<_Product> m_items; //all the items in training and test set
 
-    protected int number_of_users;
-    protected int number_of_items;
-    protected int len1;
-    protected int len2;
+    //index structure for all users, items and reviews
+    protected HashMap<String, Integer> m_usersIndex; //(key: userID, value: index in m_users)
+    protected HashMap<String, Integer> m_itemsIndex; //(key: itemID, value: index in m_items)
+    protected HashMap<String, Integer> m_reviewIndex; //(key: itemIndex_userIndex, value: index in m_corpus.m_collection)
 
-    protected List<_User> m_users;
-    protected List<_Product> m_items;
+    //index structure for users and items in training set
+    protected HashMap<Integer, ArrayList<Integer>>  m_mapByUser; //(key: userIndex, value: List of itemIndex that this user has reviewed in training set)
+    protected HashMap<Integer, ArrayList<Integer>> m_mapByItem; //(key: itemIndex, value: List of userIndex that this item is reviewed by in training set)
 
-    protected HashMap<String, Integer> m_usersIndex; //(userID, index in m_users)
-    protected HashMap<String, Integer> m_itemsIndex; //(itemID, index in m_items)
-    protected HashMap<String, Integer> m_reviewIndex; //(itemIndex_userIndex, index in m_corpus.m_collection)
+    //index structure for users and items in test set
+    protected HashMap<Integer, ArrayList<Integer>> m_mapByUser_test; //(key: userIndex, value: List of itemIndex that this user reviews in test set)
+    protected HashMap<Integer, ArrayList<Integer>> m_mapByItem_test; //(key: itemIndex, value: List of userIndex that this item is reviewed by in test set)
 
-    //training set of users and items
-    protected HashMap<Integer, ArrayList<Integer>>  m_mapByUser; //adjacent list for user, controlled by m_testFlag.
-    protected HashMap<Integer, ArrayList<Integer>> m_mapByItem;
-
-    //testing set of users and items
-    protected HashMap<Integer, ArrayList<Integer>> m_mapByUser_test; //test
-    protected HashMap<Integer, ArrayList<Integer>> m_mapByItem_test;
-
+    //an bipartite analyzer to generate user-item bipartite
     protected BipartiteAnalyzer m_bipartite;
 
-    //this is variance parameter for the model
+    /*****variational parameters*****/
+    protected double d_mu = 1.0, d_sigma_theta = 1.0;
+    protected double d_nu = 1.0, d_sigma_P = 1.0;
+
+    /*****model parameters*****/
     protected double m_rho;
     protected double m_sigma;
+    //note that m_lambda is used as mean value for user P
 
-    protected double m_pStats;
-    protected double m_thetaStats;
-    protected double m_eta_p_Stats;
-    protected double m_eta_mean_Stats;
-    protected double m_lambda_Stats;
+    /*****statistics for M_step*****/
+    protected double m_pStats;//to update \sigma
+    protected double m_thetaStats;//to update \rho
+    protected double m_eta_p_Stats;//to update \rho
+    protected double m_eta_mean_Stats;//to update \rho
+    protected double m_lambda_Stats;//to update \lambda
 
-    double d_mu = 1.0, d_sigma_theta = 1.0;
-    double d_nu = 1.0, d_sigma_P = 1.0;
-
-    protected String m_mode;
+    /*****extended settings*****/
+    protected String m_mode;//to indicate uTUIR(disable item component) or iTUIR(disable user component)
     protected boolean m_flag_fix_lambda;
     protected boolean m_flag_diagonal_lambda;
     protected boolean m_flag_gd;
@@ -102,13 +102,10 @@ public class ETBIR extends LDA_Variational {
     @Override
     protected void createSpace() {
         super.createSpace();
-
-        this.len1 = number_of_topics;
-        this.len2 = number_of_topics;
-        m_alpha = new double[len2];
-        m_alphaStat = new double[len2];
-        m_alphaG = new double[len2];
-        m_alphaH = new double[len2];
+        m_alpha = new double[number_of_topics];
+        m_alphaStat = new double[number_of_topics];
+        m_alphaG = new double[number_of_topics];
+        m_alphaH = new double[number_of_topics];
 
         Arrays.fill(m_alpha, d_alpha);
     }
@@ -132,13 +129,13 @@ public class ETBIR extends LDA_Variational {
 
     protected void updateStats4Item(_Product4ETBIR item){
         double digammaSum = Utils.digamma(Utils.sumOfArray(item.m_eta));
-        for(int k = 0; k < len2; k++)
+        for(int k = 0; k < number_of_topics; k++)
             m_alphaStat[k] += Utils.digamma(item.m_eta[k]) - digammaSum;
     }
 
     protected void updateStats4User(_User4ETBIR user){
-        for(int k = 0; k < len2; k++){
-            for(int l = 0; l < len2; l++){
+        for(int k = 0; k < number_of_topics; k++){
+            for(int l = 0; l < number_of_topics; l++){
                 if(!m_flag_diagonal_lambda)
                     m_pStats += user.m_SigmaP[k][l][l] + user.m_nuP[k][l] * user.m_nuP[k][l]
                             - 2 * m_lambda * Utils.sumOfArray(user.m_nuP[k]) + m_lambda * m_lambda * number_of_topics;
