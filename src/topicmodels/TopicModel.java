@@ -9,6 +9,7 @@ import structures._Corpus;
 import structures._Doc;
 import topicmodels.markovmodel.HTSM;
 import topicmodels.multithreads.TopicModelWorker;
+import topicmodels.multithreads.TopicModel_worker;
 import topicmodels.multithreads.TopicModel_worker.RunType;
 import utils.Utils;
 
@@ -242,8 +243,8 @@ public abstract class TopicModel {
 		return 0;
 	}
 
-	public void EM() {	
-		System.out.format("Starting %s...\n", toString());
+	public void EM() {
+		System.out.format("[Info]EM Starting %s...\n", toString());
 		
 		long starttime = System.currentTimeMillis();
 		
@@ -279,8 +280,8 @@ public abstract class TopicModel {
 			if (m_displayLap>0 && i%m_displayLap==0) {
 				if (m_converge>0) {
 				    System.out.println("==============");
-					System.out.format("[Stat] Likelihood %.5f at step %s converge to %.10f...\n", current, i, delta);
-					infoWriter.format("[Stat] Likelihood %.5f at step %s converge to %.10f...\n", current, i, delta);
+					System.out.format("[Info]Likelihood %.5f at step %s converge to %.10f...\n", current, i, delta);
+					infoWriter.format("[Info]Likelihood %.5f at step %s converge to %.10f...\n", current, i, delta);
 
 				} else {
 					System.out.print(".");
@@ -292,8 +293,6 @@ public abstract class TopicModel {
 				}
 			}
 
-			printTopWords(50);
-
 			if (m_converge>0 && Math.abs(delta)<m_converge)
 				break;//to speed-up, we don't need to compute likelihood in many cases
 		} while (++i<this.number_of_iteration);
@@ -301,8 +300,8 @@ public abstract class TopicModel {
 		finalEst();
 		
 		long endtime = System.currentTimeMillis() - starttime;
-		System.out.format("Likelihood %.3f after step %s converge to %f after %d seconds...\n", current, i, delta, endtime/1000);	
-		infoWriter.format("Likelihood %.3f after step %s converge to %f after %d seconds...\n", current, i, delta, endtime/1000);	
+		System.out.format("[Info]Likelihood %.3f after step %s converge to %f after %d seconds...\n", current, i, delta, endtime/1000);
+		infoWriter.format("[Info]Likelihood %.3f after step %s converge to %f after %d seconds...\n", current, i, delta, endtime/1000);
 	}
 
 	public double Evaluation() {
@@ -311,14 +310,14 @@ public abstract class TopicModel {
 		double totalWords = 0.0;
 		if (m_multithread) {
 			multithread_inference();
-			System.out.println("In thread");
+			System.out.println("[Info]Start evaluation in thread...");
 			for(TopicModelWorker worker:m_workers) {
 				sumLikelihood += worker.getLogLikelihood();
 				perplexity += worker.getPerplexity();
 				totalWords += worker.getTotalWords();
 			}
 		} else {
-			System.out.println("In Normal");
+			System.out.println("[Info]Start evaluation in Normal...");
 			for(_Doc d:m_testSet) {				
 				loglikelihood = inference(d);
 				sumLikelihood += loglikelihood;
@@ -328,19 +327,16 @@ public abstract class TopicModel {
 			}
 			
 		}
-//		perplexity /= m_testSet.size();
-		perplexity /= totalWords;
-		perplexity = Math.exp(-perplexity);
+        perplexity = Math.exp(-perplexity/totalWords);
 		sumLikelihood /= m_testSet.size();
 		
 		if(this instanceof HTSM)
 			calculatePrecisionRecall();
 
-		System.out.format("Test set perplexity is %.3f and log-likelihood is %.3f\n", perplexity, sumLikelihood);
+		System.out.format("[Stat]Test set perplexity is %.3f and log-likelihood is %.3f\n", perplexity, sumLikelihood);
 		
 		return perplexity;
 	}
-
 	
 	public void debugOutputWrite(){
 		debugWriter.println("Doc ID, Source, SentenceIndex, ActualSentiment, PredictedSentiment");
@@ -405,30 +401,6 @@ public abstract class TopicModel {
 		m_testWord4PerplexityProportion = proportion;
 	}
 
-	public double oneFoldValidation(){
-        m_trainSet = new ArrayList<_Doc>();
-        m_testSet = new ArrayList<_Doc>();
-        for(_Doc d:m_corpus.getCollection()){
-            if(d.getType() == _Doc.rType.TRAIN){
-                m_trainSet.add(d);
-            }else if(d.getType() == _Doc.rType.TEST){
-                m_testSet.add(d);
-            }
-        }
-
-        System.out.println("Train Set Size "+m_trainSet.size());
-        System.out.println("Test Set Size "+m_testSet.size());
-
-        long start = System.currentTimeMillis();
-        EM();
-        double perf = Evaluation();
-        System.out.format("%s Train/Test finished in %.2f seconds...\n", this.toString(), (System.currentTimeMillis()-start)/1000.0);
-        m_trainSet.clear();
-        m_testSet.clear();
-
-        return perf;
-    }
-
 	//k-fold Cross Validation.
 	public void crossValidation(int k) {
         m_trainSet = new ArrayList<_Doc>();
@@ -447,6 +419,7 @@ public abstract class TopicModel {
 			int[] masks = m_corpus.getMasks();
 			ArrayList<_Doc> docs = m_corpus.getCollection();
 			//Use this loop to iterate all the ten folders, set the train set and test set.
+            System.out.println("[Info]Start RANDOM cross validation...");
 			for (int i = 0; i < k; i++) {
 				for (int j = 0; j < masks.length; j++) {
 					if( masks[j]==i ) 
@@ -454,15 +427,13 @@ public abstract class TopicModel {
 					else 
 						m_trainSet.add(docs.get(j));
 				}
-				
-				System.out.println("Fold number "+i);
-				System.out.println("Train Set Size "+m_trainSet.size());
-				System.out.println("Test Set Size "+m_testSet.size());
 
-				long start = System.currentTimeMillis();
+                System.out.format("====================\n[Info]Fold No. %d: train size = %d, test size = %d....\n", i, m_trainSet.size(), m_testSet.size());
+
+                long start = System.currentTimeMillis();
 				EM();
 				perf[i] = Evaluation();
-				System.out.format("%s Train/Test finished in %.2f seconds...\n", this.toString(), (System.currentTimeMillis()-start)/1000.0);
+                System.out.format("[Info]%s Train/Test finished in %.2f seconds...\n", this.toString(), (System.currentTimeMillis()-start)/1000.0);
 				m_trainSet.clear();
 				m_testSet.clear();
 			}
@@ -550,6 +521,61 @@ public abstract class TopicModel {
 		for(int i=0; i<perf.length; i++)
 			var += (perf[i]-mean) * (perf[i]-mean);
 		var = Math.sqrt(var/k);
-		System.out.format("Perplexity %.3f+/-%.3f\n", mean, var);
-	}	
+		System.out.format("[Stat]Perplexity %.3f+/-%.3f\n", mean, var);
+	}
+
+    public double[] oneFoldValidation(){
+        m_trainSet = new ArrayList<_Doc>();
+        m_testSet = new ArrayList<_Doc>();
+        for(_Doc d:m_corpus.getCollection()){
+            if(d.getType() == _Doc.rType.TRAIN){
+                m_trainSet.add(d);
+            }else if(d.getType() == _Doc.rType.TEST){
+                m_testSet.add(d);
+            }
+        }
+
+        System.out.format("-- train size = %d, test size = %d....\n", m_trainSet.size(), m_testSet.size());
+
+        long start = System.currentTimeMillis();
+        EM();
+        double[] results = EvaluationMultipleMetrics();
+        System.out.format("[Info]%s Train/Test finished in %.2f seconds...\n", this.toString(), (System.currentTimeMillis()-start)/1000.0);
+
+        return results;
+    }
+
+    public double[] EvaluationMultipleMetrics() {
+        m_collectCorpusStats = false;
+        double perplexity = 0, loglikelihood, sumLikelihood = 0;
+        double totalWords = 0.0;
+        if (m_multithread) {
+            multithread_inference();
+            System.out.println("[Info]Start evaluation in thread");
+            for(TopicModelWorker worker:m_workers) {
+                sumLikelihood += worker.getLogLikelihood();
+                perplexity += worker.getPerplexity();
+                totalWords += worker.getTotalWords();
+            }
+        } else {
+            System.out.println("[Info]Start evaluation in Normal");
+            for(_Doc d:m_testSet) {
+                loglikelihood = inference(d);
+                sumLikelihood += loglikelihood;
+                perplexity += loglikelihood;
+                totalWords += d.getTotalDocLength();
+            }
+
+        }
+        double[] results = new double[2];
+        results[0] = Math.exp(-perplexity/totalWords);
+        results[1] = sumLikelihood / m_testSet.size();
+
+        if(this instanceof HTSM)
+            calculatePrecisionRecall();
+
+        System.out.format("[Stat]Test set perplexity is %.3f and log-likelihood is %.3f\n", results[0], results[1]);
+
+        return results;
+    }
 }
