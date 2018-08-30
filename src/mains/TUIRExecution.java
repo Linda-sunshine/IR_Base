@@ -2,7 +2,6 @@ package mains;
 
 import java.io.File;
 import java.io.IOException;
-import java.text.ParseException;
 import java.util.Arrays;
 
 import Analyzer.BipartiteAnalyzer;

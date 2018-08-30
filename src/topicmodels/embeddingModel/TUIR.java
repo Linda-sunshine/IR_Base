@@ -74,7 +74,7 @@ public class TUIR extends LDA_Variational {
         this.m_sigma = sigma;
         this.m_rho = rho;
         this.m_mode = "Normal";
-        this.m_flag_fix_lambda = false;
+        this.m_flag_fix_lambda = true;
         this.m_flag_diagonal_lambda = true;
         this.m_flag_gd = false;
         m_logSpace = true;
