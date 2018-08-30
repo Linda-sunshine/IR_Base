@@ -6,24 +6,10 @@ package topicmodels.pLSA;
  * Probabilistic Latent Semantic Analysis Topic Modeling 
  */
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.PrintWriter;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.io.*;
+import java.util.*;
 
-import structures.MyPriorityQueue;
-import structures._Corpus;
-import structures._Doc;
-import structures._RankItem;
-import structures._SparseFeature;
+import structures.*;
 import topicmodels.twoTopic;
 import utils.Utils;
 
@@ -287,6 +273,24 @@ public class pLSA extends twoTopic {
 		
 		return logLikelihood;
 	}
+
+	public void printParameterAggregation(int k, String folderName, String topicmodel){
+		String phiPathByUser = String.format("%s%s_phiByUser_%d.txt", folderName, topicmodel, number_of_topics);
+		String phiPathByItem = String.format("%s%s_phiByItem_%d.txt", folderName, topicmodel, number_of_topics);
+		String phiPath = String.format("%s%s_phi_%d.txt", folderName, topicmodel, number_of_topics);
+		String betaPath = String.format("%s%s_beta_%d.txt", folderName, topicmodel, number_of_topics);
+
+		//print out phi per doc, and beta
+		printPhi(phiPath);
+		printBeta(betaPath);
+
+		//aggregate parameter \gamma by user/item
+		printTopWords(k, phiPathByUser, getDocByUser());
+		printTopWords(k, phiPathByItem, getDocByItem());
+
+		//overall topic words
+		printTopWords(k, String.format("%s%s_topWords_%d.txt", folderName, topicmodel, number_of_topics));
+	}
 	
 	//print all the quantities in real space
 	@Override
@@ -339,19 +343,68 @@ public class pLSA extends twoTopic {
 		}
 	}
 
-	public void printParameterAggregation(int k, String folderName, String topicmodel){
-		String gammaPathByUser = folderName + topicmodel + "_gammaByUser.txt";
-		String gammaPathByItem = folderName + topicmodel + "_gammaByItem.txt";
+	public void printPhi(String topWordPath){
+		File file = new File(topWordPath);
+		try{
+			file.getParentFile().mkdirs();
+			file.createNewFile();
+		} catch(IOException e){
+			e.printStackTrace();
+		}
 
-		//aggregate parameter \gamma by user/item
-		printTopWords(k, gammaPathByUser, getDocByUser());
-		printTopWords(k, gammaPathByItem, getDocByItem());
+		try{
+			PrintWriter topWordWriter = new PrintWriter(file);
+
+			for(int i=0; i < m_trainSet.size(); i++) {
+				_Review doc = (_Review) m_trainSet.get(i);
+				String itemID = doc.getItemID();
+				String userID = doc.getUserID();
+
+				topWordWriter.format("No. %d Doc(user: %s, item: %s) ***************\n", i,
+						userID, itemID);
+				for (int k = 0; k < number_of_topics; k++) {
+					topWordWriter.format("%.5f\t", m_logSpace?Math.exp(doc.m_topics[k]):doc.m_topics[k]);
+				}
+				topWordWriter.write("\n");
+			}
+			topWordWriter.close();
+		} catch(FileNotFoundException ex){
+			System.err.println("File Not Found: " + topWordPath);
+		}
 	}
 
+	public void printBeta(String betaFile){
+		//print out prior parameter of topic-word distribution: beta
+		File file = new File(betaFile);
+		try{
+			file.getParentFile().mkdirs();
+			file.createNewFile();
+		} catch(IOException e){
+			e.printStackTrace();
+		}
+		try{
+			PrintWriter betaWriter = new PrintWriter(file);
+			for(int i = 0; i < m_corpus.getFeatureSize(); i++) //first line is vocabulary
+				betaWriter.format("%s\t", m_corpus.getFeature(i));
+			betaWriter.println();
+
+			for (int i = 0; i < topic_term_probabilty.length; i++){//next is beta
+				for(int j = 0; j < vocabulary_size; j++)
+					betaWriter.format("%.10f\t",  m_logSpace ? Math.exp(topic_term_probabilty[i][j]) : topic_term_probabilty[i][j]);
+				betaWriter.println();
+			}
+			betaWriter.close();
+		} catch(FileNotFoundException ex){
+			System.err.format("[Error]Failed to open file %s\n", betaFile);
+		}
+	}
+
+	//_Doc has no userID, _Review has
 	public HashMap<String, List<_Doc>> getDocByUser(){
 		HashMap<String, List<_Doc>> docByUser = new HashMap<>();
 		for(_Doc d:m_trainSet) {
-			String userName = d.getTitle();
+            _Review doc = (_Review) d;
+			String userName = doc.getUserID();
 			if(!docByUser.containsKey(userName)){
 				docByUser.put(userName, new ArrayList<_Doc>());
 			}
@@ -373,8 +426,16 @@ public class pLSA extends twoTopic {
 	}
 
 	public void printTopWords(int k, String topWordPath, HashMap<String, List<_Doc>> docCluster) {
+		File file = new File(topWordPath);
 		try{
-			PrintWriter topWordWriter = new PrintWriter(new File(topWordPath));
+			file.getParentFile().mkdirs();
+			file.createNewFile();
+		} catch(IOException e){
+			e.printStackTrace();
+		}
+
+		try{
+			PrintWriter topWordWriter = new PrintWriter(file);
 
 			for(Map.Entry<String, List<_Doc>> entryU : docCluster.entrySet()) {
 				double[] gamma = new double[number_of_topics];
@@ -398,7 +459,7 @@ public class pLSA extends twoTopic {
 				}
 			}
 			topWordWriter.close();
-		} catch(Exception ex){
+		} catch(FileNotFoundException ex){
 			System.err.println("File Not Found: " + topWordPath);
 		}
 	}
