@@ -50,7 +50,7 @@ public class CLRWithMMB extends CLRWithHDP {
 	// for debug purpose
 	protected HashMap<String, ArrayList<Integer>> stat = new HashMap<>();
 	protected static double m_log2 = Math.log(2);
-	ArrayList<Integer> mmb_0 = new ArrayList<Integer>();
+	ArrayList<Integer> mmb_0 = new ArrayList<Integer>()
 	ArrayList<Integer> mmb_1 = new ArrayList<Integer>();
 	ArrayList<Integer> bk_0 = new ArrayList<Integer>();
 	

@@ -1,25 +1,15 @@
 package Classifier.supervised.modelAdaptation.MMB;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.PrintWriter;
+import Classifier.supervised.modelAdaptation._AdaptStruct;
+import structures.*;
+import structures._PerformanceStat.TestMode;
+import structures._Review.rType;
+import utils.Utils;
+
+import java.io.*;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
-
-import Classifier.supervised.modelAdaptation._AdaptStruct;
-import structures._Doc;
-import structures._HDPThetaStar;
-import structures._PerformanceStat;
-import structures._PerformanceStat.TestMode;
-import structures._Review;
-import structures._Review.rType;
-import structures._SparseFeature;
-import utils.Utils;
 
 public class MTCLinAdaptWithMMB extends CLinAdaptWithMMB {
 	protected int m_dimSup;

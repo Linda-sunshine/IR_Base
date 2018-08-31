@@ -1,12 +1,12 @@
 package myMains;
 
+import Analyzer.MultiThreadedLMAnalyzer;
+import Classifier.supervised.modelAdaptation.MMB.MTCLinAdaptWithMMB;
+import opennlp.tools.util.InvalidFormatException;
+
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.HashMap;
-
-import opennlp.tools.util.InvalidFormatException;
-import Analyzer.MultiThreadedLMAnalyzer;
-import Classifier.supervised.modelAdaptation.MMB.MTCLinAdaptWithMMB;
 
 
 public class MyMMBMain {
@@ -58,79 +58,11 @@ public class MyMMBMain {
 		
 		analyzer.setFeatureValues("TFIDF-sublinear", 0);
 		HashMap<String, Integer> featureMap = analyzer.getFeatureMap();
-		
-//		double trainAvg = 0, testAvg = 0;
-//		double totalSize = analyzer.getUsers().size();
-//		for(_User u: analyzer.getUsers()){
-//			for(_Review r: u.getReviews()){
-//				if(r.getType() == rType.ADAPTATION)
-//					trainAvg++;
-//				else
-//					testAvg++;
-//			}
-//		}
-//		System.out.format("Train avg: %.4f, test avg: %.4f\n", trainAvg/totalSize, testAvg/totalSize);
-		
-//		PrintWriter writer = new PrintWriter(new File("yelp_features.txt"));
-//		ArrayList<String> fvs = analyzer.getFeatures();
-//		writer.write("Bias\n");
-//		for(int i=0; i<fvs.size(); i++){
-//			if(i != fvs.size()-1)
-//				writer.write(fvs.get(i)+'\n');
-//			else
-//				writer.write(fvs.get(i));
-//		}
-//		writer.close();
-		
-//		MultiTaskSVM mtsvm = new MultiTaskSVM(classNumber, analyzer.getFeatureSize());
-//		mtsvm.loadUsers(analyzer.getUsers());
-//		mtsvm.setBias(true);
-//		mtsvm.train();
-//		mtsvm.test();
-//		mtsvm.printUserPerformance("./data/mtsvm_perf.txt");
-		
-//		// This part tries to pre-process the data in order to perform chi-square test.
-//		Preprocess process = new Preprocess(analyzer.getUsers());
-//		process.getRestaurantsStat();
-//		process.printRestaurantStat("./data/yelp_chi_test.txt");
-		
+
 		// best parameter for yelp so far.
 		double[] globalLM = analyzer.estimateGlobalLM();
 		double alpha = 0.1, eta = 0.05, beta = 0.01;
 		double sdA = 0.0425, sdB = 0.0425;
-//		
-////		MTCLinAdaptWithDP hdp = new MTCLinAdaptWithDP(classNumber, analyzer.getFeatureSize(), featureMap, globalModel, featureGroupFile, featureGroupFileSup);
-////		hdp.setAlpha(alpha);
-////		
-//		MTCLinAdaptWithHDP hdp = new MTCLinAdaptWithHDP(classNumber, analyzer.getFeatureSize(), featureMap, globalModel, featureGroupFile, featureGroupFileSup, globalLM);
-//		hdp.setR2TradeOffs(eta3, eta4);
-//		
-//		hdp.setsdB(sdA);//0.2
-//		hdp.setsdA(sdB);//0.2
-//		
-//		hdp.setR1TradeOffs(eta1, eta2);
-//		hdp.setConcentrationParams(alpha, eta, beta);
-//		
-//		hdp.setBurnIn(10);
-//		hdp.setNumberOfIterations(30);
-//		
-//		hdp.loadLMFeatures(analyzer.getLMFeatures());
-//		hdp.loadUsers(analyzer.getUsers());
-//		hdp.setDisplayLv(displayLv);
-//		
-//		hdp.train();
-//		hdp.test();
-//		
-//		hdp.printUserPerformance("./data/yelp_hdp_perf.txt");
-//		
-//		CLRWithMMB mmb = new CLRWithMMB(classNumber, analyzer.getFeatureSize(), featureMap, globalModel, globalLM);
-//		mmb.setsdA(0.2);
-//		
-//		MTCLRWithMMB mmb = new MTCLRWithMMB(classNumber, analyzer.getFeatureSize(), featureMap, globalModel, globalLM);
-//		mmb.setQ(0.1);
-//		
-//		CLinAdaptWithMMB mmb = new CLinAdaptWithMMB(classNumber, analyzer.getFeatureSize(), featureMap, globalModel, featureGroupFile, globalLM);
-//		mmb.setsdB(0.1);
 
 		MTCLinAdaptWithMMB mmb = new MTCLinAdaptWithMMB(classNumber, analyzer.getFeatureSize(), featureMap, globalModel, featureGroupFile, featureGroupFileSup, globalLM);
 		mmb.setR2TradeOffs(eta3, eta4);
@@ -152,7 +84,6 @@ public class MyMMBMain {
 		mmb.setJointSampling(jointAll);
 		mmb.loadLMFeatures(analyzer.getLMFeatures());
 		mmb.loadUsers(analyzer.getUsers());
-//		mmb.calculateFrdStat();
 		mmb.setDisplayLv(displayLv);
 		long start = System.currentTimeMillis();
 

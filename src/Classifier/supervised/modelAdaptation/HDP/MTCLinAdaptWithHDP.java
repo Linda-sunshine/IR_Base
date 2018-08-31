@@ -1,21 +1,16 @@
 package Classifier.supervised.modelAdaptation.HDP;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.PrintWriter;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.HashMap;
-
 import Classifier.supervised.modelAdaptation._AdaptStruct;
 import structures._Doc;
 import structures._HDPThetaStar;
 import structures._Review;
 import structures._SparseFeature;
 import utils.Utils;
+
+import java.io.*;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.HashMap;
 
 /***
  * This class implements the MTCLinAdapt with HDP added.
