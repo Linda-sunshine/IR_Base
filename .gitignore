@@ -11,3 +11,4 @@ out/*
 .idea/*
 *.iml
 *.txt
+.settings/*
