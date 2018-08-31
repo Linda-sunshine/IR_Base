@@ -2,13 +2,7 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="efc4ecd5-4820-4817-b9a0-f6646bc7bba1" name="Default Changelist" comment="">
-      <change beforePath="$PROJECT_DIR$/src/Classifier/supervised/modelAdaptation/HDP/MTCLinAdaptWithHDP.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/Classifier/supervised/modelAdaptation/HDP/MTCLinAdaptWithHDP.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/Classifier/supervised/modelAdaptation/MMB/CLRWithMMB.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/Classifier/supervised/modelAdaptation/MMB/CLRWithMMB.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/Classifier/supervised/modelAdaptation/MMB/MTCLRWithMMB.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/Classifier/supervised/modelAdaptation/MMB/MTCLRWithMMB.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/Classifier/supervised/modelAdaptation/MMB/MTCLinAdaptWithMMB.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/Classifier/supervised/modelAdaptation/MMB/MTCLinAdaptWithMMB.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/myMains/MyMMBExecution.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/myMains/MyMMBExecution.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/myMains/MyMMBMain.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/myMains/MyMMBMain.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/topicmodels/UserEmbedding/EUB.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/topicmodels/UserEmbedding/EUB.java" afterDir="false" />
     </list>
     <ignored path="$PROJECT_DIR$/bin/" />
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
@@ -25,7 +19,8 @@
           <entry key="project.open.time.0" value="4" />
           <entry key="project.open.time.2" value="1" />
           <entry key="project.open.time.4" value="1" />
-          <entry key="project.opened" value="6" />
+          <entry key="project.open.time.7" value="1" />
+          <entry key="project.opened" value="7" />
         </counts>
       </usages-collector>
       <usages-collector id="statistics.file.extensions.open">
@@ -43,12 +38,12 @@
       </usages-collector>
       <usages-collector id="statistics.file.extensions.edit">
         <counts>
-          <entry key="java" value="19" />
+          <entry key="java" value="20" />
         </counts>
       </usages-collector>
       <usages-collector id="statistics.file.types.edit">
         <counts>
-          <entry key="JAVA" value="19" />
+          <entry key="JAVA" value="20" />
         </counts>
       </usages-collector>
     </session>
@@ -58,8 +53,8 @@
       <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/src/myMains/MyMMBMain.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="165">
-              <caret line="11" column="7" lean-forward="true" selection-start-line="11" selection-start-column="7" selection-end-line="11" selection-end-column="7" />
+            <state relative-caret-position="135">
+              <caret line="9" lean-forward="true" selection-start-line="9" selection-end-line="9" />
               <folding>
                 <element signature="imports" expanded="true" />
               </folding>
@@ -71,7 +66,7 @@
         <entry file="file://$PROJECT_DIR$/src/topicmodels/UserEmbedding/EUB.java">
           <provider selected="true" editor-type-id="text-editor">
             <state relative-caret-position="255">
-              <caret line="18" lean-forward="true" selection-start-line="18" selection-end-line="18" />
+              <caret line="18" selection-start-line="18" selection-end-line="18" />
             </state>
           </provider>
         </entry>
@@ -79,7 +74,7 @@
       <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/src/Classifier/supervised/modelAdaptation/MMB/MTCLinAdaptWithMMB.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="270">
+            <state relative-caret-position="135">
               <caret line="18" column="32" selection-start-line="18" selection-start-column="32" selection-end-line="18" selection-end-column="32" />
               <folding>
                 <element signature="imports" expanded="true" />
@@ -91,7 +86,7 @@
       <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/src/Classifier/supervised/modelAdaptation/HDP/MTCLinAdaptWithHDP.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="285">
+            <state relative-caret-position="135">
               <caret line="19" column="13" selection-start-line="19" selection-start-column="13" selection-end-line="19" selection-end-column="13" />
               <folding>
                 <element signature="imports" expanded="true" />
@@ -104,7 +99,7 @@
         <entry file="file://$PROJECT_DIR$/src/Classifier/supervised/modelAdaptation/HDP/MTCLRWithHDP.java">
           <provider selected="true" editor-type-id="text-editor">
             <state relative-caret-position="120">
-              <caret line="14" column="2" lean-forward="true" selection-start-line="14" selection-start-column="2" selection-end-line="14" selection-end-column="2" />
+              <caret line="14" column="2" selection-start-line="14" selection-start-column="2" selection-end-line="14" selection-end-column="2" />
             </state>
           </provider>
         </entry>
@@ -112,10 +107,11 @@
       <file pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/src/Classifier/supervised/modelAdaptation/MMB/CLRWithMMB.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="-1325">
-              <caret line="52" column="55" lean-forward="true" selection-start-line="52" selection-start-column="55" selection-end-line="52" selection-end-column="55" />
+            <state relative-caret-position="347">
+              <caret line="42" column="56" lean-forward="true" selection-start-line="42" selection-start-column="56" selection-end-line="42" selection-end-column="56" />
               <folding>
                 <element signature="imports" expanded="true" />
+                <element signature="e#2146#2155#0" expanded="true" />
               </folding>
             </state>
           </provider>
@@ -130,7 +126,7 @@
         <entry file="file://$PROJECT_DIR$/src/Classifier/supervised/modelAdaptation/MMB/MTCLRWithMMB.java">
           <provider selected="true" editor-type-id="text-editor">
             <state relative-caret-position="30">
-              <caret line="2" column="3" lean-forward="true" selection-start-line="2" selection-start-column="3" selection-end-line="2" selection-end-column="3" />
+              <caret line="2" column="3" selection-start-line="2" selection-start-column="3" selection-end-line="2" selection-end-column="3" />
               <folding>
                 <element signature="imports" expanded="true" />
               </folding>
@@ -175,14 +171,13 @@
     <option name="x" value="24" />
     <option name="y" value="23" />
     <option name="width" value="1400" />
-    <option name="height" value="753" />
+    <option name="height" value="792" />
   </component>
   <component name="ProjectView">
     <navigator proportions="" version="1">
       <foldersAlwaysOnTop value="true" />
     </navigator>
     <panes>
-      <pane id="PackagesPane" />
       <pane id="ProjectPane">
         <subPane>
           <expand>
@@ -225,18 +220,25 @@
               <item name="modelAdaptation" type="462c0819:PsiDirectoryNode" />
               <item name="MMB" type="462c0819:PsiDirectoryNode" />
             </path>
+            <path>
+              <item name="IR_Base" type="b2602c69:ProjectViewProjectNode" />
+              <item name="IR_Base" type="462c0819:PsiDirectoryNode" />
+              <item name="src" type="462c0819:PsiDirectoryNode" />
+              <item name="myMains" type="462c0819:PsiDirectoryNode" />
+            </path>
           </expand>
           <select />
         </subPane>
       </pane>
-      <pane id="AndroidView" />
       <pane id="Scope" />
+      <pane id="AndroidView" />
+      <pane id="PackagesPane" />
     </panes>
   </component>
   <component name="PropertiesComponent">
     <property name="WebServerToolWindowFactoryState" value="false" />
     <property name="aspect.path.notification.shown" value="true" />
-    <property name="com.android.tools.idea.instantapp.provision.ProvisionBeforeRunTaskProvider.myTimeStamp" value="1535665603454" />
+    <property name="com.android.tools.idea.instantapp.provision.ProvisionBeforeRunTaskProvider.myTimeStamp" value="1535721310641" />
   </component>
   <component name="RunDashboard">
     <option name="ruleStates">
@@ -249,6 +251,26 @@
         </RuleState>
       </list>
     </option>
+  </component>
+  <component name="RunManager">
+    <configuration name="MyMMBMain" type="Application" factoryName="Application" temporary="true" nameIsGenerated="true">
+      <option name="MAIN_CLASS_NAME" value="myMains.MyMMBMain" />
+      <module name="IR_Base" />
+      <extension name="coverage">
+        <pattern>
+          <option name="PATTERN" value="myMains.*" />
+          <option name="ENABLED" value="true" />
+        </pattern>
+      </extension>
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
+    <recent_temporary>
+      <list>
+        <item itemvalue="Application.MyMMBMain" />
+      </list>
+    </recent_temporary>
   </component>
   <component name="SvnConfiguration">
     <configuration />
@@ -266,17 +288,18 @@
       <workItem from="1535509174761" duration="31000" />
       <workItem from="1535509208130" duration="1000" />
       <workItem from="1535595947625" duration="3410000" />
+      <workItem from="1535720440325" duration="659000" />
     </task>
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="4894000" />
+    <option name="totallyTimeSpent" value="5553000" />
   </component>
   <component name="ToolWindowManager">
     <frame x="24" y="23" width="1400" height="753" extended-state="0" />
     <editor active="true" />
     <layout>
-      <window_info active="true" content_ui="combo" id="Project" order="0" visible="true" weight="0.19955817" />
+      <window_info active="true" content_ui="combo" id="Project" order="0" visible="true" weight="0.20250368" />
       <window_info id="Structure" order="1" side_tool="true" weight="0.25" />
       <window_info id="Image Layers" order="2" />
       <window_info id="Designer" order="3" />
@@ -327,19 +350,16 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/Classifier/supervised/modelAdaptation/MMB/MTCLRWithMMB.java">
+    <entry file="file://$PROJECT_DIR$/src/topicmodels/UserEmbedding/EUB.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="30">
-          <caret line="2" column="3" lean-forward="true" selection-start-line="2" selection-start-column="3" selection-end-line="2" selection-end-column="3" />
-          <folding>
-            <element signature="imports" expanded="true" />
-          </folding>
+        <state relative-caret-position="255">
+          <caret line="18" selection-start-line="18" selection-end-line="18" />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/src/Classifier/supervised/modelAdaptation/MMB/MTCLinAdaptWithMMB.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="270">
+        <state relative-caret-position="135">
           <caret line="18" column="32" selection-start-line="18" selection-start-column="32" selection-end-line="18" selection-end-column="32" />
           <folding>
             <element signature="imports" expanded="true" />
@@ -349,7 +369,7 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/src/Classifier/supervised/modelAdaptation/HDP/MTCLinAdaptWithHDP.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="285">
+        <state relative-caret-position="135">
           <caret line="19" column="13" selection-start-line="19" selection-start-column="13" selection-end-line="19" selection-end-column="13" />
           <folding>
             <element signature="imports" expanded="true" />
@@ -357,20 +377,23 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/myMains/MyMMBMain.java">
+    <entry file="file://$PROJECT_DIR$/src/Classifier/supervised/modelAdaptation/HDP/MTCLRWithHDP.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="165">
-          <caret line="11" column="7" lean-forward="true" selection-start-line="11" selection-start-column="7" selection-end-line="11" selection-end-column="7" />
-          <folding>
-            <element signature="imports" expanded="true" />
-          </folding>
+        <state relative-caret-position="120">
+          <caret line="14" column="2" selection-start-line="14" selection-start-column="2" selection-end-line="14" selection-end-column="2" />
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/topicmodels/UserEmbedding/EUB.java">
+    <entry file="file://$PROJECT_DIR$/.gitignore">
+      <provider selected="true" editor-type-id="text-editor" />
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/Classifier/supervised/modelAdaptation/MMB/MTCLRWithMMB.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="255">
-          <caret line="18" lean-forward="true" selection-start-line="18" selection-end-line="18" />
+        <state relative-caret-position="30">
+          <caret line="2" column="3" selection-start-line="2" selection-start-column="3" selection-end-line="2" selection-end-column="3" />
+          <folding>
+            <element signature="imports" expanded="true" />
+          </folding>
         </state>
       </provider>
     </entry>
@@ -381,22 +404,23 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/Classifier/supervised/modelAdaptation/HDP/MTCLRWithHDP.java">
+    <entry file="file://$PROJECT_DIR$/src/myMains/MyMMBMain.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="120">
-          <caret line="14" column="2" lean-forward="true" selection-start-line="14" selection-start-column="2" selection-end-line="14" selection-end-column="2" />
+        <state relative-caret-position="135">
+          <caret line="9" lean-forward="true" selection-start-line="9" selection-end-line="9" />
+          <folding>
+            <element signature="imports" expanded="true" />
+          </folding>
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/.gitignore">
-      <provider selected="true" editor-type-id="text-editor" />
-    </entry>
     <entry file="file://$PROJECT_DIR$/src/Classifier/supervised/modelAdaptation/MMB/CLRWithMMB.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="-1325">
-          <caret line="52" column="55" lean-forward="true" selection-start-line="52" selection-start-column="55" selection-end-line="52" selection-end-column="55" />
+        <state relative-caret-position="347">
+          <caret line="42" column="56" lean-forward="true" selection-start-line="42" selection-start-column="56" selection-end-line="42" selection-end-column="56" />
           <folding>
             <element signature="imports" expanded="true" />
+            <element signature="e#2146#2155#0" expanded="true" />
           </folding>
         </state>
       </provider>
