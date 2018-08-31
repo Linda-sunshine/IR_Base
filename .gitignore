@@ -10,3 +10,4 @@ Jar/*
 out/*
 .idea/*
 *.iml
+*.txt
