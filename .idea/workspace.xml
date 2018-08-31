@@ -1,9 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="efc4ecd5-4820-4817-b9a0-f6646bc7bba1" name="Default Changelist" comment="">
-      <change beforePath="$PROJECT_DIR$/src/Classifier/supervised/modelAdaptation/MMB/CLRWithMMB.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/Classifier/supervised/modelAdaptation/MMB/CLRWithMMB.java" afterDir="false" />
-    </list>
+    <list default="true" id="efc4ecd5-4820-4817-b9a0-f6646bc7bba1" name="Default Changelist" comment="" />
     <ignored path="$PROJECT_DIR$/bin/" />
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
@@ -15,7 +13,7 @@
     <session id="1185593446">
       <usages-collector id="statistics.lifecycle.project">
         <counts>
-          <entry key="project.closed" value="6" />
+          <entry key="project.closed" value="7" />
           <entry key="project.open.time.0" value="4" />
           <entry key="project.open.time.2" value="1" />
           <entry key="project.open.time.4" value="1" />
@@ -74,7 +72,7 @@
       <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/src/Classifier/supervised/modelAdaptation/MMB/MTCLinAdaptWithMMB.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="135">
+            <state relative-caret-position="270">
               <caret line="18" column="32" selection-start-line="18" selection-start-column="32" selection-end-line="18" selection-end-column="32" />
               <folding>
                 <element signature="imports" expanded="true" />
@@ -83,10 +81,10 @@
           </provider>
         </entry>
       </file>
-      <file pinned="false" current-in-tab="false">
+      <file pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/src/Classifier/supervised/modelAdaptation/HDP/MTCLinAdaptWithHDP.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="135">
+            <state relative-caret-position="285">
               <caret line="19" column="13" selection-start-line="19" selection-start-column="13" selection-end-line="19" selection-end-column="13" />
               <folding>
                 <element signature="imports" expanded="true" />
@@ -104,10 +102,10 @@
           </provider>
         </entry>
       </file>
-      <file pinned="false" current-in-tab="true">
+      <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/src/Classifier/supervised/modelAdaptation/MMB/CLRWithMMB.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="347">
+            <state relative-caret-position="630">
               <caret line="42" column="56" lean-forward="true" selection-start-line="42" selection-start-column="56" selection-end-line="42" selection-end-column="56" />
               <folding>
                 <element signature="imports" expanded="true" />
@@ -185,47 +183,6 @@
               <item name="IR_Base" type="b2602c69:ProjectViewProjectNode" />
               <item name="IR_Base" type="462c0819:PsiDirectoryNode" />
             </path>
-            <path>
-              <item name="IR_Base" type="b2602c69:ProjectViewProjectNode" />
-              <item name="IR_Base" type="462c0819:PsiDirectoryNode" />
-              <item name="src" type="462c0819:PsiDirectoryNode" />
-            </path>
-            <path>
-              <item name="IR_Base" type="b2602c69:ProjectViewProjectNode" />
-              <item name="IR_Base" type="462c0819:PsiDirectoryNode" />
-              <item name="src" type="462c0819:PsiDirectoryNode" />
-              <item name="Classifier" type="462c0819:PsiDirectoryNode" />
-            </path>
-            <path>
-              <item name="IR_Base" type="b2602c69:ProjectViewProjectNode" />
-              <item name="IR_Base" type="462c0819:PsiDirectoryNode" />
-              <item name="src" type="462c0819:PsiDirectoryNode" />
-              <item name="Classifier" type="462c0819:PsiDirectoryNode" />
-              <item name="supervised" type="462c0819:PsiDirectoryNode" />
-            </path>
-            <path>
-              <item name="IR_Base" type="b2602c69:ProjectViewProjectNode" />
-              <item name="IR_Base" type="462c0819:PsiDirectoryNode" />
-              <item name="src" type="462c0819:PsiDirectoryNode" />
-              <item name="Classifier" type="462c0819:PsiDirectoryNode" />
-              <item name="supervised" type="462c0819:PsiDirectoryNode" />
-              <item name="modelAdaptation" type="462c0819:PsiDirectoryNode" />
-            </path>
-            <path>
-              <item name="IR_Base" type="b2602c69:ProjectViewProjectNode" />
-              <item name="IR_Base" type="462c0819:PsiDirectoryNode" />
-              <item name="src" type="462c0819:PsiDirectoryNode" />
-              <item name="Classifier" type="462c0819:PsiDirectoryNode" />
-              <item name="supervised" type="462c0819:PsiDirectoryNode" />
-              <item name="modelAdaptation" type="462c0819:PsiDirectoryNode" />
-              <item name="MMB" type="462c0819:PsiDirectoryNode" />
-            </path>
-            <path>
-              <item name="IR_Base" type="b2602c69:ProjectViewProjectNode" />
-              <item name="IR_Base" type="462c0819:PsiDirectoryNode" />
-              <item name="src" type="462c0819:PsiDirectoryNode" />
-              <item name="myMains" type="462c0819:PsiDirectoryNode" />
-            </path>
           </expand>
           <select />
         </subPane>
@@ -238,7 +195,8 @@
   <component name="PropertiesComponent">
     <property name="WebServerToolWindowFactoryState" value="false" />
     <property name="aspect.path.notification.shown" value="true" />
-    <property name="com.android.tools.idea.instantapp.provision.ProvisionBeforeRunTaskProvider.myTimeStamp" value="1535721310641" />
+    <property name="com.android.tools.idea.instantapp.provision.ProvisionBeforeRunTaskProvider.myTimeStamp" value="1535721343507" />
+    <property name="settings.editor.selected.configurable" value="preferences.keymap" />
   </component>
   <component name="RunDashboard">
     <option name="ruleStates">
@@ -288,27 +246,28 @@
       <workItem from="1535509174761" duration="31000" />
       <workItem from="1535509208130" duration="1000" />
       <workItem from="1535595947625" duration="3410000" />
-      <workItem from="1535720440325" duration="659000" />
+      <workItem from="1535720440325" duration="1961000" />
     </task>
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="5553000" />
+    <option name="totallyTimeSpent" value="6855000" />
   </component>
   <component name="ToolWindowManager">
-    <frame x="24" y="23" width="1400" height="753" extended-state="0" />
+    <frame x="24" y="23" width="1400" height="792" extended-state="0" />
     <editor active="true" />
     <layout>
-      <window_info active="true" content_ui="combo" id="Project" order="0" visible="true" weight="0.20250368" />
+      <window_info content_ui="combo" id="Project" order="0" visible="true" weight="0.20250368" />
       <window_info id="Structure" order="1" side_tool="true" weight="0.25" />
       <window_info id="Image Layers" order="2" />
       <window_info id="Designer" order="3" />
       <window_info id="UI Designer" order="4" />
       <window_info id="Capture Tool" order="5" />
       <window_info id="Favorites" order="6" side_tool="true" />
+      <window_info anchor="bottom" id="Messages" weight="0.32692307" />
       <window_info anchor="bottom" id="Message" order="0" />
       <window_info anchor="bottom" id="Find" order="1" />
-      <window_info anchor="bottom" id="Run" order="2" />
+      <window_info anchor="bottom" id="Run" order="2" weight="0.3293944" />
       <window_info anchor="bottom" id="Debug" order="3" weight="0.4" />
       <window_info anchor="bottom" id="Cvs" order="4" weight="0.25" />
       <window_info anchor="bottom" id="Inspection" order="5" weight="0.4" />
@@ -350,43 +309,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/topicmodels/UserEmbedding/EUB.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="255">
-          <caret line="18" selection-start-line="18" selection-end-line="18" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/Classifier/supervised/modelAdaptation/MMB/MTCLinAdaptWithMMB.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="135">
-          <caret line="18" column="32" selection-start-line="18" selection-start-column="32" selection-end-line="18" selection-end-column="32" />
-          <folding>
-            <element signature="imports" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/Classifier/supervised/modelAdaptation/HDP/MTCLinAdaptWithHDP.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="135">
-          <caret line="19" column="13" selection-start-line="19" selection-start-column="13" selection-end-line="19" selection-end-column="13" />
-          <folding>
-            <element signature="imports" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/Classifier/supervised/modelAdaptation/HDP/MTCLRWithHDP.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="120">
-          <caret line="14" column="2" selection-start-line="14" selection-start-column="2" selection-end-line="14" selection-end-column="2" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/.gitignore">
-      <provider selected="true" editor-type-id="text-editor" />
-    </entry>
     <entry file="file://$PROJECT_DIR$/src/Classifier/supervised/modelAdaptation/MMB/MTCLRWithMMB.java">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="30">
@@ -404,6 +326,27 @@
         </state>
       </provider>
     </entry>
+    <entry file="file://$PROJECT_DIR$/.gitignore">
+      <provider selected="true" editor-type-id="text-editor" />
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/Classifier/supervised/modelAdaptation/MMB/CLRWithMMB.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="630">
+          <caret line="42" column="56" lean-forward="true" selection-start-line="42" selection-start-column="56" selection-end-line="42" selection-end-column="56" />
+          <folding>
+            <element signature="imports" expanded="true" />
+            <element signature="e#2146#2155#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/Classifier/supervised/modelAdaptation/HDP/MTCLRWithHDP.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="120">
+          <caret line="14" column="2" selection-start-line="14" selection-start-column="2" selection-end-line="14" selection-end-column="2" />
+        </state>
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/src/myMains/MyMMBMain.java">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="135">
@@ -414,13 +357,29 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/Classifier/supervised/modelAdaptation/MMB/CLRWithMMB.java">
+    <entry file="file://$PROJECT_DIR$/src/topicmodels/UserEmbedding/EUB.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="347">
-          <caret line="42" column="56" lean-forward="true" selection-start-line="42" selection-start-column="56" selection-end-line="42" selection-end-column="56" />
+        <state relative-caret-position="255">
+          <caret line="18" selection-start-line="18" selection-end-line="18" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/Classifier/supervised/modelAdaptation/MMB/MTCLinAdaptWithMMB.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="270">
+          <caret line="18" column="32" selection-start-line="18" selection-start-column="32" selection-end-line="18" selection-end-column="32" />
           <folding>
             <element signature="imports" expanded="true" />
-            <element signature="e#2146#2155#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/Classifier/supervised/modelAdaptation/HDP/MTCLinAdaptWithHDP.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="285">
+          <caret line="19" column="13" selection-start-line="19" selection-start-column="13" selection-end-line="19" selection-end-column="13" />
+          <folding>
+            <element signature="imports" expanded="true" />
           </folding>
         </state>
       </provider>
