@@ -7,5 +7,8 @@ compile
 run
 /bin/
 Jar/*
-output/*
+out/*
 .idea/*
+*.iml
+*.txt
+.settings/*
