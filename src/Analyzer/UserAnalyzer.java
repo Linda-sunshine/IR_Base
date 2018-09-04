@@ -14,7 +14,7 @@ import java.util.HashMap;
 import opennlp.tools.util.InvalidFormatException;
 import structures._Doc;
 import structures._Review;
-import structures._Doc.rType;
+import structures._Review.rType;
 import structures._User;
 import structures._stat;
 import utils.Utils;
