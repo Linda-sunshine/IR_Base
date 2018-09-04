@@ -11,6 +11,11 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 
+/***
+ * @Auther Lin Gong
+ * The joint modeling of network structure modeling and opinionated content modeling
+ */
+
 public class MTCLinAdaptWithMMB extends CLinAdaptWithMMB {
 	protected int m_dimSup;
 	protected int[] m_featureGroupMap4SupUsr; // bias term is at position 0

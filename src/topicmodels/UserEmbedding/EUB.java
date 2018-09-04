@@ -4,7 +4,8 @@ import structures._Corpus;
 import topicmodels.LDA.LDA_Variational;
 
 /***
- *
+ * @Auther Lin Gong
+ * The joint modeling of user embedding and topic embedding
  */
 
 public class EUB extends LDA_Variational {
@@ -15,6 +16,12 @@ public class EUB extends LDA_Variational {
 		super(number_of_iteration, converge, beta, c, lambda, number_of_topics, alpha,
 				varMaxIter, varConverge);
 	}
+
+	// EMonCorpus will be called in TopicModel
+    public void EMonCorpus(){
+
+    }
+
 
 
 	
