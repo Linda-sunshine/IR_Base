@@ -11,7 +11,7 @@ import java.util.LinkedList;
 
 import structures._PerformanceStat.TestMode;
 import structures._Review;
-import structures._Review.rType;
+import structures._Doc.rType;
 import structures._UserReviewPair;
 import utils.Utils;
 import Classifier.supervised.modelAdaptation._AdaptStruct;

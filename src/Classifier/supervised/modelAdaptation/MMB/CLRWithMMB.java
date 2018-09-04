@@ -9,8 +9,20 @@ import cern.jet.random.tfloat.FloatUniform;
 import org.apache.commons.math3.distribution.BinomialDistribution;
 import structures.*;
 import structures._HDPThetaStar._Connection;
+<<<<<<< HEAD
 import structures._PerformanceStat.TestMode;
 import structures._Review.rType;
+||||||| merged common ancestors
+import structures._MMBNeighbor;
+import structures._Review;
+import structures._Review.rType;
+import structures._User;
+=======
+import structures._MMBNeighbor;
+import structures._Review;
+import structures._Doc.rType;
+import structures._User;
+>>>>>>> master
 import utils.Utils;
 
 import java.io.File;

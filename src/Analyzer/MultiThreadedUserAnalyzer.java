@@ -15,18 +15,17 @@ import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.Set;
 
+import org.tartarus.snowball.SnowballStemmer;
+import org.tartarus.snowball.ext.englishStemmer;
+
 import opennlp.tools.tokenize.Tokenizer;
 import opennlp.tools.tokenize.TokenizerME;
 import opennlp.tools.tokenize.TokenizerModel;
 import opennlp.tools.util.InvalidFormatException;
-
-import org.tartarus.snowball.SnowballStemmer;
-import org.tartarus.snowball.ext.englishStemmer;
-
 import structures.TokenizeResult;
 import structures._Doc;
 import structures._Review;
-import structures._Review.rType;
+import structures._Doc.rType;
 import structures._User;
 import utils.Utils;
 
@@ -44,6 +43,8 @@ public class MultiThreadedUserAnalyzer extends UserAnalyzer {
 	protected Object m_rollbackLock=null;
 	private Object m_featureStatLock=null;
 	private Object m_mapLock = null;
+	
+	protected String m_suffix = null;//filter by suffix
 	
 	public MultiThreadedUserAnalyzer(String tokenModel, int classNo,
 			String providedCV, int Ngram, int threshold, int numberOfCores, boolean b)
@@ -67,6 +68,10 @@ public class MultiThreadedUserAnalyzer extends UserAnalyzer {
 		m_mapLock = new Object();
 	}
 	
+	public void setSuffixFilter(String suffix) {
+		m_suffix = suffix;
+	}
+	
 	//Load all the users.
 	@Override
 	public void loadUserDir(String folder){
@@ -84,9 +89,10 @@ public class MultiThreadedUserAnalyzer extends UserAnalyzer {
 					try {
 						for (int j = 0; j + core <files.length; j += m_numberOfCores) {
 							File f = files[j+core];
-							// && f.getAbsolutePath().endsWith("txt")
-							if(f.isFile()){//load the user								
-								loadUser(f.getAbsolutePath(),core);
+							// 
+							if(f.isFile() 
+								&& (m_suffix==null || f.getAbsolutePath().endsWith(m_suffix))){//load the user								
+								loadUser(f.getAbsolutePath(), core);
 							}
 						}
 					} catch(Exception ex) {
@@ -112,13 +118,16 @@ public class MultiThreadedUserAnalyzer extends UserAnalyzer {
 		
 		// process sub-directories
 		int count=0;
-		for(File f:files ) 
+		for(File f:files) {
 			if (f.isDirectory())
 				loadUserDir(f.getAbsolutePath());
-			else
+			else if (m_suffix==null || f.getAbsolutePath().endsWith(m_suffix))
 				count++;
 
-		System.out.format("\n%d users are loaded from %s...\n", count, folder);
+		}
+		
+		if (count>0)
+			System.out.format("%d users are loaded from %s...\n", count, folder);
 	}
 	
 		

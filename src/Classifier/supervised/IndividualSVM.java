@@ -16,7 +16,11 @@ import Classifier.supervised.liblinear.Parameter;
 import Classifier.supervised.liblinear.Problem;
 import Classifier.supervised.liblinear.SolverType;
 import Classifier.supervised.modelAdaptation.ModelAdaptation;
-import Classifier.supervised.modelAdaptation._AdaptStruct;
+import structures._PerformanceStat.TestMode;
+import structures._Review;
+import structures._Doc.rType;
+import structures._SparseFeature;
+import structures._User;
 
 public class IndividualSVM extends ModelAdaptation {
 	double m_C = 1; 

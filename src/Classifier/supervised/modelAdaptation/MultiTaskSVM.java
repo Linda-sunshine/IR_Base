@@ -19,6 +19,20 @@ import Classifier.supervised.liblinear.Model;
 import Classifier.supervised.liblinear.Parameter;
 import Classifier.supervised.liblinear.Problem;
 import Classifier.supervised.liblinear.SolverType;
+<<<<<<< HEAD
+||||||| merged common ancestors
+import structures._PerformanceStat.TestMode;
+import structures._Review;
+import structures._Review.rType;
+import structures._SparseFeature;
+import structures._User;
+=======
+import structures._PerformanceStat.TestMode;
+import structures._Review;
+import structures._Doc.rType;
+import structures._SparseFeature;
+import structures._User;
+>>>>>>> master
 
 public class MultiTaskSVM extends ModelAdaptation {
 	double m_u = 1; // trade-off parameter between global model and individual model.
