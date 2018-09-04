@@ -123,12 +123,14 @@ public class MultiThreadedUserAnalyzer extends UserAnalyzer {
 				loadUserDir(f.getAbsolutePath());
 			else if (m_suffix==null || f.getAbsolutePath().endsWith(m_suffix))
 				count++;
+
 		}
 		
 		if (count>0)
 			System.out.format("%d users are loaded from %s...\n", count, folder);
 	}
 	
+		
 	// Load one file as a user here. 
 	protected void loadUser(String filename, int core){
 		try {
@@ -179,6 +181,8 @@ public class MultiThreadedUserAnalyzer extends UserAnalyzer {
 			e.printStackTrace();
 		}
 	}
+	
+
 	
 	//Tokenizing input text string
 	private String[] Tokenizer(String source, int core){
@@ -714,4 +718,125 @@ public class MultiThreadedUserAnalyzer extends UserAnalyzer {
 		}
 		System.out.format("%d users have %d duplicate reviews for items.\n", uCount, rCount);
 	}
+	
+	
+	/***
+	 * The following codes are used in cf for ETBIR.
+	 */
+	HashMap<String, _User> m_userMap = new HashMap<String, _User>();
+	//Load users' test reviews.
+	public void loadTestUserDir(String folder){
+		
+		// construct the training user map first
+		for(_User u: m_users){
+			if(!m_userMap.containsKey(u.getUserID()))
+				m_userMap.put(u.getUserID(), u);
+			else
+				System.err.println("[error] The user already exists in map!!");
+		}
+		
+		if(folder == null || folder.isEmpty())
+			return;
+
+		File dir = new File(folder);
+		final File[] files=dir.listFiles();
+		ArrayList<Thread> threads = new ArrayList<Thread>();
+		for(int i=0;i<m_numberOfCores;++i){
+			threads.add(  (new Thread() {
+				int core;
+				@Override
+				public void run() {
+					try {
+						for (int j = 0; j + core <files.length; j += m_numberOfCores) {
+							File f = files[j+core];
+							// && f.getAbsolutePath().endsWith("txt")
+							if(f.isFile()){//load the user								
+								loadTestUserReview(f.getAbsolutePath(),core);
+							}
+						}
+					} catch(Exception ex) {
+						ex.printStackTrace(); 
+					}
+				}
+						
+				private Thread initialize(int core ) {
+					this.core = core;
+					return this;
+				}
+			}).initialize(i));
+					
+			threads.get(i).start();
+		}
+		for(int i=0;i<m_numberOfCores;++i){
+			try {
+				threads.get(i).join();
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			} 
+		} 
+				
+		// process sub-directories
+		int count=0;
+		for(File f:files ) 
+			if (f.isDirectory())
+				loadUserDir(f.getAbsolutePath());
+			else
+				count++;
+
+		System.out.format("%d users are loaded from %s...\n", count, folder);
+	}
+
+	
+	// Load one file as a user here. 
+	protected void loadTestUserReview(String filename, int core){
+		try {
+			File file = new File(filename);
+			BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(file), "UTF-8"));
+			String line;			
+			String userID = extractUserID(file.getName()); //UserId is contained in the filename.				
+			
+			// Skip the first line since it is user name.
+			reader.readLine(); 
+
+			String productID, source, category="";
+			ArrayList<_Review> reviews = new ArrayList<_Review>();
+
+			_Review review;
+			int ylabel;
+			long timestamp=0;
+			while((line = reader.readLine()) != null){
+				productID = line;
+				source = reader.readLine(); // review content
+				category = reader.readLine(); // review category
+				ylabel = Integer.valueOf(reader.readLine());
+				timestamp = Long.valueOf(reader.readLine());
+							
+				// Construct the new review.
+				if(ylabel != 3){
+					ylabel = (ylabel >= 4) ? 1:0;
+					review = new _Review(m_corpus.getCollection().size(), source, ylabel, userID, productID, category, timestamp);
+					if(AnalyzeDoc(review,core)){ //Create the sparse vector for the review.
+						reviews.add(review);
+					}
+				}
+			}
+			if(reviews.size() > 1){//at least one for adaptation and one for testing
+				synchronized (m_allocReviewLock) {
+//					allocateReviews(reviews);	
+					if(m_userMap.containsKey(userID)){
+						m_userMap.get(userID).setTestReviews(reviews);
+					}
+				}
+			} else if(reviews.size() == 1){// added by Lin, for those users with fewer than 2 reviews, ignore them.
+				review = reviews.get(0);
+				synchronized (m_rollbackLock) {
+					rollBack(Utils.revertSpVct(review.getSparse()), review.getYLabel());
+				}
+			}
+
+			reader.close();
+		} catch(IOException e){
+			e.printStackTrace();
+		}
+	}	
 }

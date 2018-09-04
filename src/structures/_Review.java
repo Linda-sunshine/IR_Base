@@ -2,10 +2,8 @@ package structures;
 
 import java.util.HashMap;
 
-import utils.Utils;
-
 public class _Review extends _Doc {
-	
+
 	String m_userID;
 	String m_category; 
 
@@ -70,11 +68,9 @@ public class _Review extends _Doc {
 	public HashMap<_HDPThetaStar, Integer> getThetaCountMap(){
 		return m_thetaCountMap;
 	}
-	
 	public void clearThetaCountMap(){
 		m_thetaCountMap.clear();
 	}
-	
 	public _HDPThetaStar getHDPThetaStar(){
 		return m_hdpThetaStar;
 	}
@@ -91,7 +87,6 @@ public class _Review extends _Doc {
 	public double[] getCluPosterior(){
 		return m_cluPosterior;
 	}
-	
 	double m_L4New = 0;
 	public void setL4NewCluster(double l){
 		m_L4New = l;
@@ -106,11 +101,12 @@ public class _Review extends _Doc {
 		if(m_lmSum != -1)
 			return m_lmSum;
 		else{
-			m_lmSum = Utils.sumOfArray(m_lm_x_sparse);
-			return m_lmSum;
+			double sum = 0;
+			for(_SparseFeature sf: m_lm_x_sparse)
+				sum += sf.getValue();
+			return sum;
 		}
 	}
-	
 	// Assign each review a confidence, used in hdp model.
 	protected double m_confidence = 1;
 	public void setConfidence(double conf){

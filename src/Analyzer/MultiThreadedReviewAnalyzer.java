@@ -10,8 +10,10 @@ import json.JSONObject;
 import structures._Doc4ETBIR;
 import structures._Review;
 
+
 public class MultiThreadedReviewAnalyzer extends MultiThreadedUserAnalyzer {
 	String source;
+	
 	public MultiThreadedReviewAnalyzer(String tokenModel, int classNo,
 			String providedCV, int Ngram, int threshold, int numberOfCores,
 			boolean b, String source) throws InvalidFormatException, FileNotFoundException,
@@ -97,4 +99,5 @@ public class MultiThreadedReviewAnalyzer extends MultiThreadedUserAnalyzer {
 			}
 		}
 	}
+
 }
