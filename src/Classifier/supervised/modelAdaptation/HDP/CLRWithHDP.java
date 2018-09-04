@@ -17,7 +17,7 @@ import structures._Doc;
 import structures._HDPThetaStar;
 import structures._RankItem;
 import structures._Review;
-import structures._Doc.rType;
+import structures._Review.rType;
 import structures._SparseFeature;
 import structures._User;
 import utils.Utils;
@@ -30,24 +30,27 @@ public class CLRWithHDP extends CLRWithDP {
 	protected double m_c = 1;//the constant in front of probabilities of language model.
 	
 	protected double[] m_betas;//concentration vector for the prior of psi.
-	public static _HDPThetaStar[] m_hdpThetaStars = new _HDPThetaStar[10000];//phi+psi
+	public static _HDPThetaStar[] m_hdpThetaStars = new _HDPThetaStar[100];//phi+psi
 	protected double[] m_cache = new double[10000]; // shared cache space to avoid repeatedly creating new space
 	protected DirichletPrior m_D0; //generic Dirichlet prior.
 	protected double m_gamma_e = 1.0;
 	protected double m_nBetaDir = 0; // normalization constant for Dir(\psi)
 
-	protected HashMap<String, Integer> m_stirlings; //store the calculated stirling numbers.
+	protected HashMap<String, Double> m_stirlings; //store the calculated stirling numbers.
 	protected boolean m_newCluster = false; // whether to create new cluster for testing
 	protected int m_lmDim = -1; // dimension for language model
 	double m_betaSum = 0;
-
 	protected ArrayList<String> m_lmFeatures;
+	
+	protected int m_newCluster4Doc = 0;
+	protected int m_newCluster4Edge = 0;
+	protected int m_newCluster4EdgeJoint = 0;
 	
 	public CLRWithHDP(int classNo, int featureSize, HashMap<String, Integer> featureMap, String globalModel, 
 			double[] betas, double alpha, double beta, double eta) {
 		super(classNo, featureSize, featureMap, globalModel);
 		m_D0 = new DirichletPrior();//dirichlet distribution for psi and gamma.
-		m_stirlings = new HashMap<String, Integer>();
+		m_stirlings = new HashMap<String, Double>();
 		
 		setConcentrationParams(alpha, beta, eta);
 		setBetas(betas);
@@ -57,7 +60,7 @@ public class CLRWithHDP extends CLRWithDP {
 			double[] betas) {
 		super(classNo, featureSize, featureMap, globalModel);
 		m_D0 = new DirichletPrior();//dirichlet distribution for psi and gamma.
-		m_stirlings = new HashMap<String, Integer>();
+		m_stirlings = new HashMap<String, Double>();
 		setBetas(betas);
 	}
 	
@@ -65,8 +68,29 @@ public class CLRWithHDP extends CLRWithDP {
 			double[] betas) {
 		super(classNo, featureSize, globalModel);
 		m_D0 = new DirichletPrior();//dirichlet distribution for psi and gamma.
-		m_stirlings = new HashMap<String, Integer>();
+		m_stirlings = new HashMap<String, Double>();
 		setBetas(betas);
+	}
+	
+	// accumulate the likelihood given by review content
+	protected double accumulateLikelihoodX(){
+		_HDPAdaptStruct user;
+		double likelihoodX = 0;
+		for(int i=0; i<m_userList.size(); i++){
+			user = (_HDPAdaptStruct) m_userList.get(i);
+			if(user.getAdaptationSize() == 0)
+				continue;
+			for(_Review r: user.getReviews()){
+				if (r.getType() == rType.TEST)
+					continue;//do not touch testing reviews!
+				likelihoodX += calcLogLikelihoodX(r);
+			}
+		}
+		return likelihoodX;
+	}
+	
+	public _HDPThetaStar[] getHDPThetaStars(){
+		return m_hdpThetaStars;
 	}
 	
 	public void loadLMFeatures(ArrayList<String> lmFvs){
@@ -84,13 +108,15 @@ public class CLRWithHDP extends CLRWithDP {
 	}
 	public void setBetas(double[] lm){
 		m_betas = lm;// this is in real space!
-		
+		// Gamma(\sum betas)/\prod Gamma(betas_v)
 		m_lmDim = lm.length;
 		for(int i=0; i<m_lmDim; i++) {
 			m_betas[i] = m_c * m_betas[i] + m_beta;
-			m_nBetaDir -= Utils.lgamma(m_betas[i]);
+			m_nBetaDir -= logGammaDivision((int) m_betas[i], 0, 0);
+//			m_nBetaDir -= Utils.lgamma(m_betas[i]);
 		}
-		m_nBetaDir += Utils.lgamma(Utils.sumOfArray(m_betas));
+//		m_nBetaDir += Utils.lgamma(Utils.sumOfArray(m_betas));
+		m_nBetaDir += logGammaDivision((int) Utils.sumOfArray(m_betas), 0, 0);
 		m_betaSum = Utils.sumOfArray(m_betas);
 
 	}
@@ -108,30 +134,30 @@ public class CLRWithHDP extends CLRWithDP {
 	@Override
 	public void initThetaStars(){
 		initPriorG0();
-		_HDPAdaptStruct user;		
-		double L = 0, beta_sum = Utils.sumOfArray(m_betas), betaSum_lgamma = Utils.lgamma(beta_sum), sum = 0;
+		_HDPAdaptStruct user;	
 		int index;
+		// beta_sum is \sum beta_v, m is \sum mij_v
+		double L = 0, beta_sum = Utils.sumOfArray(m_betas), m = 0;
 		for(_AdaptStruct u: m_userList){
 			user = (_HDPAdaptStruct) u;
 			for(_Review r: user.getReviews()){
-				// for all reviews pre-compute the likelihood of being generated from a random language model				
 				L = 0;
-				// sum = v*beta+\sum \pi_v(global language model)
-				sum = beta_sum;
+				m = 0;
 				// for those v with mij,v=0, frac = \gamma(beta_v)/\gamma(beta_v)=1, log frac = 0				
 				for(_SparseFeature fv: r.getLMSparse()) {
 					index = fv.getIndex();
-					sum += fv.getValue();	
+					m += fv.getValue();	
 					// log \gamma(m_v+\pi_v+beta)/\gamma(\pi_v+beta)
-					// logGamma(\beta_i) is pre-computed for efficiency
-					L += Utils.lgamma(fv.getValue() + m_betas[index]) - Utils.lgamma(m_betas[index]);
+					L += logGammaDivision((int) fv.getValue(), m_betas[index], 0);
+//					L += Utils.lgamma(fv.getValue() + m_betas[index]) - Utils.lgamma(m_betas[index]);
 				}
-				L += betaSum_lgamma - Utils.lgamma(sum);
+				// log[\Gamma(beta)/\Gamma(beta+n)]
+				L -= logGammaDivision((int) m, beta_sum, 0);
+//				L += betaSum_lgamma - Utils.lgamma(sum);
 				r.setL4NewCluster(L);
 				
 				if (r.getType() == rType.TEST)
 					continue;
-				
 				sampleOneInstance(user, r);
 			} 
 		}
@@ -216,13 +242,17 @@ public class CLRWithHDP extends CLRWithDP {
 		
 		m_hdpThetaStars[k].enable();
 		m_hdpThetaStars[k].initLMStat(m_lmDim);
-				
+		m_hdpThetaStars[k].setPerfStat(m_classNo);
+		
 		double rnd = Beta.staticNextDouble(1, m_alpha);
 		m_hdpThetaStars[k].setGamma(rnd*m_gamma_e);
 		m_gamma_e = (1-rnd)*m_gamma_e;
 			
 		swapTheta(m_kBar, k);
 		m_kBar++;
+		// for getting stat
+		System.out.print("d*");
+		m_newCluster4Doc++;
 	}
 	
 	// For later overwritten methods.
@@ -285,7 +315,8 @@ public class CLRWithHDP extends CLRWithDP {
 			double N = Utils.sumOfArray(Ns);
 			double n = r.getLMSum();
 			_SparseFeature[] fvs = r.getLMSparse();
-			double L = Utils.lgamma(m_betaSum+N) - Utils.lgamma(m_betaSum+N+n);
+			double L = -logGammaDivision((int) n, m_betaSum, N);
+//			double L = Utils.lgamma(m_betaSum+N) - Utils.lgamma(m_betaSum+N+n);
 			for(_SparseFeature fv: fvs){
 				L += logGammaDivision((int)fv.getValue(), m_betas[fv.getIndex()], Ns[fv.getIndex()]);
 			}
@@ -293,11 +324,11 @@ public class CLRWithHDP extends CLRWithDP {
 		}
 	}
 	
-	// \Gamma(n_v+beta_v+N_v)/\Gamma(beta_v+N_v) = \prod_{i=1}^{n_v}(i+beta_v+N_v)
+	// \Gamma(n_v+beta_v+N_v)/\Gamma(beta_v+N_v) = \prod_{i=0}^{n_v-1}(i+beta_v+N_v)
 	// In log space, it is addition.
 	protected double logGammaDivision(int n, double beta_v, double N_v){
 		double res = 0;
-		for(int i=1; i<=n; i++){
+		for(int i=0; i<=n-1; i++){
 			res += Math.log(i+beta_v+N_v);
 		}
 		return res;
@@ -323,13 +354,13 @@ public class CLRWithHDP extends CLRWithDP {
 				
 				if (++sampleSize%2000==0) {
 					System.out.print('.');
-//					sampleGamma();//will this help sampling?
-					if (sampleSize%100000==0)
+					if (sampleSize%100000==0){
 						System.out.println();
+					}
 				}
+				
 			}
 		}
-//		sampleGamma();//will this help sampling?
 		System.out.println(m_kBar);
 	}
 	
@@ -352,15 +383,14 @@ public class CLRWithHDP extends CLRWithDP {
 
 			// recycle the gamma
 			m_gamma_e += curThetaStar.getGamma();
-			curThetaStar.resetGamma();
+//			curThetaStar.resetGamma();
 			
 			// swap the disabled theta to the last for later use
 			index = findHDPThetaStar(curThetaStar);
 			swapTheta(m_kBar-1, index); // move it back to \theta*
 			
-			// in case we forget to init some variable, we set it to null
-			curThetaStar = null;
-//			curThetaStar.disable();
+			// reset the thetaStar for later use
+			curThetaStar.reset();
 			m_kBar --;
 		}
 	}
@@ -398,8 +428,8 @@ public class CLRWithHDP extends CLRWithDP {
 		double etaGammak = Math.log(m_eta) + Math.log(s.getGamma());
 		//the number of local groups lies in the range [1, n];
 		for(int h=1; h<=n; h++){
-			double stir = stirling(n, h);
-			m_cache[h-1] = h*etaGammak + Math.log(stir);
+			double logStir = logStirling(n, h);
+			m_cache[h-1] = h*etaGammak + logStir;
 		}
 		
 		//h starts from 0, we want the number of tables here.	
@@ -408,14 +438,17 @@ public class CLRWithHDP extends CLRWithDP {
 	
 	// n is the total number of observation under group k for the user.
 	// h is the number of tables in group k for the user.
-	int stirling(int n, int h){
-		if(n==h) return 1;
-		if(h==0 || h>n) return 0;
+	// because the value in real space exceeds the max integer, use log space instead
+	protected double logStirling(int n, int h){
+		if(n==h) return 0;
+		if(h==0 || h>n){
+			return Double.NEGATIVE_INFINITY;
+		}
 		String key = n+"@"+h;
 		if(m_stirlings.containsKey(key))
 			return m_stirlings.get(key);
 		else {
-			int result = stirling(n-1, h-1) + (n-1)*stirling(n-1, h);
+			double result = Utils.logSum(logStirling(n-1, h-1), Math.log(n-1) + logStirling(n-1, h));
 			m_stirlings.put(key, result);
 			return result;
 		}
@@ -615,6 +648,61 @@ public class CLRWithHDP extends CLRWithDP {
 		return curLikelihood;
 	}
 	
+	@Override
+	public double trainTrace(String data, long start){
+			
+		System.out.print(toString());
+		double delta = 0, lastLikelihood = 0, curLikelihood = 0;
+		double likelihoodX = 0, likelihoodY = 0;
+		int count = 0;
+		
+		// clear user performance, init cluster assignment, assign each review to one cluster
+		init();	
+		
+		// Burn in period for doc.
+		while(count++ < m_burnIn){
+			calculate_E_step();
+			calculate_M_step();
+		}
+		
+		try{
+			String traceFile = String.format("%s_iter_%d_burnin_%d_thin_%d_%d.txt", data, m_numberOfIterations, m_burnIn, m_thinning, start); 
+			PrintWriter writer = new PrintWriter(new File(traceFile));
+			// EM iteration.
+			for(int i=0; i<m_numberOfIterations; i++){
+				
+				// Cluster assignment, thinning to reduce auto-correlation.
+				calculate_E_step();
+				likelihoodY = calculate_M_step();
+
+				// accumulate the likelihood
+				likelihoodX = accumulateLikelihoodX();
+								
+				curLikelihood = likelihoodY + likelihoodX;
+				delta = (lastLikelihood - curLikelihood)/curLikelihood;
+				
+				// evaluate the model
+				if (i%m_thinning==0){
+					evaluateModel();
+					test();
+					for(_AdaptStruct u: m_userList)
+						u.getPerfStat().clear();
+				}
+				
+				writer.write(String.format("%.5f\t%.5f\t%.5f\t%d\t%.5f\t%.5f\n", likelihoodY, likelihoodX, delta, m_kBar, m_perf[0], m_perf[1]));
+				System.out.print(String.format("\n[Info]Step %d: likelihood: %.4f, Delta_likelihood: %.3f\n", i, curLikelihood, delta));
+				if(Math.abs(delta) < m_converge)
+					break;
+				lastLikelihood = curLikelihood;
+			}
+			writer.close();
+		} catch(IOException e){
+			e.printStackTrace();
+		}
+		evaluateModel(); // we do not want to miss the last sample?!
+		return curLikelihood;
+	}
+	
 	protected int findHDPThetaStar(_HDPThetaStar theta) {
 		for(int i=0; i<m_kBar; i++)
 			if (theta == m_hdpThetaStars[i])
@@ -676,7 +764,7 @@ public class CLRWithHDP extends CLRWithDP {
 				continue;
 			for(_Review r: user.getReviews()){
 				if (r.getType() != rType.TEST)
-					continue;				
+					continue;		
 				for(int k=0; k<probs.length; k++){
 					curTheta = m_hdpThetaStars[k];
 					r.setHDPThetaStar(curTheta);
@@ -689,6 +777,8 @@ public class CLRWithHDP extends CLRWithDP {
 					probs[k] -= logSum;
 				// posterior in log space
 				r.setClusterPosterior(probs);
+				int index = Utils.maxOfArrayIndex(probs, probs.length);
+				r.setHDPThetaStar(m_hdpThetaStars[index]);
 			}
 		}
 	}
@@ -820,16 +910,5 @@ public class CLRWithHDP extends CLRWithDP {
 			m_writer.write(sizes[i]+",");
 		m_writer.write("\n");
 	}	
-	
-	// sanity check, how many testing users we have
-	public void checkTestReviewSize(){
-		int test = 0, userCount = 0;
-		for(_AdaptStruct u: m_userList){
-			if(u.getAdaptationSize() == 0){
-				test += u.getTestSize();
-				userCount++;
-			}
-		}
-		System.out.print(String.format("[Info]test user: %d, test review: %d\n", userCount, test));
-	}
+
 }

@@ -69,6 +69,10 @@ public class _HDPThetaStar extends _thetaStar {
 	// Total number of local groups in the component, in log space.
 	public int m_hSize; 
 	
+	// for debug purpose add the perf stat for each cluster
+	protected _PerformanceStat m_perfStat;
+	
+	
 	public _HDPThetaStar(int dim) {
 		super(dim);
 		m_gamma = 0;
@@ -157,6 +161,14 @@ public class _HDPThetaStar extends _thetaStar {
 	@Override
 	public String showStat() {
 		return String.format("%d(%.2f/%.3f)", m_memSize, m_pCount/(m_pCount+m_nCount), m_gamma);
+	}
+	
+	public double getPosCount(){
+		return m_pCount;
+	}
+	
+	public double getNegCount(){
+		return m_nCount;
 	}
 	
 	public void resetReviewNames(){
@@ -250,6 +262,16 @@ public class _HDPThetaStar extends _thetaStar {
 		m_connectionMap.clear();
 		m_reviewNames.clear();
 		m_hSize = 0;
+	}
+	// for debug purpose we print out the performance of each cluster
+	double[][] m_tpTable = new double[2][2];
+	
+	public _PerformanceStat getPerfStat(){
+		return m_perfStat;
+	}
+	
+	public void setPerfStat(int classNo){
+		m_perfStat = new _PerformanceStat(classNo);
 	}
 
 }
