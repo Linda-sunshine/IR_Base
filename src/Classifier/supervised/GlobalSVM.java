@@ -13,6 +13,7 @@ import Classifier.supervised.modelAdaptation._AdaptStruct;
 import structures._Doc;
 import structures._Review;
 import structures._Doc.rType;
+import utils.Utils;
 
 public class GlobalSVM extends IndividualSVM{
 

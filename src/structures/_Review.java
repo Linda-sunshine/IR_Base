@@ -3,24 +3,7 @@ package structures;
 import java.util.HashMap;
 
 public class _Review extends _Doc {
-<<<<<<< HEAD
 
-	public enum rType {
-		TRAIN, // for training the global model
-		ADAPTATION, // for training the personalized model
-		TEST, // for testing
-		SEPARATE // added by Lin for sanity check.
-	}
-||||||| merged common ancestors
-	public enum rType {
-		TRAIN, // for training the global model
-		ADAPTATION, // for training the personalized model
-		TEST, // for testing
-		SEPARATE // added by Lin for sanity check.
-	}
-=======
->>>>>>> master
-	
 	String m_userID;
 	String m_category; 
 

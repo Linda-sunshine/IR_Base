@@ -1,26 +1,17 @@
 package Classifier.supervised;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-
-import structures._PerformanceStat.TestMode;
-import structures._Review;
-import structures._Review.rType;
-import structures._SparseFeature;
-import structures._User;
-import Classifier.supervised.liblinear.Feature;
-import Classifier.supervised.liblinear.FeatureNode;
-import Classifier.supervised.liblinear.Linear;
-import Classifier.supervised.liblinear.Model;
-import Classifier.supervised.liblinear.Parameter;
-import Classifier.supervised.liblinear.Problem;
-import Classifier.supervised.liblinear.SolverType;
+import Classifier.supervised.liblinear.*;
 import Classifier.supervised.modelAdaptation.ModelAdaptation;
+import Classifier.supervised.modelAdaptation._AdaptStruct;
 import structures._PerformanceStat.TestMode;
 import structures._Review;
 import structures._Doc.rType;
 import structures._SparseFeature;
 import structures._User;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+
 
 public class IndividualSVM extends ModelAdaptation {
 	double m_C = 1; 
@@ -75,7 +66,7 @@ public class IndividualSVM extends ModelAdaptation {
 			trainSize = 0;
 			reviews = user.getReviews();		
 			boolean validUser = false;
-			for(_Review r:reviews) {				
+			for(_Review r:reviews) {
 				if (r.getType() == rType.ADAPTATION) {//we will only use the adaptation data for this purpose
 					fvs.add(createLibLinearFV(r, validUserIndex));
 					ys.add(new Double(r.getYLabel()));
