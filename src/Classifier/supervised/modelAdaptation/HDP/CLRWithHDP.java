@@ -1,26 +1,20 @@
 package Classifier.supervised.modelAdaptation.HDP;
 
+import Classifier.supervised.modelAdaptation.DirichletProcess.CLRWithDP;
+import Classifier.supervised.modelAdaptation._AdaptStruct;
+import cern.jet.random.tdouble.Beta;
+import cern.jet.random.tdouble.Gamma;
+import cern.jet.random.tfloat.FloatUniform;
+import structures.*;
+import structures._Doc.rType;
+import utils.Utils;
+
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
-
-import Classifier.supervised.modelAdaptation._AdaptStruct;
-import Classifier.supervised.modelAdaptation.DirichletProcess.CLRWithDP;
-import cern.jet.random.tdouble.Beta;
-import cern.jet.random.tdouble.Gamma;
-import cern.jet.random.tfloat.FloatUniform;
-import structures.MyPriorityQueue;
-import structures._Doc;
-import structures._HDPThetaStar;
-import structures._RankItem;
-import structures._Review;
-import structures._Doc.rType;
-import structures._SparseFeature;
-import structures._User;
-import utils.Utils;
 
 public class CLRWithHDP extends CLRWithDP {
 
@@ -645,61 +639,6 @@ public class CLRWithHDP extends CLRWithDP {
 
         evaluateModel(); // we do not want to miss the last sample?!
         setPersonalizedModel();
-        return curLikelihood;
-    }
-
-    @Override
-    public double trainTrace(String data, long start){
-
-        System.out.print(toString());
-        double delta = 0, lastLikelihood = 0, curLikelihood = 0;
-        double likelihoodX = 0, likelihoodY = 0;
-        int count = 0;
-
-        // clear user performance, init cluster assignment, assign each review to one cluster
-        init();
-
-        // Burn in period for doc.
-        while(count++ < m_burnIn){
-            calculate_E_step();
-            calculate_M_step();
-        }
-
-        try{
-            String traceFile = String.format("%s_iter_%d_burnin_%d_thin_%d_%d.txt", data, m_numberOfIterations, m_burnIn, m_thinning, start);
-            PrintWriter writer = new PrintWriter(new File(traceFile));
-            // EM iteration.
-            for(int i=0; i<m_numberOfIterations; i++){
-
-                // Cluster assignment, thinning to reduce auto-correlation.
-                calculate_E_step();
-                likelihoodY = calculate_M_step();
-
-                // accumulate the likelihood
-                likelihoodX = accumulateLikelihoodX();
-
-                curLikelihood = likelihoodY + likelihoodX;
-                delta = (lastLikelihood - curLikelihood)/curLikelihood;
-
-                // evaluate the model
-                if (i%m_thinning==0){
-                    evaluateModel();
-                    test();
-                    for(_AdaptStruct u: m_userList)
-                        u.getPerfStat().clear();
-                }
-
-                writer.write(String.format("%.5f\t%.5f\t%.5f\t%d\t%.5f\t%.5f\n", likelihoodY, likelihoodX, delta, m_kBar, m_perf[0], m_perf[1]));
-                System.out.print(String.format("\n[Info]Step %d: likelihood: %.4f, Delta_likelihood: %.3f\n", i, curLikelihood, delta));
-                if(Math.abs(delta) < m_converge)
-                    break;
-                lastLikelihood = curLikelihood;
-            }
-            writer.close();
-        } catch(IOException e){
-            e.printStackTrace();
-        }
-        evaluateModel(); // we do not want to miss the last sample?!
         return curLikelihood;
     }
 
