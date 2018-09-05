@@ -203,7 +203,8 @@ public class CollaborativeFiltering {
 				else if(p1.getValue() > p2.getValue())
 					return -1;
 				else{
-					return (int) (-p1.getLabel() + p2.getLabel());
+//					return (int) (-p1.getLabel() + p2.getLabel()); //potential problematic
+					return 0;
 				}
 			}
 		});

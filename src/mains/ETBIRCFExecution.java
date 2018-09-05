@@ -79,7 +79,7 @@ public class ETBIRCFExecution {
                                 ndcg = new double[param.m_crossV];
                                 map = new double[param.m_crossV];
                                 for (int i = 0; i < param.m_crossV; i++) {
-                                    /***Loading data.***/
+                                    /***Loading data***/
                                     analyzer = new MultiThreadedLMAnalyzer(tokenModel, classNumber, fvFile,
                                             lmFvFile, Ngram, lengthThreshold, numberOfCores, true);
                                     analyzer.config(trainRatio, adaptRatio, enforceAdapt);
