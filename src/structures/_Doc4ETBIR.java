@@ -5,7 +5,7 @@ import utils.Utils;
 /**
  * Created by lulin on 3/28/18.
  */
-public class _Doc4ETBIR extends _Review{
+public class _Doc4ETBIR extends _Review {
 
     public double[] m_mu; // mean vector \mu in variational inference p(\theta|\mu,\Sigma)
     public double[] m_Sigma; // diagonal covariance matrix \Sigma in variational inference p(\theta|\mu,\Sigma)

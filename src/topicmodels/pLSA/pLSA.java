@@ -5,59 +5,13 @@ package topicmodels.pLSA;
  * Probabilistic Latent Semantic Analysis Topic Modeling 
  */
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.PrintWriter;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
-import structures.MyPriorityQueue;
-import structures._Corpus;
-import structures._Doc;
-import structures._RankItem;
-import structures._SparseFeature;
+import structures.*;
 import topicmodels.twoTopic;
 import utils.Utils;
-/**
- * @author Md. Mustafizur Rahman (mr4xb@virginia.edu)
- * Probabilistic Latent Semantic Analysis Topic Modeling 
-<<<<<<< HEAD
- */
-||||||| merged common ancestors
- */
-
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.PrintWriter;
-import java.util.*;
-
-import structures.MyPriorityQueue;
-import structures._Corpus;
-import structures._Doc;
-import structures._RankItem;
-import structures._SparseFeature;
-import topicmodels.twoTopic;
-import utils.Utils;
-=======
- */
 
 import java.io.*;
 import java.util.*;
 
-import structures.*;
-import topicmodels.twoTopic;
-import utils.Utils;
->>>>>>> master
 
 public class pLSA extends twoTopic {
 	// Dirichlet prior for p(\theta|d)

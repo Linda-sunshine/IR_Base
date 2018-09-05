@@ -1,16 +1,18 @@
 package topicmodels.embeddingModel;
 
-import java.io.*;
-import java.util.*;
-
 import Analyzer.BipartiteAnalyzer;
 import org.apache.commons.math3.linear.LUDecomposition;
 import org.apache.commons.math3.linear.MatrixUtils;
 import org.apache.commons.math3.linear.RealMatrix;
-
 import structures.*;
 import topicmodels.LDA.LDA_Variational;
 import utils.Utils;
+
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.util.*;
 
 /**
  * @author Lu Lin
