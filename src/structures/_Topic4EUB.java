@@ -10,21 +10,20 @@ import utils.Utils;
  */
 public class _Topic4EUB {
     public int m_index;
-    public double[] m_mu_phi_k;
-    public double[][] m_mu_sigma_phi_k;
+    public double[] m_mu_phi;
+    public double[][] m_sigma_phi;
 
     public _Topic4EUB(int index){
         m_index = index;
     }
 
     public void setTopics4Variational(int k, double mu, double sigma){
-        m_mu_phi_k = new double[k];
-        m_mu_sigma_phi_k = new double[k][k];
+        m_mu_phi = new double[k];
+        m_sigma_phi = new double[k][k];
+
+        Utils.randomize(m_mu_phi, mu);
         for(int i=0; i<k; i++){
-            Utils.randomize(m_mu_phi_k, mu);
-            for(int j=0; j<k; j++){
-                m_mu_sigma_phi_k[k][k] = sigma;
-            }
+            Utils.randomize(m_sigma_phi[i], sigma);
         }
     }
 
