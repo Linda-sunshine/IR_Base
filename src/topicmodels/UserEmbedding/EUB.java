@@ -76,7 +76,13 @@ public class EUB extends LDA_Variational {
     }
 
     @Override
-    protected void initialize_probability(Collection<_Doc> collection) {
+    /***to be done***/
+    protected void init() { // clear up for next iteration during EM
+        super.init();
+    }
+
+    @Override
+    protected void initialize_probability(Collection<_Doc> docs) {
 
         System.out.println("[Info]Initializing topics, documents and users...");
 
@@ -92,19 +98,113 @@ public class EUB extends LDA_Variational {
         init();
         Arrays.fill(m_alpha, d_alpha);
 
-        // initialize topic-word allocation, p(w|z)
-        for(_Doc doc:docs)
-            updateStats4Doc(doc);
-        for(int u_idx:m_mapByUser.keySet())
-            updateStats4User(m_users.get(u_idx));
-        for(int i_idx : m_mapByItem.keySet())
-            updateStats4Item(m_items.get(i_idx));
+        for(_Topic4EUB topic: m_topics)
+            updateStats4Topic(topic);
+
+        for(_Doc doc: m_trainSet)
+            updateStats4Doc((_Doc4EUB) doc);
+
+        for(_User4EUB user: m_users)
+            updateStats4User(user);
 
         calculate_M_step(0);
+    }
+
+    /***to be done***/
+    // Update the stats related with prior Gaussian distribution
+    // \alpha
+    public void updateStats4Topic(_Topic4EUB topic){
 
     }
 
-    public void E_step(){
+    /***to be done***/
+    // Update the stats related with doc
+    // \tau and \beta
+    public void updateStats4Doc(_Doc4EUB doc){
 
+    }
+
+    /***to be done***/
+    // Update the stats related with prior Gaussian distribution
+    // \gamma
+    public void updateStats4User(_User4EUB user){
+
+    }
+
+    // update variational parameters of latent variables
+    protected double E_step(){
+        int iter = 0;
+        double totalLikelihood, last = -1.0, converge;
+
+        init();
+        do {
+            totalLikelihood = 0.0;
+            for (_Doc doc: m_trainSet) {
+                totalLikelihood += varInference4Doc((_Doc4EUB) doc);
+            }
+            for (_Topic4EUB topic: m_topics)
+                totalLikelihood += varInference4Topic(topic);
+
+            for(_User4EUB user: m_users)
+                totalLikelihood += varInference4User(user);
+
+            if(Double.isNaN(totalLikelihood) || Double.isInfinite(totalLikelihood))
+                System.out.println("[error] The likelihood is Nan or Infinity!!");
+
+            if(iter > 0)
+                converge = Math.abs((totalLikelihood - last) / last);
+            else
+                converge = 1.0;
+
+            last = totalLikelihood;
+
+            if(iter % 10 == 0)
+                System.out.format("[Info]Single-thread E-Step: %d iteration, likelihood=%.2f, converge to %.8f\n",
+                        iter, last, converge);
+
+        }while(iter++ < m_varMaxIter && converge > m_varConverge);
+
+        //collect sufficient statistics for model parameter updates
+        for(_Topic4EUB topic: m_topics)
+            updateStats4Topic(topic);
+
+        for(_Doc doc: m_trainSet)
+            updateStats4Doc((_Doc4EUB) doc);
+
+        for(_User4EUB user: m_users)
+            updateStats4User(user);
+
+        return totalLikelihood;
+    }
+
+    /***to be done***/
+    protected double varInference4Topic(_Topic4EUB topic){
+
+
+        return calc_log_likelihood_per_topic(topic);
+    }
+
+    /***to be done***/
+    protected double varInference4Doc(_Doc4EUB doc){
+
+        return calc_log_likelihood_per_doc(doc);
+    }
+
+    /***to be done***/
+    protected double varInference4User(_User4EUB user){
+
+        return calc_log_likelihood_per_user(user);
+    }
+
+    protected double calc_log_likelihood_per_topic(_Topic4EUB topic){
+        return 0;
+    }
+
+    protected double calc_log_likelihood_per_doc(_Doc4EUB doc){
+        return 0;
+    }
+
+    protected double calc_log_likelihood_per_user(_User4EUB user){
+        return 0;
     }
 }
