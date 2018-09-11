@@ -55,7 +55,7 @@ public class myDataProcessMain {
             if(k < crossV-1)
                 val = k + 1;
             String validationFolder = reviewFolder + val + "/";
-            analyzer.loadUserDir(testFolder);
+            analyzer.loadUserDir(validationFolder);
             for(_Doc d : analyzer.getCorpus().getCollection()){
                 if(d.getType()!=_Review.rType.TEST)
                     d.setType(_Review.rType.ADAPTATION);
