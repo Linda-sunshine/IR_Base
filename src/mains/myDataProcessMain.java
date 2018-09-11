@@ -71,8 +71,8 @@ public class myDataProcessMain {
             m_bipartite = new BipartiteAnalyzer(analyzer.getCorpus());
             m_bipartite.analyzeCorpus();
             m_users = m_bipartite.getUsers();
+            m_items = new ArrayList<>();
             for(_Product prd : m_bipartite.getItems()){
-                m_items = new ArrayList<>();
                 m_items.add(new _Item(prd.getID()));
             }
             m_usersIndex = m_bipartite.getUsersIndex();
@@ -245,7 +245,7 @@ public class myDataProcessMain {
                 writer.write(String.format("%d\n", m_usersIndex.get(uid)));
             writer.close();
 
-            System.out.format("[Info]%d users saved to %s\n", docs.size(), filename);
+            System.out.format("[Info]%d users saved to %s\n", users.size(), filename);
         } catch (IOException e) {
             e.printStackTrace();
         }
