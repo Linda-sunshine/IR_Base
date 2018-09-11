@@ -73,7 +73,7 @@ public class myDataProcessMain {
             m_users = m_bipartite.getUsers();
             for(_Product prd : m_bipartite.getItems()){
                 m_items = new ArrayList<>();
-                m_items.add((_Item) prd);
+                m_items.add(new _Item(prd.getID()));
             }
             m_usersIndex = m_bipartite.getUsersIndex();
             m_itemsIndex = m_bipartite.getItemsIndex();
