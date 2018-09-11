@@ -10,7 +10,7 @@ import java.util.*;
 
 public class myDataProcessMain {
     static List<_User> m_users;
-    static List<_Product> m_items;
+    static List<_Item> m_items;
 
     static HashMap<String, Integer> m_usersIndex; //(userID, index in m_users)
     static HashMap<String, Integer> m_itemsIndex; //(itemID, index in m_items)
@@ -71,7 +71,10 @@ public class myDataProcessMain {
             m_bipartite = new BipartiteAnalyzer(analyzer.getCorpus());
             m_bipartite.analyzeCorpus();
             m_users = m_bipartite.getUsers();
-            m_items = m_bipartite.getItems();
+            for(_Product prd : m_bipartite.getItems()){
+                m_items = new ArrayList<>();
+                m_items.add((_Item) prd);
+            }
             m_usersIndex = m_bipartite.getUsersIndex();
             m_itemsIndex = m_bipartite.getItemsIndex();
             m_reviewIndex = m_bipartite.getReviewIndex();
