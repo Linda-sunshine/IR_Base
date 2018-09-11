@@ -6,8 +6,7 @@ import java.util.Set;
 
 import utils.Utils;
 
-public class _Item {
-	protected String m_itemID;
+public class _Item extends _Product{
 	protected ArrayList<_Review> m_reviews;
 	protected _SparseFeature[] m_BoWProfile; //The BoW representation of a item.
 	protected HashMap<Integer, Double> m_feature;//hashmap representation of item profile
@@ -17,11 +16,9 @@ public class _Item {
 	protected double m_D = 0; //length of all reviews
 
 	public _Item(String id){
-		m_itemID = id;
+		super(id);
 		m_reviews = new ArrayList<_Review>();
 	}
-
-	public String getID(){ return m_itemID; }
 
 	public double getLength(){ return this.m_D; }
 

@@ -110,6 +110,7 @@ public class ETBIRExecution {
         if (param.m_crossV<=1) {//just train
             tModel.EMonCorpus();
             tModel.printParameterAggregation(param.m_topk, outputFolder, param.m_topicmodel);
+            tModel.printTopWords(param.m_topk);
             tModel.closeWriter();
         } else if(setRandomFold == true){//cross validation with random folds
             tModel.setRandomFold(setRandomFold);

@@ -27,10 +27,12 @@ public class myItemTagMain {
 
         /***data setting***/
         int crossV = 2;
-        String trainset = "byUser_70k_review";
+        boolean flag_coldstart = true;
+        String trainset = "byUser_4k_review";
         String source = "yelp";
         String dataset = "./myData/" + source + "/" + trainset + "/";
-        String outputFolder = dataset + "output/" + crossV + "foldsCV" + "/";        String model = "ETBIR";
+        String outputFolder = String.format("%soutput/%dfoldsCV%s/", dataset, crossV, flag_coldstart?"Coldstart":"");
+        String model = "ETBIR";
         String mode = "LM";
         int number_of_topics = 20;
 

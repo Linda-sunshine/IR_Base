@@ -38,7 +38,7 @@ public class ETBIRMain {
         int number_of_topics = 20;
         int varMaxIter = 20;
         double varConverge = 1e-6;
-        int emMaxIter = 30;
+        int emMaxIter = 1;
         double emConverge = 1e-10;
 
         double alpha = 1 + 1e-2, beta = 1 + 1e-3, lambda = 1 + 1e-3;//these two parameters must be larger than 1!!!
@@ -50,8 +50,8 @@ public class ETBIRMain {
         boolean flag_coldstart = false;
 
         /*****data setting*****/
-        String trainset = "byUser_9k_reviews";
-        String source = "amazon_movie";
+        String trainset = "byUser_4k_review";
+        String source = "yelp";
         String dataset = "./myData/" + source + "/" + trainset + "/";
         String outputFolder = String.format("%soutput/%dfoldsCV%s/", dataset, crossV, flag_coldstart?"Coldstart":"");
 
@@ -140,6 +140,7 @@ public class ETBIRMain {
         if (crossV<=1) {//just train
             tModel.EMonCorpus();
             tModel.printParameterAggregation(topK, outputFolder, topicmodel);
+            tModel.printTopWords(topK);
             tModel.closeWriter();
         } else if(setRandomFold == true){//cross validation with random folds
             tModel.setRandomFold(setRandomFold);
@@ -178,6 +179,7 @@ public class ETBIRMain {
                 String resultFolder = outputFolder + k + "/";
                 new File(resultFolder).mkdirs();
                 tModel.printParameterAggregation(topK, resultFolder, topicmodel);
+                tModel.printTopWords(topK);
             }
 
             //output the performance statistics

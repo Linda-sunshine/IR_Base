@@ -344,9 +344,16 @@ public class ETBIR_multithread extends ETBIR {
         protected void updateStats4User(_User4ETBIR user){
             for(int k = 0; k < number_of_topics; k++){
                 for(int l = 0; l < number_of_topics; l++){
-                    pStats += user.m_SigmaP[k][l][l] + user.m_nuP[k][l] * user.m_nuP[k][l]- 2 * m_lambda * user.m_nuP[k][k] + m_lambda * m_lambda;
+                    if(!m_flag_diagonal_lambda)
+                        pStats += user.m_SigmaP[k][l][l] + user.m_nuP[k][l] * user.m_nuP[k][l]
+                                - 2 * m_lambda * Utils.sumOfArray(user.m_nuP[k]) + m_lambda * m_lambda * number_of_topics;
+                    else
+                        pStats += user.m_SigmaP[k][l][l] + user.m_nuP[k][l] * user.m_nuP[k][l] - 2 * m_lambda * user.m_nuP[k][k] + m_lambda * m_lambda;
                 }
-                lambda_Stats += user.m_nuP[k][k];
+                if(!m_flag_diagonal_lambda)
+                    lambda_Stats += Utils.sumOfArray(user.m_nuP[k]);
+                else
+                    lambda_Stats += user.m_nuP[k][k];
             }
         }
 
