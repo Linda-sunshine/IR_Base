@@ -2,10 +2,12 @@ package topicmodels.UserEmbedding;
 
 import structures.*;
 import topicmodels.LDA.LDA_Variational;
+import utils.Utils;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.HashMap;
 
 /**
  * @author Lin Gong (lg5bt@virginia.edu)
@@ -16,14 +18,25 @@ public class EUB extends LDA_Variational {
 
     ArrayList<_Topic4EUB> m_topics;
     ArrayList<_User4EUB> m_users;
+    ArrayList<_Doc4EUB> m_docs;
 
     protected int m_embedding_dim;
+
+    // assume this is the look-up table for doc-user pairs
+    HashMap<String, Integer> m_usersIndex;
+//    HashMap<String, Integer> m_docsIndex;
+
+    HashMap<Integer, ArrayList<Integer>> m_userDocMap;
+    HashMap<Integer, Integer> m_docUserMap;
 
     /*****variational parameters*****/
     protected double t_mu = 1.0, t_sigma = 1.0;
     protected double d_mu = 1.0, d_sigma = 1.0;
     protected double u_mu = 1.0, u_sigma = 1.0;
 
+    /*****model parameters*****/
+    protected double m_tau;
+    protected double m_gamma;
 
     public EUB(int number_of_iteration, double converge, double beta,
                _Corpus c, double lambda, int number_of_topics, double alpha,
@@ -31,12 +44,27 @@ public class EUB extends LDA_Variational {
         super(number_of_iteration, converge, beta, c, lambda, number_of_topics, alpha,
                 varMaxIter, varConverge);
         m_embedding_dim = m;
+        m_topics = new ArrayList<>();
+        m_users = new ArrayList<>();
+        m_docs = new ArrayList<>();
     }
 
+    // Load the data for later user
     public void loadUsers(ArrayList<_User> users){
-        m_users = new ArrayList<>();
-        for(_User u: users){
-            m_users.add((_User4EUB) u);
+
+        for(int i=0; i< users.size(); i++){
+            _User4EUB user = (_User4EUB) users.get(i);
+            m_users.add(user);
+            m_usersIndex.put(user.getUserID(), i);
+            m_userDocMap.put(i, new ArrayList<>());
+            for(_Doc d: user.getReviews()){
+                _Doc4EUB doc = (_Doc4EUB) d;
+                int docIndex = m_docs.size();
+                doc.setID(docIndex);
+                m_docs.add(doc);
+                m_userDocMap.get(i).add(docIndex);
+                m_docUserMap.put(docIndex, i);
+            }
         }
     }
 
@@ -179,7 +207,7 @@ public class EUB extends LDA_Variational {
 
     /***to be done***/
     protected double varInference4Topic(_Topic4EUB topic){
-
+        update_phi_k(topic);
 
         return calc_log_likelihood_per_topic(topic);
     }
@@ -196,6 +224,22 @@ public class EUB extends LDA_Variational {
         return calc_log_likelihood_per_user(user);
     }
 
+    // update the mu and sigma for each topic \phi_k
+    // E(65) and Eq(67)
+    protected void update_phi_k(_Topic4EUB topic){
+        double numerator = 0;
+        double denominator = 0;
+        for(int m=0; m<m_embedding_dim; m++) {
+            for (_Doc d : m_trainSet) {
+                _Doc4EUB doc = (_Doc4EUB) d;
+                _User4EUB user = m_users.get(m_docUserMap.get(doc.getID()));
+                numerator += Utils.sumOfArray(doc.m_mu_theta) * user.m_mu_u[m];
+                denominator += user.m_sigma_u[m]+ user.m_mu_u[m] * user.m_mu_u[m];
+            }
+            topic.m_mu_phi[m] = m_tau * numerator / (d_alpha + m_tau * denominator);
+        }
+    }
+
     protected double calc_log_likelihood_per_topic(_Topic4EUB topic){
         return 0;
     }
@@ -207,4 +251,10 @@ public class EUB extends LDA_Variational {
     protected double calc_log_likelihood_per_user(_User4EUB user){
         return 0;
     }
+
+    // cross valication
+
+    // one fold valication
+
+    // currently, assume we have train/test data
 }

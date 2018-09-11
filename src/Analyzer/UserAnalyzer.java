@@ -190,6 +190,7 @@ public class UserAnalyzer extends DocAnalyzer {
 			if(reviews.size() > 1){//at least one for adaptation and one for testing
 				allocateReviews(reviews);
 				m_users.add(new _User(userID, m_classNo, reviews)); //create new user from the file.
+				m_corpus.addDocs(reviews);
 			} else if(reviews.size() == 1){// added by Lin, for those users with fewer than 2 reviews, ignore them.
 				review = reviews.get(0);
 				rollBack(Utils.revertSpVct(review.getSparse()), review.getYLabel());
