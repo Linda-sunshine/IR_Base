@@ -79,7 +79,7 @@ public class BipartiteAnalyzer {
             }
 
             if(!m_itemsIndex.containsKey(itemID)){
-                m_items.add(new _Product4ETBIR(itemID));
+                m_items.add(new _Product(itemID));
                 m_itemsIndex.put(itemID, i_index);
                 i_index++;
             }

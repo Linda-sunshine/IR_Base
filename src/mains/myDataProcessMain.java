@@ -36,7 +36,7 @@ public class myDataProcessMain {
         /*****data setting*****/
         String folder = String.format("%s/%s/%s", param.m_prefix, param.m_source, param.m_set);
         String fvFile = String.format("%s/%s/%s_features.txt", param.m_prefix, param.m_source, param.m_source);
-        String outputFolder = String.format("%s/CTPE/", folder);
+        String outputFolder = String.format("%s/%s/", folder, param.m_topicmodel);
         new File(outputFolder).mkdirs();
 
         String reviewFolder =  String.format("%s/%dfoldsCV%s/", folder, crossV, flag_coldstart?"Coldstart":"");
@@ -90,14 +90,27 @@ public class myDataProcessMain {
             }
 
             String[] modes = new String[]{"train","validation","test"};
+            ArrayList<_Doc> docs;
             for(String mode : modes) {
-                m_bipartite.analyzeBipartite(m_trainSet, mode);
+                if(mode.equals("train"))
+                    docs = m_trainSet;
+                else if(mode.equals("test"))
+                    docs = m_testSet;
+                else
+                    docs = m_validationSet;
+                m_bipartite.analyzeBipartite(docs, mode);
                 m_mapByUser = m_bipartite.getMapByUser();
                 m_mapByItem = m_bipartite.getMapByItem();
-                save2FileCTPE(outputFolder, param.m_source, mode, k);
+
+                if(param.m_topicmodel.equals("CTR")) {
+                    save2FileCTPE(outputFolder, param.m_source, mode, k);
+                }else{
+                    save2FileRTM(outputFolder, param.m_source, mode, k);
+                }
             }
         }
     }
+
 
     public static void save2FileCTPE(String prefix, String source, String mode, int k) throws IOException{
         ArrayList<_Doc> docs = new ArrayList<>();
@@ -109,14 +122,40 @@ public class myDataProcessMain {
         }
         String rateFile = String.format("%s/%s/%d/%s.tsv", prefix, source, k, mode);
         String userFile = String.format("%s/%s/%d/%s_users.tsv", prefix, source, k, mode);
-        String docFile = String.format("%s/%s/%d/%s_mult.dat", prefix, source, k, mode);
-        if(mode.equals("train"))
-            docFile = String.format("%s/%s/%d/mult.dat", prefix, source, k, mode);
-        (new File(docFile)).getParentFile().mkdirs();
+        String docFile = String.format("%s/%s/%d/mult.dat", prefix, source, k);
+
+        (new File(rateFile)).getParentFile().mkdirs();
         saveRate(rateFile, docs);
         saveUser(userFile, docs);
-        saveDoc(docFile, docs);
+
+        if(mode.equals("train")) {
+            docs.clear();
+            docs = buildItemProfile(m_bipartite.getCorpus().getCollection());
+            saveDoc(docFile, docs);
+        }
     }
+
+    //build query for one item from its' reviews
+    public static ArrayList<_Doc> buildItemProfile(ArrayList<_Doc> docs){
+        ArrayList<_Doc> itemProfile = new ArrayList<>();
+
+        //allocate review by item
+        for(_Doc doc : docs){
+            String itemID = doc.getItemID();
+            ((_Item) m_items.get(m_itemsIndex.get(itemID))).addOneReview((_Review)doc);
+        }
+        //compress sparse feature of reviews into one vector for each item
+        int i = 0;
+        for(_Product item : m_items){
+            ((_Item) item).buildProfile("");
+            _Doc itemDoc = new _Doc(i++, "", 0);
+            itemDoc.createSpVct(((_Item) item).getFeature());
+            itemProfile.add(itemDoc);
+        }
+
+        return itemProfile;
+    }
+
 
     public static void save2FileRTM(String prefix, String source, String mode, int k) throws IOException{
         ArrayList<_Doc> docs = new ArrayList<>();
@@ -175,7 +214,7 @@ public class myDataProcessMain {
                 String userID = r.getUserID();
                 String itemID = r.getItemID();
                 int rate = r.getYLabel();
-                writer.write(String.format("%s\t%s\t%d\n", userID, itemID, rate));
+                writer.write(String.format("%d\t%d\t%d\n", m_usersIndex.get(userID), m_itemsIndex.get(itemID), rate));
             }
             writer.close();
 
@@ -200,7 +239,7 @@ public class myDataProcessMain {
                 users.add(userID);
             }
             for(String uid : users)
-                writer.write(String.format("%s\n", uid));
+                writer.write(String.format("%d\n", m_usersIndex.get(uid)));
             writer.close();
 
             System.out.format("[Info]%d users saved to %s\n", docs.size(), filename);
