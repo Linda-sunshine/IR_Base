@@ -252,9 +252,9 @@ public class EUB extends LDA_Variational {
         return 0;
     }
 
-    // cross valication
+    // cross validation
 
-    // one fold valication
+    // one fold validation
 
     // currently, assume we have train/test data
 }
