@@ -1,16 +1,16 @@
 package Classifier.supervised.modelAdaptation.DirichletProcess;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-
-import structures._PerformanceStat;
-import structures._Review;
-import structures._thetaStar;
-import structures._PerformanceStat.TestMode;
-import structures._Review.rType;
-import utils.Utils;
 import Classifier.supervised.modelAdaptation._AdaptStruct;
 import cern.jet.random.tfloat.FloatUniform;
+import structures._Doc.rType;
+import structures._PerformanceStat;
+import structures._PerformanceStat.TestMode;
+import structures._Review;
+import structures._thetaStar;
+import utils.Utils;
+
+import java.util.ArrayList;
+import java.util.HashMap;
 
 public class IsoMTCLRWithDP extends MTCLRWithDP {
 

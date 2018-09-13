@@ -1,18 +1,17 @@
 package Classifier.supervised.modelAdaptation.CoLinAdapt;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-
-import structures._PerformanceStat;
-import structures._Review;
-import structures._PerformanceStat.TestMode;
-import structures._Review.rType;
-import utils.Utils;
-
 import Classifier.supervised.modelAdaptation._AdaptStruct;
 import LBFGS.LBFGS;
 import LBFGS.LBFGS.ExceptionWithIflag;
+import structures._Doc.rType;
+import structures._PerformanceStat;
+import structures._PerformanceStat.TestMode;
+import structures._Review;
+import utils.Utils;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
 
 public class LinAdaptColdStart extends LinAdapt {
 	int m_threshold;

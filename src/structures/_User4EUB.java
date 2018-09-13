@@ -11,7 +11,7 @@ import utils.Utils;
  */
 public class _User4EUB extends _User {
     public double[] m_mu_u;
-    public double[] m_sigma_u;
+    public double[][] m_sigma_u;
 
     public double[] m_epsilon;
 
@@ -25,13 +25,15 @@ public class _User4EUB extends _User {
 
     public void setTopics4Variational(int dim, int userSize, double mu, double sigma){
         m_mu_u = new double[dim];
-        m_sigma_u = new double[dim];
+        m_sigma_u = new double[dim][dim];
 
         m_mu_delta = new double[userSize];
         m_sigma_delta = new double[userSize];
+        m_epsilon = new double[userSize];
 
         Utils.randomize(m_mu_u, mu);
-        Utils.randomize(m_sigma_u, sigma);
+        for(int m=0; m<dim; m++)
+            Utils.randomize(m_sigma_u[m], sigma);
 
         Utils.randomize(m_mu_delta, mu);
         Utils.randomize(m_sigma_delta, sigma);

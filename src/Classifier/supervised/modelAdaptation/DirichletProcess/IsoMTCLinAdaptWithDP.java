@@ -6,7 +6,7 @@ import java.util.HashMap;
 import structures._PerformanceStat;
 import structures._PerformanceStat.TestMode;
 import structures._Review;
-import structures._Review.rType;
+import structures._Doc.rType;
 import structures._thetaStar;
 import utils.Utils;
 import Classifier.supervised.modelAdaptation._AdaptStruct;

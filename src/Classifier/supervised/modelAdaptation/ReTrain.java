@@ -1,14 +1,14 @@
 package Classifier.supervised.modelAdaptation;
 
-import java.util.ArrayList;
-
+import Classifier.supervised.IndividualSVM;
 import structures.MyPriorityQueue;
+import structures._Doc.rType;
 import structures._RankItem;
 import structures._Review;
-import structures._Review.rType;
 import structures._User;
 import utils.Utils;
-import Classifier.supervised.IndividualSVM;
+
+import java.util.ArrayList;
 
 /***
  * @author lin

@@ -1,18 +1,14 @@
 package Classifier.supervised.modelAdaptation;
 
-import java.util.ArrayList;
-
-import structures._PerformanceStat;
-import structures._Review;
-import structures._PerformanceStat.TestMode;
-import structures._Review.rType;
-import utils.Utils;
 import Classifier.supervised.SVM;
-import Classifier.supervised.liblinear.Feature;
-import Classifier.supervised.liblinear.Linear;
-import Classifier.supervised.liblinear.Parameter;
-import Classifier.supervised.liblinear.Problem;
-import Classifier.supervised.liblinear.SolverType;
+import Classifier.supervised.liblinear.*;
+import structures._Doc.rType;
+import structures._PerformanceStat;
+import structures._PerformanceStat.TestMode;
+import structures._Review;
+import utils.Utils;
+
+import java.util.ArrayList;
 
 public class MTSVMColdStart extends MultiTaskSVM {
 

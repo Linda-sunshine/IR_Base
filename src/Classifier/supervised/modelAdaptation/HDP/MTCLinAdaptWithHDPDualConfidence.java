@@ -1,13 +1,12 @@
 package Classifier.supervised.modelAdaptation.HDP;
 
-import java.util.HashMap;
-
 import Classifier.supervised.modelAdaptation._AdaptStruct;
-
 import structures._Doc;
+import structures._Doc.rType;
 import structures._HDPThetaStar;
 import structures._Review;
-import structures._Review.rType;
+
+import java.util.HashMap;
 
 /***
  * In the class, we consider both:

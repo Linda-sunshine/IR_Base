@@ -2,8 +2,8 @@ package Classifier.supervised.modelAdaptation.MMB;
 
 import Classifier.supervised.modelAdaptation._AdaptStruct;
 import structures.*;
+import structures._Doc.rType;
 import structures._PerformanceStat.TestMode;
-import structures._Review.rType;
 import utils.Utils;
 
 import java.io.*;

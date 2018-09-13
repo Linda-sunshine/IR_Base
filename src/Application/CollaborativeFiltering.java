@@ -1,28 +1,12 @@
 package Application;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.PrintWriter;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Set;
-
-import structures.MyPriorityQueue;
-import structures.Pair;
-import structures._Item;
-import structures._RankItem;
-import structures._Review;
-import structures._Review.rType;
-import structures._SparseFeature;
-import structures._User;
-import utils.Utils;
 import Classifier.supervised.modelAdaptation._AdaptStruct.SimType;
+import structures.*;
+import structures._Doc.rType;
+import utils.Utils;
+
+import java.io.*;
+import java.util.*;
 
 /***
  * @author lin

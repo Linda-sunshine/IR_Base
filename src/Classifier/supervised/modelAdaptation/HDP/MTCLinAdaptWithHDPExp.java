@@ -1,25 +1,15 @@
 package Classifier.supervised.modelAdaptation.HDP;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.Random;
-
-import structures.MyPriorityQueue;
-import structures._Doc;
-import structures._HDPThetaStar;
-import structures._PerformanceStat;
-import structures._SparseFeature;
-import structures._PerformanceStat.TestMode;
-import structures._RankItem;
-import structures._Review;
-import structures._Review.rType;
-import utils.Utils;
 import Classifier.supervised.GlobalSVM;
 import Classifier.supervised.SVM;
-import Classifier.supervised.modelAdaptation._AdaptStruct;
+import structures.*;
+import structures._Doc.rType;
+import utils.Utils;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Random;
 
 public class MTCLinAdaptWithHDPExp extends MTCLinAdaptWithHDP {
 	double[] m_trainPerf;

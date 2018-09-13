@@ -1,22 +1,19 @@
 package Classifier.supervised.modelAdaptation;
 
+import LBFGS.LBFGS;
+import LBFGS.LBFGS.ExceptionWithIflag;
+import structures._Doc.rType;
+import structures._PerformanceStat.TestMode;
+import structures._Review;
+import structures._SparseFeature;
+import structures._User;
+import utils.Utils;
+
 import java.io.BufferedReader;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-
-import LBFGS.LBFGS;
-import LBFGS.LBFGS.ExceptionWithIflag;
-
-import structures._Review;
-import structures._SparseFeature;
-import structures._PerformanceStat.TestMode;
-import structures._Review.rType;
-import structures._User;
-import utils.Utils;
 
 public class MultiTaskLR extends ModelAdaptation {
 

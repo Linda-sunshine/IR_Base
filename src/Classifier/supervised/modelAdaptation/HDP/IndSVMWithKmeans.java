@@ -3,23 +3,22 @@
  */
 package Classifier.supervised.modelAdaptation.HDP;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-
+import Classifier.supervised.SVM;
+import Classifier.supervised.modelAdaptation.ModelAdaptation;
+import Classifier.supervised.modelAdaptation._AdaptStruct;
 import cc.mallet.types.Instance;
 import cc.mallet.types.InstanceList;
 import cc.mallet.types.SparseVector;
 import clustering.KMeansAlg;
-
 import structures._Doc;
+import structures._Doc.rType;
+import structures._PerformanceStat.TestMode;
 import structures._Review;
 import structures._User;
-import structures._PerformanceStat.TestMode;
-import structures._Review.rType;
-import Classifier.supervised.SVM;
-import Classifier.supervised.modelAdaptation.ModelAdaptation;
-import Classifier.supervised.modelAdaptation._AdaptStruct;
+
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
 
 /**
  * @author lin

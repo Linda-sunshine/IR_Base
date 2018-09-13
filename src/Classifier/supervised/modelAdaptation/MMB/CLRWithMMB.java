@@ -8,21 +8,9 @@ import cern.jet.random.tdouble.Gamma;
 import cern.jet.random.tfloat.FloatUniform;
 import org.apache.commons.math3.distribution.BinomialDistribution;
 import structures.*;
-import structures._HDPThetaStar._Connection;
-<<<<<<< HEAD
-import structures._PerformanceStat.TestMode;
-import structures._Review.rType;
-||||||| merged common ancestors
-import structures._MMBNeighbor;
-import structures._Review;
-import structures._Review.rType;
-import structures._User;
-=======
-import structures._MMBNeighbor;
-import structures._Review;
 import structures._Doc.rType;
-import structures._User;
->>>>>>> master
+import structures._HDPThetaStar._Connection;
+import structures._PerformanceStat.TestMode;
 import utils.Utils;
 
 import java.io.File;
@@ -982,10 +970,10 @@ public class CLRWithMMB extends CLRWithHDP {
 							user = m_userList.get(i+core);
 							if ( (m_testmode==TestMode.TM_batch && user.getTestSize()<1) // no testing data
 								|| (m_testmode==TestMode.TM_online && user.getAdaptationSize()<1) // no adaptation data
-								|| (m_testmode==TestMode.TM_hybrid && user.getAdaptationSize()<1) && user.getTestSize()<1) // no testing and adaptation data 
+								|| (m_testmode==TestMode.TM_hybrid && user.getAdaptationSize()<1) && user.getTestSize()<1) // no testing and adaptation data
 								continue;
 									
-							if (m_testmode==TestMode.TM_batch || m_testmode==TestMode.TM_hybrid) {				
+							if (m_testmode==TestMode.TM_batch || m_testmode==TestMode.TM_hybrid) {
 								//record prediction results
 								for(_Review r:user.getReviews()) {
 									if (r.getType() != rType.TEST)

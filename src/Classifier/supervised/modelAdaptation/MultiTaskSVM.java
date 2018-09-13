@@ -1,38 +1,18 @@
 package Classifier.supervised.modelAdaptation;
 
+import Classifier.supervised.SVM;
+import Classifier.supervised.liblinear.*;
+import structures._Doc.rType;
+import structures._PerformanceStat;
+import structures._PerformanceStat.TestMode;
+import structures._Review;
+import structures._SparseFeature;
+import structures._User;
+
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.ArrayList;
-
-import structures._PerformanceStat;
-import structures._PerformanceStat.TestMode;
-import structures._Review;
-import structures._Review.rType;
-import structures._SparseFeature;
-import structures._User;
-import Classifier.supervised.SVM;
-import Classifier.supervised.liblinear.Feature;
-import Classifier.supervised.liblinear.FeatureNode;
-import Classifier.supervised.liblinear.Linear;
-import Classifier.supervised.liblinear.Model;
-import Classifier.supervised.liblinear.Parameter;
-import Classifier.supervised.liblinear.Problem;
-import Classifier.supervised.liblinear.SolverType;
-<<<<<<< HEAD
-||||||| merged common ancestors
-import structures._PerformanceStat.TestMode;
-import structures._Review;
-import structures._Review.rType;
-import structures._SparseFeature;
-import structures._User;
-=======
-import structures._PerformanceStat.TestMode;
-import structures._Review;
-import structures._Doc.rType;
-import structures._SparseFeature;
-import structures._User;
->>>>>>> master
 
 public class MultiTaskSVM extends ModelAdaptation {
 	double m_u = 1; // trade-off parameter between global model and individual model.

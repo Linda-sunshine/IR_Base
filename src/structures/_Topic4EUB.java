@@ -17,6 +17,10 @@ public class _Topic4EUB {
         m_index = index;
     }
 
+    public int getIndex(){
+        return m_index;
+    }
+
     public void setTopics4Variational(int k, double mu, double sigma){
         m_mu_phi = new double[k];
         m_sigma_phi = new double[k][k];

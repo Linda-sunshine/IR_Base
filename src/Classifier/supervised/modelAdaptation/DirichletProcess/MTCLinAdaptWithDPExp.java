@@ -1,31 +1,14 @@
 package Classifier.supervised.modelAdaptation.DirichletProcess;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Random;
-import java.util.Set;
-import java.util.TreeMap;
-
-import cc.mallet.types.SparseVector;
-import clustering.KMeansAlg;
-import structures.MyPriorityQueue;
-import structures._Doc;
-import structures._HDPThetaStar;
-import structures._PerformanceStat;
-import structures._RankItem;
-import structures._Review;
-import structures._SparseFeature;
-import structures._thetaStar;
-import structures._PerformanceStat.TestMode;
-import structures._Review.rType;
-import utils.Utils;
 import Classifier.supervised.SVM;
 import Classifier.supervised.modelAdaptation._AdaptStruct;
-import Classifier.supervised.modelAdaptation.HDP._HDPAdaptStruct;
+import cc.mallet.types.SparseVector;
+import clustering.KMeansAlg;
+import structures.*;
+import structures._Doc.rType;
+import utils.Utils;
+
+import java.util.*;
 
 public class MTCLinAdaptWithDPExp extends MTCLinAdaptWithDP {
 	double[] m_trainPerf;

@@ -1,5 +1,9 @@
 package Classifier.semisupervised;
 
+import Classifier.supervised.modelAdaptation._AdaptStruct;
+import structures.*;
+import structures._Doc.rType;
+
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -7,14 +11,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
-
-import structures._Corpus;
-import structures._Doc;
-import structures._PerformanceStat;
-import structures._Review;
-import structures._Review.rType;
-import structures._User;
-import Classifier.supervised.modelAdaptation._AdaptStruct;
 
 public class GaussianFieldsByRandomWalkWithFriends extends GaussianFieldsByRandomWalk{
 

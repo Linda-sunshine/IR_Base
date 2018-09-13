@@ -1,25 +1,19 @@
 package Classifier.supervised.modelAdaptation.DirichletProcess;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Random;
-import java.util.Set;
+import Classifier.supervised.modelAdaptation._AdaptStruct;
 import cc.mallet.types.SparseVector;
 import clustering.KMeansAlg;
-import structures.MyPriorityQueue;
 import structures._Doc;
-import structures._RankItem;
+import structures._Doc.rType;
+import structures._PerformanceStat.TestMode;
 import structures._Review;
 import structures._SparseFeature;
-import structures._thetaStar;
-import structures._PerformanceStat.TestMode;
-import structures._Review.rType;
 import utils.Utils;
-import Classifier.supervised.SVM;
-import Classifier.supervised.modelAdaptation._AdaptStruct;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Set;
 
 public class MTCLinAdaptWithDPKMeans extends MTCLinAdaptWithDPLR {
 	double[] m_trainPerf;

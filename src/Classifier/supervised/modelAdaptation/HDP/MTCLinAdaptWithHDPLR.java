@@ -1,16 +1,16 @@
 package Classifier.supervised.modelAdaptation.HDP;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-
-import structures._Doc;
-import structures._PerformanceStat.TestMode;
-import structures._Review;
-import structures._Review.rType;
-import structures._SparseFeature;
-import utils.Utils;
 import Classifier.supervised.LogisticRegression4DP;
 import Classifier.supervised.modelAdaptation.DirichletProcess._DPAdaptStruct;
+import structures._Doc;
+import structures._Doc.rType;
+import structures._PerformanceStat.TestMode;
+import structures._Review;
+import structures._SparseFeature;
+import utils.Utils;
+
+import java.util.ArrayList;
+import java.util.HashMap;
 
 public class MTCLinAdaptWithHDPLR extends MTCLinAdaptWithHDP{
 

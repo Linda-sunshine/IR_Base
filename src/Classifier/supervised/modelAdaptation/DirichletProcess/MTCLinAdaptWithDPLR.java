@@ -1,21 +1,19 @@
 package Classifier.supervised.modelAdaptation.DirichletProcess;
 
+import Classifier.supervised.LogisticRegression4DP;
+import Classifier.supervised.modelAdaptation._AdaptStruct;
+import structures._Doc;
+import structures._Doc.rType;
+import structures._PerformanceStat.TestMode;
+import structures._Review;
+import structures._SparseFeature;
+import utils.Utils;
+
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.HashMap;
-
-import structures._Doc;
-import structures._Review;
-import structures._SparseFeature;
-import structures._PerformanceStat.TestMode;
-import structures._Review.rType;
-import utils.Utils;
-
-import Classifier.supervised.LogisticRegression;
-import Classifier.supervised.LogisticRegression4DP;
-import Classifier.supervised.modelAdaptation._AdaptStruct;
 
 public class MTCLinAdaptWithDPLR extends MTCLinAdaptWithDP {
 	int m_lmFvSize = 0;
