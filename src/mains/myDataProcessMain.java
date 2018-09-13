@@ -134,7 +134,7 @@ public class myDataProcessMain {
         if(mode.equals("train")) {
             docs.clear();
             docs = buildItemProfile(m_bipartite.getCorpus().getCollection());
-            saveDoc(docFile, docs);
+            saveDoc4LDA(docFile, docs);
         }
     }
 
@@ -178,7 +178,7 @@ public class myDataProcessMain {
         }
         String docFile = String.format("%s/%s_user_corpus_%s_%d.txt", prefix,source, mode, k);
         String linkFile = mode.equals("test") ? String.format("%s/%s_user_link_%s_train_%d.txt", prefix, source, mode, k) : String.format("%s/%s_user_link_%s_%d.txt", prefix, source, mode, k);
-        saveDoc(docFile, docs);
+        saveDoc4RTM(docFile, docs);
         saveLink(linkFile, links);
         if(mode.equals("test"))
             (new File(String.format("%s/%s_user_link_%s_test_%d.txt", prefix, source, mode, k))).createNewFile();
@@ -198,7 +198,7 @@ public class myDataProcessMain {
         }
         docFile = String.format("%s/%s_item_corpus_%s_%d.txt", prefix,source, mode, k);
         linkFile = mode.equals("test") ? String.format("%s/%s_item_link_%s_train_%d.txt", prefix, source, mode, k) : String.format("%s/%s_item_link_%s_%d.txt", prefix, source, mode, k);
-        saveDoc(docFile, docs);
+        saveDoc4RTM(docFile, docs);
         saveLink(linkFile, links);
         if(mode.equals("test"))
             (new File(String.format("%s/%s_item_link_%s_test_%d.txt", prefix, source, mode, k))).createNewFile();
@@ -251,7 +251,7 @@ public class myDataProcessMain {
         }
     }
 
-    public static void saveDoc(String filename, ArrayList<_Doc> docs) {
+    public static void saveDoc4RTM(String filename, ArrayList<_Doc> docs) {
         if (filename==null || filename.isEmpty()) {
             System.out.println("Please specify the file name to save the vectors!");
             return;
@@ -261,6 +261,28 @@ public class myDataProcessMain {
             BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(filename)));
             for(_Doc doc:docs) {
                 writer.write(String.format("%d", doc.getTotalDocLength()));
+                for(_SparseFeature fv:doc.getSparse())
+                    writer.write(String.format(" %d:%d", fv.getIndex(), (int) fv.getValue()));//index starts from 1
+                writer.write("\n");
+            }
+            writer.close();
+
+            System.out.format("[Info]%d feature vectors saved to %s\n", docs.size(), filename);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public static void saveDoc4LDA(String filename, ArrayList<_Doc> docs) {
+        if (filename==null || filename.isEmpty()) {
+            System.out.println("Please specify the file name to save the vectors!");
+            return;
+        }
+
+        try {
+            BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(filename)));
+            for(_Doc doc:docs) {
+                writer.write(String.format("%d", doc.getSparse().length));
                 for(_SparseFeature fv:doc.getSparse())
                     writer.write(String.format(" %d:%d", fv.getIndex(), (int) fv.getValue()));//index starts from 1
                 writer.write("\n");
