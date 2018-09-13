@@ -262,7 +262,7 @@ public class myDataProcessMain {
             for(_Doc doc:docs) {
                 writer.write(String.format("%d", doc.getTotalDocLength()));
                 for(_SparseFeature fv:doc.getSparse())
-                    writer.write(String.format(" %d:%.1f", fv.getIndex(), fv.getValue()));//index starts from 1
+                    writer.write(String.format(" %d:%d", fv.getIndex(), (int) fv.getValue()));//index starts from 1
                 writer.write("\n");
             }
             writer.close();
