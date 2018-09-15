@@ -39,6 +39,10 @@ public class EUB extends LDA_Variational {
     protected double u_mu = 1.0, u_sigma = 1.0;
 
     /*****model parameters*****/
+    // this alpha is differnet from alpha in LDA
+    // alpha is precision parameter for topic embedding in EUB
+    // alpha is a vector parameter for dirichlet distribution
+    protected double m_alpha_s;
     protected double m_tau;
     protected double m_gamma;
     protected double m_xi;
@@ -133,7 +137,6 @@ public class EUB extends LDA_Variational {
             u.setTopics4Variational(m_embedding_dim, m_users.size(), u_mu, u_sigma);
 
         init();
-        Arrays.fill(m_alpha, d_alpha);
 
         for(_Doc doc: m_trainSet)
             updateStats4Doc((_Doc4EUB) doc);
@@ -202,16 +205,48 @@ public class EUB extends LDA_Variational {
 
     @Override
     public void calculate_M_step(int iter){
-        //maximum likelihood estimation of p(w|z,\beta)
-        for(int i=0; i<number_of_topics; i++) {
-            double sum = Utils.sumOfArray(word_topic_sstat[i]);
-            for(int v=0; v<vocabulary_size; v++) //will be in the log scale!!
-                topic_term_probabilty[i][v] = Math.log(word_topic_sstat[i][v]/sum);
-        }
-        est_alpha();
 
+        est_alpha();// precision for topic embedding
+        est_gamma(); // precision for user embedding
+        est_beta(); // topic-word distribution
+        est_tau(); // precision for topic proportion
+        est_xi(); // sigma for the affinity \delta_{ij}
     }
 
+    protected void est_alpha(){
+        double denominator = 0;
+        for(int k=0; k<number_of_topics; k++){
+            _Topic4EUB topic = m_topics.get(k);
+            denominator += sumSigmaDiagAddMuTransposeMu(topic.m_sigma_phi, topic.m_mu_phi);
+        }
+        m_alpha_s = denominator!=0 ? (number_of_topics * m_embedding_dim / denominator) : 0;
+    }
+
+    protected void est_gamma(){
+        double denominator = 0;
+        for(int uIndex: m_userDocMap.keySet()){
+            _User4EUB user = m_users.get(uIndex);
+            denominator += sumSigmaDiagAddMuTransposeMu(user.m_sigma_u, user.m_mu_u);
+        }
+        m_gamma = denominator!=0 ? (m_users.size() * m_embedding_dim) / denominator : 0;
+    }
+
+    protected void est_beta(){
+        for(int k=0; k<number_of_topics; k++) {
+            double sum = Utils.sumOfArray(word_topic_sstat[k]);
+            for(int v=0; v<vocabulary_size; v++) //will be in the log scale!!
+                topic_term_probabilty[k][v] = Math.log(word_topic_sstat[k][v]/sum);
+        }
+    }
+
+    protected void est_tau(){
+        double denominator = 0;
+        for(int dIndex: m_docUserMap.keySet()){
+            _Doc4EUB doc = m_docs.get(dIndex);
+            denominator +=
+        }
+
+    }
 
     protected double varInference4Topic(_Topic4EUB topic){
         // update the mu and sigma for each topic \phi_k -- Eq(65) and Eq(67)
@@ -267,7 +302,7 @@ public class EUB extends LDA_Variational {
         term1.timesEquals(m_tau);
         double[][] diag = new double[m_embedding_dim][m_embedding_dim];
         for(int i=0; i<m_embedding_dim; i++){
-            diag[i][i] = d_alpha;
+            diag[i][i] = m_alpha_s;
         }
         // + \alpha * I
         term1.plusEquals(new Matrix(diag));
@@ -275,6 +310,18 @@ public class EUB extends LDA_Variational {
 
         topic.m_sigma_phi = invsMtx.getArray();
         topic.m_mu_phi = invsMtx.times(new Matrix(term2, 1)).getArray()[0];
+    }
+
+    // \sum_{mm}\simga[m][m] + \mu^T * \mu
+    protected double sumSigmaDiagAddMuTransposeMu(double[][] sigma, double[] mu){
+        if(sigma.length != mu.length)
+            return 0;
+        int dim = mu.length;
+        double sum = 0;
+        for(int m=0; m<dim; m++){
+            sum += sigma[m][m] + mu[m] * mu[m];
+        }
+        return sum;
     }
 
     // \simga + \mu * \mu^T
@@ -357,8 +404,6 @@ public class EUB extends LDA_Variational {
         int i = m_usersIndex.get(user.getUserID());
         int[] iflag = {0}, iprint = {-1, 3};
         double fValue = 0, oldFValue = Double.MAX_VALUE;
-        double[] mu = user.m_mu_delta;
-        double[] sigma = user.m_sigma_delta;
 
         double[] muG = new double[m_users.size()];
         double[] diag = new double[m_users.size()];
