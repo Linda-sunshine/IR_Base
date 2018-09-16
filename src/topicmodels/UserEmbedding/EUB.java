@@ -27,8 +27,13 @@ public class EUB extends LDA_Variational {
     protected HashMap<Integer, ArrayList<Integer>> m_userDocMap;
     // assume i follows js, key: index i, value: index js
     protected HashMap<Integer, HashSet<Integer>> m_userI2JMap;
+    // assume i does not follow j', key: index i, value: index j'
+    protected HashMap<Integer, HashSet<Integer>> m_userI2JPrimeMap;
+
     // assume ps follows i, key: index i, value: index ps
     protected HashMap<Integer, HashSet<Integer>> m_userP2IMap;
+    // assume p' does not follow i, key: index p', value: index i
+    protected HashMap<Integer, HashSet<Integer>> m_userPPrime2IMap;
 
     // key: doc index, value: user index
     protected HashMap<Integer, Integer> m_docUserMap;
@@ -80,6 +85,12 @@ public class EUB extends LDA_Variational {
             m_topics.add(new _Topic4EUB(k));
         }
     }
+
+    // build the network: interactions and non-interactions
+    protected double buildNetwork(){
+
+    }
+
 
     @Override
     public void EMonCorpus(){
@@ -141,9 +152,6 @@ public class EUB extends LDA_Variational {
         for(_Doc doc: m_trainSet)
             updateStats4Doc((_Doc4EUB) doc);
 
-        for(_User4EUB user: m_users)
-            updateStats4User(user);
-
         calculate_M_step(0);
     }
 
@@ -197,9 +205,6 @@ public class EUB extends LDA_Variational {
         for(_Doc doc: m_trainSet)
             updateStats4Doc((_Doc4EUB) doc);
 
-        for(_User4EUB user: m_users)
-            updateStats4User(user);
-
         return totalLikelihood;
     }
 
@@ -241,11 +246,64 @@ public class EUB extends LDA_Variational {
 
     protected void est_tau(){
         double denominator = 0;
-        for(int dIndex: m_docUserMap.keySet()){
-            _Doc4EUB doc = m_docs.get(dIndex);
-            denominator +=
+        double D = 0; // total number of documents
+        for(int uIndex: m_userDocMap.keySet()){
+            _User4EUB user = m_users.get(uIndex);
+            for(int dIndex: m_userDocMap.get(uIndex)){
+                _Doc4EUB doc = m_docs.get(dIndex);
+                denominator += calculateStat4Tau(user, doc);
+            }
+        }
+        m_tau = denominator != 0 ? D * number_of_topics / denominator : 0;
+
+    }
+
+
+    protected void est_xi(){
+        double xiSquare = 0, term1 = 0, term2 = 0, term3 = 0;
+        // sum over all interactions and non-interactions
+        // traverse four edge maps instead due to sparsity
+        // i->j and j'
+        for(int i: m_userI2JMap.keySet()){
+            _User4EUB ui = m_users.get(i);
+            // js
+            HashSet<Integer> js = m_userI2JMap.get(i);
+            HashSet<Integer> jPrimes = m_userI2JPrimeMap.get(i);
+            for(int j: js){
+                _User4EUB uj = m_users.get(j);
+                term1 = ui.m_mu_delta[j] * ui.m_mu_delta[j] + ui.m_sigma_delta[j] * ui.m_sigma_delta[j];
+                for(int m=0; m<m_embedding_dim; m++){
+                    term2 =
+                }
+            }
+
         }
 
+        for(int p: m_userP2IMap.keySet()){
+
+        }
+
+    }
+
+    protected double calculateStat4Xi(_User4EUB ui, _User4EUB uj){
+
+    }
+
+    protected double calculateStat4Tau(_User4EUB user, _Doc4EUB doc){
+        double term1 = 0, term2 = 0, term3 = 0;
+
+        for(int k=0; k<number_of_topics; k++){
+            _Topic4EUB topic = m_topics.get(k);
+            term1 += doc.m_sigma_theta[k] + doc.m_mu_theta[k] * doc.m_mu_theta[k];
+            for(int m=0 ; m<m_embedding_dim; m++){
+                term2 += 2 * doc.m_mu_theta[k] * topic.m_mu_phi[m] * user.m_mu_u[m];
+                for(int l=0; l<m_embedding_dim; l++){
+                    term3 += (user.m_sigma_u[m][l] + user.m_mu_u[m] * user.m_mu_u[l])
+                            * (topic.m_sigma_phi[m][l] + topic.m_mu_phi[m] * topic.m_mu_phi[l]);
+                }
+            }
+        }
+        return term1 + term2 + term3;
     }
 
     protected double varInference4Topic(_Topic4EUB topic){
