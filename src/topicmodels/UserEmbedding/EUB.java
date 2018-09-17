@@ -25,15 +25,15 @@ public class EUB extends LDA_Variational {
     protected HashMap<String, Integer> m_usersIndex;
     // key: user index, value: document index array
     protected HashMap<Integer, ArrayList<Integer>> m_userDocMap;
-    // assume i follows js, key: index i, value: index js
-    protected HashMap<Integer, HashSet<Integer>> m_userI2JMap;
-    // assume i does not follow j', key: index i, value: index j'
-    protected HashMap<Integer, HashSet<Integer>> m_userI2JPrimeMap;
+    // assume i follows ps, key: index i, value: index ps
+    protected HashMap<Integer, HashSet<Integer>> m_userI2PMap;
+    // assume i does not follow p', key: index i, value: index p'
+    protected HashMap<Integer, HashSet<Integer>> m_userI2PPrimeMap;
 
-    // assume ps follows i, key: index i, value: index ps
-    protected HashMap<Integer, HashSet<Integer>> m_userP2IMap;
-    // assume p' does not follow i, key: index p', value: index i
-    protected HashMap<Integer, HashSet<Integer>> m_userPPrime2IMap;
+    // assume qs follows i, key: index i, value: index qs
+    protected HashMap<Integer, HashSet<Integer>> m_userQ2IMap;
+    // assume q' does not follow i, key: index q', value: index i
+    protected HashMap<Integer, HashSet<Integer>> m_userQPrime2IMap;
 
     // key: doc index, value: user index
     protected HashMap<Integer, Integer> m_docUserMap;
@@ -263,30 +263,38 @@ public class EUB extends LDA_Variational {
         double xiSquare = 0, term1 = 0, term2 = 0, term3 = 0;
         // sum over all interactions and non-interactions
         // traverse four edge maps instead due to sparsity
-        // i->j and j'
-        for(int i: m_userI2JMap.keySet()){
+        // i->p and p'
+        for(int i: m_userI2PMap.keySet()){
             _User4EUB ui = m_users.get(i);
-            // js
-            HashSet<Integer> js = m_userI2JMap.get(i);
-            HashSet<Integer> jPrimes = m_userI2JPrimeMap.get(i);
-            for(int j: js){
-                _User4EUB uj = m_users.get(j);
-                term1 = ui.m_mu_delta[j] * ui.m_mu_delta[j] + ui.m_sigma_delta[j] * ui.m_sigma_delta[j];
-                for(int m=0; m<m_embedding_dim; m++){
-                    term2 =
-                }
-            }
+            // ps
+            HashSet<Integer> ps = m_userI2PMap.get(i);
+            HashSet<Integer> pPrimes = m_userI2PPrimeMap.get(i);
+            HashSet<Integer> qs = m_userQ2IMap.get(i);
+            HashSet<Integer> qPrimes = m_userQPrime2IMap.get(i);
 
+            for(int p: ps)
+                xiSquare += calculateStat4Xi(ui, m_users.get(p), i, p);
+            for(int pPrime: pPrimes)
+                xiSquare += calculateStat4Xi(ui, m_users.get(pPrime), i, pPrime);
+            for(int q: qs)
+                xiSquare += calculateStat4Xi(m_users.get(q), ui, q, i);
+            for(int qPrime: qPrimes)
+                xiSquare += calculateStat4Xi(m_users.get(qPrime), ui, qPrime, i);
         }
-
-        for(int p: m_userP2IMap.keySet()){
-
-        }
+        m_xi = Math.sqrt(xiSquare);
 
     }
 
-    protected double calculateStat4Xi(_User4EUB ui, _User4EUB uj){
-
+    protected double calculateStat4Xi(_User4EUB ui, _User4EUB uj, int i, int j){
+        double val = ui.m_mu_delta[j] * ui.m_mu_delta[j] + ui.m_sigma_delta[j] * ui.m_sigma_delta[j];
+        for(int m=0; m<m_embedding_dim; m++){
+            val += -2 * ui.m_mu_delta[j] * ui.m_mu_u[m] * uj.m_mu_u[m];
+            for(int l=0; l<m_embedding_dim; l++){
+                val += (ui.m_sigma_u[m][l] + ui.m_mu_u[m] * uj.m_mu_u[l]) *
+                        (uj.m_sigma_u[m][l] + uj.m_mu_u[m] * uj.m_mu_u[l]);
+            }
+        }
+        return val;
     }
 
     protected double calculateStat4Tau(_User4EUB user, _Doc4EUB doc){
@@ -430,17 +438,17 @@ public class EUB extends LDA_Variational {
         sigma_term1.plusEquals(new Matrix(diag));
 
         // term2: user_i -> user_j
-        for(int j: m_userI2JMap.get(i)){
-            _User4EUB uj = m_users.get(j);
-            double delta_ij = user.m_mu_delta[j];
-            sigma_term2.plusEquals(new Matrix(sigmaAddMuMuTranspose(uj.m_sigma_u, uj.m_mu_u)));
-            Utils.add2Array(mu_term2, uj.m_mu_u, delta_ij/m_xi/m_xi);
+        for(int p: m_userI2PMap.get(i)){
+            _User4EUB up = m_users.get(p);
+            double delta_ij = user.m_mu_delta[p];
+            sigma_term2.plusEquals(new Matrix(sigmaAddMuMuTranspose(up.m_sigma_u, up.m_mu_u)));
+            Utils.add2Array(mu_term2, up.m_mu_u, delta_ij/m_xi/m_xi);
         }
         sigma_term2.timesEquals(1/m_xi /m_xi);
 
         // term3: user_p -> user_i
-        for(int p: m_userP2IMap.get(i)){
-            _User4EUB up = m_users.get(p);
+        for(int q: m_userQ2IMap.get(i)){
+            _User4EUB up = m_users.get(q);
             double delta_pi = up.m_mu_delta[i];
             sigma_term3.plusEquals(new Matrix(sigmaAddMuMuTranspose(up.m_sigma_u, up.m_mu_u)));
             Utils.add2Array(mu_term3, up.m_mu_u, delta_pi/m_xi/m_xi);
@@ -465,7 +473,7 @@ public class EUB extends LDA_Variational {
 
         double[] muG = new double[m_users.size()];
         double[] diag = new double[m_users.size()];
-        HashSet<Integer> friends = m_userI2JMap.get(i);
+        HashSet<Integer> friends = m_userI2PMap.get(i);
 
         try {
             do {
