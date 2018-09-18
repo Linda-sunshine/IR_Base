@@ -56,7 +56,7 @@ public class MyLinkPredMain {
 		MultiThreadedLMAnalyzer analyzer = new MultiThreadedLMAnalyzer(tokenModel, classNumber, providedCV, lmFvFile, Ngram, lengthThreshold, numberOfCores, false);
 		analyzer.config(trainRatio, adaptRatio, enforceAdapt);
 		analyzer.loadUserDir(userFolder);
-		analyzer.buildFriendship(trainFriendFile);
+		analyzer.buildTrainFriendship(trainFriendFile);
 		analyzer.loadTestFriendship(testFriendFile);
 		analyzer.buildNonFriendship(nonFriendFile);
 		analyzer.checkFriendSize();

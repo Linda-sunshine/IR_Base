@@ -2,6 +2,8 @@ package structures;
 
 import utils.Utils;
 
+import java.util.HashSet;
+
 /**
  * @author Lin Gong (lg5bt@virginia.edu)
  * Each user has a set of variational parameters:
@@ -42,4 +44,12 @@ public class _User4EUB extends _User {
             m_epsilon[i] = Math.exp(m_mu_delta[i] + 0.5*m_sigma_delta[i]*m_sigma_delta[i]) + 1;
         }
     }
+
+//    public void setInteractions(String[] interactions){
+//        m_interactions = interactions;
+//    }
+//
+//    public void setM_nonInteractions(String[] nonInteractions){
+//        m_nonInteractions = nonInteractions;
+//    }
 }

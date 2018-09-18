@@ -1,13 +1,12 @@
 package myMains;
 
-import Analyzer.MultiThreadedLMAnalyzer;
-import Analyzer.MultiThreadedUserAnalyzer;
-import Classifier.supervised.modelAdaptation.MMB.MTCLinAdaptWithMMB;
+import Analyzer.MultiThreadedNetworkAnalyzer;
 import opennlp.tools.util.InvalidFormatException;
+import structures._Corpus;
+import topicmodels.UserEmbedding.EUB;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.util.HashMap;
 
 /**
  * @author Lin Gong (lg5bt@virginia.edu)
@@ -34,48 +33,39 @@ public class MyEUBMain {
 
 
         String friendFile = String.format("%s/%s/%sFriends_1000.txt", prefix, dataset, dataset);
-        MultiThreadedUserAnalyzer analyzer = new MultiThreadedUserAnalyzer(tokenModel, classNumber, providedCV, Ngram, lengthThreshold, numberOfCores, false);
+        double rho = 0.1;
+        MultiThreadedNetworkAnalyzer analyzer = new MultiThreadedNetworkAnalyzer(tokenModel, classNumber, providedCV,
+                Ngram, lengthThreshold, numberOfCores, false, rho);
+        analyzer.setAllocateReviewFlag(false); // do not allocate reviews
+
+        String interactionFile = String.format("%s/%s/%sInteractions_1000.txt", prefix, dataset, dataset);
+        String nonInteractionFile = String.format("%s/%s/%sNonInteractions_1000.txt", prefix, dataset, dataset);
+
         analyzer.loadUserDir(userFolder);
-        analyzer.buildFriendship(friendFile);
+        analyzer.constructNetwork(friendFile);
+        analyzer.saveNetwork(interactionFile, analyzer.getInteractionMap());
+        analyzer.saveNetwork(nonInteractionFile, analyzer.getNonInteractionMap());
 
-        analyzer.setFeatureValues("TFIDF-sublinear", 0);
-        HashMap<String, Integer> featureMap = analyzer.getFeatureMap();
+        // we stor the interaction information before-hand, load them directly
+        analyzer.constructUserIDIndex();
+        analyzer.loadInteractions(interactionFile);
+        analyzer.loadNonInteractions(nonInteractionFile);
 
+        int crossV = 5;
+        int emMaxIter = 20, number_of_topics = 20, varMaxIter = 20, embeddingDim = 20;
+        double emConverge = 1e-10, alpha = 1 + 1e-2, beta = 1 + 1e-3, lambda = 1 + 1e-3, varConverge = 1e-6;//these two parameters must be larger than 1!!!
+        _Corpus corpus = analyzer.getCorpus();
 
-        MTCLinAdaptWithMMB mmb = new MTCLinAdaptWithMMB(classNumber, analyzer.getFeatureSize(), featureMap, globalModel, featureGroupFile, featureGroupFileSup, globalLM);
-        mmb.setR2TradeOffs(eta3, eta4);
-
-        mmb.setsdA(sdA);
-        mmb.setsdB(sdB);
-
-        mmb.setR1TradeOffs(eta1, eta2);
-        mmb.setConcentrationParams(alpha, eta, beta);
-
-        double rho = 0.2;
-        int burnin = 10, iter = 30, thin = 3;
-        boolean jointAll = false;
-        mmb.setRho(rho);
-        mmb.setBurnIn(burnin);
-        mmb.setThinning(thin);// default 3
-        mmb.setNumberOfIterations(iter);
-
-        mmb.setJointSampling(jointAll);
-        mmb.loadLMFeatures(analyzer.getLMFeatures());
-        mmb.loadUsers(analyzer.getUsers());
-        mmb.setDisplayLv(displayLv);
         long start = System.currentTimeMillis();
+        EUB eub = new EUB(emMaxIter, emConverge, beta, corpus, lambda, number_of_topics, alpha, varMaxIter, varConverge, embeddingDim);
+        eub.EMonCorpus();
 
-        boolean trace = true;
-        if(trace){
-            iter = 200; thin = 1; burnin = 0;
-            mmb.setNumberOfIterations(iter);
-            mmb.setThinning(thin);
-            mmb.setBurnIn(burnin);
-            mmb.trainTrace(dataset, start);
-        } else{
-            mmb.train();
-            mmb.test();
-        }
+        eub.setRandomFold(true);
+        double trainProportion = ((double)crossV - 1)/(double)crossV;
+        double testProportion = 1-trainProportion;
+        eub.setPerplexityProportion(testProportion);
+        eub.crossValidation(crossV);
+
         long end = System.currentTimeMillis();
         System.out.println("\n[Info]Start time: " + start);
         System.out.println("[Info]End time: " + end);

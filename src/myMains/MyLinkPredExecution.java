@@ -49,7 +49,7 @@ public class MyLinkPredExecution {
 		analyzer.setReleaseContent(false);
 		analyzer.config(trainRatio, param.m_adaptRatio, true);
 		analyzer.loadUserDir(userFolder);
-		analyzer.buildFriendship(trainFriendFile);
+		analyzer.buildTrainFriendship(trainFriendFile);
 		analyzer.loadTestFriendship(testFriendFile);
 		analyzer.buildNonFriendship(nonFriendFile);
 		//analyzer.checkFriendSize();

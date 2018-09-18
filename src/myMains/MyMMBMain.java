@@ -50,7 +50,7 @@ public class MyMMBMain {
 		MultiThreadedLMAnalyzer analyzer = new MultiThreadedLMAnalyzer(tokenModel, classNumber, providedCV, lmFvFile, Ngram, lengthThreshold, numberOfCores, false);
 		analyzer.config(trainRatio, adaptRatio, enforceAdapt);
 		analyzer.loadUserDir(userFolder);
-		analyzer.buildFriendship(friendFile);
+		analyzer.buildTrainFriendship(friendFile);
 		
 		// the following two lines are used to filter friends that are not in the whole user set
 //		HashMap<String, ArrayList<String>> frds = analyzer.filterFriends(analyzer.loadFriendFile(friendFile));

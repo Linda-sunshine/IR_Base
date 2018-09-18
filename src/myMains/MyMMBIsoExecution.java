@@ -51,7 +51,7 @@ public class MyMMBIsoExecution {
 		analyzer.config(trainRatio, 0, false);
 		analyzer.loadUserDir(testFolder);
 		
-		analyzer.buildFriendship(friendFile);
+		analyzer.buildTrainFriendship(friendFile);
 		analyzer.setFeatureValues("TFIDF-sublinear", 0);
 		HashMap<String, Integer> featureMap = analyzer.getFeatureMap();
 		

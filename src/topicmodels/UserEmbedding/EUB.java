@@ -19,7 +19,7 @@ public class EUB extends LDA_Variational {
     protected ArrayList<_User4EUB> m_users;
     protected ArrayList<_Doc4EUB> m_docs;
 
-    protected int m_embedding_dim;
+    protected int m_embeddingDim;
 
     // assume this is the look-up table for doc-user pairs
     protected HashMap<String, Integer> m_usersIndex;
@@ -60,7 +60,7 @@ public class EUB extends LDA_Variational {
                int varMaxIter, double varConverge, int m) {
         super(number_of_iteration, converge, beta, c, lambda, number_of_topics, alpha,
                 varMaxIter, varConverge);
-        m_embedding_dim = m;
+        m_embeddingDim = m;
         m_topics = new ArrayList<>();
         m_users = new ArrayList<>();
         m_docs = new ArrayList<>();
@@ -88,14 +88,6 @@ public class EUB extends LDA_Variational {
             m_topics.add(new _Topic4EUB(k));
         }
     }
-
-    // build the network: interactions and non-interactions
-    protected double buildNetwork(){
-        for(int i=0; i<m_users.size(); i++){
-
-        }
-    }
-
 
     @Override
     public void EMonCorpus(){
@@ -144,13 +136,13 @@ public class EUB extends LDA_Variational {
         System.out.println("[Info]Initializing topics, documents and users...");
 
         for(_Topic4EUB t: m_topics)
-            t.setTopics4Variational(m_embedding_dim, t_mu, t_sigma);
+            t.setTopics4Variational(m_embeddingDim, t_mu, t_sigma);
 
         for(_Doc d: m_trainSet)
             ((_Doc4EUB) d).setTopics4Variational(number_of_topics, d_alpha, d_mu, d_sigma);
 
         for(_User4EUB u: m_users)
-            u.setTopics4Variational(m_embedding_dim, m_users.size(), u_mu, u_sigma);
+            u.setTopics4Variational(m_embeddingDim, m_users.size(), u_mu, u_sigma);
 
         init();
 
@@ -229,7 +221,7 @@ public class EUB extends LDA_Variational {
             _Topic4EUB topic = m_topics.get(k);
             denominator += sumSigmaDiagAddMuTransposeMu(topic.m_sigma_phi, topic.m_mu_phi);
         }
-        m_alpha_s = denominator!=0 ? (number_of_topics * m_embedding_dim / denominator) : 0;
+        m_alpha_s = denominator!=0 ? (number_of_topics * m_embeddingDim / denominator) : 0;
     }
 
     protected void est_gamma(){
@@ -238,7 +230,7 @@ public class EUB extends LDA_Variational {
             _User4EUB user = m_users.get(uIndex);
             denominator += sumSigmaDiagAddMuTransposeMu(user.m_sigma_u, user.m_mu_u);
         }
-        m_gamma = denominator!=0 ? (m_users.size() * m_embedding_dim) / denominator : 0;
+        m_gamma = denominator!=0 ? (m_users.size() * m_embeddingDim) / denominator : 0;
     }
 
     protected void est_beta(){
@@ -260,9 +252,7 @@ public class EUB extends LDA_Variational {
             }
         }
         m_tau = denominator != 0 ? D * number_of_topics / denominator : 0;
-
     }
-
 
     protected void est_xi(){
         double xiSquare = 0, term1 = 0, term2 = 0, term3 = 0;
@@ -292,9 +282,9 @@ public class EUB extends LDA_Variational {
 
     protected double calculateStat4Xi(_User4EUB ui, _User4EUB uj, int i, int j){
         double val = ui.m_mu_delta[j] * ui.m_mu_delta[j] + ui.m_sigma_delta[j] * ui.m_sigma_delta[j];
-        for(int m=0; m<m_embedding_dim; m++){
+        for(int m=0; m<m_embeddingDim; m++){
             val += -2 * ui.m_mu_delta[j] * ui.m_mu_u[m] * uj.m_mu_u[m];
-            for(int l=0; l<m_embedding_dim; l++){
+            for(int l=0; l<m_embeddingDim; l++){
                 val += (ui.m_sigma_u[m][l] + ui.m_mu_u[m] * uj.m_mu_u[l]) *
                         (uj.m_sigma_u[m][l] + uj.m_mu_u[m] * uj.m_mu_u[l]);
             }
@@ -308,9 +298,9 @@ public class EUB extends LDA_Variational {
         for(int k=0; k<number_of_topics; k++){
             _Topic4EUB topic = m_topics.get(k);
             term1 += doc.m_sigma_theta[k] + doc.m_mu_theta[k] * doc.m_mu_theta[k];
-            for(int m=0 ; m<m_embedding_dim; m++){
+            for(int m=0 ; m<m_embeddingDim; m++){
                 term2 += 2 * doc.m_mu_theta[k] * topic.m_mu_phi[m] * user.m_mu_u[m];
-                for(int l=0; l<m_embedding_dim; l++){
+                for(int l=0; l<m_embeddingDim; l++){
                     term3 += (user.m_sigma_u[m][l] + user.m_mu_u[m] * user.m_mu_u[l])
                             * (topic.m_sigma_phi[m][l] + topic.m_mu_phi[m] * topic.m_mu_phi[l]);
                 }
@@ -354,8 +344,8 @@ public class EUB extends LDA_Variational {
     // update the mu and sigma for each topic \phi_k -- E(65) and Eq(67)
     protected void update_phi_k(_Topic4EUB topic){
 
-        Matrix term1 = new Matrix(new double[m_embedding_dim][m_embedding_dim]);
-        double[] term2 = new double[m_embedding_dim];
+        Matrix term1 = new Matrix(new double[m_embeddingDim][m_embeddingDim]);
+        double[] term2 = new double[m_embeddingDim];
 
         // \tau * \sum_u|sum_d(\sigma + \mu * \mu^T)
         for(int uIndex: m_userDocMap.keySet()){
@@ -371,8 +361,8 @@ public class EUB extends LDA_Variational {
         }
         // * \tau
         term1.timesEquals(m_tau);
-        double[][] diag = new double[m_embedding_dim][m_embedding_dim];
-        for(int i=0; i<m_embedding_dim; i++){
+        double[][] diag = new double[m_embeddingDim][m_embeddingDim];
+        for(int i=0; i<m_embeddingDim; i++){
             diag[i][i] = m_alpha_s;
         }
         // + \alpha * I
@@ -422,13 +412,13 @@ public class EUB extends LDA_Variational {
     // update the variational parameters for user embedding \u_i -- Eq(70) and Eq(72)
     protected void update_u_i(_User4EUB user){
         // term1: the current user's document
-        Matrix sigma_term1 = new Matrix(new double[m_embedding_dim][m_embedding_dim]);
-        Matrix sigma_term2 = new Matrix(new double[m_embedding_dim][m_embedding_dim]);
-        Matrix sigma_term3 = new Matrix(new double[m_embedding_dim][m_embedding_dim]);
+        Matrix sigma_term1 = new Matrix(new double[m_embeddingDim][m_embeddingDim]);
+        Matrix sigma_term2 = new Matrix(new double[m_embeddingDim][m_embeddingDim]);
+        Matrix sigma_term3 = new Matrix(new double[m_embeddingDim][m_embeddingDim]);
 
-        double[] mu_term1 = new double[m_embedding_dim];
-        double[] mu_term2 = new double[m_embedding_dim];
-        double[] mu_term3 = new double[m_embedding_dim];
+        double[] mu_term1 = new double[m_embeddingDim];
+        double[] mu_term2 = new double[m_embeddingDim];
+        double[] mu_term3 = new double[m_embeddingDim];
 
         int i = m_usersIndex.get(user.getUserID());
         int docSize = m_userDocMap.get(i).size();
@@ -447,8 +437,8 @@ public class EUB extends LDA_Variational {
         // * \tau
         sigma_term1.timesEquals(m_tau);
         // \gamma * I
-        double[][] diag = new double[m_embedding_dim][m_embedding_dim];
-        for(int a=0; a<m_embedding_dim; a++){
+        double[][] diag = new double[m_embeddingDim][m_embeddingDim];
+        for(int a=0; a<m_embeddingDim; a++){
             diag[a][a] = m_gamma;
         }
         // + \gamma * I
@@ -695,7 +685,7 @@ public class EUB extends LDA_Variational {
 
     protected double calc_log_likelihood_per_topic(_Topic4EUB topic){
 
-        double logLikelihood = 0.5 * m_embedding_dim * (Math.log(m_alpha_s) + 1);
+        double logLikelihood = 0.5 * m_embeddingDim * (Math.log(m_alpha_s) + 1);
         double determinant = 1;
         for(int k=0; k<number_of_topics; k++){
             determinant *= topic.m_sigma_phi[k][k];
@@ -715,12 +705,12 @@ public class EUB extends LDA_Variational {
         }
         logLikelihood += 0.5 * Math.log(Math.abs(determinant));
         double term1 = 0, term2 = 0;
-        for(int m=0; m<m_embedding_dim; m++){
+        for(int m=0; m<m_embeddingDim; m++){
             for(int k=0; k<number_of_topics; k++){
                 _Topic4EUB topic = m_topics.get(k);
                 _User4EUB user = m_users.get(m_docUserMap.get(doc));
                 term1 += doc.m_mu_theta[k] * topic.m_mu_phi[m] * user.m_mu_u[m];
-                for(int l=0; l<m_embedding_dim; l++){
+                for(int l=0; l<m_embeddingDim; l++){
                     term2 += (user.m_sigma_u[m][l] + user.m_mu_u[m] * user.m_mu_u[l])
                             * (topic.m_sigma_phi[m][l] + topic.m_mu_phi[m] * topic.m_mu_phi[l]);
                 }
@@ -742,10 +732,10 @@ public class EUB extends LDA_Variational {
     }
 
     protected double calc_log_likelihood_per_user(_User4EUB user){
-        double logLikelihood = 0.5 * m_embedding_dim * (Math.log(m_gamma) + 1) -
+        double logLikelihood = 0.5 * m_embeddingDim * (Math.log(m_gamma) + 1) -
                 0.5 * m_gamma * sumSigmaDiagAddMuTransposeMu(user.m_sigma_u, user.m_mu_u);
         double determinant = 1;
-        for(int m=0; m<m_embedding_dim; m++){
+        for(int m=0; m<m_embeddingDim; m++){
             determinant *= user.m_sigma_u[m][m];
         }
         logLikelihood += 0.5 * Math.log(Math.abs(determinant));
@@ -778,9 +768,9 @@ public class EUB extends LDA_Variational {
         double muDelta = ui.m_mu_delta[j], sigmaDelta = ui.m_sigma_delta[j];
         double logLikelihood = eij * muDelta - 1/m_xi * Math.exp(muDelta + 0.5 * sigmaDelta)
                 -(muDelta * muDelta + sigmaDelta * sigmaDelta)/(2 * m_xi * m_xi) + Math.log(sigmaDelta);
-        for(int m=0; m<m_embedding_dim; m++){
+        for(int m=0; m<m_embeddingDim; m++){
             logLikelihood += muDelta/(m_xi * m_xi) * ui.m_mu_u[m] * uj.m_mu_u[m];
-            for(int l=0; l<m_embedding_dim; l++){
+            for(int l=0; l<m_embeddingDim; l++){
                 logLikelihood += -1/(2*m_xi*m_xi)*(ui.m_sigma_u[m][l] + ui.m_mu_u[m] * ui.m_mu_u[l]) *
                         (uj.m_sigma_u[m][l] + uj.m_mu_u[m] * uj.m_mu_u[l]);
             }

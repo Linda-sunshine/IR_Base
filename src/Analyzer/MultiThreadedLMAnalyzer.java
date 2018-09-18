@@ -27,7 +27,7 @@ import structures._SparseFeature;
 import structures._User;
 import utils.Utils;
 
-public class MultiThreadedLMAnalyzer extends MultiThreadedUserAnalyzer {
+public class MultiThreadedLMAnalyzer extends MultiThreadedLinkPredAnalyzer {
 	// We don't record the feature stats.
 	ArrayList<String> m_lmFeatureNames;
 	HashMap<String, Integer> m_lmFeatureNameIndex;
