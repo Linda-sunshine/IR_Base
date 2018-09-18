@@ -52,6 +52,9 @@ public class EUB extends LDA_Variational {
     protected double m_gamma;
     protected double m_xi;
 
+    /*****Sparsity parameter******/
+    protected double m_rho = 0.1;
+
     public EUB(int number_of_iteration, double converge, double beta,
                _Corpus c, double lambda, int number_of_topics, double alpha,
                int varMaxIter, double varConverge, int m) {
@@ -88,7 +91,9 @@ public class EUB extends LDA_Variational {
 
     // build the network: interactions and non-interactions
     protected double buildNetwork(){
+        for(int i=0; i<m_users.size(); i++){
 
+        }
     }
 
 
@@ -390,6 +395,18 @@ public class EUB extends LDA_Variational {
         return sum;
     }
 
+    // \sum_{mm}\simga[m][m] + \mu^T * \mu
+    protected double sumSigmaDiagAddMuTransposeMu(double[] sigma, double[] mu){
+        if(sigma.length != mu.length)
+            return 0;
+        int dim = mu.length;
+        double sum = 0;
+        for(int m=0; m<dim; m++){
+            sum += sigma[m] + mu[m] * mu[m];
+        }
+        return sum;
+    }
+
     // \simga + \mu * \mu^T
     protected double[][] sigmaAddMuMuTranspose(double[][] sigma, double[] mu){
         int dim = mu.length;
@@ -677,15 +694,98 @@ public class EUB extends LDA_Variational {
     }
 
     protected double calc_log_likelihood_per_topic(_Topic4EUB topic){
-        return 0;
+
+        double logLikelihood = 0.5 * m_embedding_dim * (Math.log(m_alpha_s) + 1);
+        double determinant = 1;
+        for(int k=0; k<number_of_topics; k++){
+            determinant *= topic.m_sigma_phi[k][k];
+        }
+        logLikelihood += 0.5 * Math.log(Math.abs(determinant)) - 0.5 * m_alpha_s *
+                sumSigmaDiagAddMuTransposeMu(topic.m_sigma_phi, topic.m_mu_phi);
+        return logLikelihood;
     }
 
     protected double calc_log_likelihood_per_doc(_Doc4EUB doc){
-        return 0;
+        // the first part
+        double logLikelihood = 0.5 * number_of_topics * (Math.log(m_tau) + 1) - doc.getTotalDocLength() *
+                (doc.m_logZeta -1 ) - 0.5 * m_tau * sumSigmaDiagAddMuTransposeMu(doc.m_sigma_theta, doc.m_mu_theta);
+        double determinant = 1;
+        for(int k=0; k<number_of_topics; k++){
+            determinant *= doc.m_sigma_theta[k];
+        }
+        logLikelihood += 0.5 * Math.log(Math.abs(determinant));
+        double term1 = 0, term2 = 0;
+        for(int m=0; m<m_embedding_dim; m++){
+            for(int k=0; k<number_of_topics; k++){
+                _Topic4EUB topic = m_topics.get(k);
+                _User4EUB user = m_users.get(m_docUserMap.get(doc));
+                term1 += doc.m_mu_theta[k] * topic.m_mu_phi[m] * user.m_mu_u[m];
+                for(int l=0; l<m_embedding_dim; l++){
+                    term2 += (user.m_sigma_u[m][l] + user.m_mu_u[m] * user.m_mu_u[l])
+                            * (topic.m_sigma_phi[m][l] + topic.m_mu_phi[m] * topic.m_mu_phi[l]);
+                }
+            }
+        }
+        logLikelihood += m_tau * term1 - 0.5 * m_tau * term2;
+
+        // the second part which involves with words
+        _SparseFeature[] fv = doc.getSparse();
+        for(int k = 0; k < number_of_topics; k++) {
+            for (int n = 0; n < fv.length; n++) {
+                int wid = fv[n].getIndex();
+                double v = fv[n].getValue() * doc.m_phi[n][k];
+                logLikelihood += v * (doc.m_mu_theta[k] - Math.log(doc.m_phi[n][k]) + topic_term_probabilty[k][wid]);
+            }
+            logLikelihood += -Math.exp(doc.m_mu_theta[k] + 0.5 * doc.m_sigma_theta[k])/Math.exp(doc.m_logZeta);
+        }
+        return logLikelihood;
     }
 
     protected double calc_log_likelihood_per_user(_User4EUB user){
-        return 0;
+        double logLikelihood = 0.5 * m_embedding_dim * (Math.log(m_gamma) + 1) -
+                0.5 * m_gamma * sumSigmaDiagAddMuTransposeMu(user.m_sigma_u, user.m_mu_u);
+        double determinant = 1;
+        for(int m=0; m<m_embedding_dim; m++){
+            determinant *= user.m_sigma_u[m][m];
+        }
+        logLikelihood += 0.5 * Math.log(Math.abs(determinant));
+        int i = m_usersIndex.get(user.getUserID());
+        // likelihood related with edges
+        // case 1: i -> p
+        for(int p: m_userI2PMap.get(i)){
+           logLikelihood += m_userI2PMap.get(i).size() * (-1/m_xi + 1.5 - 2 * Math.log(m_xi));
+           logLikelihood += calcLogLikelihoodOneEdge(user, m_users.get(p), i, p, 1);
+        }
+        // case 2: i not -> p'
+        for(int pPrime: m_userI2PPrimeMap.get(i)){
+            logLikelihood += m_userI2PPrimeMap.get(i).size() * (-1/m_xi + 1.5 - 2 * Math.log(m_xi));
+            logLikelihood += calcLogLikelihoodOneEdge(user, m_users.get(pPrime), i, pPrime, 0);
+        }
+        // case 3: q -> i
+        for(int q: m_userQ2IMap.get(i)){
+            logLikelihood += m_userQ2IMap.get(i).size() * (-1/m_xi + 1.5 - 2 * Math.log(m_xi));
+            logLikelihood += calcLogLikelihoodOneEdge(m_users.get(q), user, q, i, 1);
+        }
+        // case 4: q' not -> i
+        for(int qPrime: m_userQPrime2IMap.get(i)){
+            logLikelihood += m_userQPrime2IMap.get(i).size() * (-1/m_xi + 1.5 - 2 * Math.log(m_xi));
+            logLikelihood += calcLogLikelihoodOneEdge(m_users.get(qPrime), user, qPrime, i, 0);
+        }
+        return logLikelihood;
+    }
+
+    protected double calcLogLikelihoodOneEdge(_User4EUB ui, _User4EUB uj, int i, int j, int eij){
+        double muDelta = ui.m_mu_delta[j], sigmaDelta = ui.m_sigma_delta[j];
+        double logLikelihood = eij * muDelta - 1/m_xi * Math.exp(muDelta + 0.5 * sigmaDelta)
+                -(muDelta * muDelta + sigmaDelta * sigmaDelta)/(2 * m_xi * m_xi) + Math.log(sigmaDelta);
+        for(int m=0; m<m_embedding_dim; m++){
+            logLikelihood += muDelta/(m_xi * m_xi) * ui.m_mu_u[m] * uj.m_mu_u[m];
+            for(int l=0; l<m_embedding_dim; l++){
+                logLikelihood += -1/(2*m_xi*m_xi)*(ui.m_sigma_u[m][l] + ui.m_mu_u[m] * ui.m_mu_u[l]) *
+                        (uj.m_sigma_u[m][l] + uj.m_mu_u[m] * uj.m_mu_u[l]);
+            }
+        }
+        return logLikelihood;
     }
 
     // cross validation
@@ -694,15 +794,4 @@ public class EUB extends LDA_Variational {
 
     // currently, assume we have train/test data
 
-    public static void main(String[] args){
-        double[] a = new double[]{1, 2, 3};
-        Matrix aMtx = new Matrix(a, 1);
-        double[][] b = aMtx.getArray();
-        for(int i=0; i<b.length; i++){
-            System.out.println(i);
-            for(int j=0; j<b[i].length; j++){
-                System.out.println(b[i][j]);
-            }
-        }
-    }
 }

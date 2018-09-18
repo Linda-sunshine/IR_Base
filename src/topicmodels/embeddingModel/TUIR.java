@@ -629,7 +629,6 @@ public class TUIR extends LDA_Variational {
                 log_likelihood += v * (doc.m_mu[k] - Math.log(doc.m_phi[n][k]) + topic_term_probabilty[k][wid]);
             }
         }
-
         return log_likelihood;
     }
 

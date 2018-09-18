@@ -182,8 +182,6 @@ public class MultiThreadedUserAnalyzer extends UserAnalyzer {
 		}
 	}
 	
-
-	
 	//Tokenizing input text string
 	private String[] Tokenizer(String source, int core){
 		String[] tokens = getTokenizer(core).tokenize(source);
