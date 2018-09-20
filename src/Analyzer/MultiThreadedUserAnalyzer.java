@@ -145,8 +145,8 @@ public class MultiThreadedUserAnalyzer extends UserAnalyzer {
 			ArrayList<_Review> reviews = new ArrayList<_Review>();
 
 			_Review review;
-			int ylabel;
-			long timestamp=0;
+			int ylabel, index = 0;
+			long timestamp;
 			while((line = reader.readLine()) != null){
 				productID = line;
 				source = reader.readLine(); // review content
@@ -157,9 +157,10 @@ public class MultiThreadedUserAnalyzer extends UserAnalyzer {
 				// Construct the new review.
 				if(ylabel != 3){
 					ylabel = (ylabel >= 4) ? 1:0;
-					review = new _Review(m_corpus.getCollection().size(), source, ylabel, userID, productID, category, timestamp);
+					review = new _Review(-1, source, ylabel, userID, productID, category, timestamp);
 					if(AnalyzeDoc(review,core)){ //Create the sparse vector for the review.
 						reviews.add(review);
+						review.setID(index++);
 					}
 				}
 			}
@@ -250,7 +251,6 @@ public class MultiThreadedUserAnalyzer extends UserAnalyzer {
 			doc.createSpVct(spVct);
 			doc.setStopwordProportion(result.getStopwordProportion());
 			synchronized (m_corpusLock) {
-				m_corpus.addDoc(doc);
 				m_classMemberNo[y]++;
 			}
 			if (m_releaseContent)

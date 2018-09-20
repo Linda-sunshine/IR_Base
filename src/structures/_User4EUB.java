@@ -2,7 +2,7 @@ package structures;
 
 import utils.Utils;
 
-import java.util.HashSet;
+import java.util.ArrayList;
 
 /**
  * @author Lin Gong (lg5bt@virginia.edu)
@@ -21,8 +21,19 @@ public class _User4EUB extends _User {
     public double[] m_mu_delta;
     public double[] m_sigma_delta;
 
-    public _User4EUB(String userID){
-        super(userID);
+    public _User4EUB(_User u){
+        super(u.getUserID());
+        if(u.getFriends() != null)
+            setFriends(u.getFriends());
+        if(u.getNonFriends() != null)
+            setNonFriends(u.getNonFriends());
+    }
+
+    public void setReviews(ArrayList<_Doc4EUB> docs){
+        ArrayList<_Review> reviews = new ArrayList<>();
+        for(_Doc4EUB doc: docs)
+            reviews.add(doc);
+        m_reviews = reviews;
     }
 
     public void setTopics4Variational(int dim, int userSize, double mu, double sigma){
@@ -44,12 +55,4 @@ public class _User4EUB extends _User {
             m_epsilon[i] = Math.exp(m_mu_delta[i] + 0.5*m_sigma_delta[i]*m_sigma_delta[i]) + 1;
         }
     }
-
-//    public void setInteractions(String[] interactions){
-//        m_interactions = interactions;
-//    }
-//
-//    public void setM_nonInteractions(String[] nonInteractions){
-//        m_nonInteractions = nonInteractions;
-//    }
 }

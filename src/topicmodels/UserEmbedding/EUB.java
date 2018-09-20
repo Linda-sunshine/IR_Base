@@ -64,24 +64,31 @@ public class EUB extends LDA_Variational {
         m_topics = new ArrayList<>();
         m_users = new ArrayList<>();
         m_docs = new ArrayList<>();
+
     }
 
     // Load the data for later user
-    protected void buildLookupTables(ArrayList<_User> users){
+    public void buildLookupTables(ArrayList<_User> users){
+        m_usersIndex = new HashMap<>();
+        m_userDocMap = new HashMap<>();
+        m_docUserMap = new HashMap<>();
+
         // build the lookup table for user/doc/topic
         for(int i=0; i< users.size(); i++){
-            _User4EUB user = (_User4EUB) users.get(i);
+            _User4EUB user = new _User4EUB(users.get(i));
             m_users.add(user);
             m_usersIndex.put(user.getUserID(), i);
             m_userDocMap.put(i, new ArrayList<>());
-            for(_Doc d: user.getReviews()){
-                _Doc4EUB doc = (_Doc4EUB) d;
-                int docIndex = m_docs.size();
-                doc.setID(docIndex);
+            ArrayList<_Doc4EUB> docs = new ArrayList<>();
+            for(_Review r: users.get(i).getReviews()){
+                int dIndex = m_docs.size();
+                _Doc4EUB doc = new _Doc4EUB(r, dIndex);
+                docs.add(doc);
                 m_docs.add(doc);
-                m_userDocMap.get(i).add(docIndex);
-                m_docUserMap.put(docIndex, i);
+                m_userDocMap.get(i).add(dIndex);
+                m_docUserMap.put(dIndex, i);
             }
+            user.setReviews(docs);
         }
 
         for(int k=0; k<number_of_topics; k++){
@@ -317,7 +324,7 @@ public class EUB extends LDA_Variational {
     }
 
     protected double varInference4User(_User4EUB user){
-        // update the variational parameters for user embedding \u_i -- Eq(70) and Eq(72)
+        // update the variational parameters for user embedding ui -- Eq(70) and Eq(72)
         update_u_i(user);
         // update the mean and variance for pair-wise affinity \mu^{delta_{ij}}, \sigma^{\delta_{ij}} -- Eq(75)
         update_delta_ij_mu(user);
@@ -409,7 +416,7 @@ public class EUB extends LDA_Variational {
         return res;
     }
 
-    // update the variational parameters for user embedding \u_i -- Eq(70) and Eq(72)
+    // update the variational parameters for user embedding ui -- Eq(70) and Eq(72)
     protected void update_u_i(_User4EUB user){
         // term1: the current user's document
         Matrix sigma_term1 = new Matrix(new double[m_embeddingDim][m_embeddingDim]);
@@ -778,10 +785,23 @@ public class EUB extends LDA_Variational {
         return logLikelihood;
     }
 
-    // cross validation
+    // fixed cross validation
+    public void fixedCrossValidation(int kFold){
+        m_trainSet = new ArrayList<>();
+        m_testSet = new ArrayList<>();
+        for(int k=0; k<kFold; k++){
+            m_trainSet.clear();
+            m_testSet.clear();
+            for(int i=0; i<m_users.size(); i++){
+                for(_Review r: m_users.get(i).getReviews()){
+                    if(r.getMask4CV() == k)
+                        m_testSet.add(r);
+                    else
+                        m_trainSet.add(r);
+                }
+            }
+            EM();
+        }
 
-    // one fold validation
-
-    // currently, assume we have train/test data
-
+    }
 }

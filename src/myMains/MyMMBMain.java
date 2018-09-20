@@ -73,8 +73,8 @@ public class MyMMBMain {
 		mmb.setR1TradeOffs(eta1, eta2);
 		mmb.setConcentrationParams(alpha, eta, beta);
 		
-		double rho = 0.2; 
-		int burnin = 10, iter = 30, thin = 3;
+		double rho = 0.01;
+		int burnin = 1, iter = 30, thin = 3;
 		boolean jointAll = false;
 		mmb.setRho(rho);
 		mmb.setBurnIn(burnin);

@@ -14,11 +14,22 @@ public class _Doc4EUB extends _Review {
     public double m_logZeta = 0;
     public double[] m_mu_theta;
     public double[] m_sigma_theta; // only diagonal values are non-zero
+    public int m_index;
 
-    public _Doc4EUB(int ID, String source, int ylabel, String userID, String productID, String category, long timeStamp) {
+    public _Doc4EUB(_Review r, int idx){
+        super(r.getID(), r.getSource(), r.getYLabel(), r.getUserID(), r.getItemID(), r.getCategory(), r.getTimeStamp());
+        m_index = idx;
+        m_x_sparse = r.getSparse();
+
+    }
+    public _Doc4EUB(int ID, String source, int ylabel, String userID, String productID, String category, long timeStamp, int idx) {
         super(ID, source, ylabel, userID, productID, category, timeStamp);
+        m_index = idx;
     }
 
+    public void setIndex(int idx){
+        m_index = idx;
+    }
     public void setTopics4Variational(int k, double alpha, double mu, double sigma){
         super.setTopics4Variational(k, alpha);
         m_mu_theta = new double[k];

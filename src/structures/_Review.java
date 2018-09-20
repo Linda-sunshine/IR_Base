@@ -4,8 +4,25 @@ import java.util.HashMap;
 
 public class _Review extends _Doc {
 
-	String m_userID;
-	String m_category; 
+	protected String m_userID;
+	protected String m_category;
+
+	// Added for the HDP algorithm.
+	protected _HDPThetaStar m_hdpThetaStar;
+
+	// key: hdpThetaStar, value: count
+	protected HashMap<_HDPThetaStar, Integer> m_thetaCountMap = new HashMap<_HDPThetaStar, Integer>();
+
+	protected double m_L4New = 0;
+
+	// Assign each review a confidence, used in hdp model.
+	protected double m_confidence = 1;
+
+	// total count of words of the review represented in language model.
+	double m_lmSum = -1;
+
+	// mask used for cross validation
+	protected int m_mask = -1;
 
 	//Constructor for route project.
 	public _Review(int ID, String source, int ylabel){
@@ -37,7 +54,7 @@ public class _Review extends _Doc {
 	}
 	
 	@Override
-	public String toString() {
+	public String toString(){
 		return String.format("%s-%s-%s-%s", m_userID, m_itemID, m_category, m_type);
 	}
 	
@@ -45,15 +62,10 @@ public class _Review extends _Doc {
 	public String getCategory(){
 		return m_category;
 	}
-	
-	// Added for the HDP algorithm.
-	_HDPThetaStar m_hdpThetaStar;
+
 	public void setHDPThetaStar(_HDPThetaStar s){
 		m_hdpThetaStar = s;
 	}
-	
-	// key: hdpThetaStar, value: count
-	HashMap<_HDPThetaStar, Integer> m_thetaCountMap = new HashMap<_HDPThetaStar, Integer>();
 	
 	// Increase the current hdpThetaStar count.
 	public void updateThetaCountMap(int c){
@@ -87,7 +99,6 @@ public class _Review extends _Doc {
 	public double[] getCluPosterior(){
 		return m_cluPosterior;
 	}
-	double m_L4New = 0;
 	public void setL4NewCluster(double l){
 		m_L4New = l;
 	}
@@ -95,8 +106,7 @@ public class _Review extends _Doc {
 	public double getL4NewCluster(){
 		return m_L4New;
 	}
-	// total count of words of the review represented in language model.
-	double m_lmSum = -1;
+
 	public double getLMSum(){
 		if(m_lmSum != -1)
 			return m_lmSum;
@@ -107,8 +117,7 @@ public class _Review extends _Doc {
 			return sum;
 		}
 	}
-	// Assign each review a confidence, used in hdp model.
-	protected double m_confidence = 1;
+
 	public void setConfidence(double conf){
 		m_confidence = conf;
 	}
@@ -116,4 +125,13 @@ public class _Review extends _Doc {
 	public double getConfidence(){
 		return m_confidence;
 	}
+
+	public void setMask4CV(int k){
+		m_mask = k;
+	}
+
+	public int getMask4CV(){
+		return m_mask;
+	}
+
 }

@@ -56,7 +56,7 @@ public class MyLinkPredBoWMain {
 		analyzer.config(trainRatio, adaptRatio, false);
 		analyzer.loadUserDir(testUserFolder);
 		
-		analyzer.buildFriendship(friendFile);
+		analyzer.buildTrainFriendship(friendFile);
 		analyzer.checkFriendSize();
 		
 		analyzer.setFeatureValues("TFIDF-sublinear", 0);

@@ -2,8 +2,11 @@ package Analyzer;
 
 import opennlp.tools.util.InvalidFormatException;
 import org.apache.commons.math3.distribution.BinomialDistribution;
+import structures._Doc;
+import structures._Review;
 
 import java.io.*;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -155,9 +158,13 @@ public class MultiThreadedNetworkAnalyzer extends MultiThreadedLinkPredAnalyzer 
         for(String nonInt: nonInteractions){
             if(m_bernoulli.sample() == 1) {
                 sampledNonInteractions.add(nonInt);
-                m_nonInteractionMap.getOrDefault(nonInt, new HashSet<>()).add(uid);
+                if(!m_nonInteractionMap.containsKey(nonInt))
+                    m_nonInteractionMap.put(nonInt, new HashSet<>());
+                m_nonInteractionMap.get(nonInt).add(uid);
             }
         }
+        if(!m_nonInteractionMap.containsKey(uid))
+            m_nonInteractionMap.put(uid, new HashSet<>());
         m_nonInteractionMap.getOrDefault(uid, new HashSet<>()).addAll(sampledNonInteractions);
     }
     // save the network for later use
@@ -196,8 +203,12 @@ public class MultiThreadedNetworkAnalyzer extends MultiThreadedLinkPredAnalyzer 
             while((line = reader.readLine()) != null){
                 String[] users = line.trim().split("\t");
                 String[] interactions = Arrays.copyOfRange(users, 1, users.length);
-                int uIndex = m_userIDIndex.get(users[0]);
-                m_users.get(uIndex).setFriends(interactions);
+                if(!m_userIDIndex.containsKey(users[0]))
+                    System.err.println("[error] The user does not exist: " + users[0]);
+                else {
+                    int uIndex = m_userIDIndex.get(users[0]);
+                    m_users.get(uIndex).setFriends(interactions);
+                }
             }
             reader.close();
 
@@ -216,12 +227,70 @@ public class MultiThreadedNetworkAnalyzer extends MultiThreadedLinkPredAnalyzer 
             // load the interactions first
             while((line = reader.readLine()) != null){
                 String[] users = line.trim().split("\t");
-                String[] interactions = Arrays.copyOfRange(users, 1, users.length);
-                int uIndex = m_userIDIndex.get(users[0]);
-                m_users.get(uIndex).setNonFriends(interactions);
+                String[] nonInteractions = Arrays.copyOfRange(users, 1, users.length);
+                if(!m_userIDIndex.containsKey(users[0]))
+                    System.err.println("[error] The user does not exist: " + users[0]);
+                else {
+                    int uIndex = m_userIDIndex.get(users[0]);
+                    m_users.get(uIndex).setNonFriends(nonInteractions);
+                }
             }
             reader.close();
 
+        } catch(IOException e){
+            e.printStackTrace();
+        }
+    }
+
+    // shuffle the whole corpus and save the index information for later use
+    public void saveCVIndex(int k, String filename){
+        m_corpus.setMasks();
+        m_corpus.shuffle(k);
+        int[] masks = m_corpus.getMasks();
+        ArrayList<_Doc> docs = m_corpus.getCollection();
+        try{
+            PrintWriter writer = new PrintWriter(new File(filename));
+            for(int i=0; i<docs.size(); i++){
+                _Review r = (_Review) docs.get(i);
+                writer.write(String.format("%s,%d,%d\n", r.getUserID(), r.getID(), masks[i]));
+            }
+            writer.close();
+        } catch(IOException e){
+            e.printStackTrace();
+        }
+    }
+
+    @Override
+    public void constructUserIDIndex(){
+        m_userIDIndex = new HashMap<String, Integer>();
+        for(int i=0; i<m_users.size(); i++){
+            m_userIDIndex.put(m_users.get(i).getUserID(), i);
+        }
+    }
+
+    // load cv index for all the documents
+    public void loadCVIndex(String filename){
+        try {
+            File file = new File(filename);
+            BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(file), "UTF-8"));
+            String line;
+            while((line = reader.readLine()) != null) {
+                String[] strs = line.trim().split(",");
+                String uId = strs[0];
+                int id = Integer.valueOf(strs[1]);
+                int mask = Integer.valueOf(strs[2]);
+
+                if(!m_userIDIndex.containsKey(uId))
+                    System.out.println("No such user!");
+                else {
+                    int uIndex = m_userIDIndex.get(uId);
+                    if (uIndex > m_users.size())
+                        System.out.println("Exceeds the array size!");
+                    else {
+                        m_users.get(m_userIDIndex.get(uId)).getReviewByID(id).setMask4CV(mask);
+                    }
+                }
+            }
         } catch(IOException e){
             e.printStackTrace();
         }

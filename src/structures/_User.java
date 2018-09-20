@@ -16,7 +16,7 @@ import utils.Utils;
 public class _User {
 	
 	protected String m_userID;
-	
+
 	//text reviews associated with this user
 	protected ArrayList<_Review> m_reviews; //The reviews the user have, they should be by ordered by time stamps.
 	
@@ -33,32 +33,32 @@ public class _User {
 	protected double m_sim; // Similarity of itself.
 
 	// performance statistics
-	_PerformanceStat m_perfStat;
-	
-	int m_cIndex = 0; // added by Lin, cluster number.
-	double m_posRatio = 0;
-	double m_avgIDF = 0;
-	
-	double m_adaPos = 0;
-	double m_testPos = 0;
-	
+	protected _PerformanceStat m_perfStat;
+
+	protected int m_cIndex = 0; // added by Lin, cluster number.
+	protected double m_posRatio = 0;
+	protected double m_avgIDF = 0;
+
 	// added by Lin for friendship.
-	String[] m_friends;
-	String[] m_testFriends;
-	String[] m_nonFriends;
-	
-	private ArrayList<_Review> m_trainReviews;
-	private ArrayList<_Review> m_testReviews;
+	protected String[] m_friends = null;
+	protected String[] m_testFriends = null;
+	protected String[] m_nonFriends = null;
+
+	protected ArrayList<_Review> m_trainReviews;
+	protected ArrayList<_Review> m_testReviews;
 	protected int m_trainReviewSize = -1;
 	protected int m_testReviewSize = -1;
-	
-	private final HashMap<String, Integer> m_itemIDRating;
-	private String[] m_rankingItems;
-	private HashMap<String, _Review> m_testReviewMap;
+
+	protected final HashMap<String, Integer> m_itemIDRating;
+	protected String[] m_rankingItems;
+	protected HashMap<String, _Review> m_testReviewMap;
+
+	// load the candidates from file instead of constructing online
+	protected ArrayList<String> m_candidates = new ArrayList<String>();
 	
 	// The function is used for finding friends from Amazon data set.
 	protected ArrayList<String> m_amazonFriends = new ArrayList<String>();
-	
+
 	public _User(String userID){
 		m_userID = userID;
 		m_reviews = null;		
@@ -66,7 +66,6 @@ public class _User {
 		m_BoWProfile = null;
 		m_pWeight = null;
 		m_itemIDRating = new HashMap<String, Integer>();
-//		constructTrainTestReviews();
 	}
 	
 	public _User(int cindex, int classNo){
@@ -82,7 +81,6 @@ public class _User {
 		m_perfStat = new _PerformanceStat(classNo);
 		m_itemIDRating = new HashMap<String, Integer>();
 		constructTrainTestReviews();
-
 	}
 	
 	public _User(String userID, int classNo, ArrayList<_Review> reviews){
@@ -98,11 +96,6 @@ public class _User {
 		m_perfStat = new _PerformanceStat(classNo);
 		m_itemIDRating = new HashMap<String, Integer>();
 		constructTrainTestReviews();
-
-//		constructSparseVector();
-//		calcPosRatio();
-//		calcCtgSize();
-//		calcAdpatTestPosRatio();
 	}
 	
 	public void addOneItemIDRatingPair(String item, int r){
@@ -214,10 +207,6 @@ public class _User {
 		return Utils.cosine(m_BoWProfile, u.getBoWProfile());
 	}
 	
-	public double getBoWSimBaseSVMWeights(_User u){
-		return Utils.cosine(m_svmWeights, u.getSVMWeights());
-	}
-	
 	public double getSVDSim(_User u) {
 		return Utils.cosine(u.m_lowDimProfile, m_lowDimProfile);
 	}
@@ -300,11 +289,6 @@ public class _User {
 	public double getPosRatio(){
 		return m_posRatio;
 	}
-	
-	// Added by Lin for accumulating super user.
-	public void mergeReviews(ArrayList<_Review> reviews) {
-		m_reviews.addAll(reviews);
-	}
 
 	// Added by Lin for kmeans based on profile.
 	public int[] getProfIndices() {
@@ -321,33 +305,7 @@ public class _User {
 		
 		return values;
 	}
-	
-	public void removeOneReview(String prodID){
-		int index = 0;
-		for(_Review r: m_reviews){
-			if(r.getItemID().equals(prodID)){
-				index = m_reviews.indexOf(r);
-				break;
-			}
-		}
-		m_reviews.remove(index);
-	}
 
-	public void calcAdpatTestPosRatio(){
-		for(_Review r: m_reviews){
-			if(r.getType() == rType.ADAPTATION && r.getYLabel() == 1)
-				m_adaPos++;
-			else if(r.getType() == rType.TEST && r.getYLabel() == 1)
-				m_testPos++;
-		}
-	}
-	public double getAdaptationPos(){
-		return m_adaPos;
-	}
-	public double getTestPos(){
-		return m_testPos;
-	}
-	
 	public void setSVMWeights(double[] weights){
 		m_svmWeights = new double[weights.length];
 		m_svmWeights = Arrays.copyOf(weights, weights.length);
@@ -364,6 +322,7 @@ public class _User {
 	public void setNonFriends(String[] nonfs){
 		m_nonFriends = Arrays.copyOf(nonfs, nonfs.length);
 	}
+
 	public String[] getFriends(){
 		return m_friends;
 	}
@@ -447,6 +406,7 @@ public class _User {
 	public ArrayList<String> getAmazonTestFriends(){
 		return m_amazonTestFriends;
 	}
+
 	public void constructTrainTestReviews(){
 		m_trainReviews = new ArrayList<>();
 		m_testReviews = new ArrayList<>();
@@ -477,6 +437,7 @@ public class _User {
 	public ArrayList<_Review> getTrainReviews(){
 		return m_trainReviews;
 	}
+
 	public ArrayList<_Review> getTestReviews(){
 		return m_testReviews;
 	}
@@ -484,6 +445,7 @@ public class _User {
 	public _Review getTestReview(String item){
 		return m_testReviewMap.get(item);
 	}
+
 	public int getTrainReviewSize(){
 		return m_trainReviewSize;
 	}
@@ -497,7 +459,6 @@ public class _User {
 		if(m_itemIDRating.containsKey(item))
 			return m_itemIDRating.get(item);
 		else{
-//			System.out.println("The item does not exist!");
 			return -1;
 		}
 	}
@@ -505,6 +466,7 @@ public class _User {
 	public boolean containsTestRvw(String item){
 		return m_testReviewMap.containsKey(item);
 	}
+
 	public int getRankingItemSize(){
 		if(m_rankingItems == null)
 			return 0;
@@ -527,9 +489,7 @@ public class _User {
 			}
 		}
 	}
-	
-	// load the candidates from file instead of constructing online
-	ArrayList<String> m_candidates = new ArrayList<String>();
+
 	public void addOneCandidate(String item){
 		m_candidates.add(item);
 	}
@@ -560,5 +520,11 @@ public class _User {
 				m_rankingItems[index++] = item;
 			}
 		}
+	}
+
+	public _Review getReviewByID(int id){
+		if(id >= m_reviews.size())
+			System.err.println("[error] Index exceeds the array length!");
+		return m_reviews.get(id);
 	}
 }
