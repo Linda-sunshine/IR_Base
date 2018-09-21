@@ -73,26 +73,54 @@ public class EUB extends LDA_Variational {
         m_userDocMap = new HashMap<>();
         m_docUserMap = new HashMap<>();
 
+        m_userI2PMap = new HashMap<>();
+        m_userI2PPrimeMap = new HashMap<>();
+        m_userQ2IMap = new HashMap<>();
+        m_userQPrime2IMap = new HashMap<>();
+
         // build the lookup table for user/doc/topic
         for(int i=0; i< users.size(); i++){
             _User4EUB user = new _User4EUB(users.get(i));
             m_users.add(user);
             m_usersIndex.put(user.getUserID(), i);
-            m_userDocMap.put(i, new ArrayList<>());
-            ArrayList<_Doc4EUB> docs = new ArrayList<>();
-            for(_Review r: users.get(i).getReviews()){
-                int dIndex = m_docs.size();
-                _Doc4EUB doc = new _Doc4EUB(r, dIndex);
-                docs.add(doc);
-                m_docs.add(doc);
-                m_userDocMap.get(i).add(dIndex);
-                m_docUserMap.put(dIndex, i);
-            }
-            user.setReviews(docs);
+            buildUserDocs(i, user, users.get(i).getReviews());
         }
+
+        // build network after we get the usersIndex map
+        for(int i=0; i<m_users.size(); i++)
+            buildUserNetwork(i, m_users.get(i));
 
         for(int k=0; k<number_of_topics; k++){
             m_topics.add(new _Topic4EUB(k));
+        }
+    }
+
+    protected void buildUserDocs(int i, _User4EUB user, ArrayList<_Review> reviews){
+        m_userDocMap.put(i, new ArrayList<>());
+        ArrayList<_Doc4EUB> docs = new ArrayList<>();
+        for(_Review r: reviews){
+            int dIndex = m_docs.size();
+            _Doc4EUB doc = new _Doc4EUB(r, dIndex);
+            docs.add(doc);
+            m_docs.add(doc);
+            m_userDocMap.get(i).add(dIndex);
+            m_docUserMap.put(dIndex, i);
+        }
+        user.setReviews(docs);
+    }
+
+    protected void buildUserNetwork(int i, _User4EUB user){
+        if(!m_userI2PMap.containsKey(i))
+            m_userI2PMap.put(i, new HashSet<Integer>());
+        for(String interaction: user.getFriends()){
+            int idx = m_usersIndex.get(interaction);
+            m_userI2PMap.get(i).add(idx);
+        }
+        for(String nonInteraction: user.getNonFriends()){
+            if(!m_usersIndex.containsKey(nonInteraction))
+                System.out.println("Bug!!");
+            int idx = m_usersIndex.get(nonInteraction);
+            m_userI2PPrimeMap.get(i).add(idx);
         }
     }
 
@@ -129,12 +157,6 @@ public class EUB extends LDA_Variational {
 
             lastAllLikelihood = currentAllLikelihood;
         } while( ++iter < number_of_iteration && converge > m_converge);
-    }
-
-    @Override
-    /***to be done***/
-    protected void init() { // clear up for next iteration during EM
-        super.init();
     }
 
     @Override

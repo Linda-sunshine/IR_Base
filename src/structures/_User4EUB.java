@@ -25,8 +25,12 @@ public class _User4EUB extends _User {
         super(u.getUserID());
         if(u.getFriends() != null)
             setFriends(u.getFriends());
+        else
+            m_friends = new String[]{};
         if(u.getNonFriends() != null)
             setNonFriends(u.getNonFriends());
+        else
+            m_nonFriends = new String[]{};
     }
 
     public void setReviews(ArrayList<_Doc4EUB> docs){
