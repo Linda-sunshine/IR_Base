@@ -10,7 +10,7 @@ import java.util.*;
 
 public class myDataProcessMain {
     static List<_User> m_users;
-    static List<_Product> m_items;
+    static List<_Item> m_items;
 
     static HashMap<String, Integer> m_usersIndex; //(userID, index in m_users)
     static HashMap<String, Integer> m_itemsIndex; //(itemID, index in m_items)
@@ -36,7 +36,7 @@ public class myDataProcessMain {
         /*****data setting*****/
         String folder = String.format("%s/%s/%s", param.m_prefix, param.m_source, param.m_set);
         String fvFile = String.format("%s/%s/%s_features.txt", param.m_prefix, param.m_source, param.m_source);
-        String outputFolder = String.format("%s/CTPE/", folder);
+        String outputFolder = String.format("%s/%s/", folder, param.m_topicmodel);
         new File(outputFolder).mkdirs();
 
         String reviewFolder =  String.format("%s/%dfoldsCV%s/", folder, crossV, flag_coldstart?"Coldstart":"");
@@ -55,7 +55,7 @@ public class myDataProcessMain {
             if(k < crossV-1)
                 val = k + 1;
             String validationFolder = reviewFolder + val + "/";
-            analyzer.loadUserDir(testFolder);
+            analyzer.loadUserDir(validationFolder);
             for(_Doc d : analyzer.getCorpus().getCollection()){
                 if(d.getType()!=_Review.rType.TEST)
                     d.setType(_Review.rType.ADAPTATION);
@@ -71,7 +71,10 @@ public class myDataProcessMain {
             m_bipartite = new BipartiteAnalyzer(analyzer.getCorpus());
             m_bipartite.analyzeCorpus();
             m_users = m_bipartite.getUsers();
-            m_items = m_bipartite.getItems();
+            m_items = new ArrayList<>();
+            for(_Product prd : m_bipartite.getItems()){
+                m_items.add(new _Item(prd.getID()));
+            }
             m_usersIndex = m_bipartite.getUsersIndex();
             m_itemsIndex = m_bipartite.getItemsIndex();
             m_reviewIndex = m_bipartite.getReviewIndex();
@@ -90,14 +93,27 @@ public class myDataProcessMain {
             }
 
             String[] modes = new String[]{"train","validation","test"};
+            ArrayList<_Doc> docs;
             for(String mode : modes) {
-                m_bipartite.analyzeBipartite(m_trainSet, mode);
+                if(mode.equals("train"))
+                    docs = m_trainSet;
+                else if(mode.equals("test"))
+                    docs = m_testSet;
+                else
+                    docs = m_validationSet;
+                m_bipartite.analyzeBipartite(docs, mode);
                 m_mapByUser = m_bipartite.getMapByUser();
                 m_mapByItem = m_bipartite.getMapByItem();
-                save2FileCTPE(outputFolder, param.m_source, mode, k);
+
+                if(param.m_topicmodel.equals("CTR")) {
+                    save2FileCTPE(outputFolder, param.m_source, mode, k);
+                }else{
+                    save2FileRTM(outputFolder, param.m_source, mode, k);
+                }
             }
         }
     }
+
 
     public static void save2FileCTPE(String prefix, String source, String mode, int k) throws IOException{
         ArrayList<_Doc> docs = new ArrayList<>();
@@ -109,14 +125,40 @@ public class myDataProcessMain {
         }
         String rateFile = String.format("%s/%s/%d/%s.tsv", prefix, source, k, mode);
         String userFile = String.format("%s/%s/%d/%s_users.tsv", prefix, source, k, mode);
-        String docFile = String.format("%s/%s/%d/%s_mult.dat", prefix, source, k, mode);
-        if(mode.equals("train"))
-            docFile = String.format("%s/%s/%d/mult.dat", prefix, source, k, mode);
-        (new File(docFile)).getParentFile().mkdirs();
+        String docFile = String.format("%s/%s/%d/mult.dat", prefix, source, k);
+
+        (new File(rateFile)).getParentFile().mkdirs();
         saveRate(rateFile, docs);
         saveUser(userFile, docs);
-        saveDoc(docFile, docs);
+
+        if(mode.equals("train")) {
+            docs.clear();
+            docs = buildItemProfile(m_bipartite.getCorpus().getCollection());
+            saveDoc4LDA(docFile, docs);
+        }
     }
+
+    //build query for one item from its' reviews
+    public static ArrayList<_Doc> buildItemProfile(ArrayList<_Doc> docs){
+        ArrayList<_Doc> itemProfile = new ArrayList<>();
+
+        //allocate review by item
+        for(_Doc doc : docs){
+            String itemID = doc.getItemID();
+            ((_Item) m_items.get(m_itemsIndex.get(itemID))).addOneReview((_Review)doc);
+        }
+        //compress sparse feature of reviews into one vector for each item
+        int i = 0;
+        for(_Product item : m_items){
+            ((_Item) item).buildProfile("");
+            _Doc itemDoc = new _Doc(i++, "", 0);
+            itemDoc.createSpVct(((_Item) item).getFeature());
+            itemProfile.add(itemDoc);
+        }
+
+        return itemProfile;
+    }
+
 
     public static void save2FileRTM(String prefix, String source, String mode, int k) throws IOException{
         ArrayList<_Doc> docs = new ArrayList<>();
@@ -136,7 +178,7 @@ public class myDataProcessMain {
         }
         String docFile = String.format("%s/%s_user_corpus_%s_%d.txt", prefix,source, mode, k);
         String linkFile = mode.equals("test") ? String.format("%s/%s_user_link_%s_train_%d.txt", prefix, source, mode, k) : String.format("%s/%s_user_link_%s_%d.txt", prefix, source, mode, k);
-        saveDoc(docFile, docs);
+        saveDoc4RTM(docFile, docs);
         saveLink(linkFile, links);
         if(mode.equals("test"))
             (new File(String.format("%s/%s_user_link_%s_test_%d.txt", prefix, source, mode, k))).createNewFile();
@@ -156,7 +198,7 @@ public class myDataProcessMain {
         }
         docFile = String.format("%s/%s_item_corpus_%s_%d.txt", prefix,source, mode, k);
         linkFile = mode.equals("test") ? String.format("%s/%s_item_link_%s_train_%d.txt", prefix, source, mode, k) : String.format("%s/%s_item_link_%s_%d.txt", prefix, source, mode, k);
-        saveDoc(docFile, docs);
+        saveDoc4RTM(docFile, docs);
         saveLink(linkFile, links);
         if(mode.equals("test"))
             (new File(String.format("%s/%s_item_link_%s_test_%d.txt", prefix, source, mode, k))).createNewFile();
@@ -175,7 +217,7 @@ public class myDataProcessMain {
                 String userID = r.getUserID();
                 String itemID = r.getItemID();
                 int rate = r.getYLabel();
-                writer.write(String.format("%s\t%s\t%d\n", userID, itemID, rate));
+                writer.write(String.format("%d\t%d\t%d\n", m_usersIndex.get(userID), m_itemsIndex.get(itemID), rate));
             }
             writer.close();
 
@@ -200,16 +242,16 @@ public class myDataProcessMain {
                 users.add(userID);
             }
             for(String uid : users)
-                writer.write(String.format("%s\n", uid));
+                writer.write(String.format("%d\n", m_usersIndex.get(uid)));
             writer.close();
 
-            System.out.format("[Info]%d users saved to %s\n", docs.size(), filename);
+            System.out.format("[Info]%d users saved to %s\n", users.size(), filename);
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
 
-    public static void saveDoc(String filename, ArrayList<_Doc> docs) {
+    public static void saveDoc4RTM(String filename, ArrayList<_Doc> docs) {
         if (filename==null || filename.isEmpty()) {
             System.out.println("Please specify the file name to save the vectors!");
             return;
@@ -220,7 +262,29 @@ public class myDataProcessMain {
             for(_Doc doc:docs) {
                 writer.write(String.format("%d", doc.getTotalDocLength()));
                 for(_SparseFeature fv:doc.getSparse())
-                    writer.write(String.format(" %d:%.1f", fv.getIndex(), fv.getValue()));//index starts from 1
+                    writer.write(String.format(" %d:%d", fv.getIndex(), (int) fv.getValue()));//index starts from 1
+                writer.write("\n");
+            }
+            writer.close();
+
+            System.out.format("[Info]%d feature vectors saved to %s\n", docs.size(), filename);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public static void saveDoc4LDA(String filename, ArrayList<_Doc> docs) {
+        if (filename==null || filename.isEmpty()) {
+            System.out.println("Please specify the file name to save the vectors!");
+            return;
+        }
+
+        try {
+            BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(filename)));
+            for(_Doc doc:docs) {
+                writer.write(String.format("%d", doc.getSparse().length));
+                for(_SparseFeature fv:doc.getSparse())
+                    writer.write(String.format(" %d:%d", fv.getIndex(), (int) fv.getValue()));//index starts from 1
                 writer.write("\n");
             }
             writer.close();

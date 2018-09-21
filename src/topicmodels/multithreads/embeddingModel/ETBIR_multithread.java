@@ -11,6 +11,7 @@ import topicmodels.multithreads.TopicModelWorker;
 import topicmodels.multithreads.TopicModel_worker;
 import utils.Utils;
 
+import javax.jws.Oneway;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -401,13 +402,13 @@ public class ETBIR_multithread extends ETBIR {
         }
         workerID = 0;
         for(int i_idx : m_mapByItem.keySet()){
-            _Product4ETBIR item = (_Product4ETBIR) m_items.get(i_idx);
+            Object item = m_items.get(i_idx);
             m_itemWorkers[workerID%cores].addObject(item);
             workerID++;
         }
         workerID = 0;
         for(int u_idx:m_mapByUser.keySet()) {
-            _User4ETBIR user = (_User4ETBIR) m_users.get(u_idx);
+            Object user = m_users.get(u_idx);
             m_userWorkers[workerID%cores].addObject(user);
             workerID++;
         }

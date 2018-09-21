@@ -1,2 +1,0 @@
-#!/bin/sh
-nohup ./run -topicmodel ETBIR -source yelp -nuOfTopics 50 -emIter 30 -set byUser_70k_review -flagColdstart true -flagGd true > ./output/yelp_70k_ETBIR_50.output 2>&1 &

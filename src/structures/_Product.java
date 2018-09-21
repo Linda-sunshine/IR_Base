@@ -3,11 +3,9 @@ package structures;
 import json.JSONObject;
 import utils.Utils;
 
-public class _Product {
+public class _Product{
 	String m_ID;
-	public String getID() {
-		return m_ID;
-	}
+	public String getID() { return m_ID; }
 
 	public void setID(String ID) {
 		this.m_ID = ID;
