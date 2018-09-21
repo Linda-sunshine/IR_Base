@@ -15,7 +15,7 @@ public class BipartiteAnalyzer {
     ArrayList<_Doc> m_testSet;
 
     protected List<_User> m_users;
-    protected List<_Product> m_items;
+    protected List<_Product4ETBIR> m_items;
 
     protected HashMap<String, Integer> m_usersIndex; //(userID, index in m_users)
     protected HashMap<String, Integer> m_itemsIndex; //(itemID, index in m_items)
@@ -79,7 +79,7 @@ public class BipartiteAnalyzer {
             }
 
             if(!m_itemsIndex.containsKey(itemID)){
-                m_items.add(new _Product(itemID));
+                m_items.add(new _Product4ETBIR(itemID));
                 m_itemsIndex.put(itemID, i_index);
                 i_index++;
             }
@@ -351,7 +351,7 @@ public class BipartiteAnalyzer {
 
     public _Corpus getCorpus(){ return this.m_corpus; }
     public List<_User> getUsers(){ return this.m_users; }
-    public List<_Product> getItems(){ return this.m_items; }
+    public List<_Product4ETBIR> getItems(){ return this.m_items; }
     public HashMap<String, Integer> getUsersIndex() { return this.m_usersIndex; }
     public HashMap<String, Integer> getItemsIndex() {return this.m_itemsIndex; }
     public HashMap<String, Integer> getReviewIndex() {return this.m_reviewIndex; }
