@@ -2,6 +2,7 @@ package topicmodels.UserEmbedding;
 
 import Jama.Matrix;
 import LBFGS.LBFGS;
+import org.apache.commons.math3.distribution.BinomialDistribution;
 import structures.*;
 import topicmodels.LDA.LDA_Variational;
 import utils.Utils;
@@ -21,7 +22,6 @@ public class EUB extends LDA_Variational {
 
     protected int m_embeddingDim;
 
-    // assume this is the look-up table for doc-user pairs
     protected HashMap<String, Integer> m_usersIndex;
     // key: user index, value: document index array
     protected HashMap<Integer, ArrayList<Integer>> m_userDocMap;
@@ -37,6 +37,8 @@ public class EUB extends LDA_Variational {
 
     // key: doc index, value: user index
     protected HashMap<Integer, Integer> m_docUserMap;
+
+    protected BinomialDistribution m_bernoulli;
 
     /*****variational parameters*****/
     protected double t_mu = 1.0, t_sigma = 1.0;
@@ -55,6 +57,9 @@ public class EUB extends LDA_Variational {
     /*****Sparsity parameter******/
     protected double m_rho = 0.1;
 
+    // Decide if the network is directional or not
+    private boolean m_directionFlag = false;
+
     public EUB(int number_of_iteration, double converge, double beta,
                _Corpus c, double lambda, int number_of_topics, double alpha,
                int varMaxIter, double varConverge, int m) {
@@ -64,6 +69,8 @@ public class EUB extends LDA_Variational {
         m_topics = new ArrayList<>();
         m_users = new ArrayList<>();
         m_docs = new ArrayList<>();
+
+        m_bernoulli = new BinomialDistribution(1, m_rho);
 
     }
 
@@ -86,13 +93,11 @@ public class EUB extends LDA_Variational {
             buildUserDocs(i, user, users.get(i).getReviews());
         }
 
-        // build network after we get the usersIndex map
-        for(int i=0; i<m_users.size(); i++)
-            buildUserNetwork(i, m_users.get(i));
-
         for(int k=0; k<number_of_topics; k++){
             m_topics.add(new _Topic4EUB(k));
         }
+
+        constructNetwork();
     }
 
     protected void buildUserDocs(int i, _User4EUB user, ArrayList<_Review> reviews){
@@ -117,10 +122,10 @@ public class EUB extends LDA_Variational {
             m_userI2PMap.get(i).add(idx);
         }
         for(String nonInteraction: user.getNonFriends()){
-            if(!m_usersIndex.containsKey(nonInteraction))
-                System.out.println("Bug!!");
-            int idx = m_usersIndex.get(nonInteraction);
-            m_userI2PPrimeMap.get(i).add(idx);
+            if(m_usersIndex.containsKey(nonInteraction)) {
+                int idx = m_usersIndex.get(nonInteraction);
+                m_userI2PPrimeMap.get(i).add(idx);
+            }
         }
     }
 
@@ -146,6 +151,9 @@ public class EUB extends LDA_Variational {
         double currentAllLikelihood;
         double converge;
         do {
+            // sample non-interactions first before E-step
+            constructNetwork();
+
             currentAllLikelihood = E_step();
 
             if (iter >= 0)
@@ -157,6 +165,136 @@ public class EUB extends LDA_Variational {
 
             lastAllLikelihood = currentAllLikelihood;
         } while( ++iter < number_of_iteration && converge > m_converge);
+    }
+
+    // put the user interaction and non-interaction information in the four hashmaps
+    protected void constructNetwork() {
+        m_userI2PMap.clear();
+        m_userQ2IMap.clear();
+        m_userI2PPrimeMap.clear();
+        m_userQPrime2IMap.clear();
+
+        if (!m_directionFlag){
+            for(String uiId: m_usersIndex.keySet()){
+                int uiIndex = m_usersIndex.get(uiId);
+                // interactions
+                sampleNonDirectionalInteractions(uiIndex);
+                // non-interactions
+                sampleNonDirectionalNonInteractions(uiIndex);
+            }
+        } else{
+            for(String uiId: m_usersIndex.keySet()){
+                int uiIndex = m_usersIndex.get(uiId);
+                // interactions
+                sampleDirectionalInteractions(uiIndex);
+                // non-interactions
+                sampleDirectionalNonInteractions(uiIndex);
+            }
+        }
+    }
+
+    protected void sampleDirectionalInteractions(int uiIndex){
+        // interactions
+        if(!m_userI2PMap.containsKey(uiIndex))
+            m_userI2PMap.put(uiIndex, new HashSet<>());
+
+        _User4EUB ui = m_users.get(uiIndex);
+        if(ui.getFriends() != null && ui.getFriends().length > 0){
+            for(String ujId: ui.getFriends()) {
+                int ujIndex = m_usersIndex.get(ujId);
+                if(!m_userQ2IMap.containsKey(ujIndex))
+                    m_userQ2IMap.put(ujIndex, new HashSet<>());
+
+                // eij
+                m_userI2PMap.get(uiIndex).add(ujIndex);
+                m_userQ2IMap.get(ujIndex).add(uiIndex);
+            }
+        }
+    }
+
+    protected void sampleDirectionalNonInteractions(int uiIndex){
+
+        // sample non-interactions
+        HashSet<Integer> nonInteactions = new HashSet<>(m_usersIndex.values());
+        nonInteactions.remove(uiIndex);
+
+        if(m_userI2PMap.containsKey(uiIndex)){
+            for(int p: m_userI2PMap.get(uiIndex))
+                nonInteactions.remove(p);
+        }
+
+        if (!m_userI2PPrimeMap.containsKey(uiIndex))
+            m_userI2PPrimeMap.put(uiIndex, new HashSet<>());
+
+        for(int ujIndex: nonInteactions){
+            if (m_bernoulli.sample() == 1) {
+                if (!m_userQPrime2IMap.containsKey(ujIndex))
+                    m_userQPrime2IMap.put(ujIndex, new HashSet<>());
+                //eij=0
+                m_userI2PPrimeMap.get(uiIndex).add(ujIndex);
+                m_userQPrime2IMap.get(ujIndex).add(uiIndex);
+            }
+        }
+    }
+
+    protected void sampleNonDirectionalInteractions(int uiIndex){
+
+        _User4EUB ui = m_users.get(uiIndex);
+        if(ui.getFriends() != null && ui.getFriends().length > 0){
+            // interactions
+            if(!m_userI2PMap.containsKey(uiIndex))
+                m_userI2PMap.put(uiIndex, new HashSet<>());
+            if(!m_userQ2IMap.containsKey(uiIndex))
+                m_userQ2IMap.put(uiIndex, new HashSet<>());
+
+            for(String ujId: ui.getFriends()) {
+                int ujIndex = m_usersIndex.get(ujId);
+                if(!m_userI2PMap.containsKey(ujIndex))
+                    m_userI2PMap.put(ujIndex, new HashSet<>());
+                if(!m_userQ2IMap.containsKey(ujIndex))
+                    m_userQ2IMap.put(ujIndex, new HashSet<>());
+
+                // eij
+                m_userI2PMap.get(uiIndex).add(ujIndex);
+                m_userQ2IMap.get(ujIndex).add(uiIndex);
+
+                // eji
+                m_userI2PMap.get(ujIndex).add(uiIndex);
+                m_userQ2IMap.get(uiIndex).add(ujIndex);
+            }
+        }
+    }
+
+    protected void sampleNonDirectionalNonInteractions(int uiIndex) {
+        // sample non-interactions
+        HashSet<Integer> nonInteactions = new HashSet<>(m_usersIndex.values());
+        nonInteactions.remove(uiIndex);
+
+        if(m_userI2PMap.containsKey(uiIndex)){
+           for(int p: m_userI2PMap.get(uiIndex))
+               nonInteactions.remove(p);
+        }
+
+        if (!m_userI2PPrimeMap.containsKey(uiIndex))
+            m_userI2PPrimeMap.put(uiIndex, new HashSet<>());
+        if (!m_userQPrime2IMap.containsKey(uiIndex))
+            m_userQPrime2IMap.put(uiIndex, new HashSet<>());
+
+        for(int ujIndex: nonInteactions){
+            if (m_bernoulli.sample() == 1) {
+                if (!m_userI2PPrimeMap.containsKey(ujIndex))
+                    m_userI2PPrimeMap.put(ujIndex, new HashSet<>());
+                if (!m_userQPrime2IMap.containsKey(ujIndex))
+                    m_userQPrime2IMap.put(ujIndex, new HashSet<>());
+                //eij=0
+                m_userI2PPrimeMap.get(uiIndex).add(ujIndex);
+                m_userQPrime2IMap.get(ujIndex).add(uiIndex);
+
+                //eji=0
+                m_userI2PPrimeMap.get(ujIndex).add(uiIndex);
+                m_userQPrime2IMap.get(uiIndex).add(ujIndex);
+            }
+        }
     }
 
     @Override

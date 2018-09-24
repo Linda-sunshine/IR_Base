@@ -34,15 +34,14 @@ public class MyEUBMain {
         String friendFile = String.format("%s/%s/%sFriends_1000.txt", prefix, dataset, dataset);
         String cvIndexFile = String.format("%s/%s/%sCVIndex_1000.txt", prefix, dataset, dataset);
 
-        double rho = 0.1;
         int kFold = 5;
 
         MultiThreadedNetworkAnalyzer analyzer = new MultiThreadedNetworkAnalyzer(tokenModel, classNumber, providedCV,
-                Ngram, lengthThreshold, numberOfCores, false, rho);
+                Ngram, lengthThreshold, numberOfCores, false);
         analyzer.setAllocateReviewFlag(false); // do not allocate reviews
 
-        String interactionFile = String.format("%s/%s/%sInteractions_1000.txt", prefix, dataset, dataset);
-        String nonInteractionFile = String.format("%s/%s/%sNonInteractions_1000.txt", prefix, dataset, dataset);
+//        String interactionFile = String.format("%s/%s/%sInteractions_1000.txt", prefix, dataset, dataset);
+//        String nonInteractionFile = String.format("%s/%s/%sNonInteractions_1000.txt", prefix, dataset, dataset);
 
 //        analyzer.loadUserDir(userFolder);
 //        analyzer.constructNetwork(friendFile);
@@ -54,8 +53,9 @@ public class MyEUBMain {
         // we store the interaction information before-hand, load them directly
         analyzer.loadUserDir(userFolder);
         analyzer.constructUserIDIndex();
-        analyzer.loadInteractions(interactionFile);
-        analyzer.loadNonInteractions(nonInteractionFile);
+        analyzer.loadInteractions(friendFile);
+//        analyzer.loadInteractions(interactionFile);
+//        analyzer.loadNonInteractions(nonInteractionFile);
         analyzer.loadCVIndex(cvIndexFile);
 
         int emMaxIter = 20, number_of_topics = 20, varMaxIter = 20, embeddingDim = 20;
