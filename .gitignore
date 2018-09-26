@@ -43,3 +43,4 @@ yelp_user_link_test_4
 yelp_user_link_train_2
 yelp_user_link_train_3
 yelp_user_link_train_4
+*.tsv

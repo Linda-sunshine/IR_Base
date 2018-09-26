@@ -359,4 +359,6 @@ public class BipartiteAnalyzer {
     public HashMap<Integer, ArrayList<Integer>> getMapByItem() { return this.m_mapByItem; }
     public HashMap<Integer, ArrayList<Integer>> getMapByUser_test(){ return this.m_mapByUser_test; }
     public HashMap<Integer, ArrayList<Integer>> getMapByItem_test() { return this.m_mapByItem_test; }
+    public HashMap<Integer, ArrayList<Integer>> getMapByUser_global() { return this.m_mapByUser_global; }
+    public HashMap<Integer, ArrayList<Integer>> getMapByItem_global() { return this.m_mapByItem_global; }
 }

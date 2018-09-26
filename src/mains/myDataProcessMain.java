@@ -37,6 +37,9 @@ public class myDataProcessMain {
         String folder = String.format("%s/%s/%s", param.m_prefix, param.m_source, param.m_set);
         String fvFile = String.format("%s/%s/%s_features.txt", param.m_prefix, param.m_source, param.m_source);
         String outputFolder = String.format("%s/%s/", folder, param.m_topicmodel);
+//        String folder = String.format("./myData/yelp/byUser_4k_review");
+//        String fvFile = String.format("./data/Features/fv_2gram_IG_yelp_byUser_30_50_25.txt");
+//        String outputFolder = String.format("%s/CTR/", folder);
         new File(outputFolder).mkdirs();
 
         String reviewFolder =  String.format("%s/%dfoldsCV%s/", folder, crossV, flag_coldstart?"Coldstart":"");
@@ -95,15 +98,24 @@ public class myDataProcessMain {
             String[] modes = new String[]{"train","validation","test"};
             ArrayList<_Doc> docs;
             for(String mode : modes) {
-                if(mode.equals("train"))
+                if(mode.equals("train")) {
                     docs = m_trainSet;
-                else if(mode.equals("test"))
+                    m_bipartite.analyzeBipartite(docs, mode);
+                    m_mapByUser = m_bipartite.getMapByUser();
+                    m_mapByItem = m_bipartite.getMapByItem();
+                }
+                else if(mode.equals("test")) {
                     docs = m_testSet;
-                else
+                    m_bipartite.analyzeBipartite(docs, mode);
+                    m_mapByUser = m_bipartite.getMapByUser_test();
+                    m_mapByItem = m_bipartite.getMapByItem_test();
+                }
+                else {
                     docs = m_validationSet;
-                m_bipartite.analyzeBipartite(docs, mode);
-                m_mapByUser = m_bipartite.getMapByUser();
-                m_mapByItem = m_bipartite.getMapByItem();
+                    m_bipartite.analyzeBipartite(docs, mode);
+                    m_mapByUser = m_bipartite.getMapByUser_global();
+                    m_mapByItem = m_bipartite.getMapByItem_global();
+                }
 
                 if(param.m_topicmodel.equals("CTR")) {
                     save2FileCTPE(outputFolder, param.m_source, mode, k);
