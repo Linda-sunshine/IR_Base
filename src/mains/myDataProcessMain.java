@@ -47,6 +47,7 @@ public class myDataProcessMain {
                 Ngram, lengthThreshold, numberOfCores, true, param.m_source);
 
         for(int k = 0; k <crossV; k++){
+            analyzer.getCorpus().reset();
             //load test set
             String testFolder = reviewFolder + k + "/";
             analyzer.loadUserDir(testFolder);
