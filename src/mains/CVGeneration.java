@@ -23,6 +23,7 @@ public class CVGeneration {
         /**
          * generate vocabulary:
          */
+        System.out.println(args[0]);
         double startProb = Double.valueOf(args[4]); // Used in feature selection, the starting point of the features.
         double endProb = Double.valueOf(args[5]); // Used in feature selection, the ending point of the features.
         int minDF = Integer.valueOf(args[6]); // Filter the features with DFs smaller than this threshold.
