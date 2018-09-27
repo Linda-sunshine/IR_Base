@@ -31,7 +31,6 @@ public class myDataProcessMain {
         int numberOfCores = Runtime.getRuntime().availableProcessors();
         String tokenModel = "./data/Model/en-token.bin";
         int crossV = 5;
-        boolean flag_coldstart = true;
 
         /*****data setting*****/
         String folder = String.format("%s/%s/%s", param.m_prefix, param.m_source, param.m_set);
@@ -42,7 +41,7 @@ public class myDataProcessMain {
 //        String outputFolder = String.format("%s/CTR/", folder);
         new File(outputFolder).mkdirs();
 
-        String reviewFolder =  String.format("%s/%dfoldsCV%s/", folder, crossV, flag_coldstart?"Coldstart":"");
+        String reviewFolder =  String.format("%s/%dfoldsCV%s/", folder, crossV, param.m_flag_coldstart?"Coldstart":"");
         MultiThreadedReviewAnalyzer analyzer = new MultiThreadedReviewAnalyzer(tokenModel, classNumber, fvFile,
                 Ngram, lengthThreshold, numberOfCores, true, param.m_source);
 

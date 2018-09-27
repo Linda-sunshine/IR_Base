@@ -1,5 +1,6 @@
 package mains;
 
+import Analyzer.MultiThreadedReviewAnalyzer;
 import Analyzer.ReviewAnalyzer;
 
 import java.io.IOException;
@@ -13,21 +14,22 @@ public class CVGeneration {
         int norm = 0;//The way of normalization.(only 1 and 2)
         int lengthThreshold = 5; //Document length threshold
         String tokenModel = "./data/Model/en-token.bin";
+        int numberOfCores = Runtime.getRuntime().availableProcessors();
 
-        String trainset = "byUser_40_50_12";
-        String source = "amazon_book";
+        String trainset = "data";
+        String source = "stackoverflow";
         String dataset = "./myData/" + source + "/" + trainset + "/";
 
         /**
          * generate vocabulary:
          */
         double startProb = 0.2; // Used in feature selection, the starting point of the features.
-        double endProb = 0.999; // Used in feature selection, the ending point of the features.
+        double endProb = 0.6; // Used in feature selection, the ending point of the features.
         int maxDF = 9000, minDF = 60; // Filter the features with DFs smaller than this threshold.
         String featureSelection = "IG";
 
 
-        String suffix = ".json";
+        String suffix = ".txt";
         String stopwords = "./data/Model/stopwords.dat";
         String pattern = String.format("%dgram_%s", Ngram, featureSelection);
         String fvFile = String.format("data/Features/fv_%s_" + source + "_" + trainset + ".txt", pattern);
@@ -43,5 +45,6 @@ public class CVGeneration {
         System.out.println("Performing feature selection, wait...");
         analyzer.featureSelection(fvFile, featureSelection, startProb, endProb, maxDF, minDF); //Select the features.
         analyzer.SaveCVStat(fvStatFile);
+
     }
 }
