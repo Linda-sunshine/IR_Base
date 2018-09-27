@@ -16,7 +16,7 @@ public class CVGeneration {
         String tokenModel = "./data/Model/en-token.bin";
         int numberOfCores = Runtime.getRuntime().availableProcessors();
 
-        String trainset = "data";
+        String trainset = "sample_7k";
         String source = "stackoverflow";
         String dataset = "/zf18/ll5fy/lab/dataset/" + source + "/" + trainset + "/";
 
