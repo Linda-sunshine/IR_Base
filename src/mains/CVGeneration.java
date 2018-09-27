@@ -18,7 +18,7 @@ public class CVGeneration {
 
         String trainset = "data";
         String source = "stackoverflow";
-        String dataset = "./myData/" + source + "/" + trainset + "/";
+        String dataset = "/zf18/ll5fy/lab/dataset/" + source + "/" + trainset + "/";
 
         /**
          * generate vocabulary:
