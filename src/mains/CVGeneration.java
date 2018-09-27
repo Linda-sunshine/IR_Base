@@ -18,14 +18,15 @@ public class CVGeneration {
 
         String trainset = "sample_7k";
         String source = "stackoverflow";
-        String dataset = "/zf18/ll5fy/lab/dataset/" + source + "/" + trainset + "/";
+        String dataset = args[1] + args[2] + "/" + args[3] + "/";
 
         /**
          * generate vocabulary:
          */
-        double startProb = 0.2; // Used in feature selection, the starting point of the features.
-        double endProb = 0.9; // Used in feature selection, the ending point of the features.
-        int maxDF = 9000, minDF = 40; // Filter the features with DFs smaller than this threshold.
+        double startProb = Double.valueOf(args[4]); // Used in feature selection, the starting point of the features.
+        double endProb = Double.valueOf(args[5]); // Used in feature selection, the ending point of the features.
+        int minDF = Integer.valueOf(args[6]); // Filter the features with DFs smaller than this threshold.
+        int maxDF = Integer.valueOf(args[7]);
         String featureSelection = "IG";
 
 
