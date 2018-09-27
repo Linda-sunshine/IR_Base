@@ -2,12 +2,14 @@ package mains;
 
 import Analyzer.MultiThreadedReviewAnalyzer;
 import Analyzer.ReviewAnalyzer;
+import structures.TopicModelParameter;
 
 import java.io.IOException;
 import java.text.ParseException;
 
 public class CVGeneration {
     public static void main(String[] args) throws IOException, ParseException {
+        TopicModelParameter param = new TopicModelParameter(args);
         int classNumber = 6; //Define the number of classes in this Naive Bayes.
         int Ngram = 2; //The default value is unigram.
         String featureValue = "TF"; //The way of calculating the feature value, which can also be "TFIDF", "BM25"
@@ -18,16 +20,15 @@ public class CVGeneration {
 
         String trainset = "sample_7k";
         String source = "stackoverflow";
-        String dataset = args[1] + args[2] + "/" + args[3] + "/";
+        String dataset = param.m_prefix + "/" + param.m_source + "/" + param.m_set + "/";
 
         /**
          * generate vocabulary:
          */
-        System.out.println(args[0]);
-        double startProb = Double.valueOf(args[4]); // Used in feature selection, the starting point of the features.
-        double endProb = Double.valueOf(args[5]); // Used in feature selection, the ending point of the features.
-        int minDF = Integer.valueOf(args[6]); // Filter the features with DFs smaller than this threshold.
-        int maxDF = Integer.valueOf(args[7]);
+        double startProb = param.m_alpha; // Used in feature selection, the starting point of the features.
+        double endProb = param.m_lambda; // Used in feature selection, the ending point of the features.
+        int minDF = param.m_varMaxIter; // Filter the features with DFs smaller than this threshold.
+        int maxDF = param.m_emIter;
         String featureSelection = "IG";
 
 
