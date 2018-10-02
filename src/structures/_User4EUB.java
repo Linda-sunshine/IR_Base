@@ -34,7 +34,7 @@ public class _User4EUB extends _User {
         m_reviews = reviews;
     }
 
-    public void setTopics4Variational(int dim, int userSize, double mu, double sigma){
+    public void setTopics4Variational(int dim, int userSize, double mu, double sigma, double xi){
         m_mu_u = new double[dim];
         m_sigma_u = new double[dim][dim];
 
@@ -46,11 +46,16 @@ public class _User4EUB extends _User {
         for(int m=0; m<dim; m++)
             Utils.randomize(m_sigma_u[m], sigma);
 
+        // normalization over all the users lead to quite small value.
         Utils.randomize(m_mu_delta, mu);
         Utils.randomize(m_sigma_delta, sigma);
 
+        // thus we scale the two set of parameters by 100
+        Utils.scaleArray(m_mu_delta, 100);
+        Utils.scaleArray(m_sigma_delta, 100);
+
         for(int i=0; i<userSize; i++){
-            m_epsilon[i] = Math.exp(m_mu_delta[i] + 0.5*m_sigma_delta[i]*m_sigma_delta[i]) + 1;
+            m_epsilon[i] = Math.exp(m_mu_delta[i] + 0.5 * xi * xi) + 1;
         }
     }
 }

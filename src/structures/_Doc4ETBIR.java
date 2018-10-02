@@ -18,7 +18,7 @@ public class _Doc4ETBIR extends _Review {
     }
     
     //create necessary structure for variational inference    
-  	public void setTopics4Variational(int k, double alpha, double mu, double sigma) {
+  	public void  setTopics4Variational(int k, double alpha, double mu, double sigma) {
     	super.setTopics4Variational(k, alpha);
   		
     	m_logZeta = 0.0;

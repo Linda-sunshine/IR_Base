@@ -40,22 +40,12 @@ public class MyEUBMain {
                 Ngram, lengthThreshold, numberOfCores, false);
         analyzer.setAllocateReviewFlag(false); // do not allocate reviews
 
-//        String interactionFile = String.format("%s/%s/%sInteractions_1000.txt", prefix, dataset, dataset);
-//        String nonInteractionFile = String.format("%s/%s/%sNonInteractions_1000.txt", prefix, dataset, dataset);
-
-//        analyzer.loadUserDir(userFolder);
-//        analyzer.constructNetwork(friendFile);
-//        analyzer.saveNetwork(interactionFile, analyzer.getInteractionMap());
-//        analyzer.saveNetwork(nonInteractionFile, analyzer.getNonInteractionMap());
-//        analyzer.constructUserIDIndex();
 //        analyzer.saveCVIndex(kFold, cvIndexFile);
 
         // we store the interaction information before-hand, load them directly
         analyzer.loadUserDir(userFolder);
         analyzer.constructUserIDIndex();
         analyzer.loadInteractions(friendFile);
-//        analyzer.loadInteractions(interactionFile);
-//        analyzer.loadNonInteractions(nonInteractionFile);
         analyzer.loadCVIndex(cvIndexFile);
 
         int emMaxIter = 20, number_of_topics = 20, varMaxIter = 20, embeddingDim = 20;
@@ -65,8 +55,8 @@ public class MyEUBMain {
         long start = System.currentTimeMillis();
         EUB eub = new EUB(emMaxIter, emConverge, beta, corpus, lambda, number_of_topics, alpha, varMaxIter, varConverge, embeddingDim);
         eub.buildLookupTables(analyzer.getUsers());
-//        eub.EMonCorpus();
-        eub.fixedCrossValidation(kFold);
+        eub.EMonCorpus();
+//        eub.fixedCrossValidation(kFold);
 
         long end = System.currentTimeMillis();
         System.out.println("\n[Info]Start time: " + start);
