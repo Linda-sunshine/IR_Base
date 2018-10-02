@@ -50,7 +50,7 @@ public class EUB extends LDA_Variational {
     // alpha is precision parameter for topic embedding in EUB
     // alpha is a vector parameter for dirichlet distribution
     protected double m_alpha_s = 1.0;
-    protected double m_tau = 1.0;
+    protected double m_tau = 0.01;
     protected double m_gamma = 1.0;
     protected double m_xi = 2;
 
@@ -729,15 +729,15 @@ public class EUB extends LDA_Variational {
                         muG[pPrime] -= fgValue[1];
                     }
                 }
-//                printFValue(oldFValue, fValue);
+                printFValue(oldFValue, fValue);
                 LBFGS.lbfgs(muG.length, 6, mu_delta, fValue, muG, false, diag, iprint, 1e-3, 1e-16, iflag);
                 oldFValue = fValue;
             } while(iflag[0] != 0);
-//            System.out.println();
+            System.out.println();
             ui.m_mu_delta = mu_delta;
         } catch(Exception e){
             m_muFailCounter++;
-//            System.err.println("LBFGS fails!!!!");
+            System.err.println("LBFGS fails!!!!");
 //            e.printStackTrace();
         }
     }
@@ -784,16 +784,16 @@ public class EUB extends LDA_Variational {
                         sigmaG[pPrime] -= fgValue[1];
                     }
                 }
-//                printFValue(oldFValue, fValue);
+                printFValue(oldFValue, fValue);
                 LBFGS.lbfgs(sigmaG.length, 6, sigma_delta, fValue, sigmaG, false, diag, iprint, 1e-3, 1e-16, iflag);
                 oldFValue = fValue;
 
             } while(iflag[0] != 0);
-//            System.out.println();
+            System.out.println();
             ui.m_sigma_delta = sigma_delta;
         } catch(Exception e){
             m_sigmaFailCounter++;
-//            System.err.println("LBFGS fails!!!!");
+            System.err.println("LBFGS fails!!!!");
 //            e.printStackTrace();
         }
     }
@@ -861,16 +861,16 @@ public class EUB extends LDA_Variational {
                     // gradient
                     muG[k] = -(-m_tau * mu_theta[k] + m_tau * dotProd + doc.m_sstat[k] - moment);
                 }
-//                printFValue(oldFValue, fValue);
+                printFValue(oldFValue, fValue);
                 LBFGS.lbfgs(muG.length, 6, mu_theta, fValue, muG, false, diag, iprint, 1e-3, 1e-16, iflag);
                 oldFValue = fValue;
             } while(iflag[0] != 0);
-//            System.out.println();
+            System.out.println();
             doc.m_mu_theta = mu_theta;
         } catch(Exception e){
             m_muFailCounter++;
             System.err.println("LBFGS fails!!!!");
-//            e.printStackTrace();
+            e.printStackTrace();
         }
     }
 
@@ -910,17 +910,17 @@ public class EUB extends LDA_Variational {
                             - 1/sigma_sqrt_theta[k];
 
                 }
-//                printFValue(oldFValue, fValue);
+                printFValue(oldFValue, fValue);
                 LBFGS.lbfgs(sigmaSqrtG.length, 6, sigma_sqrt_theta, fValue, sigmaSqrtG, false, diag, iprint, 1e-3, 1e-16, iflag);
                 oldFValue = fValue;
             } while(iflag[0] != 0);
-//            System.out.println();
+            System.out.println();
             doc.m_sigma_sqrt_theta = sigma_sqrt_theta;
             for(int k=0; k<number_of_topics; k++)
                 doc.m_sigma_theta[k] = doc.m_sigma_sqrt_theta[k] * doc.m_sigma_sqrt_theta[k];
         } catch(Exception e){
             m_sigmaFailCounter++;
-//            System.err.println("LBFGS fails!!!!");
+            System.err.println("LBFGS fails!!!!");
 //            e.printStackTrace();
         }
     }
