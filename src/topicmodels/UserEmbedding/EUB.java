@@ -50,7 +50,7 @@ public class EUB extends LDA_Variational {
     // alpha is precision parameter for topic embedding in EUB
     // alpha is a vector parameter for dirichlet distribution
     protected double m_alpha_s = 1.0;
-    protected double m_tau = 0.01;
+    protected double m_tau = 1;
     protected double m_gamma = 1.0;
     protected double m_xi = 2;
 
