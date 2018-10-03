@@ -41,18 +41,18 @@ public class EUB extends LDA_Variational {
     protected BinomialDistribution m_bernoulli;
 
     /*****variational parameters*****/
-    protected double t_mu = 0.1, t_sigma = 0.1;
-    protected double d_mu = 0.1, d_sigma = 0.1;
-    protected double u_mu = 0.1, u_sigma = 0.1;
+    protected double t_mu = 1, t_sigma = 1;
+    protected double d_mu = 0.5, d_sigma = 1;
+    protected double u_mu = 0.5, u_sigma = 1;
 
     /*****model parameters*****/
     // this alpha is differnet from alpha in LDA
     // alpha is precision parameter for topic embedding in EUB
     // alpha is a vector parameter for dirichlet distribution
     protected double m_alpha_s = 1.0;
-    protected double m_tau = 1;
+    protected double m_tau = 2.0;
     protected double m_gamma = 1.0;
-    protected double m_xi = 2;
+    protected double m_xi = 1;
 
     /*****Sparsity parameter******/
     protected double m_rho = 0.01;
@@ -703,43 +703,37 @@ public class EUB extends LDA_Variational {
     // update mean for pair-wise affinity \mu^{delta_{ij}}, \sigma^{\delta_{ij}} -- Eq(47)
     protected void update_delta_ij_mu(_User4EUB ui){
         int i = m_usersIndex.get(ui.getUserID());
-        int[] iflag = {0}, iprint = {-1, 3};
-        double fValue, oldFValue = Double.MAX_VALUE;
 
         double[] muG = new double[m_users.size()];
-        double[] diag = new double[m_users.size()];
         double[] mu_delta = Arrays.copyOfRange(ui.m_mu_delta, 0, ui.m_mu_delta.length);
-        try {
-            do {
-                Arrays.fill(muG, 0);
-                Arrays.fill(diag, 0);
-                fValue = 0;
-                if(m_userI2PMap.containsKey(i)) {
-                    for(int p: m_userI2PMap.get(i)){
-                        double[] fgValue = calcFGValueDeltaMu(ui, mu_delta, 1, p);
-                        fValue -= fgValue[0];
-                        muG[p] -= fgValue[1];
-                    }
-                }
 
-                if(m_userI2PPrimeMap.containsKey(i)){
-                    for(int pPrime: m_userI2PPrimeMap.get(i)){
-                        double[] fgValue = calcFGValueDeltaMu(ui, mu_delta, 0, pPrime);
-                        fValue -= fgValue[0];
-                        muG[pPrime] -= fgValue[1];
-                    }
+        double fValue, lastFValue = 1.0, cvg = 1e-6, diff, iterMax = 10, iter = 0, stepSize = 1e-4;
+        do {
+            Arrays.fill(muG, 0);
+            fValue = 0;
+            if(m_userI2PMap.containsKey(i)) {
+                for(int p: m_userI2PMap.get(i)){
+                    double[] fgValue = calcFGValueDeltaMu(ui, mu_delta, 1, p);
+                    fValue += fgValue[0];
+                    muG[p] += fgValue[1];
+                    mu_delta[p] += stepSize * muG[p];
                 }
-                printFValue(oldFValue, fValue);
-                LBFGS.lbfgs(muG.length, 6, mu_delta, fValue, muG, false, diag, iprint, 1e-3, 1e-16, iflag);
-                oldFValue = fValue;
-            } while(iflag[0] != 0);
-            System.out.println();
-            ui.m_mu_delta = mu_delta;
-        } catch(Exception e){
-            m_muFailCounter++;
-            System.err.println("LBFGS fails!!!!");
-//            e.printStackTrace();
-        }
+            }
+
+            if(m_userI2PPrimeMap.containsKey(i)){
+                for(int pPrime: m_userI2PPrimeMap.get(i)){
+                    double[] fgValue = calcFGValueDeltaMu(ui, mu_delta, 0, pPrime);
+                    fValue += fgValue[0];
+                    muG[pPrime] += fgValue[1];
+                    mu_delta[pPrime] += stepSize * muG[pPrime];
+                }
+            }
+
+            diff = (lastFValue - fValue) / lastFValue;
+            lastFValue = fValue;
+
+        } while(iter++ < iterMax && Math.abs(diff) > cvg);
+        ui.m_mu_delta = mu_delta;
     }
 
     protected double[] calcFGValueDeltaMu(_User4EUB ui, double[] mu_delta, int eij, int j){
@@ -758,45 +752,38 @@ public class EUB extends LDA_Variational {
     // update variance for pair-wise affinity \mu^{delta_{ij}}, \sigma^{\delta_{ij}} -- Eq(48)
     protected void update_delta_ij_sigma(_User4EUB ui){
         int i = m_usersIndex.get(ui.getUserID());
-        int[] iflag = {0}, iprint = {-1, 3};
-        double fValue, oldFValue = Double.MAX_VALUE;
 
+        double fValue, lastFValue = 1.0, cvg = 1e-6, diff, iterMax = 10, iter = 0, stepSize = 1e-4;
         double[] sigmaG = new double[m_users.size()];
-        double[] diag = new double[m_users.size()];
         double[] sigma_delta = Arrays.copyOfRange(ui.m_sigma_delta, 0, ui.m_sigma_delta.length);
-        try {
-            do {
-                Arrays.fill(sigmaG, 0);
-                Arrays.fill(diag, 0);
-                fValue = 0;
-                if(m_userI2PMap.containsKey(i)) {
-                    for(int p: m_userI2PMap.get(i)){
-                        double[] fgValue = calcFGValueDeltaSigma(ui, sigma_delta, p);
-                        fValue -= fgValue[0];
-                        sigmaG[p] -= fgValue[1];
-                    }
+        do {
+            Arrays.fill(sigmaG, 0);
+            fValue = 0;
+            if(m_userI2PMap.containsKey(i)) {
+                for(int p: m_userI2PMap.get(i)){
+                    double[] fgValue = calcFGValueDeltaSigma(ui, sigma_delta, p);
+                    fValue += fgValue[0];
+                    sigmaG[p] += fgValue[1];
+                    sigma_delta[p] += stepSize * sigmaG[p];
                 }
+            }
 
-                if(m_userI2PPrimeMap.containsKey(i)){
-                    for(int pPrime: m_userI2PPrimeMap.get(i)){
-                        double[] fgValue = calcFGValueDeltaSigma(ui, sigma_delta, pPrime);
-                        fValue -= fgValue[0];
-                        sigmaG[pPrime] -= fgValue[1];
-                    }
+            if(m_userI2PPrimeMap.containsKey(i)){
+                for(int pPrime: m_userI2PPrimeMap.get(i)){
+                    double[] fgValue = calcFGValueDeltaSigma(ui, sigma_delta, pPrime);
+                    fValue += fgValue[0];
+                    sigmaG[pPrime] += fgValue[1];
+                    sigma_delta[pPrime] += stepSize * sigmaG[pPrime];
                 }
-                printFValue(oldFValue, fValue);
-                LBFGS.lbfgs(sigmaG.length, 6, sigma_delta, fValue, sigmaG, false, diag, iprint, 1e-3, 1e-16, iflag);
-                oldFValue = fValue;
+            }
 
-            } while(iflag[0] != 0);
-            System.out.println();
-            ui.m_sigma_delta = sigma_delta;
-        } catch(Exception e){
-            m_sigmaFailCounter++;
-            System.err.println("LBFGS fails!!!!");
-//            e.printStackTrace();
-        }
+            diff = (lastFValue - fValue) / lastFValue;
+            lastFValue = fValue;
+
+        } while(iter++ < iterMax && Math.abs(diff) > cvg);
+        ui.m_sigma_delta = sigma_delta;
     }
+
 
     protected double[] calcFGValueDeltaSigma(_User4EUB ui, double[] sigma, int j){
 
@@ -823,7 +810,7 @@ public class EUB extends LDA_Variational {
         for(int n=0; n<fvs.length; n++){
             int v = fvs[n].getIndex();
             for(int k=0; k<number_of_topics; k++){
-                // Eq(86) update eta of each document
+                // Eq(57) update eta of each document
                 doc.m_phi[n][k] = doc.m_mu_theta[k] + topic_term_probabilty[k][v];
             }
             // normalize
@@ -841,37 +828,33 @@ public class EUB extends LDA_Variational {
         // user index of the current doc
         int i = m_docUserMap.get(doc.getIndex());
         int N = doc.getTotalDocLength();
-        int[] iflag = {0}, iprint = {-1, 3};
-        double fValue, oldFValue = Double.MAX_VALUE, dotProd, moment;
+
+        double fValue, dotProd, moment;
+        double lastFValue = 1.0, cvg = 1e-6, diff, iterMax = 10, iter = 0, stepSize = 1e-4;
+
         double[] muG = new double[number_of_topics];
-        double[] diag = new double[number_of_topics];
         double[] mu_theta = Arrays.copyOfRange(doc.m_mu_theta, 0, doc.m_mu_theta.length);
 
-        try{
-            do{
-                Arrays.fill(muG, 0);
-                Arrays.fill(diag, 0);
-                fValue = 0;
-                for(int k=0; k<number_of_topics; k++){
-                    // function value
-                    moment = N * Math.exp(mu_theta[k] + 0.5 * doc.m_sigma_theta[k] - doc.m_logZeta);
-                    fValue -= -0.5 * m_tau * mu_theta[k] * mu_theta[k];
-                    dotProd = Utils.dotProduct(m_topics.get(k).m_mu_phi, m_users.get(i).m_mu_u);
-                    fValue -= m_tau * mu_theta[k] * dotProd + mu_theta[k] * doc.m_sstat[k] - moment;
-                    // gradient
-                    muG[k] = -(-m_tau * mu_theta[k] + m_tau * dotProd + doc.m_sstat[k] - moment);
-                }
-                printFValue(oldFValue, fValue);
-                LBFGS.lbfgs(muG.length, 6, mu_theta, fValue, muG, false, diag, iprint, 1e-3, 1e-16, iflag);
-                oldFValue = fValue;
-            } while(iflag[0] != 0);
-            System.out.println();
-            doc.m_mu_theta = mu_theta;
-        } catch(Exception e){
-            m_muFailCounter++;
-            System.err.println("LBFGS fails!!!!");
-            e.printStackTrace();
-        }
+        do{
+            Arrays.fill(muG, 0);
+            fValue = 0;
+            for(int k=0; k<number_of_topics; k++){
+                // function value
+                moment = N * Math.exp(mu_theta[k] + 0.5 * doc.m_sigma_theta[k] - doc.m_logZeta);
+                fValue += -0.5 * m_tau * mu_theta[k] * mu_theta[k];
+                dotProd = Utils.dotProduct(m_topics.get(k).m_mu_phi, m_users.get(i).m_mu_u);
+                fValue += m_tau * mu_theta[k] * dotProd + mu_theta[k] * doc.m_sstat[k] - moment;
+                // gradient
+                muG[k] = (-m_tau * mu_theta[k] + m_tau * dotProd + doc.m_sstat[k] - moment);
+                mu_theta[k] += stepSize * muG[k];
+            }
+            diff = (lastFValue - fValue) / lastFValue;
+            lastFValue = fValue;
+            System.out.format("[Info] Current Likelihood: %.2f, diff: %.2f\n", lastFValue, diff);
+
+        } while(iter++ < iterMax && Math.abs(diff) > cvg);
+        System.out.println("-----Finish one sgd!---------");
+        doc.m_mu_theta = mu_theta;
     }
 
     protected void printFValue(double oldFValue, double fValue){
@@ -889,40 +872,35 @@ public class EUB extends LDA_Variational {
 
     protected void update_theta_id_sigma(_Doc4EUB doc){
         int N = doc.getTotalDocLength();
-        int[] iflag = {0}, iprint = {-1, 3};
-        double fValue = 0, oldFValue = Double.MAX_VALUE, dotProd, moment;
-        double[] sigmaSqrtG = new double[number_of_topics];
-        double[] diag = new double[number_of_topics];
-        double[] sigma_sqrt_theta = Arrays.copyOfRange(doc.m_sigma_theta, 0, doc.m_sigma_theta.length);
-        try{
-            do{
-                Arrays.fill(sigmaSqrtG, 0);
-                Arrays.fill(diag, 0);
-                fValue = 0;
-                for(int k=0; k<number_of_topics; k++){
-                    // function value
-                    moment = N * Math.exp(doc.m_mu_theta[k] + 0.5 * sigma_sqrt_theta[k]
-                            * sigma_sqrt_theta[k] - doc.m_logZeta);
-                    fValue -= -0.5 * m_tau * sigma_sqrt_theta[k] * sigma_sqrt_theta[k] - moment
-                            + 0.5 * Math.log(sigma_sqrt_theta[k] * sigma_sqrt_theta[k]);
-                    // gradient
-                    sigmaSqrtG[k] = m_tau * sigma_sqrt_theta[k] + sigma_sqrt_theta[k] * moment
-                            - 1/sigma_sqrt_theta[k];
+        double fValue, moment;
+        double lastFValue = 1.0, cvg = 1e-6, diff, iterMax = 10, iter = 0, stepSize = 1e-4;
 
-                }
-                printFValue(oldFValue, fValue);
-                LBFGS.lbfgs(sigmaSqrtG.length, 6, sigma_sqrt_theta, fValue, sigmaSqrtG, false, diag, iprint, 1e-3, 1e-16, iflag);
-                oldFValue = fValue;
-            } while(iflag[0] != 0);
-            System.out.println();
-            doc.m_sigma_sqrt_theta = sigma_sqrt_theta;
-            for(int k=0; k<number_of_topics; k++)
-                doc.m_sigma_theta[k] = doc.m_sigma_sqrt_theta[k] * doc.m_sigma_sqrt_theta[k];
-        } catch(Exception e){
-            m_sigmaFailCounter++;
-            System.err.println("LBFGS fails!!!!");
-//            e.printStackTrace();
-        }
+        double[] sigmaSqrtG = new double[number_of_topics];
+        double[] sigma_sqrt_theta = Arrays.copyOfRange(doc.m_sigma_theta, 0, doc.m_sigma_theta.length);
+        do{
+            Arrays.fill(sigmaSqrtG, 0);
+            fValue = 0;
+            for(int k=0; k<number_of_topics; k++){
+                // function value
+                moment = N * Math.exp(doc.m_mu_theta[k] + 0.5 * sigma_sqrt_theta[k]
+                        * sigma_sqrt_theta[k] - doc.m_logZeta);
+                fValue += -0.5 * m_tau * sigma_sqrt_theta[k] * sigma_sqrt_theta[k] - moment
+                        + 0.5 * Math.log(sigma_sqrt_theta[k] * sigma_sqrt_theta[k]);
+                // gradient
+                sigmaSqrtG[k] = -m_tau * sigma_sqrt_theta[k] - sigma_sqrt_theta[k] * moment
+                        + 1/sigma_sqrt_theta[k];
+                sigma_sqrt_theta[k] += stepSize * sigmaSqrtG[k];
+
+            }
+            diff = (lastFValue - fValue) / lastFValue;
+            lastFValue = fValue;
+            System.out.format("[Info] Current Likelihood: %.2f, diff: %.2f\n", lastFValue, diff);
+
+        } while(iter++ < iterMax && Math.abs(diff) > cvg);
+        System.out.println("-----Finish one sgd!---------");
+        doc.m_sigma_sqrt_theta = sigma_sqrt_theta;
+        for(int k=0; k<number_of_topics; k++)
+            doc.m_sigma_theta[k] = doc.m_sigma_sqrt_theta[k] * doc.m_sigma_sqrt_theta[k];
     }
 
     // taylor parameter

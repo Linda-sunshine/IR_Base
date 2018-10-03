@@ -42,17 +42,25 @@ public class _User4EUB extends _User {
         m_sigma_delta = new double[userSize];
         m_epsilon = new double[userSize];
 
-        Utils.randomize(m_mu_u, mu);
-        for(int m=0; m<dim; m++)
-            Utils.randomize(m_sigma_u[m], sigma);
 
-        // normalization over all the users lead to quite small value.
-        Utils.randomize(m_mu_delta, mu);
-        Utils.randomize(m_sigma_delta, sigma);
+        // init mu_u/sigma_u
+        for(int m=0; m<dim; m++){
+            m_mu_u[m] = mu + Math.random();
+            for(int l=0; l<dim; l++){
+                m_sigma_u[m][l] = sigma + Math.random();
+            }
+        }
 
-        // thus we scale the two set of parameters by 100
-        Utils.scaleArray(m_mu_delta, 100);
-        Utils.scaleArray(m_sigma_delta, 100);
+        for(int j=0; j<userSize; j++){
+            m_mu_delta[j] = mu + Math.random();
+            m_sigma_delta[j] = sigma + Math.random();
+        }
+//        Utils.randomize(m_mu_delta, mu);
+//        Utils.randomize(m_sigma_delta, sigma);
+//
+//        // thus we scale the two set of parameters by 100
+//        Utils.scaleArray(m_mu_delta, 100);
+//        Utils.scaleArray(m_sigma_delta, 100);
 
         for(int i=0; i<userSize; i++){
             m_epsilon[i] = Math.exp(m_mu_delta[i] + 0.5 * xi * xi) + 1;
