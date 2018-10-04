@@ -48,7 +48,7 @@ public class MyEUBMain {
         analyzer.loadInteractions(friendFile);
         analyzer.loadCVIndex(cvIndexFile);
 
-        int emMaxIter = 20, number_of_topics = 20, varMaxIter = 20, embeddingDim = 20;
+        int emMaxIter = 30, number_of_topics = 20, varMaxIter = 20, embeddingDim = 20;
         double emConverge = 1e-10, alpha = 1 + 1e-2, beta = 1 + 1e-3, lambda = 1 + 1e-3, varConverge = 1e-6;//these two parameters must be larger than 1!!!
         _Corpus corpus = analyzer.getCorpus();
 
@@ -56,6 +56,11 @@ public class MyEUBMain {
         EUB eub = new EUB(emMaxIter, emConverge, beta, corpus, lambda, number_of_topics, alpha, varMaxIter, varConverge, embeddingDim);
         eub.buildLookupTables(analyzer.getUsers());
         eub.EMonCorpus();
+
+        eub.printTopWords(30, "./data/topkWords.txt");
+        eub.printTopicEmbedding("./data/topicEmbedding.txt");
+        eub.printUserEmbedding("./data/userEmbedding.txt");
+
 //        eub.fixedCrossValidation(kFold);
 
         long end = System.currentTimeMillis();
