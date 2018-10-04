@@ -1080,11 +1080,12 @@ public class EUB extends LDA_Variational {
                 writer.write("\nsimga_phi:\n");
                 for(double sigma[]: topic.m_sigma_phi){
                     for(double s: sigma)
-                        writer.format("%.3f\t", sigma);
+                        writer.format("%.3f\t", s);
                     writer.write("\n");
                 }
                 writer.write("----------------------------\n");
             }
+            writer.close();
         }
         catch(IOException e){
             e.printStackTrace();
@@ -1103,11 +1104,12 @@ public class EUB extends LDA_Variational {
                 writer.write("\nsimga_u:\n");
                 for(double sigma[]: user.m_sigma_u){
                     for(double s: sigma)
-                        writer.format("%.3f\t", sigma);
+                        writer.format("%.3f\t", s);
                     writer.write("\n");
                 }
                 writer.write("----------------------------\n");
             }
+            writer.close();
         }
         catch(IOException e){
             e.printStackTrace();

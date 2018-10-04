@@ -48,7 +48,7 @@ public class MyEUBMain {
         analyzer.loadInteractions(friendFile);
         analyzer.loadCVIndex(cvIndexFile);
 
-        int emMaxIter = 30, number_of_topics = 20, varMaxIter = 20, embeddingDim = 20;
+        int emMaxIter = 30, number_of_topics = 10, varMaxIter = 20, embeddingDim = 10;
         double emConverge = 1e-10, alpha = 1 + 1e-2, beta = 1 + 1e-3, lambda = 1 + 1e-3, varConverge = 1e-6;//these two parameters must be larger than 1!!!
         _Corpus corpus = analyzer.getCorpus();
 
