@@ -3,6 +3,9 @@ package Analyzer;
 import opennlp.tools.util.InvalidFormatException;
 import structures._Doc;
 import structures._Review;
+import structures._SparseFeature;
+import structures._User;
+import utils.Utils;
 
 import java.io.*;
 import java.util.ArrayList;
@@ -16,19 +19,34 @@ import java.util.HashSet;
  */
 public class MultiThreadedNetworkAnalyzer extends MultiThreadedLinkPredAnalyzer {
 
+    HashMap<String, HashSet<String>> m_networkMap = new HashMap<>();
+
     public MultiThreadedNetworkAnalyzer(String tokenModel, int classNo,
                                         String providedCV, int Ngram, int threshold, int numberOfCores, boolean b)
-            throws InvalidFormatException, FileNotFoundException, IOException {
+            throws IOException {
         super(tokenModel, classNo, providedCV, Ngram, threshold, numberOfCores, b);
     }
 
-    // save the network for later use
-    public void saveNetwork(String filename, HashMap<String, HashSet<String>> map){
+    // save one file for indexing users in later use (construct network for baselines)
+    public void saveUserIds(String filename){
         try {
             PrintWriter writer = new PrintWriter(new File(filename));
-            for(String uid: map.keySet()){
+            for(int i=0; i<m_users.size(); i++){
+                writer.format("%s\t%d\n", m_users.get(i).getUserID(), i);
+            }
+            writer.close();
+            System.out.format("Finish saving %d user ids.\n", m_users.size());
+        } catch(IOException e){
+            e.printStackTrace();
+        }
+    }
+    // save the network for later use
+    public void saveNetwork(String filename){
+        try {
+            PrintWriter writer = new PrintWriter(new File(filename));
+            for(String uid: m_networkMap.keySet()){
                 writer.write(uid + '\t');
-                for(String it: map.get(uid)){
+                for(String it: m_networkMap.get(uid)){
                     writer.write(it + '\t');
                 }
                 writer.write('\n');
@@ -39,42 +57,60 @@ public class MultiThreadedNetworkAnalyzer extends MultiThreadedLinkPredAnalyzer 
         }
     }
 
-    // load the interactions, filter the users who are not in the user set
+    // load the interactions, filter the users who are not in the user
     public void loadInteractions(String filename){
         try{
             File file = new File(filename);
             BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(file), "UTF-8"));
             String line;
 
+            int count = 0;
+            double avgFriendSize = 0;
+
             // load the interactions first
             while((line = reader.readLine()) != null){
                 String[] users = line.trim().split("\t");
-                String[] strs = Arrays.copyOfRange(users, 1, users.length);
-                String[] interactions = filterNonExistInteractions(strs);
-                if(!m_userIDIndex.containsKey(users[0]))
-                    System.err.println("[error] The user does not exist: " + users[0]);
-                else {
-                    int uIndex = m_userIDIndex.get(users[0]);
-                    m_users.get(uIndex).setFriends(interactions);
+                String uid = users[0];
+                count++;
+                if(!m_userIDIndex.containsKey(users[0])){
+                    System.err.println("The user does not exist in user set!");
+                    continue;
+                }
+                String[] interactions = Arrays.copyOfRange(users, 1, users.length);
+                if(interactions.length == 0) continue;
+                for(String in: interactions){
+                    if(m_userIDIndex.containsKey(in)){
+                        if(!m_networkMap.containsKey(uid))
+                            m_networkMap.put(uid, new HashSet<>());
+                        if(!m_networkMap.containsKey(in))
+                            m_networkMap.put(in, new HashSet<>());
+                        m_networkMap.get(uid).add(in);
+                        m_networkMap.get(in).add(uid);
+                    }
                 }
             }
+            // set the friends for each user
+            for(String ui: m_networkMap.keySet()){
+                avgFriendSize += m_networkMap.get(ui).size();
+                String[] frds = hashSet2Array(m_networkMap.get(ui));
+                m_users.get(m_userIDIndex.get(ui)).setFriends(frds);
+            }
             reader.close();
-
+            avgFriendSize /= count;
+            System.out.format("[Info]Total user size: %d, users with friends: %d, avg friend: %.3f.\n", count,
+                    m_networkMap.size(), avgFriendSize);
         } catch(IOException e){
             e.printStackTrace();
         }
     }
 
-    protected String[] filterNonExistInteractions(String[] strs){
-        if(strs.length <= 1)
-            return null;
-        ArrayList<String> interactions = new ArrayList<>();
-        for(int i=1; i<strs.length; i++){
-            if(m_userIDIndex.containsKey(strs[i])){
-                interactions.add(strs[i]);
-            }
+    protected String[] hashSet2Array(HashSet<String> strs){
+        String[] arr = new String[strs.size()];
+        int index = 0;
+        for(String str: strs){
+            arr[index++] = str;
         }
-        return interactions.toArray(new String[interactions.size()]);
+        return arr;
     }
 
     // shuffle the whole corpus and save the index information for later use
@@ -131,4 +167,73 @@ public class MultiThreadedNetworkAnalyzer extends MultiThreadedLinkPredAnalyzer 
         }
     }
 
+    public void printDocs4Plane(String filename){
+        try{
+            PrintWriter writer = new PrintWriter(new File(filename));
+            for(_User user: m_users){
+                ArrayList<_SparseFeature[]> vectors = new ArrayList<>();
+                for(_Review r: user.getReviews()){
+                    vectors.add(r.getSparse());
+                }
+                _SparseFeature[] fvs = Utils.mergeSpVcts(vectors);
+                for(_SparseFeature fv: fvs){
+                    int index = fv.getIndex();
+                    double val = fv.getValue();
+                    for(int i=0; i<val; i++){
+                        writer.write(index+" ");
+                    }
+                }
+                writer.write("\n");
+            }
+            writer.close();
+            System.out.println("Finish writing docs for PLANE!!");
+        } catch(IOException e){
+            e.printStackTrace();
+        }
+    }
+
+//    // print out the network as an adjacency matrix with index in the friend file.
+//    public void printNetwork4Plane(String filename){
+//        try{
+//            PrintWriter writer = new PrintWriter(new File(filename));
+//
+//            for(int i=0; i<m_users.size(); i++) {
+//
+//                String uid = m_userIds.get(i);
+//                _User user = m_users.get(m_userIDIndex.get(uid));
+//                if (user.getFriends() != null && user.getFriends().length > 0) {
+//                    for (String frd : user.getFriends()) {
+//                        writer.write(m_userMap4Network.get(frd) + "\t");
+//                    }
+//                    writer.write("\n");
+//                }
+//            }
+//            writer.close();
+//
+//        } catch(IOException e){
+//            e.printStackTrace();
+//        }
+//    }
+//
+//    // print out the network as an adjacency matrix with index in the friend file.
+//    public void printAdjacencyMatrix(String filename){
+//        try{
+//            PrintWriter writer = new PrintWriter(new File(filename));
+//            for(int i=0; i<m_userIds.size(); i++) {
+//                String uid = m_userIds.get(i);
+//                _User user = m_users.get(m_userIDIndex.get(uid));
+//                if (user.getFriends() != null && user.getFriends().length > 0) {
+//                    writer.write(i + "\t");
+//                    for (String frd : user.getFriends()) {
+//                        writer.write(m_userMap4Network.get(frd) + "\t");
+//                    }
+//                    writer.write("\n");
+//                }
+//            }
+//            writer.close();
+//            System.out.println("Finish saving adj matrix for ");
+//        } catch(IOException e){
+//            e.printStackTrace();
+//        }
+//    }
 }

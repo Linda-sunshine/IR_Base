@@ -143,12 +143,12 @@ public class EUB extends LDA_Variational {
         double currentAllLikelihood;
         double converge;
         do {
-            if(++m_EStepCount % 5 == 0)
-                constructNetwork();
+//            if(++m_EStepCount % 5 == 0)
+//                constructNetwork();
 
             System.out.println("\nStart E-step....");
             currentAllLikelihood = E_step();
-            System.out.format("[Info]E-step: loglikelihood is: %.5f.\n", currentAllLikelihood);
+            System.out.format("[Info]Finish E-step: loglikelihood is: %.5f.\n", currentAllLikelihood);
             if (iter >= 0)
                 converge = Math.abs((lastAllLikelihood - currentAllLikelihood) / lastAllLikelihood);
             else
@@ -163,7 +163,7 @@ public class EUB extends LDA_Variational {
 
     // put the user interaction and non-interaction information in the four hashmaps
     protected void constructNetwork() {
-        System.out.print("[Info] Start sampling non-interactions....");
+        System.out.print("[Info]Construct network with interactions and non-interactions....");
         m_userI2PMap.clear();
         m_userQ2IMap.clear();
         m_userI2PPrimeMap.clear();
@@ -223,13 +223,13 @@ public class EUB extends LDA_Variational {
             m_userI2PPrimeMap.put(uiIndex, new HashSet<>());
 
         for(int ujIndex: nonInteactions){
-            if (m_bernoulli.sample() == 1) {
+//            if (m_bernoulli.sample() == 1) {
                 if (!m_userQPrime2IMap.containsKey(ujIndex))
                     m_userQPrime2IMap.put(ujIndex, new HashSet<>());
                 //eij=0
                 m_userI2PPrimeMap.get(uiIndex).add(ujIndex);
                 m_userQPrime2IMap.get(ujIndex).add(uiIndex);
-            }
+//            }
         }
     }
 
@@ -277,7 +277,7 @@ public class EUB extends LDA_Variational {
             m_userQPrime2IMap.put(uiIndex, new HashSet<>());
 
         for(int ujIndex: nonInteactions){
-            if (m_bernoulli.sample() == 1) {
+//            if (m_bernoulli.sample() == 1) {
                 if (!m_userI2PPrimeMap.containsKey(ujIndex))
                     m_userI2PPrimeMap.put(ujIndex, new HashSet<>());
                 if (!m_userQPrime2IMap.containsKey(ujIndex))
@@ -289,7 +289,7 @@ public class EUB extends LDA_Variational {
                 //eji=0
                 m_userI2PPrimeMap.get(ujIndex).add(uiIndex);
                 m_userQPrime2IMap.get(uiIndex).add(ujIndex);
-            }
+//            }
         }
     }
 
@@ -395,11 +395,11 @@ public class EUB extends LDA_Variational {
     @Override
     public void calculate_M_step(int iter){
 
-//        est_alpha();// precision for topic embedding
-//        est_gamma(); // precision for user embedding
+        est_alpha();// precision for topic embedding
+        est_gamma(); // precision for user embedding
         est_beta(); // topic-word distribution
-//        est_tau(); // precision for topic proportion
-//        est_xi(); // sigma for the affinity \delta_{ij}
+        est_tau(); // precision for topic proportion
+        est_xi(); // sigma for the affinity \delta_{ij}
     }
 
     protected void est_alpha(){
@@ -450,6 +450,7 @@ public class EUB extends LDA_Variational {
     protected void est_xi(){
         System.out.println("[M-step]Estimate xi....");
         double xiSquare = 0;
+        double totalConnection = 0;
         // sum over all interactions and non-interactions
         // i->p and p'
         for(int i=0; i<m_users.size(); i++){
@@ -457,26 +458,30 @@ public class EUB extends LDA_Variational {
 
             if(m_userI2PMap.containsKey(i)){
                 HashSet<Integer> ps = m_userI2PMap.get(i);
+                totalConnection += ps.size();
                 for(int p: ps)
                     xiSquare += calculateStat4Xi(ui, m_users.get(p), p);
             }
             if(m_userI2PPrimeMap.containsKey(i)){
                 HashSet<Integer> pPrimes = m_userI2PPrimeMap.get(i);
+                totalConnection += pPrimes.size();
                 for(int pPrime: pPrimes)
                     xiSquare += calculateStat4Xi(ui, m_users.get(pPrime), pPrime);
             }
             if(m_userQ2IMap.containsKey(i)){
                 HashSet<Integer> qs = m_userQ2IMap.get(i);
+                totalConnection += qs.size();
                 for(int q: qs)
                     xiSquare += calculateStat4Xi(m_users.get(q), ui, i);
             }
             if(m_userQPrime2IMap.containsKey(i)){
                 HashSet<Integer> qPrimes = m_userQPrime2IMap.get(i);
+                totalConnection += qPrimes.size();
                 for(int qPrime: qPrimes)
                     xiSquare += calculateStat4Xi(m_users.get(qPrime), ui, i);
             }
         }
-        m_xi = (xiSquare > 0) ? Math.sqrt(xiSquare) : 0;
+        m_xi = (xiSquare > 0) ? Math.sqrt(xiSquare/totalConnection) : 0;
 
     }
 

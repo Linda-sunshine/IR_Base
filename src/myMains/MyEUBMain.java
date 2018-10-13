@@ -27,28 +27,40 @@ public class MyEUBMain {
         String tokenModel = "./data/Model/en-token.bin"; // Token model.
 
         String prefix = "./data/CoLinAdapt";
+        String size = "1000"; // 10k users-> "_10k"
 //		String prefix = "/zf8/lg5bt/DataSigir";
 
         String providedCV = String.format("%s/%s/SelectedVocab.csv", prefix, dataset);
-        String userFolder = String.format("%s/%s/Users_1000", prefix, dataset);
-        String friendFile = String.format("%s/%s/%sFriends_1000.txt", prefix, dataset, dataset);
-        String cvIndexFile = String.format("%s/%s/%sCVIndex_1000.txt", prefix, dataset, dataset);
-
+        String userFolder = String.format("%s/%s/Users_%s", prefix, dataset, size);
+        String friendFile = String.format("%s/%s/%sFriends_%s.txt", prefix, dataset, dataset, size);
+        String cvIndexFile = String.format("%s/%s/%sCVIndex_%s.txt", prefix, dataset, dataset, size);
+        String userIdFile = String.format("%s/%s/%sUserIds_%s.txt", prefix, dataset, dataset, size);
         int kFold = 5;
 
         MultiThreadedNetworkAnalyzer analyzer = new MultiThreadedNetworkAnalyzer(tokenModel, classNumber, providedCV,
                 Ngram, lengthThreshold, numberOfCores, false);
         analyzer.setAllocateReviewFlag(false); // do not allocate reviews
-
 //        analyzer.saveCVIndex(kFold, cvIndexFile);
 
         // we store the interaction information before-hand, load them directly
         analyzer.loadUserDir(userFolder);
         analyzer.constructUserIDIndex();
         analyzer.loadInteractions(friendFile);
-        analyzer.loadCVIndex(cvIndexFile);
 
-        int emMaxIter = 30, number_of_topics = 10, varMaxIter = 20, embeddingDim = 10;
+        /***save user id file and network file****/
+//        analyzer.saveUserIds(userIdFile);
+//        analyzer.loadInteractions(friendFile);
+//        analyzer.saveNetwork(friendFile);
+
+        /***save files for running baselines***/
+//        analyzer.saveAdjacencyMatrix("./data/YelpNewAdjMatrix_10k.txt");
+//        analyzer.printDocs4Plane("./data/YelpNew4PlaneDocs_1000.txt");
+//        analyzer.printNetwork4Plane("./data/YelpNew4PlaneNetwork_1000.txt");
+
+//        analyzer.loadCVIndex(cvIndexFile);
+
+        /***Start running joint modeling of user embedding and topic embedding****/
+        int emMaxIter = 20, number_of_topics = 10, varMaxIter = 20, embeddingDim = 10;
         double emConverge = 1e-10, alpha = 1 + 1e-2, beta = 1 + 1e-3, lambda = 1 + 1e-3, varConverge = 1e-6;//these two parameters must be larger than 1!!!
         _Corpus corpus = analyzer.getCorpus();
 
