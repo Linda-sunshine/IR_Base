@@ -28,20 +28,11 @@ public class EUB extends LDA_Variational {
     protected HashMap<String, Integer> m_usersIndex;
     // key: user index, value: document index array
     protected HashMap<Integer, ArrayList<Integer>> m_userDocMap;
-    // assume i follows ps, key: index i, value: index ps
-    protected HashMap<Integer, HashSet<Integer>> m_userI2PMap;
-    // assume i does not follow p', key: index i, value: index p'
-    protected HashMap<Integer, HashSet<Integer>> m_userI2PPrimeMap;
-
-    // assume qs follows i, key: index i, value: index qs
-    protected HashMap<Integer, HashSet<Integer>> m_userQ2IMap;
-    // assume q' does not follow i, key: index q', value: index i
-    protected HashMap<Integer, HashSet<Integer>> m_userQPrime2IMap;
+    // key: user index, value: interaction indexes
+    protected HashMap<Integer, HashSet<Integer>> m_networkMap;
 
     // key: doc index, value: user index
     protected HashMap<Integer, Integer> m_docUserMap;
-
-    protected BinomialDistribution m_bernoulli;
 
     /*****variational parameters*****/
     protected double t_mu = 0.1, t_sigma = 1;
@@ -60,9 +51,6 @@ public class EUB extends LDA_Variational {
     /*****Sparsity parameter******/
     protected double m_rho = 0.01;
 
-    // Decide if the network is directional or not
-    private boolean m_directionFlag = false;
-
     protected int m_displayLv = 2;
 
     public EUB(int number_of_iteration, double converge, double beta,
@@ -74,9 +62,6 @@ public class EUB extends LDA_Variational {
         m_topics = new ArrayList<>();
         m_users = new ArrayList<>();
         m_docs = new ArrayList<>();
-
-        m_bernoulli = new BinomialDistribution(1, m_rho);
-
     }
 
     // Load the data for later user
@@ -84,11 +69,6 @@ public class EUB extends LDA_Variational {
         m_usersIndex = new HashMap<>();
         m_userDocMap = new HashMap<>();
         m_docUserMap = new HashMap<>();
-
-        m_userI2PMap = new HashMap<>();
-        m_userI2PPrimeMap = new HashMap<>();
-        m_userQ2IMap = new HashMap<>();
-        m_userQPrime2IMap = new HashMap<>();
 
         // build the lookup table for user/doc/topic
         for(int i=0; i< users.size(); i++){
@@ -164,133 +144,24 @@ public class EUB extends LDA_Variational {
     // put the user interaction and non-interaction information in the four hashmaps
     protected void constructNetwork() {
         System.out.print("[Info]Construct network with interactions and non-interactions....");
-        m_userI2PMap.clear();
-        m_userQ2IMap.clear();
-        m_userI2PPrimeMap.clear();
-        m_userQPrime2IMap.clear();
-
-        if (!m_directionFlag){
-            for(String uiId: m_usersIndex.keySet()){
-                int uiIndex = m_usersIndex.get(uiId);
-                // interactions
-                sampleNonDirectionalInteractions(uiIndex);
-                // non-interactions
-                sampleNonDirectionalNonInteractions(uiIndex);
-            }
-        } else{
-            for(String uiId: m_usersIndex.keySet()){
-                int uiIndex = m_usersIndex.get(uiId);
-                // interactions
-                sampleDirectionalInteractions(uiIndex);
-                // non-interactions
-                sampleDirectionalNonInteractions(uiIndex);
-            }
-        }
-        System.out.println("Done");
-    }
-
-    protected void sampleDirectionalInteractions(int uiIndex){
-        // interactions
-        if(!m_userI2PMap.containsKey(uiIndex))
-            m_userI2PMap.put(uiIndex, new HashSet<>());
-
-        _User4EUB ui = m_users.get(uiIndex);
-        if(ui.getFriends() != null && ui.getFriends().length > 0){
-            for(String ujId: ui.getFriends()) {
-                int ujIndex = m_usersIndex.get(ujId);
-                if(!m_userQ2IMap.containsKey(ujIndex))
-                    m_userQ2IMap.put(ujIndex, new HashSet<>());
-
-                // eij
-                m_userI2PMap.get(uiIndex).add(ujIndex);
-                m_userQ2IMap.get(ujIndex).add(uiIndex);
-            }
-        }
-    }
-
-    protected void sampleDirectionalNonInteractions(int uiIndex){
-
-        // sample non-interactions
-        HashSet<Integer> nonInteactions = new HashSet<>(m_usersIndex.values());
-        nonInteactions.remove(uiIndex);
-
-        if(m_userI2PMap.containsKey(uiIndex)){
-            for(int p: m_userI2PMap.get(uiIndex))
-                nonInteactions.remove(p);
-        }
-
-        if (!m_userI2PPrimeMap.containsKey(uiIndex))
-            m_userI2PPrimeMap.put(uiIndex, new HashSet<>());
-
-        for(int ujIndex: nonInteactions){
-//            if (m_bernoulli.sample() == 1) {
-                if (!m_userQPrime2IMap.containsKey(ujIndex))
-                    m_userQPrime2IMap.put(ujIndex, new HashSet<>());
-                //eij=0
-                m_userI2PPrimeMap.get(uiIndex).add(ujIndex);
-                m_userQPrime2IMap.get(ujIndex).add(uiIndex);
-//            }
-        }
-    }
-
-    protected void sampleNonDirectionalInteractions(int uiIndex){
-
-        _User4EUB ui = m_users.get(uiIndex);
-        if(ui.getFriends() != null && ui.getFriends().length > 0){
+        for(String uiId: m_usersIndex.keySet()){
+            int uiIdx = m_usersIndex.get(uiId);
             // interactions
-            if(!m_userI2PMap.containsKey(uiIndex))
-                m_userI2PMap.put(uiIndex, new HashSet<>());
-            if(!m_userQ2IMap.containsKey(uiIndex))
-                m_userQ2IMap.put(uiIndex, new HashSet<>());
-
-            for(String ujId: ui.getFriends()) {
-                int ujIndex = m_usersIndex.get(ujId);
-                if(!m_userI2PMap.containsKey(ujIndex))
-                    m_userI2PMap.put(ujIndex, new HashSet<>());
-                if(!m_userQ2IMap.containsKey(ujIndex))
-                    m_userQ2IMap.put(ujIndex, new HashSet<>());
-
-                // eij
-                m_userI2PMap.get(uiIndex).add(ujIndex);
-                m_userQ2IMap.get(ujIndex).add(uiIndex);
-
-                // eji
-                m_userI2PMap.get(ujIndex).add(uiIndex);
-                m_userQ2IMap.get(uiIndex).add(ujIndex);
+            _User4EUB ui = m_users.get(uiIdx);
+            if(ui.getFriends() != null && ui.getFriends().length > 0) {
+                if(!m_networkMap.containsKey(uiIdx))
+                    m_networkMap.put(uiIdx, new HashSet<>());
+                for(String ujId: ui.getFriends()) {
+                    int ujIdx = m_usersIndex.get(ujId);
+                    if(!m_networkMap.containsKey(ujIdx))
+                        m_networkMap.put(ujIdx, new HashSet<>());
+                    m_networkMap.get(uiIdx).add(ujIdx);
+                    m_networkMap.get(ujIdx).add(uiIdx);
+                }
             }
         }
-    }
 
-    protected void sampleNonDirectionalNonInteractions(int uiIndex) {
-        // sample non-interactions
-        HashSet<Integer> nonInteactions = new HashSet<>(m_usersIndex.values());
-        nonInteactions.remove(uiIndex);
-
-        if(m_userI2PMap.containsKey(uiIndex)){
-           for(int p: m_userI2PMap.get(uiIndex))
-               nonInteactions.remove(p);
-        }
-
-        if (!m_userI2PPrimeMap.containsKey(uiIndex))
-            m_userI2PPrimeMap.put(uiIndex, new HashSet<>());
-        if (!m_userQPrime2IMap.containsKey(uiIndex))
-            m_userQPrime2IMap.put(uiIndex, new HashSet<>());
-
-        for(int ujIndex: nonInteactions){
-//            if (m_bernoulli.sample() == 1) {
-                if (!m_userI2PPrimeMap.containsKey(ujIndex))
-                    m_userI2PPrimeMap.put(ujIndex, new HashSet<>());
-                if (!m_userQPrime2IMap.containsKey(ujIndex))
-                    m_userQPrime2IMap.put(ujIndex, new HashSet<>());
-                //eij=0
-                m_userI2PPrimeMap.get(uiIndex).add(ujIndex);
-                m_userQPrime2IMap.get(ujIndex).add(uiIndex);
-
-                //eji=0
-                m_userI2PPrimeMap.get(ujIndex).add(uiIndex);
-                m_userQPrime2IMap.get(uiIndex).add(ujIndex);
-//            }
-        }
+        System.out.println("Finish network construction!");
     }
 
     @Override
@@ -450,37 +321,17 @@ public class EUB extends LDA_Variational {
     protected void est_xi(){
         System.out.println("[M-step]Estimate xi....");
         double xiSquare = 0;
-        double totalConnection = 0;
         // sum over all interactions and non-interactions
         // i->p and p'
         for(int i=0; i<m_users.size(); i++){
             _User4EUB ui = m_users.get(i);
 
-            if(m_userI2PMap.containsKey(i)){
-                HashSet<Integer> ps = m_userI2PMap.get(i);
-                totalConnection += ps.size();
-                for(int p: ps)
-                    xiSquare += calculateStat4Xi(ui, m_users.get(p), p);
-            }
-            if(m_userI2PPrimeMap.containsKey(i)){
-                HashSet<Integer> pPrimes = m_userI2PPrimeMap.get(i);
-                totalConnection += pPrimes.size();
-                for(int pPrime: pPrimes)
-                    xiSquare += calculateStat4Xi(ui, m_users.get(pPrime), pPrime);
-            }
-            if(m_userQ2IMap.containsKey(i)){
-                HashSet<Integer> qs = m_userQ2IMap.get(i);
-                totalConnection += qs.size();
-                for(int q: qs)
-                    xiSquare += calculateStat4Xi(m_users.get(q), ui, i);
-            }
-            if(m_userQPrime2IMap.containsKey(i)){
-                HashSet<Integer> qPrimes = m_userQPrime2IMap.get(i);
-                totalConnection += qPrimes.size();
-                for(int qPrime: qPrimes)
-                    xiSquare += calculateStat4Xi(m_users.get(qPrime), ui, i);
+            for(int j=0; j<m_users.size(); j++){
+                if(i == j) continue;
+                xiSquare += calculateStat4Xi(ui, m_users.get(j), j);
             }
         }
+        double totalConnection = m_users.size() * (m_users.size() - 1);
         m_xi = (xiSquare > 0) ? Math.sqrt(xiSquare/totalConnection) : 0;
 
     }
@@ -529,6 +380,8 @@ public class EUB extends LDA_Variational {
         update_delta_ij_sigma(user);
         // update the taylor parameter epsilon
         update_epsilon(user);
+        // update the taylor parameter epsilon_prime
+        update_epsilon_prime(user);
 
         return calc_log_likelihood_per_user(user);
     }
@@ -657,25 +510,16 @@ public class EUB extends LDA_Variational {
         // + \gamma * I
         sigma_termT.plusEquals(new Matrix(diag));
 
+        for(int j=0; j<m_users.size(); j++){
+            if(j == i) continue;
+            Matrix sigma_termJ = new Matrix(new double[m_embeddingDim][m_embeddingDim]);
+            _User4EUB uj = m_users.get(j);
+            double delta_ij = ui.m_mu_delta[j];
+            sigma_termJ.plusEquals(new Matrix(sigmaAddMuMuTranspose(uj.m_sigma_u, uj.m_mu_u)));
+            Utils.add2Array(mu_termU, uj.m_mu_u, delta_ij/m_xi/m_xi);
 
-        // termP: user_i -> user_p
-        if(m_userI2PMap.containsKey(i)){
-            updateI2JStat(m_userI2PMap, ui, i, mu_termU, sigma_termT);
-        }
-
-        // termPPrime: user_i -> user_p'
-        if(m_userI2PPrimeMap.containsKey(i)){
-            updateI2JStat(m_userI2PPrimeMap, ui, i, mu_termU, sigma_termT);
-        }
-
-        // termQ: user_q -> user_i
-        if(m_userQ2IMap.containsKey(i)){
-            updateJ2IStat(m_userQ2IMap, ui, i, mu_termU, sigma_termT);
-        }
-
-        // termQPrime: user_q' -> user_i
-        if(m_userQPrime2IMap.containsKey(i)){
-            updateJ2IStat(m_userQPrime2IMap, ui, i, mu_termU, sigma_termT);
+            sigma_termJ.timesEquals(1/m_xi /m_xi);
+            sigma_termT.plusEquals(sigma_termJ);
         }
 
         Matrix invsMtx = sigma_termT.inverse();
@@ -685,31 +529,6 @@ public class EUB extends LDA_Variational {
         ui.m_mu_u = matrixMultVector(ui.m_sigma_u, mu_termT);
     }
 
-    // i->p or i->p'
-    protected void updateI2JStat(HashMap<Integer, HashSet<Integer>> map, _User4EUB ui, int i, double[] mu_termU, Matrix sigma_termT){
-        Matrix sigma_termJ = new Matrix(new double[m_embeddingDim][m_embeddingDim]);
-        for(int j: map.get(i)){
-            _User4EUB uj = m_users.get(j);
-            double delta_ij = ui.m_mu_delta[j];
-            sigma_termJ.plusEquals(new Matrix(sigmaAddMuMuTranspose(uj.m_sigma_u, uj.m_mu_u)));
-            Utils.add2Array(mu_termU, uj.m_mu_u, delta_ij/m_xi/m_xi);
-        }
-        sigma_termJ.timesEquals(1/m_xi /m_xi);
-        sigma_termT.plusEquals(sigma_termJ);
-    }
-
-    // q->i or q'->i
-    protected void updateJ2IStat(HashMap<Integer, HashSet<Integer>> map, _User4EUB ui, int i, double[] mu_termU, Matrix sigma_termT){
-        Matrix sigma_termJ = new Matrix(new double[m_embeddingDim][m_embeddingDim]);
-        for(int j: map.get(i)){
-            _User4EUB uj = m_users.get(j);
-            double delta_ji = uj.m_mu_delta[i];
-            sigma_termJ.plusEquals(new Matrix(sigmaAddMuMuTranspose(ui.m_sigma_u, ui.m_mu_u)));
-            Utils.add2Array(mu_termU, ui.m_mu_u, delta_ji/m_xi/m_xi);
-        }
-        sigma_termJ.timesEquals(1/m_xi/m_xi);
-        sigma_termT.plusEquals(sigma_termJ);
-    }
 
     // update mean for pair-wise affinity \mu^{delta_{ij}}, \sigma^{\delta_{ij}} -- Eq(47)
     protected void update_delta_ij_mu(_User4EUB ui){
@@ -722,22 +541,15 @@ public class EUB extends LDA_Variational {
         do {
             Arrays.fill(muG, 0);
             fValue = 0;
-            if(m_userI2PMap.containsKey(i)) {
-                for(int p: m_userI2PMap.get(i)){
-                    double[] fgValue = calcFGValueDeltaMu(ui, mu_delta, 1, p);
-                    fValue += fgValue[0];
-                    muG[p] += fgValue[1];
-                    mu_delta[p] += stepSize * muG[p];
-                }
-            }
 
-            if(m_userI2PPrimeMap.containsKey(i)){
-                for(int pPrime: m_userI2PPrimeMap.get(i)){
-                    double[] fgValue = calcFGValueDeltaMu(ui, mu_delta, 0, pPrime);
-                    fValue += fgValue[0];
-                    muG[pPrime] += fgValue[1];
-                    mu_delta[pPrime] += stepSize * muG[pPrime];
-                }
+            HashSet<Integer> interactions = m_networkMap.containsKey(i) ? m_networkMap.get(i) : null;
+            for(int j=0; j<m_users.size(); j++){
+                if(i == j) continue;
+                int eij = interactions != null && interactions.contains(j) ? 1 : 0;
+                double[] fgValue = calcFGValueDeltaMu(ui, mu_delta, eij, j);
+                fValue += fgValue[0];
+                muG[j] += fgValue[1];
+                mu_delta[j] += stepSize * muG[j];
             }
 
             diff = (lastFValue - fValue) / lastFValue;
@@ -753,7 +565,8 @@ public class EUB extends LDA_Variational {
 
         double fValue = eij == 1 ? mu_delta[j] : 0;
         double gValue = eij;
-        double term1 = -1/ui.m_epsilon[j] * Math.exp(mu_delta[j] + 0.5 * sigma_delta[j] * sigma_delta[j]);
+        double term1 = ((1-eij)*(1-m_rho)/ui.m_epsilon_prime[j] -1/ui.m_epsilon[j]) *
+                Math.exp(mu_delta[j] + 0.5 * sigma_delta[j] * sigma_delta[j]);
 
         fValue += term1 - 0.5/m_xi/m_xi * (mu_delta[j] * mu_delta[j] - 2 * mu_delta[j] * dotProd);
         gValue += term1 - 1/m_xi/m_xi * (mu_delta[j] - dotProd);
@@ -770,27 +583,18 @@ public class EUB extends LDA_Variational {
         do {
             Arrays.fill(sigmaG, 0);
             fValue = 0;
-            if(m_userI2PMap.containsKey(i)) {
-                for(int p: m_userI2PMap.get(i)){
-                    double[] fgValue = calcFGValueDeltaSigma(ui, sigma_delta, p);
-                    fValue += fgValue[0];
-                    sigmaG[p] += fgValue[1];
-                    sigma_delta[p] += stepSize * sigmaG[p];
-                    if(Double.isNaN(sigma_delta[p]) || Double.isInfinite(sigma_delta[p]))
-                        System.out.println("[error] Sigma_delta is Nan or Infinity!!");
 
-                }
-            }
+            HashSet<Integer> interactions = m_networkMap.containsKey(i) ? m_networkMap.get(i) : null;
+            for(int j=0; j<m_users.size(); j++){
+                if(i == j) continue;
+                int eij = interactions != null && interactions.contains(j) ? 1 : 0;
+                double[] fgValue = calcFGValueDeltaSigma(ui, sigma_delta, eij, j);
+                fValue += fgValue[0];
+                sigmaG[j] += fgValue[1];
+                sigma_delta[j] += stepSize * sigma_delta[j];
+                if(Double.isNaN(sigma_delta[j]) || Double.isInfinite(sigma_delta[j]))
+                    System.out.println("[error] Sigma_delta is Nan or Infinity!!");
 
-            if(m_userI2PPrimeMap.containsKey(i)){
-                for(int pPrime: m_userI2PPrimeMap.get(i)){
-                    double[] fgValue = calcFGValueDeltaSigma(ui, sigma_delta, pPrime);
-                    fValue += fgValue[0];
-                    sigmaG[pPrime] += fgValue[1];
-                    sigma_delta[pPrime] += stepSize * sigmaG[pPrime];
-                    if(Double.isNaN(sigma_delta[pPrime]) || Double.isInfinite(sigma_delta[pPrime]))
-                        System.out.println("[error] Sigma_delta is Nan or Infinity!!");
-                }
             }
 
             diff = (lastFValue - fValue) / lastFValue;
@@ -801,9 +605,10 @@ public class EUB extends LDA_Variational {
     }
 
 
-    protected double[] calcFGValueDeltaSigma(_User4EUB ui, double[] sigma, int j){
+    protected double[] calcFGValueDeltaSigma(_User4EUB ui, double[] sigma, int eij, int j){
 
-        double term1 = -1/ui.m_epsilon[j] * Math.exp(ui.m_mu_delta[j] + 0.5 * sigma[j] * sigma[j]);
+        double term1 = ((1-eij)*(1-m_rho)/ui.m_epsilon_prime[j] -1/ui.m_epsilon[j])
+                * Math.exp(ui.m_mu_delta[j] + 0.5 * sigma[j] * sigma[j]);
         double fValue = term1 - 0.5/m_xi/m_xi * (sigma[j] * sigma[j]) + Math.log(Math.abs(sigma[j]));
         double gValue = sigma[j] * term1 - sigma[j]/m_xi/m_xi + 1/sigma[j];
         return new double[]{fValue, gValue};
@@ -816,6 +621,10 @@ public class EUB extends LDA_Variational {
             if (j != i)
                 ui.m_epsilon[j] = Math.exp(ui.m_mu_delta[j] + 0.5 * m_xi * m_xi) + 1;
         }
+    }
+
+    protected void update_epsilon_prime(_User4EUB ui){
+        int i
     }
 
     protected void update_eta_id(_Doc4EUB doc){

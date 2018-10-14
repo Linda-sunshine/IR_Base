@@ -16,6 +16,8 @@ public class _User4EUB extends _User {
     public double[][] m_sigma_u;
 
     public double[] m_epsilon;
+    // the introduction of sparsity needs one more taylor parameter
+    public double[] m_epsilon_prime;
 
     // the variational paramters for the affinity with other users
     public double[] m_mu_delta;
@@ -41,7 +43,7 @@ public class _User4EUB extends _User {
         m_mu_delta = new double[userSize];
         m_sigma_delta = new double[userSize];
         m_epsilon = new double[userSize];
-
+        m_epsilon_prime = new double[userSize];
 
         // init mu_u/sigma_u
         for(int m=0; m<dim; m++){
@@ -64,6 +66,7 @@ public class _User4EUB extends _User {
 
         for(int i=0; i<userSize; i++){
             m_epsilon[i] = Math.exp(m_mu_delta[i] + 0.5 * xi * xi) + 1;
+            m_epsilon_prime[i] = Math.exp(m_mu_delta[i] + 0.5 * xi * xi) + 1;
         }
     }
 }

@@ -1,19 +1,33 @@
 package Analyzer;
 
 import java.io.*;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Locale;
 
 public class StackOverflowAnalyzer {
     class _Question{
         int m_qid;
         int m_uid;
+        long m_time;
+        String m_title;
+        String m_body;
         ArrayList<_Answer> m_answers = new ArrayList<>();
 
         public _Question(int qid, int uid){
             m_qid = qid;
             m_uid = uid;
+        }
+
+        public _Question(int qid, int uid, long time, String title, String body){
+            m_qid = qid;
+            m_uid = uid;
+            m_time = time;
+            m_title = title;
+            m_body = body;
         }
 
         protected void addOneAnswer(_Answer a){
@@ -26,11 +40,21 @@ public class StackOverflowAnalyzer {
         int m_aid;
         int m_qid;
         int m_uid;
+        long m_time;
+        String m_body;
 
         public _Answer(int aid, int qid, int uid){
             m_aid = aid;
             m_qid = qid;
             m_uid = uid;
+        }
+
+        public _Answer(int aid, int qid, int uid, long time, String str){
+            m_aid = aid;
+            m_qid = qid;
+            m_uid = uid;
+            m_time = time;
+            m_body = str;
         }
     }
 
@@ -67,6 +91,9 @@ public class StackOverflowAnalyzer {
 
     HashSet<Integer> m_userIdsBoth = new HashSet<Integer>();
     HashMap<Integer, HashSet<Integer>> m_docSizeUserIdMap = new HashMap<>();
+    HashMap<Integer, HashSet<Integer>> m_userConnectionMap = new HashMap<>();
+
+    SimpleDateFormat m_format = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'", Locale.US);
 
     // init the stat map
     public StackOverflowAnalyzer(){
@@ -74,32 +101,50 @@ public class StackOverflowAnalyzer {
             m_docSizeUserIdMap.put(i, new HashSet<>());
         }
     }
+
     protected void loadQuestions(String filename) {
         try {
             BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(filename)));
-
+            int count = 0;
             // skip the first line as it is column name
             String line = reader.readLine();
 
             // Id,OwnerUserId,CreationDate,ClosedDate,Score
             while ((line = reader.readLine()) != null) {
-                String[] strs = line.split(",");
-                if(strs.length != 5) continue;
+                int bodyStart = line.indexOf("\"");
+                if(bodyStart < 0) {
+                    count++;
+                    continue;
+                }
 
-                int qid = Integer.valueOf(strs[1]);
-                double rawUId = Double.valueOf(strs[2]);
-                int uid = (int) rawUId;
-                _Question q = new _Question(qid, uid);
+                String[] strs = line.substring(0, bodyStart-1).split(",");
+                if(strs.length != 5)
+                    continue;
+
+                // index,Id,OwnerUserId,CreationDate,Score,Title,Body
+                int qid = Integer.valueOf(strs[0]);
+                int uid = Integer.valueOf(strs[1]);
+
+                //2008-08-01T13:57:07Z
+                long time = m_format.parse(strs[2]).getTime()/1000;
+                String title = strs[4];
+                String body = line.substring(bodyStart+1, line.length()-1);
+                _Question q = new _Question(qid, uid, time, title, body);
                 m_questionMap.put(qid, q);
                 if(!m_userMap.containsKey(uid))
                     m_userMap.put(uid, new _User(uid));
                 m_userMap.get(uid).addOneQuestion(q);
             }
             reader.close();
-            System.out.println("[Info]Finish loading the questions!");
+            System.out.format("[Info]Finish loading the questions, %d questions are missing!\n", count);
 
+        } catch(NumberFormatException e){
+            e.printStackTrace();
         } catch(IOException e) {
             System.err.format("[Error]Failed to open file %s!!", filename);
+            e.printStackTrace();
+        } catch(ParseException e){
+            System.err.format("[Error] Error in parse date!");
             e.printStackTrace();
         }
     }
@@ -111,21 +156,26 @@ public class StackOverflowAnalyzer {
             // skip the first line as it is column name
             String line = reader.readLine();
 
-            //Id,OwnerUserId,CreationDate,ParentId,Score
+            //index,Id,OwnerUserId,CreationDate,ParentId,Score,Body
             while ((line = reader.readLine()) != null) {
-                String[] strs = line.split(",");
-                if(strs.length != 6) continue;
-                int aid = Integer.valueOf(strs[1]);
-                double rawUId = Double.valueOf(strs[2]);
-                int uid = (int) rawUId;
-                int qid = Integer.valueOf(strs[4]);
+                int bodyStart = line.indexOf("\"");
+                if(bodyStart < 0)
+                    continue;
+                String[] strs = line.substring(0, bodyStart-1).split(",");
 
+                if(strs.length != 5) continue;
+                int aid = Integer.valueOf(strs[0]);
+                int uid = Integer.valueOf(strs[1]);
+                long time = m_format.parse(strs[2]).getTime()/1000;
+                int qid = Integer.valueOf(strs[3]);
+
+                String body = line.substring(bodyStart+1, line.length()-1);
                 // if the question does not exist, ignore the answer
                 if(!m_questionMap.containsKey(qid))
                     continue;
 
                 // else new a answer
-                _Answer a = new _Answer(aid, qid, uid);
+                _Answer a = new _Answer(aid, qid, uid, time, body);
                 m_answerMap.put(aid, a);
 
                 // add the answer to the question
@@ -141,19 +191,94 @@ public class StackOverflowAnalyzer {
         } catch(IOException e){
             System.err.format("[Error]Failed to open file %s!!", filename);
             e.printStackTrace();
+        }catch(ParseException e) {
+            System.err.format("[Error] Error in parse date!");
+            e.printStackTrace();
         }
     }
 
-    HashMap<Integer, HashSet<Integer>> m_userConnectionMap = new HashMap<>();
-    HashMap<Integer, HashSet<Integer>> m_networkMap = new HashMap<>();
+    protected void loadQuestionsWithoutText(String filename) {
+        try {
+            BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(filename)));
+            // skip the first line as it is column name
+            String line = reader.readLine();
+
+            // Id,OwnerUserId,CreationDate,ClosedDate,Score
+            while ((line = reader.readLine()) != null) {
+
+                String[] strs = line.split(",");
+                if(strs.length != 3)
+                    continue;
+
+                // index,Id,OwnerUserId,CreationDate,Score,Title,Body
+                int qid = Integer.valueOf(strs[1]);
+                int uid = Integer.valueOf(strs[2]);
+
+                _Question q = new _Question(qid, uid);
+                m_questionMap.put(qid, q);
+                if(!m_userMap.containsKey(uid))
+                    m_userMap.put(uid, new _User(uid));
+                m_userMap.get(uid).addOneQuestion(q);
+            }
+            reader.close();
+            System.out.format("[Info]Finish loading %d questions!\n", m_questionMap.size());
+        } catch(IOException e) {
+            System.err.format("[Error]Failed to open file %s!!", filename);
+            e.printStackTrace();
+        }
+    }
+
+    protected void loadAnswersWithoutText(String filename){
+        try {
+            BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(filename)));
+            int answerNoQuestionCount = 0, totalAnswerCount = 0;
+            // skip the first line as it is column name
+            String line = reader.readLine();
+
+            //index,Id,OwnerUserId,CreationDate,ParentId,Score,Body
+            while ((line = reader.readLine()) != null) {
+                totalAnswerCount++;
+                String[] strs = line.split(",");
+
+                if(strs.length != 4) continue;
+                int aid = Integer.valueOf(strs[1]);
+                int uid = Integer.valueOf(strs[2]);
+                int qid = Integer.valueOf(strs[3]);
+
+                // if the question does not exist, ignore the answer
+                if(!m_questionMap.containsKey(qid)){
+                    answerNoQuestionCount++;
+                    continue;
+                }
+
+                // else new a answer
+                _Answer a = new _Answer(aid, qid, uid);
+                m_answerMap.put(aid, a);
+
+                // add the answer to the question
+                m_questionMap.get(qid).addOneAnswer(a);
+
+                // add the answer to the user
+                if(!m_userMap.containsKey(uid))
+                    m_userMap.put(uid, new _User(uid));
+                m_userMap.get(uid).addOneAnswer(a);
+            }
+            reader.close();
+            System.out.format("[Info]Finish loading %d answers, (%d, %d) answers have/don't have corresponding questions!\n",
+                    totalAnswerCount, m_answerMap.size(), answerNoQuestionCount);
+
+        } catch(IOException e){
+            System.err.format("[Error]Failed to open file %s!!", filename);
+            e.printStackTrace();
+        }
+    }
 
     // select the users based on their doc size
     // construct the network based on the question and answer
-    protected void constructNetwork(int threshold){
+    protected void calcNetworkStat(int threshold){
 
         System.out.format("\n======Current threshold is %d=======\n", threshold);
         m_userConnectionMap.clear();
-        m_networkMap.clear();
 
         // threshold = 2, filter users with 2 docs.
         // threshold = 3, filter users with 3 docs and 2 docs.
@@ -231,29 +356,48 @@ public class StackOverflowAnalyzer {
         avgOneDirectionCount /= candidates.size();
         System.out.format("[After]%d/%d users don't have any questions answered, each user has %.2f avg connections\n",
                 userNoConnection, candidates.size(), avgOneDirectionCount);
+        printUserIds("./data/stackOverflow_threshold_6.txt", candidates);
+    }
 
-        for(int uid: m_userConnectionMap.keySet()){
+    // construct the network based on the selected users
+    protected void constructNetwork(){
+        m_userConnectionMap.clear();
+        int answerNotInUserSetCount = 0;
 
-            for(int ujd: m_userConnectionMap.get(uid)){
-                if(m_userConnectionMap.get(ujd).contains(uid)){
-                    if(!m_networkMap.containsKey(uid)){
-                        m_networkMap.put(uid, new HashSet<>());
+        for(int uid: m_userMap.keySet()){
+            _User user = m_userMap.get(uid);
+            // build the table
+            for(_Question q: user.m_questions){
+                for(_Answer a: q.m_answers){
+                    if(m_userMap.keySet().contains(a.m_uid)){
+                        if(!m_userConnectionMap.containsKey(uid))
+                            m_userConnectionMap.put(uid, new HashSet<>());
+                        if(!m_userConnectionMap.containsKey(a.m_uid))
+                            m_userConnectionMap.put(a.m_uid, new HashSet<>());
+                        m_userConnectionMap.get(uid).add(a.m_uid);
+                        m_userConnectionMap.get(a.m_uid).add(uid);
+                    } else{
+                        answerNotInUserSetCount++;
                     }
-                    if(!m_networkMap.containsKey(ujd)){
-                        m_networkMap.put(ujd, new HashSet<>());
-                    }
-                    m_networkMap.get(uid).add(ujd);
-                    m_networkMap.get(ujd).add(uid);
                 }
             }
         }
+        double avgConnectionSize = 0;
+        int userNoConnectionCount = 0;
 
-        double connectionAvg = 0;
-        for(int uid: m_networkMap.keySet()){
-            connectionAvg += m_networkMap.get(uid).size();
+        for(int uid: m_userMap.keySet()){
+            if(!m_userConnectionMap.containsKey(uid)){
+                userNoConnectionCount++;
+                continue;
+            }
+            avgConnectionSize += m_userConnectionMap.get(uid).size();
         }
-        connectionAvg /= m_networkMap.size();
-        System.out.format("%d users have friends, avg friend size is %.4f.\n", m_networkMap.size(), connectionAvg);
+        System.out.format("Total user size: %d, users with connections: %d.\n", m_userMap.size(),
+                m_userConnectionMap.size());
+        avgConnectionSize /= m_userMap.size();
+        System.out.format("[Stat] %d users don't have any friends, avg friend size %.4f\n",
+                userNoConnectionCount, avgConnectionSize);
+        System.out.format("%d answers are not in the user set!\n", answerNotInUserSetCount);
     }
 
     // calcualte the basic statistics of the user information
@@ -290,6 +434,34 @@ public class StackOverflowAnalyzer {
         System.out.println();
         System.out.format("For users with q+a, question avg: %.3f, answer avg: %.3f, q+a avg: %.3f\n", both_q, both_a, both_qa);
     }
+    protected void saveNetwork(String filename){
+        try{
+            PrintWriter writer = new PrintWriter(new File(filename));
+            for(int uid: m_userConnectionMap.keySet()){
+                writer.write(uid+"\t");
+                for(int frd: m_userConnectionMap.get(uid))
+                    writer.write(frd+"\t");
+                writer.write("\n");
+
+            }
+            writer.close();
+            System.out.format("Finish writing %d users friends!", m_userConnectionMap.size());
+        } catch(IOException e){
+            e.printStackTrace();
+        }
+    }
+
+    protected void printUserIds(String filename, HashSet<Integer> userIds){
+        try{
+            PrintWriter writer = new PrintWriter(new File(filename));
+            for(int uid: userIds){
+                writer.write(uid+"\n");
+            }
+            writer.close();
+        } catch(IOException e){
+            e.printStackTrace();
+        }
+    }
 
     protected void calcNuQuestionsNotAnswered(){
         int count = 0;
@@ -301,31 +473,14 @@ public class StackOverflowAnalyzer {
     }
 
     public static void main(String[] args) {
-        String questionFile = "/Users/lin/Documents/Lin'sWorkSpace/Notebook/Questions_filter.csv";
-        String answerFile = "/Users/lin/Documents/Lin'sWorkSpace/Notebook/Answers_filter.csv";
+        String questionFile = "/Users/lin/Documents/Lin'sWorkSpace/Notebook/Questions_Network.csv";
+        String answerFile = "/Users/lin/Documents/Lin'sWorkSpace/Notebook/Answers_Network.csv";
 
         StackOverflowAnalyzer analyzer = new StackOverflowAnalyzer();
-        analyzer.loadQuestions(questionFile);
-        analyzer.loadAnswers(answerFile);
-
-        System.out.format("Total number of questions: %d, answers: %d, users: %d\n", analyzer.m_questionMap.size(),
-                analyzer.m_answerMap.size(), analyzer.m_userMap.size());
-
-//        analyzer.calcNuQuestionsNotAnswered();
-        analyzer.calculateStat();
-
-        analyzer.constructNetwork(1);
-        analyzer.constructNetwork(2);
-        analyzer.constructNetwork(3);
-        analyzer.constructNetwork(4);
-        analyzer.constructNetwork(5);
-        analyzer.constructNetwork(6);
-        analyzer.constructNetwork(7);
-        analyzer.constructNetwork(8);
-        analyzer.constructNetwork(9);
-        analyzer.constructNetwork(10);
-
-
+        analyzer.loadQuestionsWithoutText(questionFile);
+        analyzer.loadAnswersWithoutText(answerFile);
+        analyzer.constructNetwork();
+        analyzer.saveNetwork("./data/StackOverflowFriends.txt");
 
     }
 }
