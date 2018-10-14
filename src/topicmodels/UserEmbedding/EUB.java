@@ -619,12 +619,18 @@ public class EUB extends LDA_Variational {
         int i = m_usersIndex.get(ui.getUserID());
         for(int j=0; j<ui.m_epsilon.length; j++){
             if (j != i)
-                ui.m_epsilon[j] = Math.exp(ui.m_mu_delta[j] + 0.5 * m_xi * m_xi) + 1;
+                ui.m_epsilon[j] = Math.exp(ui.m_mu_delta[j] + 0.5 * ui.m_sigma_delta[j] * ui.m_sigma_delta[j]) + 1;
         }
     }
 
+    // update the taylor parameter epsilon_prime
     protected void update_epsilon_prime(_User4EUB ui){
-        int i
+        int i = m_usersIndex.get(ui.getUserID());
+        for(int j=0; j<ui.m_epsilon_prime.length; j++){
+            if(j != i)
+                ui.m_epsilon_prime[j] = (1-m_rho) * Math.exp(ui.m_mu_delta[j] +
+                        0.5 * ui.m_sigma_delta[j] * ui.m_sigma_delta[j]) + 1;
+        }
     }
 
     protected void update_eta_id(_Doc4EUB doc){
@@ -789,62 +795,41 @@ public class EUB extends LDA_Variational {
         return logLikelihood;
     }
 
-    protected double calc_log_likelihood_per_user(_User4EUB user){
+    protected double calc_log_likelihood_per_user(_User4EUB ui){
         double logLikelihood = 0.5 * m_embeddingDim * (Math.log(m_gamma) + 1) -
-                0.5 * m_gamma * sumSigmaDiagAddMuTransposeMu(user.m_sigma_u, user.m_mu_u);
+                0.5 * m_gamma * sumSigmaDiagAddMuTransposeMu(ui.m_sigma_u, ui.m_mu_u);
 
         // calculate the determinant of the matrix
-        double determinant = new Matrix(user.m_sigma_u).det();
+        double determinant = new Matrix(ui.m_sigma_u).det();
         logLikelihood += 0.5 * Math.log(Math.abs(determinant));
         if(Double.isNaN(logLikelihood) || Double.isInfinite(logLikelihood))
             System.out.println("[error] User: the likelihood is Nan or Infinity!!");
-        int i = m_usersIndex.get(user.getUserID());
-        // case 1: i -> p
-        if(m_userI2PMap.containsKey(i)){
-            for(int p: m_userI2PMap.get(i)){
-                logLikelihood += m_userI2PMap.get(i).size() * (-1/m_xi + 1.5 - 2 * Math.log(m_xi));
 
-                logLikelihood += calcLogLikelihoodOneEdge(user, m_users.get(p), i, p, 1);
-            }
-        }
-        if(Double.isNaN(logLikelihood) || Double.isInfinite(logLikelihood))
-            System.out.println("[error] User: the likelihood is Nan or Infinity!!");
+        int i = m_usersIndex.get(ui.getUserID());
+        HashSet<Integer> interactions = m_networkMap.containsKey(i) ? m_networkMap.get(i) : null;
 
-        // case 2: i -> p'
-        if(m_userI2PPrimeMap.containsKey(i)){
-            for(int pPrime: m_userI2PPrimeMap.get(i)){
-                logLikelihood += m_userI2PPrimeMap.get(i).size() * (-1/m_xi + 1.5 - 2 * Math.log(m_xi));
-                logLikelihood += calcLogLikelihoodOneEdge(user, m_users.get(pPrime), i, pPrime, 0);
-            }
-        }
-        if(Double.isNaN(logLikelihood) || Double.isInfinite(logLikelihood))
-            System.out.println("[error] User: the likelihood is Nan or Infinity!!");
+        for(int j=0; j<m_users.size(); j++) {
+            if (i == j) continue;
+            _User4EUB uj = m_users.get(j);
+            int eij = interactions != null && interactions.contains(j) ? 1 : 0;
+            logLikelihood += calcLogLikelihoodOneEdge(ui, uj, i, j, eij);
+            if(Double.isNaN(logLikelihood) || Double.isInfinite(logLikelihood))
+                System.out.println("[error] User: the likelihood is Nan or Infinity!!");
 
-        // case 3: q -> i
-        if(m_userQ2IMap.containsKey(i)){
-            for(int q: m_userQ2IMap.get(i)){
-                logLikelihood += m_userQ2IMap.get(i).size() * (-1/m_xi + 1.5 - 2 * Math.log(m_xi));
-                logLikelihood += calcLogLikelihoodOneEdge(m_users.get(q), user, q, i, 1);
-            }
         }
-        if(Double.isNaN(logLikelihood) || Double.isInfinite(logLikelihood))
-            System.out.println("[error] User: the likelihood is Nan or Infinity!!");
-        // case 4: q' -> i
-        if(m_userQPrime2IMap.containsKey(i)) {
-            for(int qPrime: m_userQPrime2IMap.get(i)){
-                logLikelihood += m_userQPrime2IMap.get(i).size() * (-1/m_xi + 1.5 - 2 * Math.log(m_xi));
-                logLikelihood += calcLogLikelihoodOneEdge(m_users.get(qPrime), user, qPrime, i, 0);
-            }
-        }
-        if(Double.isNaN(logLikelihood) || Double.isInfinite(logLikelihood))
-            System.out.println("[error] User: the likelihood is Nan or Infinity!!");
         return logLikelihood;
     }
 
     protected double calcLogLikelihoodOneEdge(_User4EUB ui, _User4EUB uj, int i, int j, int eij){
         double muDelta = ui.m_mu_delta[j], sigmaDelta = ui.m_sigma_delta[j];
-        double logLikelihood = eij * muDelta - 1/m_xi * Math.exp(muDelta + 0.5 * sigmaDelta)
-                -(muDelta * muDelta + sigmaDelta * sigmaDelta)/(2 * m_xi * m_xi) + Math.log(Math.abs(sigmaDelta));
+        double epsilon = ui.m_epsilon[j], epsilon_prime = ui.m_epsilon_prime[j];
+
+        double logLikelihood = eij * (muDelta - Math.log(m_rho))
+                + ((1-m_rho) * (1 - eij)/epsilon_prime - 1/epsilon) * Math.exp(muDelta + 0.5 * sigmaDelta * sigmaDelta)
+                -(muDelta * muDelta + sigmaDelta * sigmaDelta)/(2 * m_xi * m_xi) + Math.log(Math.abs(sigmaDelta))
+                -1/epsilon - Math.log(epsilon) + eij + (1-eij) * (Math.log(epsilon_prime + 1/epsilon_prime))
+                - Math.log(m_xi) + 0.5;
+
         if(Double.isNaN(logLikelihood) || Double.isInfinite(logLikelihood))
             System.out.println("[error] Edge: the likelihood is Nan or Infinity!!");
         for(int m=0; m<m_embeddingDim; m++){
