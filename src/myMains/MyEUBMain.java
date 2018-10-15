@@ -60,7 +60,7 @@ public class MyEUBMain {
 //        analyzer.loadCVIndex(cvIndexFile);
 
         /***Start running joint modeling of user embedding and topic embedding****/
-        int emMaxIter = 20, number_of_topics = 10, varMaxIter = 20, embeddingDim = 10;
+        int emMaxIter = 100, number_of_topics = 10, varMaxIter = 20, embeddingDim = 10;
         double emConverge = 1e-10, alpha = 1 + 1e-2, beta = 1 + 1e-3, lambda = 1 + 1e-3, varConverge = 1e-6;//these two parameters must be larger than 1!!!
         _Corpus corpus = analyzer.getCorpus();
 

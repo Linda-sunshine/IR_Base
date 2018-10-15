@@ -1,7 +1,6 @@
 package topicmodels.UserEmbedding;
 
 import Jama.Matrix;
-import org.apache.commons.math3.distribution.BinomialDistribution;
 import structures.*;
 import topicmodels.LDA.LDA_Variational;
 import utils.Utils;
@@ -51,7 +50,7 @@ public class EUB extends LDA_Variational {
     /*****Sparsity parameter******/
     protected double m_rho = 0.01;
 
-    protected int m_displayLv = 2;
+    protected int m_displayLv = 0;
 
     public EUB(int number_of_iteration, double converge, double beta,
                _Corpus c, double lambda, int number_of_topics, double alpha,
@@ -62,6 +61,7 @@ public class EUB extends LDA_Variational {
         m_topics = new ArrayList<>();
         m_users = new ArrayList<>();
         m_docs = new ArrayList<>();
+        m_networkMap = new HashMap<>();
     }
 
     // Load the data for later user
@@ -266,11 +266,11 @@ public class EUB extends LDA_Variational {
     @Override
     public void calculate_M_step(int iter){
 
-        est_alpha();// precision for topic embedding
-        est_gamma(); // precision for user embedding
+//        est_alpha();// precision for topic embedding
+//        est_gamma(); // precision for user embedding
         est_beta(); // topic-word distribution
-        est_tau(); // precision for topic proportion
-        est_xi(); // sigma for the affinity \delta_{ij}
+//        est_tau(); // precision for topic proportion
+//        est_xi(); // sigma for the affinity \delta_{ij}
     }
 
     protected void est_alpha(){
@@ -551,13 +551,16 @@ public class EUB extends LDA_Variational {
                 muG[j] += fgValue[1];
                 mu_delta[j] += stepSize * muG[j];
             }
-
+            printFValue(lastFValue, fValue);
             diff = (lastFValue - fValue) / lastFValue;
             lastFValue = fValue;
 
         } while(iter++ < iterMax && Math.abs(diff) > cvg);
         ui.m_mu_delta = mu_delta;
+        if(m_displayLv != 0)
+            System.out.println("------------------------");
     }
+
 
     protected double[] calcFGValueDeltaMu(_User4EUB ui, double[] mu_delta, int eij, int j){
         double[] sigma_delta = ui.m_sigma_delta;
@@ -591,19 +594,18 @@ public class EUB extends LDA_Variational {
                 double[] fgValue = calcFGValueDeltaSigma(ui, sigma_delta, eij, j);
                 fValue += fgValue[0];
                 sigmaG[j] += fgValue[1];
-                sigma_delta[j] += stepSize * sigma_delta[j];
+                sigma_delta[j] += stepSize * sigmaG[j];
                 if(Double.isNaN(sigma_delta[j]) || Double.isInfinite(sigma_delta[j]))
                     System.out.println("[error] Sigma_delta is Nan or Infinity!!");
-
             }
-
+            printFValue(lastFValue, fValue);
             diff = (lastFValue - fValue) / lastFValue;
             lastFValue = fValue;
 
         } while(iter++ < iterMax && Math.abs(diff) > cvg);
         ui.m_sigma_delta = sigma_delta;
-    }
-
+        if(m_displayLv != 0)
+            System.out.println("------------------------");    }
 
     protected double[] calcFGValueDeltaSigma(_User4EUB ui, double[] sigma, int eij, int j){
 
@@ -676,14 +678,17 @@ public class EUB extends LDA_Variational {
                 dotProd = Utils.dotProduct(m_topics.get(k).m_mu_phi, m_users.get(i).m_mu_u);
                 fValue += m_tau * mu_theta[k] * dotProd + mu_theta[k] * doc.m_sstat[k] - moment;
                 // gradient
-                muG[k] = (-m_tau * mu_theta[k] + m_tau * dotProd + doc.m_sstat[k] - moment);
+                muG[k] = -m_tau * mu_theta[k] + m_tau * dotProd + doc.m_sstat[k] - moment;
                 mu_theta[k] += stepSize * muG[k];
             }
+            printFValue(lastFValue, fValue);
             diff = (lastFValue - fValue) / lastFValue;
             lastFValue = fValue;
 
         } while(iter++ < iterMax && Math.abs(diff) > cvg);
         doc.m_mu_theta = mu_theta;
+        if(m_displayLv != 0)
+            System.out.println("------------------------");
     }
 
     protected void printFValue(double oldFValue, double fValue){
@@ -723,13 +728,15 @@ public class EUB extends LDA_Variational {
                     System.out.println("Doc: sigma_sqrt_theta[k] is Nan or Infinity!!");
 
             }
+            printFValue(lastFValue, fValue);
             diff = (lastFValue - fValue) / lastFValue;
             lastFValue = fValue;
-
         } while(iter++ < iterMax && Math.abs(diff) > cvg);
         doc.m_sigma_sqrt_theta = sigma_sqrt_theta;
         for(int k=0; k<number_of_topics; k++)
             doc.m_sigma_theta[k] = doc.m_sigma_sqrt_theta[k] * doc.m_sigma_sqrt_theta[k];
+        if(m_displayLv != 0)
+            System.out.println("------------------------");
     }
 
     // taylor parameter
