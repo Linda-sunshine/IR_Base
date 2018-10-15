@@ -19,7 +19,7 @@ import java.util.HashSet;
  */
 public class MultiThreadedNetworkAnalyzer extends MultiThreadedLinkPredAnalyzer {
 
-    HashMap<String, HashSet<String>> m_networkMap = new HashMap<>();
+    HashMap<String, HashSet<String>> m_networkMap = new HashMap<String, HashSet<String>>();
 
     public MultiThreadedNetworkAnalyzer(String tokenModel, int classNo,
                                         String providedCV, int Ngram, int threshold, int numberOfCores, boolean b)
@@ -81,9 +81,9 @@ public class MultiThreadedNetworkAnalyzer extends MultiThreadedLinkPredAnalyzer 
                 for(String in: interactions){
                     if(m_userIDIndex.containsKey(in)){
                         if(!m_networkMap.containsKey(uid))
-                            m_networkMap.put(uid, new HashSet<>());
+                            m_networkMap.put(uid, new HashSet<String>());
                         if(!m_networkMap.containsKey(in))
-                            m_networkMap.put(in, new HashSet<>());
+                            m_networkMap.put(in, new HashSet<String>());
                         m_networkMap.get(uid).add(in);
                         m_networkMap.get(in).add(uid);
                     }

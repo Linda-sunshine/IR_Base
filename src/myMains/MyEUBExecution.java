@@ -2,6 +2,7 @@ package myMains;
 
 import Analyzer.MultiThreadedNetworkAnalyzer;
 import opennlp.tools.util.InvalidFormatException;
+import structures.EmbeddingParameter;
 import structures._Corpus;
 import topicmodels.UserEmbedding.EUB;
 
@@ -11,9 +12,9 @@ import java.io.IOException;
 
 /**
  * @author Lin Gong (lg5bt@virginia.edu)
- * The main entrance for calling EUB model
  */
-public class MyEUBMain {
+public class MyEUBExecution {
+
 
     //In the main function, we want to input the data and do adaptation
     public static void main(String[] args) throws InvalidFormatException, FileNotFoundException, IOException {
@@ -23,18 +24,13 @@ public class MyEUBMain {
         int lengthThreshold = 5; // Document length threshold
         int numberOfCores = Runtime.getRuntime().availableProcessors();
 
-        String dataset = "YelpNew"; // "StackOverflow", "YelpNew"
         String tokenModel = "./data/Model/en-token.bin"; // Token model.
 
-        boolean server = false;
-
-		String prefix = server ? "/zf8/lg5bt/DataSigir" : "./data/CoLinAdapt";
-
-        String providedCV = String.format("%s/%s/SelectedVocab.csv", prefix, dataset);
-        String userFolder = String.format("%s/%s/Users_1000", prefix, dataset);
-        String friendFile = String.format("%s/%s/%sFriends_1000.txt", prefix, dataset, dataset);
-        String cvIndexFile = String.format("%s/%s/%sCVIndex.txt", prefix, dataset, dataset);
-//        String userIdFile = String.format("%s/%s/%sUserIds.txt", prefix, dataset, dataset);
+        EmbeddingParameter param = new EmbeddingParameter();
+        String providedCV = String.format("%s/%s/SelectedVocab.csv", param.m_prefix, param.m_data);
+        String userFolder = String.format("%s/%s/Users", param.m_prefix, param.m_data);
+        String friendFile = String.format("%s/%s/%sFriends.txt", param.m_prefix, param.m_data, param.m_data);
+        String cvIndexFile = String.format("%s/%s/%sCVIndex.txt", param.m_prefix, param.m_data, param.m_data);
 
         int kFold = 5;
         MultiThreadedNetworkAnalyzer analyzer = new MultiThreadedNetworkAnalyzer(tokenModel, classNumber, providedCV,
@@ -48,25 +44,13 @@ public class MyEUBMain {
         analyzer.loadInteractions(friendFile);
         analyzer.loadCVIndex(cvIndexFile);
 
-        /***save user id file and network file****/
-//        analyzer.saveUserIds(userIdFile);
-//        analyzer.loadInteractions(friendFile);
-//        analyzer.saveNetwork(friendFile);
-
-        /***save files for running baselines***/
-//        analyzer.saveAdjacencyMatrix("./data/YelpNewAdjMatrix_10k.txt");
-//        analyzer.printDocs4Plane("./data/YelpNew4PlaneDocs_1000.txt");
-//        analyzer.printNetwork4Plane("./data/YelpNew4PlaneNetwork_1000.txt");
-
-
         /***Start running joint modeling of user embedding and topic embedding****/
-        int emMaxIter = 10, number_of_topics = 10, varMaxIter = 20, embeddingDim = 10;
         double emConverge = 1e-10, alpha = 1 + 1e-2, beta = 1 + 1e-3, lambda = 1 + 1e-3, varConverge = 1e-6;//these two parameters must be larger than 1!!!
         _Corpus corpus = analyzer.getCorpus();
 
         long start = System.currentTimeMillis();
 
-        EUB eub = new EUB(emMaxIter, emConverge, beta, corpus, lambda, number_of_topics, alpha, varMaxIter, varConverge, embeddingDim);
+        EUB eub = new EUB(param.m_emIter, emConverge, beta, corpus, lambda, param.m_number_of_topics, alpha, param.m_varIter, varConverge, param.m_embeddingDim);
         eub.buildLookupTables(analyzer.getUsers());
         eub.EMonCorpus();
         eub.setDisplayLv(0);
@@ -74,8 +58,8 @@ public class MyEUBMain {
         long end = System.currentTimeMillis();
 
         // record related information
-        String savePrefix = server ? "/zf8/lg5bt/embedExp/eub" : "./data/embedExp/eub";
-        String saveDir = String.format("%s/%d_%s", savePrefix, start, dataset);
+        String savePrefix = "/zf8/lg5bt/embedExp/eub";
+        String saveDir = String.format("%s/%d_%s", savePrefix, start, param.m_data);
         File fileDir = new File(saveDir);
         if(!fileDir.exists())
             fileDir.mkdirs();

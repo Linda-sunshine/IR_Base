@@ -58,17 +58,17 @@ public class EUB extends LDA_Variational {
         super(number_of_iteration, converge, beta, c, lambda, number_of_topics, alpha,
                 varMaxIter, varConverge);
         m_embeddingDim = m;
-        m_topics = new ArrayList<>();
-        m_users = new ArrayList<>();
-        m_docs = new ArrayList<>();
-        m_networkMap = new HashMap<>();
+        m_topics = new ArrayList<_Topic4EUB>();
+        m_users = new ArrayList<_User4EUB>();
+        m_docs = new ArrayList<_Doc4EUB>();
+        m_networkMap = new HashMap<Integer, HashSet<Integer>>();
     }
 
     // Load the data for later user
     public void buildLookupTables(ArrayList<_User> users){
-        m_usersIndex = new HashMap<>();
-        m_userDocMap = new HashMap<>();
-        m_docUserMap = new HashMap<>();
+        m_usersIndex = new HashMap<String, Integer>();
+        m_userDocMap = new HashMap<Integer, ArrayList<Integer>>();
+        m_docUserMap = new HashMap<Integer, Integer>();
 
         // build the lookup table for user/doc/topic
         for(int i=0; i< users.size(); i++){
@@ -84,8 +84,8 @@ public class EUB extends LDA_Variational {
     }
 
     protected void buildUserDocs(int i, _User4EUB user, ArrayList<_Review> reviews){
-        m_userDocMap.put(i, new ArrayList<>());
-        ArrayList<_Doc4EUB> docs = new ArrayList<>();
+        m_userDocMap.put(i, new ArrayList<Integer>());
+        ArrayList<_Doc4EUB> docs = new ArrayList<_Doc4EUB>();
         for(_Review r: reviews){
             int dIndex = m_docs.size();
             _Doc4EUB doc = new _Doc4EUB(r, dIndex);
@@ -97,10 +97,14 @@ public class EUB extends LDA_Variational {
         user.setReviews(docs);
     }
 
+    public void setDisplayLv(int d){
+        m_displayLv = d;
+    }
+
     @Override
     public void EMonCorpus(){
 
-        m_trainSet = new ArrayList<>();
+        m_trainSet = new ArrayList<_Doc>();
         // collect all training reviews
         for(_User u: m_users){
             for(_Review r: u.getReviews()){
@@ -150,11 +154,11 @@ public class EUB extends LDA_Variational {
             _User4EUB ui = m_users.get(uiIdx);
             if(ui.getFriends() != null && ui.getFriends().length > 0) {
                 if(!m_networkMap.containsKey(uiIdx))
-                    m_networkMap.put(uiIdx, new HashSet<>());
+                    m_networkMap.put(uiIdx, new HashSet<Integer>());
                 for(String ujId: ui.getFriends()) {
                     int ujIdx = m_usersIndex.get(ujId);
                     if(!m_networkMap.containsKey(ujIdx))
-                        m_networkMap.put(ujIdx, new HashSet<>());
+                        m_networkMap.put(ujIdx, new HashSet<Integer>());
                     m_networkMap.get(uiIdx).add(ujIdx);
                     m_networkMap.get(ujIdx).add(uiIdx);
                 }
@@ -271,6 +275,8 @@ public class EUB extends LDA_Variational {
         est_beta(); // topic-word distribution
 //        est_tau(); // precision for topic proportion
 //        est_xi(); // sigma for the affinity \delta_{ij}
+        finalEst();
+
     }
 
     protected void est_alpha(){
@@ -399,7 +405,7 @@ public class EUB extends LDA_Variational {
         return calc_log_likelihood_per_doc(doc);
     }
 
-    // update the mu and sigma for each topic \phi_k -- E(65) and Eq(67)
+    // update the mu and sigma for each topic \phi_k
     protected void update_phi_k(_Topic4EUB topic){
 
         Matrix term1 = new Matrix(new double[m_embeddingDim][m_embeddingDim]);
@@ -886,7 +892,7 @@ public class EUB extends LDA_Variational {
                 writer.write("\nsimga_phi:\n");
                 for(double sigma[]: topic.m_sigma_phi){
                     for(double s: sigma)
-                        writer.format("%.3f\t", s);
+                        writer.format("%.5f\t", s);
                     writer.write("\n");
                 }
                 writer.write("----------------------------\n");
@@ -910,7 +916,7 @@ public class EUB extends LDA_Variational {
                 writer.write("\nsimga_u:\n");
                 for(double sigma[]: user.m_sigma_u){
                     for(double s: sigma)
-                        writer.format("%.3f\t", s);
+                        writer.format("%.5f\t", s);
                     writer.write("\n");
                 }
                 writer.write("----------------------------\n");
