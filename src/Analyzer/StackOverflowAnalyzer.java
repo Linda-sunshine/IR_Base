@@ -359,6 +359,17 @@ public class StackOverflowAnalyzer {
         printUserIds("./data/stackOverflow_threshold_6.txt", candidates);
     }
 
+    protected HashSet<Integer> filterUsers(int threshold){
+        HashSet<Integer> uids = new HashSet<Integer>();
+        for(int uid: m_userMap.keySet()){
+            _User user = m_userMap.get(uid);
+            if(user.getQuestionSize() + user.getAnswerSize() >= threshold){
+                uids.add(uid);
+            }
+        }
+        System.out.format("%d users have more than 10 docs!\n", uids.size());
+        return uids;
+    }
     // construct the network based on the selected users
     protected void constructNetwork(){
         m_userConnectionMap.clear();
@@ -395,6 +406,48 @@ public class StackOverflowAnalyzer {
         System.out.format("Total user size: %d, users with connections: %d.\n", m_userMap.size(),
                 m_userConnectionMap.size());
         avgConnectionSize /= m_userMap.size();
+        System.out.format("[Stat] %d users don't have any friends, avg friend size %.4f\n",
+                userNoConnectionCount, avgConnectionSize);
+        System.out.format("%d answers are not in the user set!\n", answerNotInUserSetCount);
+    }
+
+
+    // construct the network based on the selected users
+    protected void constructNetworkWithFitleredUsers(HashSet<Integer> uids){
+        m_userConnectionMap.clear();
+        int answerNotInUserSetCount = 0;
+
+        for(int uid: uids){
+            _User user = m_userMap.get(uid);
+            // build the table
+            for(_Question q: user.m_questions){
+                for(_Answer a: q.m_answers){
+                    if(uids.contains(a.m_uid)){
+                        if(!m_userConnectionMap.containsKey(uid))
+                            m_userConnectionMap.put(uid, new HashSet<>());
+                        if(!m_userConnectionMap.containsKey(a.m_uid))
+                            m_userConnectionMap.put(a.m_uid, new HashSet<>());
+                        m_userConnectionMap.get(uid).add(a.m_uid);
+                        m_userConnectionMap.get(a.m_uid).add(uid);
+                    } else{
+                        answerNotInUserSetCount++;
+                    }
+                }
+            }
+        }
+        double avgConnectionSize = 0;
+        int userNoConnectionCount = 0;
+
+        for(int uid: uids){
+            if(!m_userConnectionMap.containsKey(uid)){
+                userNoConnectionCount++;
+                continue;
+            }
+            avgConnectionSize += m_userConnectionMap.get(uid).size();
+        }
+        System.out.format("Total user size: %d, users with connections: %d.\n", uids.size(),
+                m_userConnectionMap.size());
+        avgConnectionSize /= uids.size();
         System.out.format("[Stat] %d users don't have any friends, avg friend size %.4f\n",
                 userNoConnectionCount, avgConnectionSize);
         System.out.format("%d answers are not in the user set!\n", answerNotInUserSetCount);
@@ -472,6 +525,16 @@ public class StackOverflowAnalyzer {
         System.out.format("%d/%d questions are not answered\n", count, m_questionMap.size());
     }
 
+    protected HashSet<Integer> sample(HashSet<Integer> uids){
+        HashSet<Integer> sampledUserIds = new HashSet<>();
+        for(int uid: uids){
+            if(Math.random() > 0.55){
+                sampledUserIds.add(uid);
+            }
+        }
+        return sampledUserIds;
+    }
+
     public static void main(String[] args) {
         String questionFile = "/Users/lin/Documents/Lin'sWorkSpace/Notebook/Questions_Network.csv";
         String answerFile = "/Users/lin/Documents/Lin'sWorkSpace/Notebook/Answers_Network.csv";
@@ -479,8 +542,11 @@ public class StackOverflowAnalyzer {
         StackOverflowAnalyzer analyzer = new StackOverflowAnalyzer();
         analyzer.loadQuestionsWithoutText(questionFile);
         analyzer.loadAnswersWithoutText(answerFile);
-        analyzer.constructNetwork();
-        analyzer.saveNetwork("./data/StackOverflowFriends.txt");
+        int threshold = 10;
+        HashSet<Integer> sampledUserIds = analyzer.sample(analyzer.filterUsers(threshold));
+        analyzer.constructNetworkWithFitleredUsers(sampledUserIds);
+        analyzer.printUserIds("./data/StackOverflowUserIds_12k.txt", sampledUserIds);
+        analyzer.saveNetwork("./data/StackOverflowFriends_12k.txt");
 
     }
 }
