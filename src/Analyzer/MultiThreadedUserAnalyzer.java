@@ -22,11 +22,8 @@ import opennlp.tools.tokenize.Tokenizer;
 import opennlp.tools.tokenize.TokenizerME;
 import opennlp.tools.tokenize.TokenizerModel;
 import opennlp.tools.util.InvalidFormatException;
-import structures.TokenizeResult;
-import structures._Doc;
-import structures._Review;
+import structures.*;
 import structures._Doc.rType;
-import structures._User;
 import utils.Utils;
 
 /**
@@ -39,10 +36,12 @@ public class MultiThreadedUserAnalyzer extends UserAnalyzer {
 	protected int m_numberOfCores;
 	protected Tokenizer[] m_tokenizerPool;
 	protected SnowballStemmer[] m_stemmerPool;
-	protected Object m_allocReviewLock=null;
-	protected Object m_corpusLock=null;
-	protected Object m_rollbackLock=null;
-	private Object m_featureStatLock=null;
+	protected Object m_allocReviewLock = null;
+	protected Object m_corpusLock = null;
+	protected Object m_rollbackLock = null;
+	protected Object m_featureStatLock = null;
+	protected Object m_featureNameIndexLock = null;
+	protected Object m_featureNamesLock = null;
 
 	protected String m_suffix = null;//filter by suffix
 	protected boolean m_allocateFlag = true;
@@ -66,13 +65,15 @@ public class MultiThreadedUserAnalyzer extends UserAnalyzer {
 		m_corpusLock = new Object(); // lock when collecting class statistics 
 		m_rollbackLock = new Object(); // lock when revising corpus statistics
 		m_featureStatLock = new Object();
+		m_featureNameIndexLock = new Object();
+		m_featureNamesLock = new Object();
 	}
 
 	// Decide whether we will allocate reviews or not
 	public void setAllocateReviewFlag(boolean b){
 		m_allocateFlag = b;
 	}
-	//Load all the users.
+
 	@Override
 	public void loadUserDir(String folder){
 		if(folder == null || folder.isEmpty())
@@ -89,7 +90,6 @@ public class MultiThreadedUserAnalyzer extends UserAnalyzer {
 					try {
 						for (int j = 0; j + core <files.length; j += m_numberOfCores) {
 							File f = files[j+core];
-							// 
 							if(f.isFile() 
 								&& (m_suffix==null || f.getAbsolutePath().endsWith(m_suffix))){//load the user								
 								loadUser(f.getAbsolutePath(), core);
@@ -172,6 +172,7 @@ public class MultiThreadedUserAnalyzer extends UserAnalyzer {
 					m_corpus.addDocs(reviews);
 				}
 			} else if(reviews.size() == 1){// added by Lin, for those users with fewer than 2 reviews, ignore them.
+				System.out.format("[Info]User: %s does not have enough docs.\n", userID);
 				review = reviews.get(0);
 				synchronized (m_rollbackLock) {
 					rollBack(Utils.revertSpVct(review.getSparse()), review.getYLabel());

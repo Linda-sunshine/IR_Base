@@ -1,6 +1,8 @@
 package myMains;
 
 import Analyzer.MultiThreadedNetworkAnalyzer;
+import Analyzer.MultiThreadedUserAnalyzer;
+import Analyzer.UserAnalyzer;
 import opennlp.tools.util.InvalidFormatException;
 import structures._Corpus;
 import topicmodels.UserEmbedding.EUB;
@@ -23,26 +25,37 @@ public class MyEUBMain {
         int lengthThreshold = 5; // Document length threshold
         int numberOfCores = Runtime.getRuntime().availableProcessors();
 
-        String dataset = "YelpNew"; // "StackOverflow", "YelpNew"
+        String dataset = "StackOverflow"; // "StackOverflow", "YelpNew"
         String tokenModel = "./data/Model/en-token.bin"; // Token model.
 
         boolean server = false;
+        boolean cvFlag = dataset.equals("StackOverflow") ? true : false;
 
 		String prefix = server ? "/zf8/lg5bt/DataSigir" : "./data/CoLinAdapt";
-
         String providedCV = String.format("%s/%s/SelectedVocab.csv", prefix, dataset);
-        String userFolder = String.format("%s/%s/Users_1000", prefix, dataset);
-        String friendFile = String.format("%s/%s/%sFriends_1000.txt", prefix, dataset, dataset);
+        String userFolder = String.format("%s/%s/Users", prefix, dataset);
+
+        /***Feature selection**/
+//        UserAnalyzer analyzer = new UserAnalyzer(tokenModel, classNumber, null, Ngram, lengthThreshold, cvFlag);
+//        analyzer.loadUserDir(userFolder);
+//        analyzer.featureSelection("./data/StackOverflowSelectedVocab_DF_8k.txt", "DF",8000, 100, 5000);
+
+        String friendFile = String.format("%s/%s/%sFriends.txt", prefix, dataset, dataset);
         String cvIndexFile = String.format("%s/%s/%sCVIndex.txt", prefix, dataset, dataset);
-//        String userIdFile = String.format("%s/%s/%sUserIds.txt", prefix, dataset, dataset);
+        String userIdFile = String.format("%s/%s/%sUserIds.txt", prefix, dataset, dataset);
 
         int kFold = 5;
         MultiThreadedNetworkAnalyzer analyzer = new MultiThreadedNetworkAnalyzer(tokenModel, classNumber, providedCV,
-                Ngram, lengthThreshold, numberOfCores, false);
+                Ngram, lengthThreshold, numberOfCores, cvFlag);
         analyzer.setAllocateReviewFlag(false); // do not allocate reviews
-        analyzer.saveCVIndex(kFold, cvIndexFile);
 
         // we store the interaction information before-hand, load them directly
+//        analyzer.loadUserDir(userFolder);
+//        analyzer.constructUserIDIndex();
+//        analyzer.saveCVIndex(kFold, cvIndexFile);
+//        analyzer.loadInteractions(friendFile);
+//        analyzer.saveNetwork(friendFile);
+
         analyzer.loadUserDir(userFolder);
         analyzer.constructUserIDIndex();
         analyzer.loadInteractions(friendFile);
@@ -87,7 +100,7 @@ public class MyEUBMain {
         System.out.println("\n[Info]Start time: " + start);
         // the total time of training and testing in the unit of hours
         double hours = (end - start)/(1000*60);
-        System.out.print(String.format("[Time]This training+testing process took %.2f mins.\n", hours));
+//        System.out.print(String.format("[Time]This training+testing process took %.2f mins.\n", hours));
 
     }
 }

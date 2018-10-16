@@ -26,7 +26,7 @@ public class MyEUBExecution {
 
         String tokenModel = "./data/Model/en-token.bin"; // Token model.
 
-        EmbeddingParameter param = new EmbeddingParameter();
+        EmbeddingParameter param = new EmbeddingParameter(args);
         String providedCV = String.format("%s/%s/SelectedVocab.csv", param.m_prefix, param.m_data);
         String userFolder = String.format("%s/%s/Users", param.m_prefix, param.m_data);
         String friendFile = String.format("%s/%s/%sFriends.txt", param.m_prefix, param.m_data, param.m_data);

@@ -254,10 +254,7 @@ public class EUB extends LDA_Variational {
                 converge = 1.0;
 
             last = totalLikelihood;
-
-            if(iter % 5 == 0)
-                System.out.format("[Info]E-Step: %d iteration, likelihood=%.2f, converge to %.8f\n",
-                    iter, last, converge);
+            System.out.format("[Info]E-Step: %d iteration, likelihood=%.2f, converge to %.8f\n", iter, last, converge);
 
         }while(iter++ < m_varMaxIter && converge > m_varConverge);
 

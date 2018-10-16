@@ -47,11 +47,20 @@ public class FeatureSelector {
 	public ArrayList<String> getSelectedFeatures(){
 		ArrayList<String> features = new ArrayList<String>();
 		Collections.sort(m_selectedFeatures);//ascending order
-		
+
 		int totalSize = m_selectedFeatures.size();
-		
-		System.out.println("total\t"+totalSize);
-		
+		System.out.format("[Info]With minDF: %d, total word size: %d \n", m_minDF, totalSize);
+		System.out.format("Feature value min: %.5f, max: %.5f\n", m_selectedFeatures.get(0).m_value,
+				m_selectedFeatures.get(m_selectedFeatures.size()-1).m_value);
+
+//		for(_RankItem it: m_selectedFeatures){
+//			System.out.println(it.m_name + '\t' + it.m_value);
+//		}
+//		System.out.println("Top fetures:");
+//		for(int i=m_selectedFeatures.size()-1; i>m_selectedFeatures.size()-20; i--)
+//			System.out.print(m_selectedFeatures.get(i).m_name + "\t");
+//		System.out.println();
+
 		int start = (int) (totalSize * m_startProb);
 		int end = (int) (totalSize * m_endProb);
 		for(int i=start; i<end; i++)
@@ -62,6 +71,7 @@ public class FeatureSelector {
 	
 	//Feature Selection -- DF.
 	public void DF(HashMap<String, _stat> featureStat){
+		m_selectedFeatures.clear();
 		for(String f: featureStat.keySet()){
 			//Filter the features which have smaller DFs.
 			double sumDF = Utils.sumOfArray(featureStat.get(f).getDF());

@@ -64,14 +64,15 @@ public class MultiThreadedNetworkAnalyzer extends MultiThreadedLinkPredAnalyzer 
             BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(file), "UTF-8"));
             String line;
 
-            int count = 0;
             double avgFriendSize = 0;
+
+            int count = 0;
 
             // load the interactions first
             while((line = reader.readLine()) != null){
+                count++;
                 String[] users = line.trim().split("\t");
                 String uid = users[0];
-                count++;
                 if(!m_userIDIndex.containsKey(users[0])){
                     System.err.println("The user does not exist in user set!");
                     continue;
@@ -88,6 +89,7 @@ public class MultiThreadedNetworkAnalyzer extends MultiThreadedLinkPredAnalyzer 
                         m_networkMap.get(in).add(uid);
                     }
                 }
+//                System.out.println(count + "," + m_networkMap.size());
             }
             // set the friends for each user
             for(String ui: m_networkMap.keySet()){
@@ -96,9 +98,9 @@ public class MultiThreadedNetworkAnalyzer extends MultiThreadedLinkPredAnalyzer 
                 m_users.get(m_userIDIndex.get(ui)).setFriends(frds);
             }
             reader.close();
-            avgFriendSize /= count;
-            System.out.format("[Info]Total user size: %d, users with friends: %d, avg friend: %.3f.\n", count,
-                    m_networkMap.size(), avgFriendSize);
+            avgFriendSize /= m_users.size();
+            System.out.format("[Info]Total user size: %d, total doc size: %d, users with friends: %d, avg friend: " +
+                    "%.3f.\n", m_users.size(), m_corpus.getCollection().size(), m_networkMap.size(), avgFriendSize);
         } catch(IOException e){
             e.printStackTrace();
         }
@@ -165,6 +167,19 @@ public class MultiThreadedNetworkAnalyzer extends MultiThreadedLinkPredAnalyzer 
         } catch(IOException e){
             e.printStackTrace();
         }
+    }
+
+    public void findUserWithMaxDocSize(){
+        int max = -1;
+        int count = 0;
+        for(_User u: m_users){
+            if(u.getReviewSize() > 1000) {
+                System.out.println(u.getUserID());
+                count++;
+            }
+            max = Math.max(max, u.getReviewSize());
+        }
+        System.out.println("Max doc size: " + max);
     }
 
     public void printDocs4Plane(String filename){

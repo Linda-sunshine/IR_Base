@@ -142,6 +142,10 @@ public class UserAnalyzer extends DocAnalyzer {
 			if(f.isFile()){// && f.getAbsolutePath().endsWith("txt")){
 				loadUser(f.getAbsolutePath());
 				count++;
+				if(count % 100 == 0)
+					System.out.print("*");
+				if(count % 5000 == 0)
+					System.out.println();
 			} else if (f.isDirectory())
 				loadUserDir(f.getAbsolutePath());
 		}

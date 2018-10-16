@@ -382,6 +382,7 @@ public abstract class Analyzer {
 	//Select the features and store them in a file.
 	public void featureSelection(String location, String fs1, String fs2, int maxDF, int minDF, int topK) throws FileNotFoundException {
 		FeatureSelector selector = new FeatureSelector(0, 1, maxDF, minDF);
+
 		String featureSelection1 = fs1;
 		String featureSelection2 = fs2;
 		
