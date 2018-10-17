@@ -1,0 +1,5 @@
+#!/bin/bash
+for k in 0.1 1 3 5 7 10
+do
+    echo "nohup /zf18/ll5fy/lab/IR_Base/run -set byUser_70k_review -topicmodel ETBIR -flagFixLambda true -nuOfTopics 30 -lambda $k > /zf18/ll5fy/lab/IR_Base/output/yelp_70k_ETBIR_fixLambda$k_30.output 2>&1 &" | bash
+done
