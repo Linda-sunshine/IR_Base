@@ -127,11 +127,13 @@ public class EUB extends LDA_Variational {
         double currentAllLikelihood;
         double converge;
         do {
-//            if(++m_EStepCount % 5 == 0)
-//                constructNetwork();
-
             System.out.println("\nStart E-step....");
-            currentAllLikelihood = E_step();
+
+            if(m_multithread)
+                currentAllLikelihood = multithread_E_step();
+            else
+                currentAllLikelihood = E_step();
+
             System.out.format("[Info]Finish E-step: loglikelihood is: %.5f.\n", currentAllLikelihood);
             if (iter >= 0)
                 converge = Math.abs((lastAllLikelihood - currentAllLikelihood) / lastAllLikelihood);

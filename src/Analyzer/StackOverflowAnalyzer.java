@@ -543,10 +543,12 @@ public class StackOverflowAnalyzer {
         analyzer.loadQuestionsWithoutText(questionFile);
         analyzer.loadAnswersWithoutText(answerFile);
         int threshold = 10;
-        HashSet<Integer> sampledUserIds = analyzer.sample(analyzer.filterUsers(threshold));
-        analyzer.constructNetworkWithFitleredUsers(sampledUserIds);
-        analyzer.printUserIds("./data/StackOverflowUserIds_12k.txt", sampledUserIds);
-        analyzer.saveNetwork("./data/StackOverflowFriends_12k.txt");
+        analyzer.filterUsers(threshold);
+
+//        HashSet<Integer> sampledUserIds = analyzer.sample(analyzer.filterUsers(threshold));
+//        analyzer.constructNetworkWithFitleredUsers(sampledUserIds);
+//        analyzer.printUserIds("./data/StackOverflowUserIds_12k.txt", sampledUserIds);
+//        analyzer.saveNetwork("./data/StackOverflowFriends_12k.txt");
 
     }
 }
