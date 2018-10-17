@@ -25,7 +25,7 @@ public class MyEUBMain {
         int lengthThreshold = 5; // Document length threshold
         int numberOfCores = Runtime.getRuntime().availableProcessors();
 
-        String dataset = "StackOverflow"; // "StackOverflow", "YelpNew"
+        String dataset = "YelpNew"; // "StackOverflow", "YelpNew"
         String tokenModel = "./data/Model/en-token.bin"; // Token model.
 
         boolean server = false;
@@ -33,33 +33,28 @@ public class MyEUBMain {
 
 		String prefix = server ? "/zf8/lg5bt/DataSigir" : "./data/CoLinAdapt";
         String providedCV = String.format("%s/%s/SelectedVocab.csv", prefix, dataset);
-        String userFolder = String.format("%s/%s/Users", prefix, dataset);
+        String userFolder = String.format("%s/%s/Users_1000", prefix, dataset);
 
         /***Feature selection**/
 //        UserAnalyzer analyzer = new UserAnalyzer(tokenModel, classNumber, null, Ngram, lengthThreshold, cvFlag);
 //        analyzer.loadUserDir(userFolder);
 //        analyzer.featureSelection("./data/StackOverflowSelectedVocab_DF_8k.txt", "DF",8000, 100, 5000);
 
-        String friendFile = String.format("%s/%s/%sFriends.txt", prefix, dataset, dataset);
-        String cvIndexFile = String.format("%s/%s/%sCVIndex.txt", prefix, dataset, dataset);
-        String userIdFile = String.format("%s/%s/%sUserIds.txt", prefix, dataset, dataset);
+        String friendFile = String.format("%s/%s/%sFriends_1000.txt", prefix, dataset, dataset);
+        String cvIndexFile = String.format("%s/%s/%sCVIndex_1000.txt", prefix, dataset, dataset);
+        //String userIdFile = String.format("%s/%s/%sUserIds.txt", prefix, dataset, dataset);
 
         int kFold = 5;
         MultiThreadedNetworkAnalyzer analyzer = new MultiThreadedNetworkAnalyzer(tokenModel, classNumber, providedCV,
                 Ngram, lengthThreshold, numberOfCores, cvFlag);
         analyzer.setAllocateReviewFlag(false); // do not allocate reviews
 
-        // we store the interaction information before-hand, load them directly
+        /****we store the interaction information and cv index before-hand****/
 //        analyzer.loadUserDir(userFolder);
 //        analyzer.constructUserIDIndex();
 //        analyzer.saveCVIndex(kFold, cvIndexFile);
 //        analyzer.loadInteractions(friendFile);
 //        analyzer.saveNetwork(friendFile);
-
-        analyzer.loadUserDir(userFolder);
-        analyzer.constructUserIDIndex();
-        analyzer.loadInteractions(friendFile);
-        analyzer.loadCVIndex(cvIndexFile);
 
         /***save user id file and network file****/
 //        analyzer.saveUserIds(userIdFile);
@@ -71,6 +66,10 @@ public class MyEUBMain {
 //        analyzer.printDocs4Plane("./data/YelpNew4PlaneDocs_1000.txt");
 //        analyzer.printNetwork4Plane("./data/YelpNew4PlaneNetwork_1000.txt");
 
+        analyzer.loadUserDir(userFolder);
+        analyzer.constructUserIDIndex();
+        analyzer.loadInteractions(friendFile);
+        analyzer.loadCVIndex(cvIndexFile);
 
         /***Start running joint modeling of user embedding and topic embedding****/
         int emMaxIter = 10, number_of_topics = 10, varMaxIter = 20, embeddingDim = 10;
@@ -81,9 +80,10 @@ public class MyEUBMain {
 
         EUB eub = new EUB(emMaxIter, emConverge, beta, corpus, lambda, number_of_topics, alpha, varMaxIter, varConverge, embeddingDim);
         eub.buildLookupTables(analyzer.getUsers());
-        eub.EMonCorpus();
         eub.setDisplayLv(0);
-//        eub.fixedCrossValidation(kFold);
+
+//        eub.EMonCorpus();
+        eub.fixedCrossValidation(kFold);
         long end = System.currentTimeMillis();
 
         // record related information
@@ -99,8 +99,8 @@ public class MyEUBMain {
 
         System.out.println("\n[Info]Start time: " + start);
         // the total time of training and testing in the unit of hours
-        double hours = (end - start)/(1000*60);
-//        System.out.print(String.format("[Time]This training+testing process took %.2f mins.\n", hours));
+        double hours = (end - start)/(1000*60*60);
+        System.out.print(String.format("[Time]This training+testing process took %.4f hours.\n", hours));
 
     }
 }

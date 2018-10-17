@@ -104,6 +104,7 @@ public class EUB extends LDA_Variational {
     @Override
     public void EMonCorpus(){
 
+        constructNetwork();
         m_trainSet = new ArrayList<_Doc>();
         // collect all training reviews
         for(_User u: m_users){
@@ -114,12 +115,11 @@ public class EUB extends LDA_Variational {
         EM();
     }
 
-    int m_EStepCount = 0;
     @Override
     public void EM() {
 
         // sample non-interactions first before E-step
-        constructNetwork();
+//        constructNetwork();
         initialize_probability(m_trainSet);
 
         int iter = 0;
@@ -127,7 +127,7 @@ public class EUB extends LDA_Variational {
         double currentAllLikelihood;
         double converge;
         do {
-            System.out.println("\nStart E-step....");
+            System.out.format(String.format("\nStart E-step %d ....\n", iter));
 
             if(m_multithread)
                 currentAllLikelihood = multithread_E_step();
@@ -140,7 +140,7 @@ public class EUB extends LDA_Variational {
             else
                 converge = 1.0;
 
-            System.out.println("\nStart M-step....");
+            System.out.format(String.format("\nStart M-step %d ....\n", iter));
             calculate_M_step(iter);
 
             lastAllLikelihood = currentAllLikelihood;
@@ -862,6 +862,9 @@ public class EUB extends LDA_Variational {
 
     // fixed cross validation
     public void fixedCrossValidation(int kFold){
+
+        constructNetwork();
+        double[] perplexity = new double[kFold];
         m_trainSet = new ArrayList<>();
         m_testSet = new ArrayList<>();
         for(int k=0; k<kFold; k++){
@@ -876,7 +879,52 @@ public class EUB extends LDA_Variational {
                 }
             }
             EM();
+            perplexity[k] = evaluation();
         }
+
+        double avg = Utils.sumOfArray(perplexity)/perplexity.length;
+        double std = 0;
+        for(double p: perplexity)
+            std += (p - avg) * (p - avg);
+        std /= perplexity.length;
+        std = Math.sqrt(std);
+        System.out.format("[Output]Avg perpelexity is: (%.4f +- %.4f).\n", avg, std);
+    }
+
+    // evaluation in single-thread
+    public double evaluation() {
+
+        System.out.println("[Info]Start evaluation in single thread...");
+        double loglikelihood, sumLoglikelihood = 0;
+        double totalWords = 0.0;
+        for(_Doc d: m_testSet) {
+            loglikelihood = inference(d);
+            sumLoglikelihood += loglikelihood;
+            totalWords += d.getTotalDocLength();
+        }
+
+        double[] results = new double[2];
+        results[0] = Math.exp(-sumLoglikelihood/totalWords);
+        results[1] = sumLoglikelihood / m_testSet.size();
+
+        System.out.format("[Stat]Test set perplexity is %.3f and log-likelihood is %.3f\n", results[0], results[1]);
+        return results[0];
+    }
+
+    @Override
+    public double calculate_E_step(_Doc d) {
+        _Doc4EUB doc = (_Doc4EUB) d;
+        double cur = varInference4Doc(doc);
+        updateStats4Doc(doc);
+        return cur;
+    }
+
+    @Override
+    public double inference(_Doc d){
+        initTestDoc(d);
+        double likelihood = calculate_E_step(d);
+        estThetaInDoc(d);
+        return likelihood;
     }
 
     public void printTopicEmbedding(String filename){

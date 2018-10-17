@@ -25,12 +25,12 @@ public class EUB_multithreading extends EUB {
         @Override
         public void run(){
             m_likelihood = 0;
-            double loglikelihood;
+            m_perplexity = 0;
             for(_Doc d: m_corpus) {
                 if (m_type == TopicModel_worker.RunType.RT_EM)
                     m_likelihood += calculate_E_step(d);
                 else if (m_type == TopicModel_worker.RunType.RT_inference) {
-                    loglikelihood = inference(d);
+                    m_perplexity += inference(d);
                 }
             }
         }
@@ -53,13 +53,13 @@ public class EUB_multithreading extends EUB {
 
         @Override
         public double accumluateStats(double[][] word_topic_sstat) {
+
             return super.accumluateStats(word_topic_sstat);
         }
 
     }
 
     public class User_worker extends EmbedModel_worker {
-        protected double m_likelihood_perplexity;
 
         public User_worker(int dim){
             super(dim);
@@ -68,13 +68,13 @@ public class EUB_multithreading extends EUB {
         @Override
         public void run(){
             m_likelihood = 0;
-            double loglikelihood = 0;
+            m_perplexity = 0;
             for(Object o: m_objects){
                 _User4EUB user = (_User4EUB) o;
                 if (m_type == TopicModel_worker.RunType.RT_EM)
                     m_likelihood += calculate_E_step(user);
                 else if (m_type == TopicModel_worker.RunType.RT_inference) {
-                    loglikelihood = varInference4User(user);
+                    m_perplexity += varInference4User(user);
                 }
             }
         }
@@ -103,14 +103,14 @@ public class EUB_multithreading extends EUB {
         @Override
         public void run(){
             m_likelihood = 0;
-            double loglikelihood = 0;
+            m_perplexity = 0;
 
             for(Object o: m_objects){
                 _Topic4EUB topic = (_Topic4EUB) o;
                 if (m_type == TopicModel_worker.RunType.RT_EM)
                     m_likelihood += calculate_E_step(topic);
                 else if (m_type == TopicModel_worker.RunType.RT_inference) {
-                    loglikelihood = varInference4Topic(topic);
+                    m_perplexity += varInference4Topic(topic);
                 }
             }
         }
@@ -245,7 +245,7 @@ public class EUB_multithreading extends EUB {
     @Override
     protected double multithread_inference() {
         int iter = 0;
-        double likelihood, last = -1.0, converge;
+        double loglikelihood, perplexity = 0, totalWords = 0, last = -1.0, converge;
 
         //clear up for adding new testing documents
         for (int i = 0; i < m_workers.length; i++) {
@@ -262,7 +262,8 @@ public class EUB_multithreading extends EUB {
 
         do {
             init();
-            likelihood = 0.0;
+            loglikelihood = 0.0;
+            totalWords = 0;
 
             //run
             for (int i = 0; i < m_workers.length; i++) {
@@ -279,32 +280,53 @@ public class EUB_multithreading extends EUB {
                 }
             }
 
-            double loglikelihood = 0, totalWords = 0, docSize = 0;
             for (TopicModelWorker worker : m_workers) {
                 loglikelihood += ((Doc_worker) worker).getLogLikelihood();
+                perplexity += ((Doc_worker) worker).getPerplexity();
                 totalWords += ((Doc_worker) worker).getTotalWords();
-
             }
 
-            if(Double.isNaN(likelihood) || Double.isInfinite(likelihood)){
+            if(Double.isNaN(loglikelihood) || Double.isInfinite(loglikelihood)){
                 System.err.format("[Error]Inference generate NaN\n");
                 break;
             }
 
             if(iter > 0)
-                converge = Math.abs((likelihood - last) / last);
+                converge = Math.abs((loglikelihood - last) / last);
             else
                 converge = 1.0;
 
-            last = likelihood;
+            last = loglikelihood;
             if(converge < m_varConverge)
                 break;
             System.out.print("---likelihood: " + last + "\n");
         }while(iter++ < m_varMaxIter);
 
-        System.out.print(String.format("[Info]Inference finished: likelihood: %.4f\n", likelihood));
+        System.out.print(String.format("[Info]Inference finished: likelihood: %.4f\n", loglikelihood));
 
-        return likelihood;
+        return perplexity;
+    }
+
+    @Override
+    // evaluation in multi-thread
+    public double evaluation() {
+        double perplexity = 0, sumlogLikelihood = 0;
+        double totalWords = 0.0;
+        multithread_inference();
+        System.out.println("[Info]Start evaluation in multi-thread....");
+        for(TopicModelWorker worker:m_workers) {
+            sumlogLikelihood += worker.getLogLikelihood();
+            perplexity += worker.getPerplexity();
+            totalWords += worker.getTotalWords();
+        }
+
+        double[] results = new double[2];
+        results[0] = Math.exp(-perplexity/totalWords);
+        results[1] = sumlogLikelihood / m_testSet.size();
+
+        System.out.format("[Stat]Test set perplexity is %.3f and log-likelihood is %.3f\n", results[0], results[1]);
+
+        return results[0];
     }
 
 }

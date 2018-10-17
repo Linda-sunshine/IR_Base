@@ -128,6 +128,7 @@ public class MultiThreadedNetworkAnalyzer extends MultiThreadedLinkPredAnalyzer 
                 writer.write(String.format("%s,%d,%d\n", r.getUserID(), r.getID(), masks[i]));
             }
             writer.close();
+            System.out.println("[Info]Finish writing cv index!");
         } catch(IOException e){
             e.printStackTrace();
         }
