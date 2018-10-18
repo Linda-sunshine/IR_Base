@@ -27,7 +27,7 @@ public class CVGeneration {
         String featureSelection = "IG";
 
 
-        String suffix = ".json";
+        String suffix = ".txt";
         String stopwords = "./data/Model/stopwords.dat";
         String pattern = String.format("%dgram_%s", Ngram, featureSelection);
         String fvFile = String.format("data/Features/fv_%s_" + source + "_" + trainset + ".txt", pattern);

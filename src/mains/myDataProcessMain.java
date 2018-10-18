@@ -219,6 +219,7 @@ public class myDataProcessMain {
                 int rate = r.getYLabel();
                 writer.write(String.format("%d\t%d\t%d\n", m_usersIndex.get(userID), m_itemsIndex.get(itemID), rate));
             }
+            writer.flush();
             writer.close();
 
             System.out.format("[Info]%d rates saved to %s\n", docs.size(), filename);
@@ -243,6 +244,7 @@ public class myDataProcessMain {
             }
             for(String uid : users)
                 writer.write(String.format("%d\n", m_usersIndex.get(uid)));
+            writer.flush();
             writer.close();
 
             System.out.format("[Info]%d users saved to %s\n", users.size(), filename);
@@ -265,6 +267,7 @@ public class myDataProcessMain {
                     writer.write(String.format(" %d:%d", fv.getIndex(), (int) fv.getValue()));//index starts from 1
                 writer.write("\n");
             }
+            writer.flush();
             writer.close();
 
             System.out.format("[Info]%d feature vectors saved to %s\n", docs.size(), filename);
@@ -287,6 +290,7 @@ public class myDataProcessMain {
                     writer.write(String.format(" %d:%d", fv.getIndex(), (int) fv.getValue()));//index starts from 1
                 writer.write("\n");
             }
+            writer.flush();
             writer.close();
 
             System.out.format("[Info]%d feature vectors saved to %s\n", docs.size(), filename);
@@ -306,6 +310,7 @@ public class myDataProcessMain {
             for(int[] lk:links) {
                 writer.write(String.format("%d\t%d\n", lk[0], lk[1]));//index starts from 1
             }
+            writer.flush();
             writer.close();
 
             System.out.format("[Info]%d links saved to %s\n", links.size(), filename);
