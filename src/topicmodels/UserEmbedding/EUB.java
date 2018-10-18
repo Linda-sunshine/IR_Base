@@ -51,6 +51,7 @@ public class EUB extends LDA_Variational {
     protected double m_rho = 0.01;
 
     protected int m_displayLv = 0;
+    protected double m_stepSize = 1e-3;
 
     public EUB(int number_of_iteration, double converge, double beta,
                _Corpus c, double lambda, int number_of_topics, double alpha,
@@ -64,8 +65,11 @@ public class EUB extends LDA_Variational {
         m_networkMap = new HashMap<Integer, HashSet<Integer>>();
     }
 
+    public void setStepSize(double s){
+        m_stepSize = s;
+    }
     // Load the data for later user
-    public void buildLookupTables(ArrayList<_User> users){
+    public void initLookupTables(ArrayList<_User> users){
         m_usersIndex = new HashMap<String, Integer>();
         m_userDocMap = new HashMap<Integer, ArrayList<Integer>>();
         m_docUserMap = new HashMap<Integer, Integer>();
@@ -75,7 +79,7 @@ public class EUB extends LDA_Variational {
             _User4EUB user = new _User4EUB(users.get(i));
             m_users.add(user);
             m_usersIndex.put(user.getUserID(), i);
-            buildUserDocs(i, user, users.get(i).getReviews());
+            initUserDocs(i, user, users.get(i).getReviews());
         }
 
         for(int k=0; k<number_of_topics; k++){
@@ -83,18 +87,35 @@ public class EUB extends LDA_Variational {
         }
     }
 
-    protected void buildUserDocs(int i, _User4EUB user, ArrayList<_Review> reviews){
-        m_userDocMap.put(i, new ArrayList<Integer>());
+    protected void initUserDocs(int i, _User4EUB user, ArrayList<_Review> reviews){
+
+//        m_userDocMap.put(i, new ArrayList<Integer>());
         ArrayList<_Doc4EUB> docs = new ArrayList<_Doc4EUB>();
         for(_Review r: reviews){
             int dIndex = m_docs.size();
             _Doc4EUB doc = new _Doc4EUB(r, dIndex);
             docs.add(doc);
             m_docs.add(doc);
-            m_userDocMap.get(i).add(dIndex);
+//            m_userDocMap.get(i).add(dIndex);
             m_docUserMap.put(dIndex, i);
         }
         user.setReviews(docs);
+    }
+
+    protected void buildUserDocMap(){
+        m_userDocMap.clear();
+
+        for(int i=0; i<m_users.size(); i++){
+            ArrayList<_Review> reviews =  m_users.get(i).getReviews();
+            for(_Review r: reviews){
+                if(r.getType() == _Doc.rType.TRAIN){
+                    if(!m_userDocMap.containsKey(i))
+                        m_userDocMap.put(i, new ArrayList<Integer>());
+                    _Doc4EUB doc = (_Doc4EUB) r;
+                    m_userDocMap.get(i).add(doc.getIndex());
+                }
+            }
+        }
     }
 
     public void setDisplayLv(int d){
@@ -119,7 +140,6 @@ public class EUB extends LDA_Variational {
     public void EM() {
 
         // sample non-interactions first before E-step
-//        constructNetwork();
         initialize_probability(m_trainSet);
 
         int iter = 0;
@@ -127,7 +147,7 @@ public class EUB extends LDA_Variational {
         double currentAllLikelihood;
         double converge;
         do {
-            System.out.format(String.format("\nStart E-step %d ....\n", iter));
+            System.out.format(String.format("\n----------Start EM %d iteraction----------\n", iter));
 
             if(m_multithread)
                 currentAllLikelihood = multithread_E_step();
@@ -140,7 +160,6 @@ public class EUB extends LDA_Variational {
             else
                 converge = 1.0;
 
-            System.out.format(String.format("\nStart M-step %d ....\n", iter));
             calculate_M_step(iter);
 
             lastAllLikelihood = currentAllLikelihood;
@@ -213,35 +232,20 @@ public class EUB extends LDA_Variational {
         init();
         do {
             totalLikelihood = 0.0;
-            int count = 0;
 
-//            System.out.println("[Info] Start variational inference for documents!!");
             for (_Doc doc: m_trainSet) {
-//                count++;
-//                if(count % 100 == 0)
-//                    System.out.print("*");
-//                if(count % 10000 == 0)
-//                    System.out.println();
                 totalLikelihood += varInference4Doc((_Doc4EUB) doc);
                 if(Double.isNaN(totalLikelihood) || Double.isInfinite(totalLikelihood))
                     System.out.println("[error] The likelihood is Nan or Infinity!!");
             }
 
-//            System.out.println("\n[Info] Start variational inference for topics!!");
             for (_Topic4EUB topic: m_topics) {
                 totalLikelihood += varInference4Topic(topic);
                 if(Double.isNaN(totalLikelihood) || Double.isInfinite(totalLikelihood))
                     System.out.println("[error] The likelihood is Nan or Infinity!!");
             }
 
-//            System.out.println("[Info] Start variational inference for users!!");
-            count = 0;
             for(_User4EUB user: m_users){
-//                count++;
-//                if(count % 100 == 0)
-//                    System.out.print("*");
-//                if(count % 1000 == 0)
-//                    System.out.println();
                 totalLikelihood += varInference4User(user);
                 if(Double.isNaN(totalLikelihood) || Double.isInfinite(totalLikelihood))
                     System.out.println("[error] The likelihood is Nan or Infinity!!");
@@ -256,7 +260,7 @@ public class EUB extends LDA_Variational {
                 converge = 1.0;
 
             last = totalLikelihood;
-            System.out.format("[Info]E-Step: %d iteration, likelihood=%.2f, converge to %.8f\n", iter, last, converge);
+            System.out.format("[E-Step] %d iteration, likelihood=%.2f, converge to %.8f\n", iter, last, converge);
 
         }while(iter++ < m_varMaxIter && converge > m_varConverge);
 
@@ -491,21 +495,24 @@ public class EUB extends LDA_Variational {
         double[] mu_termU = new double[m_embeddingDim];
 
         int i = m_usersIndex.get(ui.getUserID());
-        int docSize = m_userDocMap.get(i).size();
-        for(int k=0; k<number_of_topics; k++){
-            // stat for updating sigma
-            _Topic4EUB topic = m_topics.get(k);
-            Matrix tmp = new Matrix(sigmaAddMuMuTranspose(topic.m_sigma_phi, topic.m_mu_phi));
-            sigma_termT.plusEquals(tmp.timesEquals(docSize));
 
-            // stat for updating mu
-            for(int dIndex: m_userDocMap.get(i)){
-                _Doc4EUB doc = m_docs.get(dIndex);
-                Utils.add2Array(mu_termT, topic.m_mu_phi, m_tau * doc.m_mu_theta[topic.getIndex()]);
+        if(m_userDocMap.containsKey(i)){
+            int docSize = m_userDocMap.get(i).size();
+            for(int k=0; k<number_of_topics; k++){
+                // stat for updating sigma
+                _Topic4EUB topic = m_topics.get(k);
+                Matrix tmp = new Matrix(sigmaAddMuMuTranspose(topic.m_sigma_phi, topic.m_mu_phi));
+                sigma_termT.plusEquals(tmp.timesEquals(docSize));
+
+                // stat for updating mu
+                for(int dIndex: m_userDocMap.get(i)){
+                    _Doc4EUB doc = m_docs.get(dIndex);
+                    Utils.add2Array(mu_termT, topic.m_mu_phi, m_tau * doc.m_mu_theta[topic.getIndex()]);
+                }
             }
+            // * \tau
+            sigma_termT.timesEquals(m_tau);
         }
-        // * \tau
-        sigma_termT.timesEquals(m_tau);
 
         // \gamma * I
         double[][] diag = new double[m_embeddingDim][m_embeddingDim];
@@ -542,7 +549,7 @@ public class EUB extends LDA_Variational {
         double[] muG = new double[m_users.size()];
         double[] mu_delta = Arrays.copyOfRange(ui.m_mu_delta, 0, ui.m_mu_delta.length);
 
-        double fValue, lastFValue = 1.0, cvg = 1e-6, diff, iterMax = 30, iter = 0, stepSize = 1e-3;
+        double fValue, lastFValue = 1.0, cvg = 1e-6, diff, iterMax = 30, iter = 0;
         do {
             Arrays.fill(muG, 0);
             fValue = 0;
@@ -554,7 +561,7 @@ public class EUB extends LDA_Variational {
                 double[] fgValue = calcFGValueDeltaMu(ui, mu_delta, eij, j);
                 fValue += fgValue[0];
                 muG[j] += fgValue[1];
-                mu_delta[j] += stepSize * muG[j];
+                mu_delta[j] += m_stepSize * muG[j];
             }
             printFValue(lastFValue, fValue);
             diff = (lastFValue - fValue) / lastFValue;
@@ -585,7 +592,7 @@ public class EUB extends LDA_Variational {
     protected void update_delta_ij_sigma(_User4EUB ui){
         int i = m_usersIndex.get(ui.getUserID());
 
-        double fValue, lastFValue = 1.0, cvg = 1e-6, diff, iterMax = 30, iter = 0, stepSize = 1e-3;
+        double fValue, lastFValue = 1.0, cvg = 1e-6, diff, iterMax = 30, iter = 0;
         double[] sigmaG = new double[m_users.size()];
         double[] sigma_delta = Arrays.copyOfRange(ui.m_sigma_delta, 0, ui.m_sigma_delta.length);
         do {
@@ -599,7 +606,7 @@ public class EUB extends LDA_Variational {
                 double[] fgValue = calcFGValueDeltaSigma(ui, sigma_delta, eij, j);
                 fValue += fgValue[0];
                 sigmaG[j] += fgValue[1];
-                sigma_delta[j] += stepSize * sigmaG[j];
+                sigma_delta[j] += m_stepSize * sigmaG[j];
                 if(Double.isNaN(sigma_delta[j]) || Double.isInfinite(sigma_delta[j]))
                     System.out.println("[error] Sigma_delta is Nan or Infinity!!");
             }
@@ -668,7 +675,7 @@ public class EUB extends LDA_Variational {
         int N = doc.getTotalDocLength();
 
         double fValue, dotProd, moment;
-        double lastFValue = 1.0, cvg = 1e-6, diff, iterMax = 30, iter = 0, stepSize = 1e-3;
+        double lastFValue = 1.0, cvg = 1e-6, diff, iterMax = 30, iter = 0;
 
         double[] muG = new double[number_of_topics];
         double[] mu_theta = Arrays.copyOfRange(doc.m_mu_theta, 0, doc.m_mu_theta.length);
@@ -684,7 +691,7 @@ public class EUB extends LDA_Variational {
                 fValue += m_tau * mu_theta[k] * dotProd + mu_theta[k] * doc.m_sstat[k] - moment;
                 // gradient
                 muG[k] = -m_tau * mu_theta[k] + m_tau * dotProd + doc.m_sstat[k] - moment;
-                mu_theta[k] += stepSize * muG[k];
+                mu_theta[k] += m_stepSize * muG[k];
             }
             printFValue(lastFValue, fValue);
             diff = (lastFValue - fValue) / lastFValue;
@@ -712,7 +719,7 @@ public class EUB extends LDA_Variational {
     protected void update_theta_id_sigma(_Doc4EUB doc){
         int N = doc.getTotalDocLength();
         double fValue, moment;
-        double lastFValue = 1.0, cvg = 1e-6, diff, iterMax = 30, iter = 0, stepSize = 1e-3;
+        double lastFValue = 1.0, cvg = 1e-6, diff, iterMax = 30, iter = 0;
 
         double[] sigmaSqrtG = new double[number_of_topics];
         double[] sigma_sqrt_theta = Arrays.copyOfRange(doc.m_sigma_sqrt_theta, 0, doc.m_sigma_sqrt_theta.length);
@@ -728,7 +735,7 @@ public class EUB extends LDA_Variational {
                 // gradient
                 sigmaSqrtG[k] = -m_tau * sigma_sqrt_theta[k] - sigma_sqrt_theta[k] * moment
                         + 1/sigma_sqrt_theta[k];
-                sigma_sqrt_theta[k] += stepSize * sigmaSqrtG[k];
+                sigma_sqrt_theta[k] += m_stepSize * sigmaSqrtG[k];
                 if(Double.isNaN(sigma_sqrt_theta[k]) || Double.isInfinite(sigma_sqrt_theta[k]))
                     System.out.println("Doc: sigma_sqrt_theta[k] is Nan or Infinity!!");
 
@@ -868,16 +875,25 @@ public class EUB extends LDA_Variational {
         m_trainSet = new ArrayList<>();
         m_testSet = new ArrayList<>();
         for(int k=0; k<kFold; k++){
+            int totalLen = 0;
+            System.out.format("\n==========Start %d-fold cross validation=========\n", k);
             m_trainSet.clear();
             m_testSet.clear();
             for(int i=0; i<m_users.size(); i++){
                 for(_Review r: m_users.get(i).getReviews()){
-                    if(r.getMask4CV() == k)
+                    if(r.getMask4CV() == k){
+                        r.setType(_Doc.rType.TEST);
                         m_testSet.add(r);
-                    else
+                        totalLen += r.getTotalDocLength();
+                    }
+                    else {
+                        r.setType(_Doc.rType.TRAIN);
                         m_trainSet.add(r);
+                    }
                 }
+                m_users.get(i);
             }
+            buildUserDocMap();
             EM();
             perplexity[k] = evaluation();
         }
@@ -895,19 +911,19 @@ public class EUB extends LDA_Variational {
     public double evaluation() {
 
         System.out.println("[Info]Start evaluation in single thread...");
-        double loglikelihood, sumLoglikelihood = 0;
+        double perplexity = 0;
         double totalWords = 0.0;
         for(_Doc d: m_testSet) {
-            loglikelihood = inference(d);
-            sumLoglikelihood += loglikelihood;
+            perplexity += inference(d);
             totalWords += d.getTotalDocLength();
         }
 
         double[] results = new double[2];
-        results[0] = Math.exp(-sumLoglikelihood/totalWords);
-        results[1] = sumLoglikelihood / m_testSet.size();
+        results[0] = Math.exp(-perplexity/totalWords);
+        results[1] = perplexity / m_testSet.size();
 
-        System.out.format("[Stat]Test set perplexity is %.3f and log-likelihood is %.3f\n", results[0], results[1]);
+        System.out.format("[Debug] Loglikelihood: %.4f, total words: %.1f\n", perplexity, totalWords);
+        System.out.format("[Stat]Test set perplexity is %.3f and log-likelihood is %.3f\n\n", results[0], results[1]);
         return results[0];
     }
 
@@ -917,6 +933,11 @@ public class EUB extends LDA_Variational {
         double cur = varInference4Doc(doc);
         updateStats4Doc(doc);
         return cur;
+    }
+
+    @Override
+    protected void initTestDoc(_Doc d) {
+        ((_Doc4EUB) d).setTopics4Variational(number_of_topics, d_alpha, d_mu, d_sigma);
     }
 
     @Override

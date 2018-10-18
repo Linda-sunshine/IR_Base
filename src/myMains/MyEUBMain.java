@@ -5,7 +5,9 @@ import Analyzer.MultiThreadedUserAnalyzer;
 import Analyzer.UserAnalyzer;
 import opennlp.tools.util.InvalidFormatException;
 import structures._Corpus;
+import topicmodels.LDA.LDA_Variational;
 import topicmodels.UserEmbedding.EUB;
+import topicmodels.multithreads.UserEmbedding.EUB_multithreading;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -25,7 +27,7 @@ public class MyEUBMain {
         int lengthThreshold = 5; // Document length threshold
         int numberOfCores = Runtime.getRuntime().availableProcessors();
 
-        String dataset = "YelpNew"; // "StackOverflow", "YelpNew"
+        String dataset = "StackOverflow"; // "StackOverflow", "YelpNew"
         String tokenModel = "./data/Model/en-token.bin"; // Token model.
 
         boolean server = false;
@@ -33,21 +35,26 @@ public class MyEUBMain {
 
 		String prefix = server ? "/zf8/lg5bt/DataSigir" : "./data/CoLinAdapt";
         String providedCV = String.format("%s/%s/SelectedVocab.csv", prefix, dataset);
-        String userFolder = String.format("%s/%s/Users_1000", prefix, dataset);
+        String userFolder = String.format("%s/%s/Users", prefix, dataset);
 
         /***Feature selection**/
 //        UserAnalyzer analyzer = new UserAnalyzer(tokenModel, classNumber, null, Ngram, lengthThreshold, cvFlag);
 //        analyzer.loadUserDir(userFolder);
 //        analyzer.featureSelection("./data/StackOverflowSelectedVocab_DF_8k.txt", "DF",8000, 100, 5000);
 
-        String friendFile = String.format("%s/%s/%sFriends_1000.txt", prefix, dataset, dataset);
-        String cvIndexFile = String.format("%s/%s/%sCVIndex_1000.txt", prefix, dataset, dataset);
+        String friendFile = String.format("%s/%s/%sFriends.txt", prefix, dataset, dataset);
+        String cvIndexFile = String.format("%s/%s/%sCVIndex.txt", prefix, dataset, dataset);
         //String userIdFile = String.format("%s/%s/%sUserIds.txt", prefix, dataset, dataset);
 
         int kFold = 5;
         MultiThreadedNetworkAnalyzer analyzer = new MultiThreadedNetworkAnalyzer(tokenModel, classNumber, providedCV,
                 Ngram, lengthThreshold, numberOfCores, cvFlag);
         analyzer.setAllocateReviewFlag(false); // do not allocate reviews
+
+
+//        analyzer.loadUserDir(userFolder);
+//        analyzer.constructUserIDIndex();
+//        analyzer.printData4TADW("./data/StackOverflowTADW.txt");
 
         /****we store the interaction information and cv index before-hand****/
 //        analyzer.loadUserDir(userFolder);
@@ -72,18 +79,24 @@ public class MyEUBMain {
         analyzer.loadCVIndex(cvIndexFile);
 
         /***Start running joint modeling of user embedding and topic embedding****/
-        int emMaxIter = 10, number_of_topics = 10, varMaxIter = 20, embeddingDim = 10;
+        int emMaxIter = 5, number_of_topics = 10, varMaxIter = 5, embeddingDim = 10;
         double emConverge = 1e-10, alpha = 1 + 1e-2, beta = 1 + 1e-3, lambda = 1 + 1e-3, varConverge = 1e-6;//these two parameters must be larger than 1!!!
         _Corpus corpus = analyzer.getCorpus();
 
         long start = System.currentTimeMillis();
+        double stepSize = 1e-2;
+        LDA_Variational tModel = null;
+        boolean multiFlag = true;
+        if(multiFlag)
+            tModel = new EUB_multithreading(emMaxIter, emConverge, beta, corpus, lambda, number_of_topics, alpha, varMaxIter, varConverge, embeddingDim);
+        else
+            tModel = new EUB(emMaxIter, emConverge, beta, corpus, lambda, number_of_topics, alpha, varMaxIter, varConverge, embeddingDim);
+        ((EUB) tModel).initLookupTables(analyzer.getUsers());
+        ((EUB) tModel).setDisplayLv(0);
+        ((EUB) tModel).setStepSize(stepSize);
 
-        EUB eub = new EUB(emMaxIter, emConverge, beta, corpus, lambda, number_of_topics, alpha, varMaxIter, varConverge, embeddingDim);
-        eub.buildLookupTables(analyzer.getUsers());
-        eub.setDisplayLv(0);
-
-//        eub.EMonCorpus();
-        eub.fixedCrossValidation(kFold);
+//         ((EUB) tModel).EMonCorpus();
+        ((EUB) tModel).fixedCrossValidation(kFold);
         long end = System.currentTimeMillis();
 
         // record related information
@@ -93,9 +106,9 @@ public class MyEUBMain {
         if(!fileDir.exists())
             fileDir.mkdirs();
 
-        eub.printTopWords(30, String.format("%s/topkWords.txt", saveDir));
-        eub.printTopicEmbedding(String.format("%s/topicEmbedding.txt", saveDir));
-        eub.printUserEmbedding(String.format("%s/userEmbedding.txt", saveDir));
+//        eub.printTopWords(30, String.format("%s/topkWords.txt", saveDir));
+//        eub.printTopicEmbedding(String.format("%s/topicEmbedding.txt", saveDir));
+//        eub.printUserEmbedding(String.format("%s/userEmbedding.txt", saveDir));
 
         System.out.println("\n[Info]Start time: " + start);
         // the total time of training and testing in the unit of hours

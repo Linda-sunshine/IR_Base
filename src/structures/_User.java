@@ -110,12 +110,21 @@ public class _User {
 	// construct the sparse vectors based on the feature used for sentiment model
 	public void constructLRSparseVector(){
 		ArrayList<_SparseFeature[]> reviews = new ArrayList<_SparseFeature[]>();
-		for(_Review r: m_trainReviews) 
+		for(_Review r: m_trainReviews)
 			reviews.add(r.getSparse());
-		
+
 		m_BoWProfile = Utils.MergeSpVcts(reviews);// this BoW representation is not normalized?!
 	}
-	
+
+//	// construct the sparse vectors based on the feature used for sentiment model
+//	public void constructLRSparseVector(){
+//		ArrayList<_SparseFeature[]> reviews = new ArrayList<_SparseFeature[]>();
+//		for(_Review r: m_reviews)
+//			reviews.add(r.getSparse());
+//
+//		m_BoWProfile = Utils.MergeSpVcts(reviews);// this BoW representation is not normalized?!
+//	}
+
 	// construct the sparse vectors based on the feature used for language model
 	public void constructLMSparseVector(){
 		ArrayList<_SparseFeature[]> reviews = new ArrayList<_SparseFeature[]>();

@@ -4,7 +4,9 @@ import Analyzer.MultiThreadedNetworkAnalyzer;
 import opennlp.tools.util.InvalidFormatException;
 import structures.EmbeddingParameter;
 import structures._Corpus;
+import topicmodels.LDA.LDA_Variational;
 import topicmodels.UserEmbedding.EUB;
+import topicmodels.multithreads.UserEmbedding.EUB_multithreading;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -36,7 +38,6 @@ public class MyEUBExecution {
         MultiThreadedNetworkAnalyzer analyzer = new MultiThreadedNetworkAnalyzer(tokenModel, classNumber, providedCV,
                 Ngram, lengthThreshold, numberOfCores, false);
         analyzer.setAllocateReviewFlag(false); // do not allocate reviews
-        analyzer.saveCVIndex(kFold, cvIndexFile);
 
         // we store the interaction information before-hand, load them directly
         analyzer.loadUserDir(userFolder);
@@ -49,12 +50,19 @@ public class MyEUBExecution {
         _Corpus corpus = analyzer.getCorpus();
 
         long start = System.currentTimeMillis();
+        LDA_Variational tModel = null;
+        if(param.m_multiFlag) {
+            tModel = new EUB_multithreading(param.m_emIter, emConverge, beta, corpus, lambda, param.m_number_of_topics,
+                    alpha, param.m_varIter, varConverge, param.m_embeddingDim);
+        } else {
+            tModel = new EUB(param.m_emIter, emConverge, beta, corpus, lambda, param.m_number_of_topics, alpha,
+                    param.m_varIter, varConverge, param.m_embeddingDim);
+        }
+        ((EUB) tModel).initLookupTables(analyzer.getUsers());
+        ((EUB) tModel).setDisplayLv(0);
+        ((EUB) tModel).setStepSize(param.m_stepSize);
 
-        EUB eub = new EUB(param.m_emIter, emConverge, beta, corpus, lambda, param.m_number_of_topics, alpha, param.m_varIter, varConverge, param.m_embeddingDim);
-        eub.buildLookupTables(analyzer.getUsers());
-        eub.EMonCorpus();
-        eub.setDisplayLv(0);
-//        eub.fixedCrossValidation(kFold);
+        ((EUB) tModel).fixedCrossValidation(kFold);
         long end = System.currentTimeMillis();
 
         // record related information
@@ -64,9 +72,9 @@ public class MyEUBExecution {
         if(!fileDir.exists())
             fileDir.mkdirs();
 
-        eub.printTopWords(30, String.format("%s/topkWords.txt", saveDir));
-        eub.printTopicEmbedding(String.format("%s/topicEmbedding.txt", saveDir));
-        eub.printUserEmbedding(String.format("%s/userEmbedding.txt", saveDir));
+        tModel.printTopWords(30, String.format("%s/topkWords.txt", saveDir));
+        ((EUB) tModel).printTopicEmbedding(String.format("%s/topicEmbedding.txt", saveDir));
+        ((EUB) tModel).printUserEmbedding(String.format("%s/userEmbedding.txt", saveDir));
 
         System.out.println("\n[Info]Start time: " + start);
         // the total time of training and testing in the unit of hours

@@ -23,6 +23,7 @@ public abstract class EmbedModel_worker implements EmbedModelWorker{
 
     public EmbedModel_worker(int dim){
         m_dim = dim;
+        m_objects = new ArrayList<>();
     }
 
     @Override

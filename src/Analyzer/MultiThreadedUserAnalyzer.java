@@ -172,7 +172,7 @@ public class MultiThreadedUserAnalyzer extends UserAnalyzer {
 					m_corpus.addDocs(reviews);
 				}
 			} else if(reviews.size() == 1){// added by Lin, for those users with fewer than 2 reviews, ignore them.
-				System.out.format("[Info]User: %s does not have enough docs.\n", userID);
+//				System.out.format("[Info]User: %s does not have enough docs.\n", userID);
 				review = reviews.get(0);
 				synchronized (m_rollbackLock) {
 					rollBack(Utils.revertSpVct(review.getSparse()), review.getYLabel());

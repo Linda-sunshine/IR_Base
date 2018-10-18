@@ -208,6 +208,8 @@ public class MultiThreadedNetworkAnalyzer extends MultiThreadedLinkPredAnalyzer 
         }
     }
 
+    /****We need to output some files for running baselines******/
+
 //    // print out the network as an adjacency matrix with index in the friend file.
 //    public void printNetwork4Plane(String filename){
 //        try{
@@ -252,4 +254,23 @@ public class MultiThreadedNetworkAnalyzer extends MultiThreadedLinkPredAnalyzer 
 //            e.printStackTrace();
 //        }
 //    }
+
+    public void printData4TADW(String filename){
+        try{
+            PrintWriter writer = new PrintWriter(new File(filename));
+            for(_User user: m_users) {
+                user.constructLRSparseVector();
+                user.normalizeProfile();
+                String uid = user.getUserID();
+                for (_SparseFeature fv : user.getBoWProfile()) {
+                    writer.write(String.format("%s\t%d\t%.3f\n", uid, fv.getIndex(), fv.getValue()));
+                }
+            }
+            writer.close();
+        } catch(IOException e){
+            e.printStackTrace();
+        }
+
+    }
+
 }

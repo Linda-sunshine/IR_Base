@@ -13,6 +13,8 @@ public class EmbeddingParameter {
     public int m_varIter = 20;
     public int m_embeddingDim = 10;
 
+    public boolean m_multiFlag = true;
+    public double m_stepSize = 1e-3;
     public EmbeddingParameter(String argv[]) {
 
         int i;
@@ -23,6 +25,8 @@ public class EmbeddingParameter {
                 break;
             else if (++i >= argv.length)
                 exit_with_help();
+            else if (argv[i - 1].equals("-prefix"))
+                m_prefix = argv[i];
             else if (argv[i - 1].equals("-data"))
                 m_data = argv[i];
             else if (argv[i - 1].equals("-emIter"))
@@ -33,6 +37,10 @@ public class EmbeddingParameter {
                 m_varIter = Integer.valueOf(argv[i]);
             else if (argv[i - 1].equals("-dim"))
                 m_embeddingDim = Integer.valueOf(argv[i]);
+            else if (argv[i - 1].equals("-multi"))
+                m_multiFlag = Boolean.valueOf(argv[i]);
+            else if (argv[i - 1].equals("-stepSize"))
+                m_stepSize = Double.valueOf(argv[i]);
 
         }
     }
