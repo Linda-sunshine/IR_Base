@@ -62,19 +62,9 @@ public class MyEUBExecution {
         ((EUB) tModel).setDisplayLv(0);
         ((EUB) tModel).setStepSize(param.m_stepSize);
 
-        ((EUB) tModel).fixedCrossValidation(kFold);
+        String savePrefix = String.format("%s/%s_%d", param.m_savePrefix, param.m_data, start);
+        ((EUB) tModel).fixedCrossValidation(kFold, savePrefix);
         long end = System.currentTimeMillis();
-
-        // record related information
-        String savePrefix = "/zf8/lg5bt/embedExp/eub";
-        String saveDir = String.format("%s/%d_%s", savePrefix, start, param.m_data);
-        File fileDir = new File(saveDir);
-        if(!fileDir.exists())
-            fileDir.mkdirs();
-
-        tModel.printTopWords(30, String.format("%s/topkWords.txt", saveDir));
-        ((EUB) tModel).printTopicEmbedding(String.format("%s/topicEmbedding.txt", saveDir));
-        ((EUB) tModel).printUserEmbedding(String.format("%s/userEmbedding.txt", saveDir));
 
         System.out.println("\n[Info]Start time: " + start);
         // the total time of training and testing in the unit of hours
