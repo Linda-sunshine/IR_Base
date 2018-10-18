@@ -31,19 +31,22 @@ public class myDataProcessMain {
         int numberOfCores = Runtime.getRuntime().availableProcessors();
         String tokenModel = "./data/Model/en-token.bin";
         int crossV = 5;
-        boolean flag_coldstart = true;
 
         /*****data setting*****/
         String folder = String.format("%s/%s/%s", param.m_prefix, param.m_source, param.m_set);
         String fvFile = String.format("%s/%s/%s_features.txt", param.m_prefix, param.m_source, param.m_source);
         String outputFolder = String.format("%s/%s/", folder, param.m_topicmodel);
+//        String folder = String.format("./myData/yelp/byUser_4k_review");
+//        String fvFile = String.format("./data/Features/fv_2gram_IG_yelp_byUser_30_50_25.txt");
+//        String outputFolder = String.format("%s/CTR/", folder);
         new File(outputFolder).mkdirs();
 
-        String reviewFolder =  String.format("%s/%dfoldsCV%s/", folder, crossV, flag_coldstart?"Coldstart":"");
+        String reviewFolder =  String.format("%s/%dfoldsCV%s/", folder, crossV, param.m_flag_coldstart?"Coldstart":"");
         MultiThreadedReviewAnalyzer analyzer = new MultiThreadedReviewAnalyzer(tokenModel, classNumber, fvFile,
                 Ngram, lengthThreshold, numberOfCores, true, param.m_source);
 
         for(int k = 0; k <crossV; k++){
+            analyzer.getCorpus().reset();
             //load test set
             String testFolder = reviewFolder + k + "/";
             analyzer.loadUserDir(testFolder);
@@ -95,23 +98,62 @@ public class myDataProcessMain {
             String[] modes = new String[]{"train","validation","test"};
             ArrayList<_Doc> docs;
             for(String mode : modes) {
-                if(mode.equals("train"))
+                if(mode.equals("train")) {
                     docs = m_trainSet;
-                else if(mode.equals("test"))
+                    m_bipartite.analyzeBipartite(docs, mode);
+                    m_mapByUser = m_bipartite.getMapByUser();
+                    m_mapByItem = m_bipartite.getMapByItem();
+                }
+                else if(mode.equals("test")) {
                     docs = m_testSet;
-                else
+                    m_bipartite.analyzeBipartite(docs, mode);
+                    m_mapByUser = m_bipartite.getMapByUser_test();
+                    m_mapByItem = m_bipartite.getMapByItem_test();
+                }
+                else {
                     docs = m_validationSet;
-                m_bipartite.analyzeBipartite(docs, mode);
-                m_mapByUser = m_bipartite.getMapByUser();
-                m_mapByItem = m_bipartite.getMapByItem();
+                    m_bipartite.analyzeBipartite(docs, mode);
+                    m_mapByUser = m_bipartite.getMapByUser_global();
+                    m_mapByItem = m_bipartite.getMapByItem_global();
+                }
 
                 if(param.m_topicmodel.equals("CTR")) {
                     save2FileCTPE(outputFolder, param.m_source, mode, k);
-                }else{
+                }else if (param.m_topicmodel.equals("RTM")){
                     save2FileRTM(outputFolder, param.m_source, mode, k);
+                } else if (param.m_topicmodel.equals("HFT")){
+                    save2FileHFT(outputFolder, param.m_source, mode, k, docs);
                 }
             }
         }
+    }
+
+    public static void save2FileHFT(String prefix, String source, String mode, int k, ArrayList<_Doc> docs) throws IOException{
+        String outFile = String.format("%s/%s/%d/%s_%s.tsv", prefix, source, k, source, mode);
+        (new File(outFile)).getParentFile().mkdirs();
+
+        BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(outFile)));
+        for(_Doc doc:docs) {
+            //userID itemID rating time docLength words
+            _Review r = (_Review) doc;
+            String userID = r.getUserID();
+            String itemID = r.getItemID();
+            int rate = r.getYLabel();
+            writer.write(String.format("%s\t%s\t%d\t0", userID, itemID, rate));
+
+            writer.write(String.format("\t%d", doc.getTotalDocLength()));
+            for(_SparseFeature fv:doc.getSparse()) {
+                int count = (int) fv.getValue();
+                String word = m_bipartite.getCorpus().getFeature(fv.getIndex());
+                for(int i = 0; i < count; i++){
+                    writer.write(String.format("\t%s", word));//index starts from 1
+                }
+            }
+            writer.write("\n");
+        }
+        writer.close();
+
+        System.out.format("[Info]%d rates saved to %s\n", docs.size(), outFile);
     }
 
 
