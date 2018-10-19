@@ -182,7 +182,7 @@ public class EUB_multithreading extends EUB {
         do {
             init();
 
-            //doc
+            // doc
             likelihood = super.multithread_E_step();
 
             if(Double.isNaN(likelihood) || Double.isInfinite(likelihood)){
@@ -190,7 +190,7 @@ public class EUB_multithreading extends EUB {
                 break;
             }
 
-            //users
+            // topic
             likelihood += multithread_general(m_topicWorkers);
 
             if(Double.isNaN(likelihood) || Double.isInfinite(likelihood)){
@@ -198,7 +198,7 @@ public class EUB_multithreading extends EUB {
                 break;
             }
 
-            //items
+            // user
             likelihood += multithread_general(m_userWorkers);
 
             if(Double.isNaN(likelihood) || Double.isInfinite(likelihood)){
