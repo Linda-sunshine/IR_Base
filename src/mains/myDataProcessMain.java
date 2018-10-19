@@ -2,6 +2,7 @@ package mains;
 
 import Analyzer.BipartiteAnalyzer;
 import Analyzer.MultiThreadedReviewAnalyzer;
+import Analyzer.MultiThreadedUserAnalyzer;
 import structures.*;
 
 import java.io.*;
@@ -42,8 +43,8 @@ public class myDataProcessMain {
         new File(outputFolder).mkdirs();
 
         String reviewFolder =  String.format("%s/%dfoldsCV%s/", folder, crossV, param.m_flag_coldstart?"Coldstart":"");
-        MultiThreadedReviewAnalyzer analyzer = new MultiThreadedReviewAnalyzer(tokenModel, classNumber, fvFile,
-                Ngram, lengthThreshold, numberOfCores, false, param.m_source);
+        MultiThreadedUserAnalyzer analyzer = new MultiThreadedUserAnalyzer(tokenModel, classNumber, fvFile,
+                Ngram, lengthThreshold, numberOfCores, false);
 
         if(crossV <= 1){
             analyzer.loadUserDir(folder);

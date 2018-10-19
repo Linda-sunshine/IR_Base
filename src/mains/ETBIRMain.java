@@ -7,6 +7,7 @@ import java.util.Set;
 
 import Analyzer.BipartiteAnalyzer;
 import Analyzer.MultiThreadedReviewAnalyzer;
+import Analyzer.MultiThreadedUserAnalyzer;
 import structures._Corpus;
 import structures._Doc;
 import structures._Review;
@@ -34,35 +35,36 @@ public class ETBIRMain {
         String tokenModel = "./data/Model/en-token.bin";
 
         /*****parameters for topic model*****/
-        String topicmodel = "ETBIR_Item"; // CTM, LDA_Variational, LDA_User, LDA_Item, ETBIR, ETBIR_User, ETBIR_Item
+        String topicmodel = "LDA_Variational"; // CTM, LDA_Variational, LDA_User, LDA_Item, ETBIR, ETBIR_User, ETBIR_Item
         int number_of_topics = 40;
         int varMaxIter = 20;
         double varConverge = 1e-6;
-        int emMaxIter = 60;
+        int emMaxIter = 40;
         double emConverge = 1e-10;
 
         double alpha = 1 + 1e-2, beta = 1 + 1e-3, lambda = 1 + 1e-3;//these two parameters must be larger than 1!!!
         double sigma = 0.1, rho = 0.1;
 
         int topK = 50;
-        int crossV = 1;
-        boolean setRandomFold = false;
+        int crossV = 3;
+        boolean setRandomFold = true;
         boolean flag_coldstart = false;
 
         /*****data setting*****/
-        String trainset = "byUser_4k_review";
-        String source = "yelp";
+        String trainset = "Users";
+        String source = "YelpNew";
         String dataset = "./myData/" + source + "/" + trainset + "/";
-        String outputFolder = String.format("%so utput/%dfoldsCV%s/", dataset, crossV, flag_coldstart?"Coldstart":"");
+        String outputFolder = String.format("%soutput/%dfoldsCV%s/", dataset, crossV, flag_coldstart?"Coldstart":"");
 
         PrintStream out = new PrintStream(new FileOutputStream("log.txt"));
 //        System.setOut(out);
 
-        String[] fvFiles = new String[4];
+        String[] fvFiles = new String[5];
         fvFiles[0] = "./data/Features/fv_2gram_IG_yelp_byUser_30_50_25.txt";
         fvFiles[1] = "./data/Features/fv_2gram_IG_amazon_movie_byUser_40_50_12.txt";
         fvFiles[2] = "./data/Features/fv_2gram_IG_amazon_electronic_byUser_20_20_5.txt";
         fvFiles[3] = "./data/Features/fv_2gram_IG_amazon_book_byUser_40_50_12.txt";
+        fvFiles[4] = String.format("./myData/%s/SelectedVocab.csv", source);
         int fvFile_point = 0;
         if(source.equals("amazon_movie")){
             fvFile_point = 1;
@@ -70,11 +72,15 @@ public class ETBIRMain {
             fvFile_point = 2;
         }else if(source.equals("amazon_book")){
             fvFile_point = 3;
+        }else if (source.equals("YelpNew")){
+            fvFile_point = 4;
         }
 
-        String reviewFolder = dataset + "data/"; //2foldsCV/folder0/train/, data/
-        MultiThreadedReviewAnalyzer analyzer = new MultiThreadedReviewAnalyzer(tokenModel, classNumber, fvFiles[fvFile_point],
-                Ngram, lengthThreshold, numberOfCores, true, source);
+        String reviewFolder = dataset; //2foldsCV/folder0/train/, data/
+//        MultiThreadedReviewAnalyzer analyzer = new MultiThreadedReviewAnalyzer(tokenModel, classNumber, fvFiles[fvFile_point],
+//                Ngram, lengthThreshold, numberOfCores, true, source);
+        MultiThreadedUserAnalyzer analyzer = new MultiThreadedUserAnalyzer(tokenModel, classNumber, fvFiles[fvFile_point],
+                Ngram, lengthThreshold, numberOfCores, false);
         if(setRandomFold==false)
             analyzer.setReleaseContent(false);//Remember to set it as false when generating crossfolders!!!
         analyzer.loadUserDir(reviewFolder);
