@@ -35,8 +35,9 @@ public class MyEUBExecution {
         String cvIndexFile = String.format("%s/%s/%sCVIndex.txt", param.m_prefix, param.m_data, param.m_data);
 
         int kFold = 5;
+        boolean cvFlag = param.m_data.equals("StackOverflow") ? true : false;
         MultiThreadedNetworkAnalyzer analyzer = new MultiThreadedNetworkAnalyzer(tokenModel, classNumber, providedCV,
-                Ngram, lengthThreshold, numberOfCores, false);
+                Ngram, lengthThreshold, numberOfCores, cvFlag);
         analyzer.setAllocateReviewFlag(false); // do not allocate reviews
 
         // we store the interaction information before-hand, load them directly

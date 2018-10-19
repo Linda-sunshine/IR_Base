@@ -210,9 +210,6 @@ public class EUB_multithreading extends EUB {
             else
                 converge = 1.0;
 
-            if(iter % 5 == 0)
-                printTopWords(30);
-
             last = likelihood;
 
             if(converge < m_varConverge)

@@ -177,8 +177,11 @@ public class EUB extends LDA_Variational {
 
             calculate_M_step(iter);
 
+            if(++iter % 5 == 0)
+                printTopWords(30);
+
             lastAllLikelihood = currentAllLikelihood;
-        } while( ++iter < number_of_iteration && converge > m_converge);
+        } while(iter < number_of_iteration && converge > m_converge);
     }
 
     // put the user interaction and non-interaction information in the four hashmaps
@@ -418,6 +421,8 @@ public class EUB extends LDA_Variational {
             update_epsilon(user);
             // update the taylor parameter epsilon_prime
             update_epsilon_prime(user);
+
+            curLoglikelihood = calc_log_likelihood_per_user(user);
 
             if(Double.isNaN(curLoglikelihood) || Double.isInfinite(curLoglikelihood))
                 warning = true;

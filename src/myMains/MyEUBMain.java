@@ -91,7 +91,7 @@ public class MyEUBMain {
             tModel = new EUB_multithreading(emMaxIter, emConverge, beta, corpus, lambda, number_of_topics, alpha, varMaxIter, varConverge, embeddingDim);
         else
             tModel = new EUB(emMaxIter, emConverge, beta, corpus, lambda, number_of_topics, alpha, varMaxIter, varConverge, embeddingDim);
-        boolean alphaFlag = false, gammaFlag = false, betaFlag = true, tauFlag = false, xiFlag = false;
+        boolean alphaFlag = true, gammaFlag = true, betaFlag = true, tauFlag = true, xiFlag = true;
         ((EUB) tModel).setModelParamsUpdateFlags(alphaFlag, gammaFlag, betaFlag, tauFlag, xiFlag);
         ((EUB) tModel).initLookupTables(analyzer.getUsers());
         ((EUB) tModel).setDisplayLv(0);
