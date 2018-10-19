@@ -868,7 +868,7 @@ public class EUB extends LDA_Variational {
     }
 
     // fixed cross validation
-    public void fixedCrossValidation(int kFold){
+    public void fixedCrossValidation(int kFold, String prefix){
 
         constructNetwork();
         double[] perplexity = new double[kFold];
@@ -896,6 +896,8 @@ public class EUB extends LDA_Variational {
             buildUserDocMap();
             EM();
             perplexity[k] = evaluation();
+            printStat4OneFold(prefix, k);
+            System.out.println("[Info]Finish saving data for fold " + k);
         }
 
         double avg = Utils.sumOfArray(perplexity)/perplexity.length;
@@ -905,6 +907,18 @@ public class EUB extends LDA_Variational {
         std /= perplexity.length;
         std = Math.sqrt(std);
         System.out.format("[Output]Avg perpelexity is: (%.4f +- %.4f).\n", avg, std);
+    }
+
+    public void printStat4OneFold(String prefix, int fold){
+        // record related information
+        String saveDir = String.format("%s/fold_%d", prefix, fold);
+        File fileDir = new File(saveDir);
+        if(!fileDir.exists())
+            fileDir.mkdirs();
+
+        printTopWords(30, String.format("%s/topkWords.txt", saveDir));
+        printTopicEmbedding(String.format("%s/topicEmbedding.txt", saveDir));
+        printUserEmbedding(String.format("%s/userEmbedding.txt", saveDir));
     }
 
     // evaluation in single-thread

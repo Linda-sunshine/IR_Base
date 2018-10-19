@@ -27,7 +27,7 @@ public class MyEUBMain {
         int lengthThreshold = 5; // Document length threshold
         int numberOfCores = Runtime.getRuntime().availableProcessors();
 
-        String dataset = "StackOverflow"; // "StackOverflow", "YelpNew"
+        String dataset = "YelpNew"; // "StackOverflow", "YelpNew"
         String tokenModel = "./data/Model/en-token.bin"; // Token model.
 
         boolean server = false;
@@ -35,15 +35,15 @@ public class MyEUBMain {
 
 		String prefix = server ? "/zf8/lg5bt/DataSigir" : "./data/CoLinAdapt";
         String providedCV = String.format("%s/%s/SelectedVocab.csv", prefix, dataset);
-        String userFolder = String.format("%s/%s/Users", prefix, dataset);
+        String userFolder = String.format("%s/%s/Users_1000", prefix, dataset);
 
         /***Feature selection**/
 //        UserAnalyzer analyzer = new UserAnalyzer(tokenModel, classNumber, null, Ngram, lengthThreshold, cvFlag);
 //        analyzer.loadUserDir(userFolder);
 //        analyzer.featureSelection("./data/StackOverflowSelectedVocab_DF_8k.txt", "DF",8000, 100, 5000);
 
-        String friendFile = String.format("%s/%s/%sFriends.txt", prefix, dataset, dataset);
-        String cvIndexFile = String.format("%s/%s/%sCVIndex.txt", prefix, dataset, dataset);
+        String friendFile = String.format("%s/%s/%sFriends_1000.txt", prefix, dataset, dataset);
+        String cvIndexFile = String.format("%s/%s/%sCVIndex_1000.txt", prefix, dataset, dataset);
         //String userIdFile = String.format("%s/%s/%sUserIds.txt", prefix, dataset, dataset);
 
         int kFold = 5;
@@ -79,7 +79,7 @@ public class MyEUBMain {
         analyzer.loadCVIndex(cvIndexFile);
 
         /***Start running joint modeling of user embedding and topic embedding****/
-        int emMaxIter = 5, number_of_topics = 10, varMaxIter = 5, embeddingDim = 10;
+        int emMaxIter = 25, number_of_topics = 20, varMaxIter = 10, embeddingDim = 10;
         double emConverge = 1e-10, alpha = 1 + 1e-2, beta = 1 + 1e-3, lambda = 1 + 1e-3, varConverge = 1e-6;//these two parameters must be larger than 1!!!
         _Corpus corpus = analyzer.getCorpus();
 
@@ -93,22 +93,13 @@ public class MyEUBMain {
             tModel = new EUB(emMaxIter, emConverge, beta, corpus, lambda, number_of_topics, alpha, varMaxIter, varConverge, embeddingDim);
         ((EUB) tModel).initLookupTables(analyzer.getUsers());
         ((EUB) tModel).setDisplayLv(0);
-        ((EUB) tModel).setStepSize(stepSize);
+//        ((EUB) tModel).setStepSize(stepSize);
 
 //         ((EUB) tModel).EMonCorpus();
-        ((EUB) tModel).fixedCrossValidation(kFold);
+        String saveDir = server ? "/zf8/lg5bt/embedExp/eub" : "./data/embedExp/eub";
+        String savePrefix = String.format("%s/%s_%d", saveDir, dataset, start);
+        ((EUB) tModel).fixedCrossValidation(kFold, savePrefix);
         long end = System.currentTimeMillis();
-
-        // record related information
-        String savePrefix = server ? "/zf8/lg5bt/embedExp/eub" : "./data/embedExp/eub";
-        String saveDir = String.format("%s/%d_%s", savePrefix, start, dataset);
-        File fileDir = new File(saveDir);
-        if(!fileDir.exists())
-            fileDir.mkdirs();
-
-//        eub.printTopWords(30, String.format("%s/topkWords.txt", saveDir));
-//        eub.printTopicEmbedding(String.format("%s/topicEmbedding.txt", saveDir));
-//        eub.printUserEmbedding(String.format("%s/userEmbedding.txt", saveDir));
 
         System.out.println("\n[Info]Start time: " + start);
         // the total time of training and testing in the unit of hours
