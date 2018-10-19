@@ -16,6 +16,13 @@ public class EmbeddingParameter {
 
     public boolean m_multiFlag = true;
     public double m_stepSize = 1e-3;
+
+    public boolean m_alphaFlag = false;
+    public boolean m_gammaFlag = false;
+    public boolean m_betaFlag = true;
+    public boolean m_tauFlag = false;
+    public boolean m_xiFlag = false;
+
     public EmbeddingParameter(String argv[]) {
 
         int i;
@@ -44,6 +51,16 @@ public class EmbeddingParameter {
                 m_stepSize = Double.valueOf(argv[i]);
             else if (argv[i - 1].equals("-savePrefix"))
                 m_savePrefix = argv[i];
+            else if (argv[i - 1].equals("-alphaFlag"))
+                m_alphaFlag = Boolean.valueOf(argv[i]);
+            else if (argv[i - 1].equals("-gammaFlag"))
+                m_gammaFlag = Boolean.valueOf(argv[i]);
+            else if (argv[i - 1].equals("-betaFlag"))
+                m_betaFlag = Boolean.valueOf(argv[i]);
+            else if (argv[i - 1].equals("-tauFlag"))
+                m_tauFlag = Boolean.valueOf(argv[i]);
+            else if (argv[i - 1].equals("-xiFlag"))
+                m_xiFlag = Boolean.valueOf(argv[i]);
 
         }
     }

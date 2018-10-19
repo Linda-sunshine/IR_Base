@@ -53,6 +53,12 @@ public class EUB extends LDA_Variational {
     protected int m_displayLv = 0;
     protected double m_stepSize = 1e-3;
 
+    protected boolean m_alphaFlag = false;
+    protected boolean m_gammaFlag = false;
+    protected boolean m_betaFlag = true;
+    protected boolean m_tauFlag = false;
+    protected boolean m_xiFlag = false;
+
     public EUB(int number_of_iteration, double converge, double beta,
                _Corpus c, double lambda, int number_of_topics, double alpha,
                int varMaxIter, double varConverge, int m) {
@@ -63,6 +69,15 @@ public class EUB extends LDA_Variational {
         m_users = new ArrayList<_User4EUB>();
         m_docs = new ArrayList<_Doc4EUB>();
         m_networkMap = new HashMap<Integer, HashSet<Integer>>();
+    }
+
+    public void setModelParamsUpdateFlags(boolean alphaFlag, boolean gammaFlag, boolean betaFlag,
+                                          boolean tauFlag, boolean xiFlag){
+        m_alphaFlag = alphaFlag;
+        m_gammaFlag = gammaFlag;
+        m_betaFlag = betaFlag;
+        m_tauFlag = tauFlag;
+        m_xiFlag = xiFlag;
     }
 
     public void setStepSize(double s){
@@ -272,12 +287,17 @@ public class EUB extends LDA_Variational {
 
     @Override
     public void calculate_M_step(int iter){
-
-//        est_alpha();// precision for topic embedding
-//        est_gamma(); // precision for user embedding
-        est_beta(); // topic-word distribution
-//        est_tau(); // precision for topic proportion
-//        est_xi(); // sigma for the affinity \delta_{ij}
+        if(m_alphaFlag)
+            est_alpha();// precision for topic embedding
+        if(m_gammaFlag)
+            est_gamma(); // precision for user embedding
+        if(m_betaFlag)
+            est_beta(); // topic-word distribution
+        if(m_tauFlag)
+            est_tau(); // precision for topic proportion
+        if(m_xiFlag)
+            est_xi(); // sigma for the affinity \delta_{ij}
+        System.out.format("[ModelParam]alpha:%.3f, gamma:%.3f,tau:%.3f,xi:%.3f\n", m_alpha_s, m_gamma, m_tau, m_xi);
         finalEst();
 
     }
@@ -382,30 +402,65 @@ public class EUB extends LDA_Variational {
     }
 
     protected double varInference4User(_User4EUB user){
-        // update the variational parameters for user embedding ui -- Eq(70) and Eq(72)
-        update_u_i(user);
-        // update the mean and variance for pair-wise affinity \mu^{delta_{ij}}, \sigma^{\delta_{ij}} -- Eq(75)
-        update_delta_ij_mu(user);
-        update_delta_ij_sigma(user);
-        // update the taylor parameter epsilon
-        update_epsilon(user);
-        // update the taylor parameter epsilon_prime
-        update_epsilon_prime(user);
+        double curLoglikelihood = 0.0, lastLoglikelihood = 1.0, converge = 0.0;
+        int iter = 0;
+        boolean warning;
 
-        return calc_log_likelihood_per_user(user);
+        do {
+            warning = false;
+
+            // update the variational parameters for user embedding ui -- Eq(70) and Eq(72)
+            update_u_i(user);
+            // update the mean and variance for pair-wise affinity \mu^{delta_{ij}}, \sigma^{\delta_{ij}} -- Eq(75)
+            update_delta_ij_mu(user);
+            update_delta_ij_sigma(user);
+            // update the taylor parameter epsilon
+            update_epsilon(user);
+            // update the taylor parameter epsilon_prime
+            update_epsilon_prime(user);
+
+            if(Double.isNaN(curLoglikelihood) || Double.isInfinite(curLoglikelihood))
+                warning = true;
+
+            if (iter > 0)
+                converge = (lastLoglikelihood - curLoglikelihood) / lastLoglikelihood;
+            else
+                converge = 1.0;
+
+            lastLoglikelihood = curLoglikelihood;
+        } while (++iter < m_varMaxIter && Math.abs(converge) > m_varConverge && !warning);
+        return curLoglikelihood;
     }
 
-    protected double varInference4Doc(_Doc4EUB doc){
+    protected double varInference4Doc(_Doc4EUB doc) {
+        double curLoglikelihood = 0.0, lastLoglikelihood = 1.0, converge = 0.0;
+        int iter = 0;
+        boolean warning;
 
-        // variational parameters for word indicator z_{idn}
-        update_eta_id(doc);
-        // variational parameters for topic distribution \theta_{id}
-        update_theta_id_mu(doc);
-        update_theta_id_sigma(doc);
-        // taylor parameter
-        update_zeta(doc);
+        do {
+            warning = false;
+            // variational parameters for word indicator z_{idn}
+            update_eta_id(doc);
+            // variational parameters for topic distribution \theta_{id}
+            update_theta_id_mu(doc);
+            update_theta_id_sigma(doc);
+            // taylor parameter
+            update_zeta(doc);
 
-        return calc_log_likelihood_per_doc(doc);
+            curLoglikelihood = calc_log_likelihood_per_doc(doc);
+
+            if(Double.isNaN(curLoglikelihood) || Double.isInfinite(curLoglikelihood))
+                warning = true;
+
+            if (iter > 0)
+                converge = (lastLoglikelihood - curLoglikelihood) / lastLoglikelihood;
+            else
+                converge = 1.0;
+
+            lastLoglikelihood = curLoglikelihood;
+        } while (++iter < m_varMaxIter && Math.abs(converge) > m_varConverge && !warning);
+
+        return curLoglikelihood;
     }
 
     // update the mu and sigma for each topic \phi_k

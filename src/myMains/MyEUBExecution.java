@@ -58,6 +58,8 @@ public class MyEUBExecution {
             tModel = new EUB(param.m_emIter, emConverge, beta, corpus, lambda, param.m_number_of_topics, alpha,
                     param.m_varIter, varConverge, param.m_embeddingDim);
         }
+        ((EUB) tModel).setModelParamsUpdateFlags(param.m_alphaFlag, param.m_gammaFlag, param.m_betaFlag,
+                param.m_tauFlag, param.m_xiFlag);
         ((EUB) tModel).initLookupTables(analyzer.getUsers());
         ((EUB) tModel).setDisplayLv(0);
         ((EUB) tModel).setStepSize(param.m_stepSize);
@@ -68,8 +70,8 @@ public class MyEUBExecution {
 
         System.out.println("\n[Info]Start time: " + start);
         // the total time of training and testing in the unit of hours
-        double hours = (end - start)/(1000*60);
-        System.out.print(String.format("[Time]This training+testing process took %.2f mins.\n", hours));
+        double hours = (end - start)/(1000*60*60);
+        System.out.print(String.format("[Time]This training+testing process took %.2f hours.\n", hours));
 
     }
 }
