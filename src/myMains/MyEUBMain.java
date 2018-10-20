@@ -30,10 +30,20 @@ public class MyEUBMain {
         String dataset = "YelpNew"; // "StackOverflow", "YelpNew"
         String tokenModel = "./data/Model/en-token.bin"; // Token model.
 
-        boolean server = false;
+        String machine = "desktop"; // "hcdm", "gcloud"
         boolean cvFlag = dataset.equals("StackOverflow") ? true : false;
 
-		String prefix = server ? "/zf8/lg5bt/DataSigir" : "./data/CoLinAdapt";
+        String prefix = "";
+
+        // save prefix based on different platforms
+        if(machine.equals("desktop")){
+            prefix = "./data/CoLinAdapt";
+        } else if(machine.equals("hcdm")){
+            prefix = "/zf8/lg5bt/DataSigir";
+        } else if(machine.equals("gcloud")){
+            prefix = "/home/lin/DataSigir";
+        }
+
         String providedCV = String.format("%s/%s/SelectedVocab.csv", prefix, dataset);
         String userFolder = String.format("%s/%s/Users_1000", prefix, dataset);
 
@@ -97,9 +107,8 @@ public class MyEUBMain {
         ((EUB) tModel).setDisplayLv(0);
 //        ((EUB) tModel).setStepSize(stepSize);
 
-//         ((EUB) tModel).EMonCorpus();
-        String saveDir = server ? "/zf8/lg5bt/embedExp/eub" : "./data/embedExp/eub";
-        String savePrefix = String.format("%s/%s_%d", saveDir, dataset, start);
+        String savePrefix = String.format("./data/emebddingExp/eub/%d-%s-emIter-%d-nuTopics-%d-varIter-%d-dim-%d",
+                start, dataset, emMaxIter, number_of_topics, varMaxIter, embeddingDim);
         ((EUB) tModel).fixedCrossValidation(kFold, savePrefix);
         long end = System.currentTimeMillis();
 

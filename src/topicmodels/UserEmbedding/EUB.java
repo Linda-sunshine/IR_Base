@@ -42,10 +42,10 @@ public class EUB extends LDA_Variational {
     // this alpha is differnet from alpha in LDA
     // alpha is precision parameter for topic embedding in EUB
     // alpha is a vector parameter for dirichlet distribution
-    protected double m_alpha_s = 1.0;
+    protected double m_alpha_s = 0.5;
     protected double m_tau = 1.0;
     protected double m_gamma = 1.0;
-    protected double m_xi = 1.0;
+    protected double m_xi = 2.0;
 
     /*****Sparsity parameter******/
     protected double m_rho = 0.01;
@@ -58,6 +58,9 @@ public class EUB extends LDA_Variational {
     protected boolean m_betaFlag = true;
     protected boolean m_tauFlag = false;
     protected boolean m_xiFlag = false;
+
+    // whehter we use adam grad to optimize or not
+    protected boolean m_adaFlag = false;
 
     public EUB(int number_of_iteration, double converge, double beta,
                _Corpus c, double lambda, int number_of_topics, double alpha,
@@ -78,6 +81,10 @@ public class EUB extends LDA_Variational {
         m_betaFlag = betaFlag;
         m_tauFlag = tauFlag;
         m_xiFlag = xiFlag;
+    }
+
+    public void setAdaFlag(boolean b){
+        m_adaFlag = b;
     }
 
     public void setStepSize(double s){
@@ -607,7 +614,8 @@ public class EUB extends LDA_Variational {
         int i = m_usersIndex.get(ui.getUserID());
 
         double[] muG = new double[m_users.size()];
-        double[] mu_delta = Arrays.copyOfRange(ui.m_mu_delta, 0, ui.m_mu_delta.length);
+//        double[] mu_delta = Arrays.copyOfRange(ui.m_mu_delta, 0, ui.m_mu_delta.length);
+        double[] muH = new double[m_users.size()];
 
         double fValue, lastFValue = 1.0, cvg = 1e-6, diff, iterMax = 30, iter = 0;
         do {
@@ -618,17 +626,21 @@ public class EUB extends LDA_Variational {
             for(int j=0; j<m_users.size(); j++){
                 if(i == j) continue;
                 int eij = interactions != null && interactions.contains(j) ? 1 : 0;
-                double[] fgValue = calcFGValueDeltaMu(ui, mu_delta, eij, j);
+                double[] fgValue = calcFGValueDeltaMu(ui, ui.m_mu_delta, eij, j);
                 fValue += fgValue[0];
                 muG[j] += fgValue[1];
-                mu_delta[j] += m_stepSize * muG[j];
+
+                if(m_adaFlag)
+                    ui.m_mu_delta[j] += m_stepSize/Math.sqrt(muH[j]) * muG[j];
+                else
+                    ui.m_mu_delta[j] += m_stepSize * muG[j];
+                muH[j] += muG[j] * muG[j];
             }
             printFValue(lastFValue, fValue);
             diff = (lastFValue - fValue) / lastFValue;
             lastFValue = fValue;
 
         } while(iter++ < iterMax && Math.abs(diff) > cvg);
-        ui.m_mu_delta = mu_delta;
         if(m_displayLv != 0)
             System.out.println("------------------------");
     }
@@ -654,7 +666,8 @@ public class EUB extends LDA_Variational {
 
         double fValue, lastFValue = 1.0, cvg = 1e-6, diff, iterMax = 30, iter = 0;
         double[] sigmaG = new double[m_users.size()];
-        double[] sigma_delta = Arrays.copyOfRange(ui.m_sigma_delta, 0, ui.m_sigma_delta.length);
+        double[] sigmaH = new double[m_users.size()];
+//        double[] sigma_delta = Arrays.copyOfRange(ui.m_sigma_delta, 0, ui.m_sigma_delta.length);
         do {
             Arrays.fill(sigmaG, 0);
             fValue = 0;
@@ -663,11 +676,19 @@ public class EUB extends LDA_Variational {
             for(int j=0; j<m_users.size(); j++){
                 if(i == j) continue;
                 int eij = interactions != null && interactions.contains(j) ? 1 : 0;
-                double[] fgValue = calcFGValueDeltaSigma(ui, sigma_delta, eij, j);
+                double[] fgValue = calcFGValueDeltaSigma(ui, ui.m_sigma_delta, eij, j);
                 fValue += fgValue[0];
                 sigmaG[j] += fgValue[1];
-                sigma_delta[j] += m_stepSize * sigmaG[j];
-                if(Double.isNaN(sigma_delta[j]) || Double.isInfinite(sigma_delta[j]))
+                ui.m_sigma_delta[j] += m_stepSize * sigmaG[j];
+
+                if(m_adaFlag)
+                    ui.m_sigma_delta[j] += m_stepSize/Math.sqrt(sigmaH[j]) * sigmaG[j];
+                else
+                    ui.m_sigma_delta[j] += m_stepSize * sigmaG[j];
+
+                sigmaH[j] += sigmaG[j] * sigmaG[j];
+
+                if(Double.isNaN(ui.m_sigma_delta[j]) || Double.isInfinite(ui.m_sigma_delta[j]))
                     System.out.println("[error] Sigma_delta is Nan or Infinity!!");
             }
             printFValue(lastFValue, fValue);
@@ -675,7 +696,6 @@ public class EUB extends LDA_Variational {
             lastFValue = fValue;
 
         } while(iter++ < iterMax && Math.abs(diff) > cvg);
-        ui.m_sigma_delta = sigma_delta;
         if(m_displayLv != 0)
             System.out.println("------------------------");    }
 
@@ -738,27 +758,33 @@ public class EUB extends LDA_Variational {
         double lastFValue = 1.0, cvg = 1e-6, diff, iterMax = 30, iter = 0;
 
         double[] muG = new double[number_of_topics];
-        double[] mu_theta = Arrays.copyOfRange(doc.m_mu_theta, 0, doc.m_mu_theta.length);
+        double[] muH = new double[number_of_topics];
+//        double[] mu_theta = Arrays.copyOfRange(doc.m_mu_theta, 0, doc.m_mu_theta.length);
 
         do{
             Arrays.fill(muG, 0);
             fValue = 0;
             for(int k=0; k<number_of_topics; k++){
                 // function value
-                moment = N * Math.exp(mu_theta[k] + 0.5 * doc.m_sigma_theta[k] - doc.m_logZeta);
-                fValue += -0.5 * m_tau * mu_theta[k] * mu_theta[k];
+                moment = N * Math.exp(doc.m_mu_theta[k] + 0.5 * doc.m_sigma_theta[k] - doc.m_logZeta);
+                fValue += -0.5 * m_tau * doc.m_mu_theta[k] * doc.m_mu_theta[k];
                 dotProd = Utils.dotProduct(m_topics.get(k).m_mu_phi, m_users.get(i).m_mu_u);
-                fValue += m_tau * mu_theta[k] * dotProd + mu_theta[k] * doc.m_sstat[k] - moment;
+                fValue += m_tau * doc.m_mu_theta[k] * dotProd + doc.m_mu_theta[k] * doc.m_sstat[k] - moment;
                 // gradient
-                muG[k] = -m_tau * mu_theta[k] + m_tau * dotProd + doc.m_sstat[k] - moment;
-                mu_theta[k] += m_stepSize * muG[k];
+                muG[k] = -m_tau * doc.m_mu_theta[k] + m_tau * dotProd + doc.m_sstat[k] - moment;
+                if(m_adaFlag)
+                    doc.m_mu_theta[k] += m_stepSize/Math.sqrt(muH[k]) * muG[k];
+                else
+                    doc.m_mu_theta[k] += m_stepSize * muG[k];
+
+                muH[k] += muG[k] * muG[k];
+
             }
             printFValue(lastFValue, fValue);
             diff = (lastFValue - fValue) / lastFValue;
             lastFValue = fValue;
 
         } while(iter++ < iterMax && Math.abs(diff) > cvg);
-        doc.m_mu_theta = mu_theta;
         if(m_displayLv != 0)
             System.out.println("------------------------");
     }
@@ -782,21 +808,29 @@ public class EUB extends LDA_Variational {
         double lastFValue = 1.0, cvg = 1e-6, diff, iterMax = 30, iter = 0;
 
         double[] sigmaSqrtG = new double[number_of_topics];
-        double[] sigma_sqrt_theta = Arrays.copyOfRange(doc.m_sigma_sqrt_theta, 0, doc.m_sigma_sqrt_theta.length);
+        double[] sigmaSqrtH = new double[number_of_topics];
+//        double[] sigma_sqrt_theta = Arrays.copyOfRange(doc.m_sigma_sqrt_theta, 0, doc.m_sigma_sqrt_theta.length);
         do{
             Arrays.fill(sigmaSqrtG, 0);
             fValue = 0;
             for(int k=0; k<number_of_topics; k++){
                 // function value
-                moment = N * Math.exp(doc.m_mu_theta[k] + 0.5 * sigma_sqrt_theta[k]
-                        * sigma_sqrt_theta[k] - doc.m_logZeta);
-                fValue += -0.5 * m_tau * sigma_sqrt_theta[k] * sigma_sqrt_theta[k] - moment
-                        + 0.5 * Math.log(sigma_sqrt_theta[k] * sigma_sqrt_theta[k]);
+                moment = N * Math.exp(doc.m_mu_theta[k] + 0.5 * doc.m_sigma_sqrt_theta[k]
+                        * doc.m_sigma_sqrt_theta[k] - doc.m_logZeta);
+                fValue += -0.5 * m_tau * doc.m_sigma_sqrt_theta[k] * doc.m_sigma_sqrt_theta[k] - moment
+                        + 0.5 * Math.log(doc.m_sigma_sqrt_theta[k] * doc.m_sigma_sqrt_theta[k]);
                 // gradient
-                sigmaSqrtG[k] = -m_tau * sigma_sqrt_theta[k] - sigma_sqrt_theta[k] * moment
-                        + 1/sigma_sqrt_theta[k];
-                sigma_sqrt_theta[k] += m_stepSize * sigmaSqrtG[k];
-                if(Double.isNaN(sigma_sqrt_theta[k]) || Double.isInfinite(sigma_sqrt_theta[k]))
+                sigmaSqrtG[k] = -m_tau * doc.m_sigma_sqrt_theta[k] - doc.m_sigma_sqrt_theta[k] * moment
+                        + 1/doc.m_sigma_sqrt_theta[k];
+
+                if(m_adaFlag)
+                    doc.m_sigma_sqrt_theta[k] += m_stepSize/Math.sqrt(sigmaSqrtH[k]) * sigmaSqrtG[k];
+                else
+                    doc.m_sigma_sqrt_theta[k] += m_stepSize * sigmaSqrtG[k];
+
+                sigmaSqrtH[k] += sigmaSqrtG[k] * sigmaSqrtG[k];
+
+                if(Double.isNaN(doc.m_sigma_sqrt_theta[k]) || Double.isInfinite(doc.m_sigma_sqrt_theta[k]))
                     System.out.println("Doc: sigma_sqrt_theta[k] is Nan or Infinity!!");
 
             }
@@ -804,7 +838,6 @@ public class EUB extends LDA_Variational {
             diff = (lastFValue - fValue) / lastFValue;
             lastFValue = fValue;
         } while(iter++ < iterMax && Math.abs(diff) > cvg);
-        doc.m_sigma_sqrt_theta = sigma_sqrt_theta;
         for(int k=0; k<number_of_topics; k++)
             doc.m_sigma_theta[k] = doc.m_sigma_sqrt_theta[k] * doc.m_sigma_sqrt_theta[k];
         if(m_displayLv != 0)
@@ -927,46 +960,42 @@ public class EUB extends LDA_Variational {
         return logLikelihood;
     }
 
-    // fixed cross validation
+    // fixed cross validation with specified fold number
     public void fixedCrossValidation(int kFold, String prefix){
-
+        double perplexity = 0;
         constructNetwork();
-        double[] perplexity = new double[kFold];
+//        double[] perplexity = new double[kFold];
         m_trainSet = new ArrayList<>();
         m_testSet = new ArrayList<>();
-        for(int k=0; k<kFold; k++){
-            int totalLen = 0;
-            System.out.format("\n==========Start %d-fold cross validation=========\n", k);
-            m_trainSet.clear();
-            m_testSet.clear();
-            for(int i=0; i<m_users.size(); i++){
-                for(_Review r: m_users.get(i).getReviews()){
-                    if(r.getMask4CV() == k){
-                        r.setType(_Doc.rType.TEST);
-                        m_testSet.add(r);
-                        totalLen += r.getTotalDocLength();
-                    }
-                    else {
-                        r.setType(_Doc.rType.TRAIN);
-                        m_trainSet.add(r);
-                    }
+        System.out.format("\n==========Start %d-fold cross validation=========\n", kFold);
+        m_trainSet.clear();
+        m_testSet.clear();
+        for(int i=0; i<m_users.size(); i++){
+            for(_Review r: m_users.get(i).getReviews()){
+                if(r.getMask4CV() == kFold){
+                    r.setType(_Doc.rType.TEST);
+                    m_testSet.add(r);
+//                    totalLen += r.getTotalDocLength();
+                } else {
+                    r.setType(_Doc.rType.TRAIN);
+                    m_trainSet.add(r);
                 }
-                m_users.get(i);
             }
-            buildUserDocMap();
-            EM();
-            perplexity[k] = evaluation();
-            printStat4OneFold(prefix, k);
-            System.out.println("[Info]Finish saving data for fold " + k);
+            m_users.get(i);
         }
+        buildUserDocMap();
+        EM();
+        perplexity = evaluation();
+        printStat4OneFold(prefix, kFold);
+        System.out.format("[Output]Perpelexity for fold %d is: %.4f.\n", kFold, perplexity);
 
-        double avg = Utils.sumOfArray(perplexity)/perplexity.length;
-        double std = 0;
-        for(double p: perplexity)
-            std += (p - avg) * (p - avg);
-        std /= perplexity.length;
-        std = Math.sqrt(std);
-        System.out.format("[Output]Avg perpelexity is: (%.4f +- %.4f).\n", avg, std);
+//        double avg = Utils.sumOfArray(perplexity)/perplexity.length;
+//        double std = 0;
+//        for(double p: perplexity)
+//            std += (p - avg) * (p - avg);
+//        std /= perplexity.length;
+//        std = Math.sqrt(std);
+//        System.out.format("[Output]Avg perpelexity is: (%.4f +- %.4f).\n", avg, std);
     }
 
     public void printStat4OneFold(String prefix, int fold){

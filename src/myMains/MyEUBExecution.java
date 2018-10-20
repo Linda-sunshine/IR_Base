@@ -29,6 +29,7 @@ public class MyEUBExecution {
         String tokenModel = "./data/Model/en-token.bin"; // Token model.
 
         EmbeddingParameter param = new EmbeddingParameter(args);
+
         String providedCV = String.format("%s/%s/SelectedVocab.csv", param.m_prefix, param.m_data);
         String userFolder = String.format("%s/%s/Users", param.m_prefix, param.m_data);
         String friendFile = String.format("%s/%s/%sFriends.txt", param.m_prefix, param.m_data, param.m_data);
@@ -61,15 +62,13 @@ public class MyEUBExecution {
         }
         ((EUB) tModel).setModelParamsUpdateFlags(param.m_alphaFlag, param.m_gammaFlag, param.m_betaFlag,
                 param.m_tauFlag, param.m_xiFlag);
+        ((EUB) tModel).setAdaFlag(param.m_ada);
         ((EUB) tModel).initLookupTables(analyzer.getUsers());
         ((EUB) tModel).setDisplayLv(0);
         ((EUB) tModel).setStepSize(param.m_stepSize);
-
-        String savePrefix = String.format("%s/%s_%d", param.m_savePrefix, param.m_data, start);
-        ((EUB) tModel).fixedCrossValidation(kFold, savePrefix);
+        ((EUB) tModel).fixedCrossValidation(param.m_kFold, param.m_savePrefix);
         long end = System.currentTimeMillis();
 
-        System.out.println("\n[Info]Start time: " + start);
         // the total time of training and testing in the unit of hours
         double hours = (end - start)/(1000*60*60);
         System.out.print(String.format("[Time]This training+testing process took %.2f hours.\n", hours));

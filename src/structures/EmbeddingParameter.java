@@ -9,19 +9,21 @@ public class EmbeddingParameter {
     public String m_data = "YelpNew";
     public String m_savePrefix = "/zf8/lg5bt/embeddingExp/eub/";
 
-    public int m_emIter = 30;
-    public int m_number_of_topics = 30;
-    public int m_varIter = 20;
+    public int m_emIter = 50;
+    public int m_number_of_topics = 10;
+    public int m_varIter = 10;
     public int m_embeddingDim = 10;
+    public int m_kFold = 0;
 
     public boolean m_multiFlag = true;
     public double m_stepSize = 1e-3;
 
     public boolean m_alphaFlag = false;
-    public boolean m_gammaFlag = false;
+    public boolean m_gammaFlag = true;
     public boolean m_betaFlag = true;
     public boolean m_tauFlag = false;
     public boolean m_xiFlag = false;
+    public boolean m_ada = false;
 
     public EmbeddingParameter(String argv[]) {
 
@@ -61,6 +63,10 @@ public class EmbeddingParameter {
                 m_tauFlag = Boolean.valueOf(argv[i]);
             else if (argv[i - 1].equals("-xiFlag"))
                 m_xiFlag = Boolean.valueOf(argv[i]);
+            else if (argv[i - 1].equals("-kFold"))
+                m_kFold = Integer.valueOf(argv[i]);
+            else if (argv[i - 1].equals("-ada"))
+                m_ada = Boolean.valueOf(argv[i]);
 
         }
     }
