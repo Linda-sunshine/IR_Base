@@ -1,6 +1,7 @@
 package mains;
 
 import Analyzer.BipartiteAnalyzer;
+import Analyzer.MultiThreadedNetworkAnalyzer;
 import Analyzer.MultiThreadedReviewAnalyzer;
 import Analyzer.MultiThreadedUserAnalyzer;
 import structures.*;
@@ -20,6 +21,33 @@ public class myDataProcessMain {
     static BipartiteAnalyzer m_bipartite;
     static HashMap<Integer, ArrayList<Integer>> m_mapByUser;
     static HashMap<Integer, ArrayList<Integer>> m_mapByItem;
+
+    public void process2My(String[] args)  throws IOException {
+        TopicModelParameter param = new TopicModelParameter(args);
+
+        int classNumber = 6; //Define the number of classes in this Naive Bayes.
+        int Ngram = 2; //The default value is unigram.
+        String featureValue = "TF"; //The way of calculating the feature value, which can also be "TFIDF", "BM25"
+        int norm = 0;//The way of normalization.(only 1 and 2)
+        int lengthThreshold = 5; //Document length threshold
+        int numberOfCores = Runtime.getRuntime().availableProcessors();
+        int crossV = 5;
+
+        /*****data setting*****/
+        String tokenModel = "./data/Model/en-token.bin";
+        String dataset = String.format("%s/%s/%s", param.m_prefix, param.m_source, param.m_set);
+        String fvFile = String.format("%s/%s/%s_features.txt", param.m_prefix, param.m_source, param.m_source);
+        String reviewFolder = String.format("%s/data/", dataset);
+        String cvIndexFile = String.format("%s/%sCVIndex.txt", dataset, param.m_source);
+        String outputFolder = String.format("%s/output/%dfoldsCV%s/", dataset, param.m_crossV, param.m_flag_coldstart?"Coldstart":"");
+
+        MultiThreadedNetworkAnalyzer analyzer = new MultiThreadedNetworkAnalyzer(tokenModel, classNumber, fvFile,
+                Ngram, lengthThreshold, numberOfCores, true);
+        analyzer.loadUserDir(reviewFolder);
+        analyzer.constructUserIDIndex();
+        analyzer.loadCVIndex(cvIndexFile);
+
+    }
 
     public static void main(String[] args) throws IOException, ParseException {
         TopicModelParameter param = new TopicModelParameter(args);
