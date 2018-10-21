@@ -33,29 +33,29 @@ public class _User {
 	protected double m_sim; // Similarity of itself.
 
 	// performance statistics
-	_PerformanceStat m_perfStat;
+	protected _PerformanceStat m_perfStat;
 
-	int m_cIndex = 0; // added by Lin, cluster number.
-	double m_posRatio = 0;
-	double m_avgIDF = 0;
+	protected int m_cIndex = 0; // added by Lin, cluster number.
+	protected double m_posRatio = 0;
+	protected double m_avgIDF = 0;
 
 	double m_adaPos = 0;
 	double m_testPos = 0;
 
 	// added by Lin for friendship.
-	String[] m_friends;
-	String[] m_testFriends;
-	String[] m_nonFriends;
+	protected String[] m_friends = null;
+	protected String[] m_testFriends = null;
+	protected String[] m_nonFriends = null;
 
-	private ArrayList<_Review> m_trainReviews;
-	private ArrayList<_Review> m_testReviews;
+	protected ArrayList<_Review> m_trainReviews;
+	protected ArrayList<_Review> m_testReviews;
 	private ArrayList<String> m_trainItems;
 	protected int m_trainReviewSize = -1;
 	protected int m_testReviewSize = -1;
 
-	private final HashMap<String, Integer> m_itemIDRating;
-	private String[] m_rankingItems;
-	private HashMap<String, _Review> m_testReviewMap;
+	protected final HashMap<String, Integer> m_itemIDRating;
+	protected String[] m_rankingItems;
+	protected HashMap<String, _Review> m_testReviewMap;
 
 	// The function is used for finding friends from Amazon data set.
 	protected ArrayList<String> m_amazonFriends = new ArrayList<String>();
@@ -67,7 +67,6 @@ public class _User {
 		m_BoWProfile = null;
 		m_pWeight = null;
 		m_itemIDRating = new HashMap<String, Integer>();
-//		constructTrainTestReviews();
 	}
 
 	public _User(int cindex, int classNo){
@@ -83,7 +82,6 @@ public class _User {
 		m_perfStat = new _PerformanceStat(classNo);
 		m_itemIDRating = new HashMap<String, Integer>();
 		constructTrainTestReviews();
-
 	}
 
 	public _User(String userID, int classNo, ArrayList<_Review> reviews){
@@ -99,11 +97,6 @@ public class _User {
 		m_perfStat = new _PerformanceStat(classNo);
 		m_itemIDRating = new HashMap<String, Integer>();
 		constructTrainTestReviews();
-
-//		constructSparseVector();
-//		calcPosRatio();
-//		calcCtgSize();
-//		calcAdpatTestPosRatio();
 	}
 
 	public void addOneItemIDRatingPair(String item, int r){
@@ -571,5 +564,11 @@ public class _User {
 				m_rankingItems[index++] = item;
 			}
 		}
+	}
+
+	public _Review getReviewByID(int id){
+		if(id >= m_reviews.size())
+			System.err.println("[error] Index exceeds the array length!");
+		return m_reviews.get(id);
 	}
 }
