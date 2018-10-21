@@ -170,6 +170,37 @@ public class MultiThreadedNetworkAnalyzer extends MultiThreadedLinkPredAnalyzer 
         }
     }
 
+    public void saveCV2Folds(String folder){
+        try{
+            for(_User u : m_users){
+                for(_Review r : u.getReviews()){
+                    int cvIdx = r.getMask4CV();
+                    String cur_dir = String.format("%s/%d", folder, cvIdx);
+                    new File(cur_dir).mkdirs();
+
+                    File cur_file = new File(String.format("%s/%s", cur_dir, r.getUserID()));
+                    if(!cur_file.exists()){
+                        FileWriter file = new FileWriter(cur_file);
+                        file.write(r.getUserID() + "\n");
+                        file.flush();
+                        file.close();
+                    }
+
+                    FileWriter file = new FileWriter(cur_file, true);
+                    file.write(r.getItemID() + "\n");
+                    file.write(r.getSource() + "\n");
+                    file.write(r.getCategory() + "\n");
+                    file.write(r.getYLabel() + "\n");
+                    file.write(r.getTimeStamp() + "\n");
+                    file.flush();
+                    file.close();
+                }
+            }
+        } catch (IOException e){
+            e.printStackTrace();
+        }
+    }
+
     public void findUserWithMaxDocSize(){
         int max = -1;
         int count = 0;

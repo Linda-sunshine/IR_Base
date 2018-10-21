@@ -77,10 +77,8 @@ public class ETBIRMain {
         }
 
         String reviewFolder = dataset; //2foldsCV/folder0/train/, data/
-//        MultiThreadedReviewAnalyzer analyzer = new MultiThreadedReviewAnalyzer(tokenModel, classNumber, fvFiles[fvFile_point],
-//                Ngram, lengthThreshold, numberOfCores, true, source);
-        MultiThreadedUserAnalyzer analyzer = new MultiThreadedUserAnalyzer(tokenModel, classNumber, fvFiles[fvFile_point],
-                Ngram, lengthThreshold, numberOfCores, false);
+        MultiThreadedReviewAnalyzer analyzer = new MultiThreadedReviewAnalyzer(tokenModel, classNumber, fvFiles[fvFile_point],
+                Ngram, lengthThreshold, numberOfCores, true, source);
         if(setRandomFold==false)
             analyzer.setReleaseContent(false);//Remember to set it as false when generating crossfolders!!!
         analyzer.loadUserDir(reviewFolder);
