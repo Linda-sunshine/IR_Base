@@ -42,26 +42,8 @@ public class ETBIRExecution {
 
 		MultiThreadedReviewAnalyzer analyzer = new MultiThreadedReviewAnalyzer(tokenModel, classNumber, fvFile,
 				Ngram, lengthThreshold, numberOfCores, true, param.m_source);
-		if(setRandomFold==false)
-			analyzer.setReleaseContent(false);//Remember to set it as false when generating crossfolders!!!
-		analyzer.loadUserDir(reviewFolder);
+//		analyzer.loadUserDir(reviewFolder);
 		_Corpus corpus = analyzer.getCorpus();
-
-		if(param.m_crossV>1 && setRandomFold==false){
-			reviewFolder = String.format("%s/%dfoldsCV%s/", dataset, param.m_crossV, param.m_flag_coldstart?"Coldstart":"");
-			//if no data, generate
-            String cvFolder = String.format("%s/0/", reviewFolder);
-			File testFile = new File(cvFolder);
-			if(!testFile.exists() && !testFile.isDirectory()){
-				System.err.format("[Warning]Cross validation dataset %s not exist! Now generating...", cvFolder);
-				BipartiteAnalyzer cv = new BipartiteAnalyzer(corpus); // split corpus into folds
-				cv.analyzeCorpus();
-				if(param.m_flag_coldstart)
-				    cv.splitCorpusColdStart(param.m_crossV, reviewFolder);
-				else
-                    cv.splitCorpus(param.m_crossV, reviewFolder);
-			}
-		}
 
         int result_dim = 1;
 		pLSA tModel = null;
@@ -108,11 +90,13 @@ public class ETBIRExecution {
         new File(outputFolder).mkdirs();
         tModel.setInforWriter(outputFolder + param.m_topicmodel + "_info.txt");
         if (param.m_crossV<=1) {//just train
+            analyzer.loadUserDir(reviewFolder);
             tModel.EMonCorpus();
             tModel.printParameterAggregation(param.m_topk, outputFolder, param.m_topicmodel);
             tModel.printTopWords(param.m_topk);
             tModel.closeWriter();
         } else if(setRandomFold == true){//cross validation with random folds
+            analyzer.loadUserDir(reviewFolder);
             tModel.setRandomFold(setRandomFold);
             double trainProportion = ((double)param.m_crossV - 1)/(double)param.m_crossV;
             double testProportion = 1-trainProportion;

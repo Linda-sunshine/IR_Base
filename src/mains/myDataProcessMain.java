@@ -27,6 +27,41 @@ public class myDataProcessMain {
         dataprocesser.splitCVByIndex(args);
     }
 
+    public void genCV(String[] args) throws IOException {
+        TopicModelParameter param = new TopicModelParameter(args);
+
+        int classNumber = 6; //Define the number of classes in this Naive Bayes.
+        int Ngram = 2; //The default value is unigram.
+        int lengthThreshold = 5; //Document length threshold
+        int numberOfCores = Runtime.getRuntime().availableProcessors();
+
+        String tokenModel = "./data/Model/en-token.bin";
+        String dataset = String.format("%s/%s/%s", param.m_prefix, param.m_source, param.m_set);
+        String fvFile = String.format("%s/%s/%s_features.txt", param.m_prefix, param.m_source, param.m_source);
+        String reviewFolder = String.format("%s/data/", dataset);
+
+        MultiThreadedReviewAnalyzer analyzer = new MultiThreadedReviewAnalyzer(tokenModel, classNumber, fvFile,
+                Ngram, lengthThreshold, numberOfCores, true, param.m_source);
+        analyzer.setReleaseContent(false);//Remember to set it as false when generating crossfolders!!!
+        analyzer.loadUserDir(reviewFolder);
+        System.out.format("%d docs are load.\n", analyzer.getCorpus().getCollection().size());
+
+        reviewFolder = String.format("%s/%dfoldsCV%s/", dataset, param.m_crossV, param.m_flag_coldstart?"Coldstart":"");
+        //if no data, generate
+        String cvFolder = String.format("%s/0/", reviewFolder);
+        File testFile = new File(cvFolder);
+        if(!testFile.exists() && !testFile.isDirectory()){
+            System.err.format("[Warning]Cross validation dataset %s not exist! Now generating...", cvFolder);
+            BipartiteAnalyzer cv = new BipartiteAnalyzer(analyzer.getCorpus()); // split corpus into folds
+            cv.analyzeCorpus();
+            if(param.m_flag_coldstart)
+                cv.splitCorpusColdStart(param.m_crossV, reviewFolder);
+            else
+                cv.splitCorpus(param.m_crossV, reviewFolder);
+        }
+
+    }
+
     public void splitCVByIndex(String[] args)  throws IOException {
         TopicModelParameter param = new TopicModelParameter(args);
 

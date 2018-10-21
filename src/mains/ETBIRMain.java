@@ -46,15 +46,15 @@ public class ETBIRMain {
         double sigma = 0.1, rho = 0.1;
 
         int topK = 50;
-        int crossV = 3;
-        boolean setRandomFold = true;
+        int crossV = 1;
         boolean flag_coldstart = false;
+        boolean setRandomFold = false;
 
         /*****data setting*****/
-        String trainset = "Users";
+        String trainset = "byUser_20k_review";
         String source = "YelpNew";
-        String dataset = "./myData/" + source + "/" + trainset + "/";
-        String outputFolder = String.format("%soutput/%dfoldsCV%s/", dataset, crossV, flag_coldstart?"Coldstart":"");
+        String dataset = "./myData/" + source + "/" + trainset;
+        String outputFolder = String.format("%s/output/%dfoldsCV%s/", dataset, crossV, flag_coldstart?"Coldstart":"");
 
         PrintStream out = new PrintStream(new FileOutputStream("log.txt"));
 //        System.setOut(out);
@@ -64,7 +64,7 @@ public class ETBIRMain {
         fvFiles[1] = "./data/Features/fv_2gram_IG_amazon_movie_byUser_40_50_12.txt";
         fvFiles[2] = "./data/Features/fv_2gram_IG_amazon_electronic_byUser_20_20_5.txt";
         fvFiles[3] = "./data/Features/fv_2gram_IG_amazon_book_byUser_40_50_12.txt";
-        fvFiles[4] = String.format("./myData/%s/SelectedVocab.csv", source);
+        fvFiles[4] = String.format("./myData/%s/%s_features.txt", source, source);
         int fvFile_point = 0;
         if(source.equals("amazon_movie")){
             fvFile_point = 1;
@@ -76,28 +76,12 @@ public class ETBIRMain {
             fvFile_point = 4;
         }
 
-        String reviewFolder = dataset; //2foldsCV/folder0/train/, data/
+        String reviewFolder = String.format("%s/data/", dataset); //2foldsCV/folder0/train/, data/
         MultiThreadedReviewAnalyzer analyzer = new MultiThreadedReviewAnalyzer(tokenModel, classNumber, fvFiles[fvFile_point],
                 Ngram, lengthThreshold, numberOfCores, true, source);
-        if(setRandomFold==false)
-            analyzer.setReleaseContent(false);//Remember to set it as false when generating crossfolders!!!
-        analyzer.loadUserDir(reviewFolder);
+//        analyzer.loadUserDir(reviewFolder);
         _Corpus corpus = analyzer.getCorpus();
 
-        if(setRandomFold==false){
-            reviewFolder = String.format("%s%dfoldsCV%s/", dataset, crossV, flag_coldstart?"Coldstart":"");
-            //if no data, generate
-            File testFile = new File(reviewFolder + 0 + "/");
-            if(!testFile.exists() && !testFile.isDirectory()){
-                System.err.println("[Warning]Cross validation dataset not exist! Now generating...");
-                BipartiteAnalyzer cv = new BipartiteAnalyzer(corpus); // split corpus into folds
-                cv.analyzeCorpus();
-                if(flag_coldstart)
-                    cv.splitCorpusColdStart(crossV, reviewFolder);
-                else
-                    cv.splitCorpus(crossV,reviewFolder);
-            }
-        }
 //        corpus.save2File(dataset + "yelp_4k.dat");//for CTM
 
         /*****model loading*****/
@@ -142,11 +126,13 @@ public class ETBIRMain {
         new File(outputFolder).mkdirs();
         tModel.setInforWriter(outputFolder + topicmodel + "_info.txt");
         if (crossV<=1) {//just train
+            analyzer.loadUserDir(reviewFolder);
             tModel.EMonCorpus();
             tModel.printParameterAggregation(topK, outputFolder, topicmodel);
             tModel.printTopWords(topK);
             tModel.closeWriter();
         } else if(setRandomFold == true){//cross validation with random folds
+            analyzer.loadUserDir(reviewFolder);
             tModel.setRandomFold(setRandomFold);
             double trainProportion = ((double)crossV - 1)/(double)crossV;
             double testProportion = 1-trainProportion;
