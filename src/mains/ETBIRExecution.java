@@ -6,6 +6,7 @@ import java.text.ParseException;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.StringJoiner;
 
 import Analyzer.BipartiteAnalyzer;
 import structures.TopicModelParameter;
@@ -37,7 +38,7 @@ public class ETBIRExecution {
 		String tokenModel = "./data/Model/en-token.bin";
 		String dataset = String.format("%s/%s/%s", param.m_prefix, param.m_source, param.m_set);
 		String fvFile = String.format("%s/%s/%s_features.txt", param.m_prefix, param.m_source, param.m_source);
-		String reviewFolder = String.format("%s/data/", dataset);
+		String reviewFolder = String.format("%s/%dfoldsCV/", dataset, param.m_crossV);
 		String outputFolder = String.format("%s/output/%dfoldsCV%s/", dataset, param.m_crossV, param.m_flag_coldstart?"Coldstart":"");
 
 		MultiThreadedReviewAnalyzer analyzer = new MultiThreadedReviewAnalyzer(tokenModel, classNumber, fvFile,
@@ -90,12 +91,14 @@ public class ETBIRExecution {
         new File(outputFolder).mkdirs();
         tModel.setInforWriter(outputFolder + param.m_topicmodel + "_info.txt");
         if (param.m_crossV<=1) {//just train
+            reviewFolder = String.format("%s/data/", dataset);
             analyzer.loadUserDir(reviewFolder);
             tModel.EMonCorpus();
             tModel.printParameterAggregation(param.m_topk, outputFolder, param.m_topicmodel);
             tModel.printTopWords(param.m_topk);
             tModel.closeWriter();
         } else if(setRandomFold == true){//cross validation with random folds
+            reviewFolder = String.format("%s/data/", dataset);
             analyzer.loadUserDir(reviewFolder);
             tModel.setRandomFold(setRandomFold);
             double trainProportion = ((double)param.m_crossV - 1)/(double)param.m_crossV;
