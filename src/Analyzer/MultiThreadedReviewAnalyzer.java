@@ -60,7 +60,7 @@ public class MultiThreadedReviewAnalyzer extends MultiThreadedUserAnalyzer {
 					System.out.println("!FAIL to parse a json object...");
 				}
 			}
-		}else if(filename.toLowerCase().endsWith(".txt")){
+		}else{
 			try {
 				File file = new File(filename);
 				BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(file), "UTF-8"));

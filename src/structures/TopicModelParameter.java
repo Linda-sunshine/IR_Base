@@ -6,7 +6,7 @@ public class TopicModelParameter {
 	public String m_prefix = "/zf18/ll5fy/lab/dataset";//"./data/CoLinAdapt"
 	public String m_source = "yelp"; // "amazon_movie"
 	public String m_set = "byUser_4k_review";
-	public String m_topicmodel = "ETBIR";
+	public String m_topicmodel = "LDA_Variational";
 	public int m_crossV = 5;
 
 	public double m_beta = 1 + 1e-3;

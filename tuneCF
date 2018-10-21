@@ -1,0 +1,3 @@
+#!/bin/sh
+nohup ./runCF 20 LDA_Variational > cf_20_LDA_Variational.output 2>&1 &
+nohup ./runCF 20 

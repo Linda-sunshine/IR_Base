@@ -26,7 +26,7 @@ import javax.rmi.CORBA.Util;
 public class ETBIR extends LDA_Variational {
     /*****data structures*****/
     protected List<_User> m_users; //all the users in training and test set
-    protected List<_Product> m_items; //all the items in training and test set
+    protected List<_Product4ETBIR> m_items; //all the items in training and test set
 
     //index structure for all users, items and reviews
     protected HashMap<String, Integer> m_usersIndex; //(key: userID, value: index in m_users)
@@ -126,6 +126,45 @@ public class ETBIR extends LDA_Variational {
         m_eta_mean_Stats = 0.0;
         m_lambda_Stats = 0.0;
     }
+
+    @Override
+    protected void initialize_probability(Collection<_Doc> docs) {
+        System.out.println("[Info]Initializing documents...");
+        for(_Doc doc : m_corpus.getCollection())
+            ((_Doc4ETBIR) doc).setTopics4Variational(number_of_topics, d_alpha, d_mu, d_sigma_theta);
+
+        System.out.println("[Info]Initializing users...");
+        for(_User u : m_users){
+            initTestUser((_User4ETBIR) u);
+        }
+
+        System.out.println("[Info]Initializing items...");
+        for(_Product i : m_items) {
+            initTestItem((_Product4ETBIR) i);
+        }
+
+        // initialize with all smoothing terms
+        init();
+        Arrays.fill(m_alpha, d_alpha);
+
+        System.out.println("[Info]Initializing ETBIR model...");
+        // initialize topic-word allocation, p(w|z)
+        for(_Doc doc:docs)
+            updateStats4Doc((_Doc4ETBIR) doc);
+
+        for(int u_idx:m_mapByUser.keySet()) {
+            _User4ETBIR user = (_User4ETBIR) m_users.get(u_idx);
+            updateStats4User(user);
+        }
+
+        for(int i_idx : m_mapByItem.keySet()){
+            _Product4ETBIR item = (_Product4ETBIR) m_items.get(i_idx);
+            updateStats4Item(item);
+        }
+
+        calculate_M_step(0);
+    }
+
 
     protected void updateStats4Item(_Product4ETBIR item){
         double digammaSum = Utils.digamma(Utils.sumOfArray(item.m_eta));
@@ -751,46 +790,6 @@ public class ETBIR extends LDA_Variational {
 //        }
 
         return log_likelihood;
-    }
-
-    @Override
-    protected void initialize_probability(Collection<_Doc> docs) {
-        System.out.println("[Info]Initializing documents...");
-        for(_Doc doc : m_corpus.getCollection())
-            ((_Doc4ETBIR) doc).setTopics4Variational(number_of_topics, d_alpha, d_mu, d_sigma_theta);
-
-        System.out.println("[Info]Initializing users...");
-        for(_User u : m_users){
-            _User4ETBIR user = (_User4ETBIR) u;
-            user.setTopics4Variational(number_of_topics, d_nu, d_sigma_P);
-        }
-
-        System.out.println("[Info]Initializing items...");
-        for(_Product i : m_items) {
-            _Product4ETBIR item = (_Product4ETBIR) i;
-            item.setTopics4Variational(number_of_topics, d_alpha);
-        }
-
-        // initialize with all smoothing terms
-        init();
-        Arrays.fill(m_alpha, d_alpha);
-
-        System.out.println("[Info]Initializing ETBIR model...");
-        // initialize topic-word allocation, p(w|z)
-        for(_Doc doc:docs)
-            updateStats4Doc((_Doc4ETBIR) doc);
-
-        for(int u_idx:m_mapByUser.keySet()) {
-            _User4ETBIR user = (_User4ETBIR) m_users.get(u_idx);
-            updateStats4User(user);
-        }
-
-        for(int i_idx : m_mapByItem.keySet()){
-            _Product4ETBIR item = (_Product4ETBIR) m_items.get(i_idx);
-            updateStats4Item(item);
-        }
-
-        calculate_M_step(0);
     }
 
     public void analyzeCorpus(){

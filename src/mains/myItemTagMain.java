@@ -84,6 +84,7 @@ public class myItemTagMain {
                     analyzer.loadUserDir(trainFolder);
                 }
             }
+
             //first load corpus, aka tags
             tagger.loadItemWeight(String.format("%s%d/%s_postByItem_%d.txt", outputFolder, k, model, number_of_topics), 40);
             tagger.buildItemProfile(analyzer.getCorpus().getCollection());
