@@ -23,7 +23,10 @@ src/nohup.out
 src/mains/ETBIRMain.java
 *.dat
 *.csv
+*.out
 myData/yelp/byUser_4k_review/yelp
+cf/*
+itemTagging/*
 *.slurm
 tuneCTM
 tuneLDA_User
