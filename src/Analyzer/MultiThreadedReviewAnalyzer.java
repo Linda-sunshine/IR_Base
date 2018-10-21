@@ -16,7 +16,7 @@ public class MultiThreadedReviewAnalyzer extends MultiThreadedUserAnalyzer {
 	String source;
 	public MultiThreadedReviewAnalyzer(String tokenModel, int classNo,
 			String providedCV, int Ngram, int threshold, int numberOfCores,
-			boolean b, String source) throws InvalidFormatException, FileNotFoundException,
+			boolean b, String source) throws
 			IOException {
 		super(tokenModel, classNo, providedCV, Ngram, threshold, numberOfCores, b);
 		this.source = source;
@@ -87,6 +87,21 @@ public class MultiThreadedReviewAnalyzer extends MultiThreadedUserAnalyzer {
 						reviews.add(review);
 					}
 				}
+
+                if(reviews.size() > 1){//at least one for adaptation and one for testing
+                    synchronized (m_allocReviewLock) {
+                        if(m_allocateFlag)
+                            allocateReviews(reviews);
+                        m_users.add(new _User(userID, m_classNo, reviews)); //create new user from the file.
+                        m_corpus.addDocs(reviews);
+                    }
+                } else if(reviews.size() == 1){// added by Lin, for those users with fewer than 2 reviews, ignore them.
+//				System.out.format("[Info]User: %s does not have enough docs.\n", userID);
+                    review = reviews.get(0);
+                    synchronized (m_rollbackLock) {
+                        rollBack(Utils.revertSpVct(review.getSparse()), review.getYLabel());
+                    }
+                }
 
 				reader.close();
 			} catch(IOException e){

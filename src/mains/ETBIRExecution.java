@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.text.ParseException;
 import java.util.Arrays;
 
+import Analyzer.MultiThreadedUserAnalyzer;
 import structures.TopicModelParameter;
 import structures._Corpus;
 import structures._Doc;
@@ -37,8 +38,10 @@ public class ETBIRExecution {
 		String reviewFolder = String.format("%s/%dfoldsCV/", dataset, param.m_crossV);
 		String outputFolder = String.format("%s/output/%dfoldsCV%s/", dataset, param.m_crossV, param.m_flag_coldstart?"Coldstart":"");
 
-		MultiThreadedReviewAnalyzer analyzer = new MultiThreadedReviewAnalyzer(tokenModel, classNumber, fvFile,
-				Ngram, lengthThreshold, numberOfCores, true, param.m_source);
+//		MultiThreadedReviewAnalyzer analyzer = new MultiThreadedReviewAnalyzer(tokenModel, classNumber, fvFile,
+//				Ngram, lengthThreshold, numberOfCores, true, param.m_source);//previous wrong: not assign doc to corpus
+        MultiThreadedUserAnalyzer analyzer = new MultiThreadedUserAnalyzer(tokenModel, classNumber, fvFile,
+                Ngram, lengthThreshold, numberOfCores, true);
 //		analyzer.loadUserDir(reviewFolder);
 		_Corpus corpus = analyzer.getCorpus();
 
