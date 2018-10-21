@@ -93,10 +93,11 @@ public class MyEUBMain {
         double emConverge = 1e-10, alpha = 1 + 1e-2, beta = 1 + 1e-3, lambda = 1 + 1e-3, varConverge = 1e-6;//these two parameters must be larger than 1!!!
         _Corpus corpus = analyzer.getCorpus();
 
+        // start the vi process
         long start = System.currentTimeMillis();
-        double stepSize = 1e-2;
         LDA_Variational tModel = null;
-        boolean multiFlag = true;
+        int innerIter = 1;
+        boolean multiFlag = true, adaFlag = false;
         if(multiFlag)
             tModel = new EUB_multithreading(emMaxIter, emConverge, beta, corpus, lambda, number_of_topics, alpha, varMaxIter, varConverge, embeddingDim);
         else
@@ -105,11 +106,12 @@ public class MyEUBMain {
         ((EUB) tModel).setModelParamsUpdateFlags(alphaFlag, gammaFlag, betaFlag, tauFlag, xiFlag);
         ((EUB) tModel).initLookupTables(analyzer.getUsers());
         ((EUB) tModel).setDisplayLv(0);
-//        ((EUB) tModel).setStepSize(stepSize);
+        ((EUB) tModel).setInnerMaxIter(innerIter);
 
-        String savePrefix = String.format("./data/emebddingExp/eub/%d-%s-emIter-%d-nuTopics-%d-varIter-%d-dim-%d",
-                start, dataset, emMaxIter, number_of_topics, varMaxIter, embeddingDim);
-        ((EUB) tModel).fixedCrossValidation(kFold, savePrefix);
+        long current = System.currentTimeMillis();
+        String saveDir = String.format("./data/emebddingExp/eub/%s_emIter_%d_nuTopics_%d_varIter_%d_innerIter_%d_dim_%d_ada_%b/" +
+                "fold_%d_%d", dataset, emMaxIter, number_of_topics, varMaxIter, innerIter, embeddingDim, adaFlag, kFold, current);
+        ((EUB) tModel).fixedCrossValidation(kFold, saveDir);
         long end = System.currentTimeMillis();
 
         System.out.println("\n[Info]Start time: " + start);

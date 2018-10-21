@@ -62,6 +62,8 @@ public class EUB extends LDA_Variational {
     // whehter we use adam grad to optimize or not
     protected boolean m_adaFlag = false;
 
+    protected int m_innerMaxIter = 1;
+
     public EUB(int number_of_iteration, double converge, double beta,
                _Corpus c, double lambda, int number_of_topics, double alpha,
                int varMaxIter, double varConverge, int m) {
@@ -90,6 +92,12 @@ public class EUB extends LDA_Variational {
     public void setStepSize(double s){
         m_stepSize = s;
     }
+
+    // iteration time of inside variational inference
+    public void setInnerMaxIter(int it){
+        m_innerMaxIter = it;
+    }
+
     // Load the data for later user
     public void initLookupTables(ArrayList<_User> users){
         m_usersIndex = new HashMap<String, Integer>();
@@ -440,7 +448,7 @@ public class EUB extends LDA_Variational {
                 converge = 1.0;
 
             lastLoglikelihood = curLoglikelihood;
-        } while (++iter < m_varMaxIter && Math.abs(converge) > m_varConverge && !warning);
+        } while (++iter < m_innerMaxIter && Math.abs(converge) > m_varConverge && !warning);
         return curLoglikelihood;
     }
 
@@ -470,7 +478,7 @@ public class EUB extends LDA_Variational {
                 converge = 1.0;
 
             lastLoglikelihood = curLoglikelihood;
-        } while (++iter < m_varMaxIter && Math.abs(converge) > m_varConverge && !warning);
+        } while (++iter < m_innerMaxIter && Math.abs(converge) > m_varConverge && !warning);
 
         return curLoglikelihood;
     }
@@ -961,7 +969,7 @@ public class EUB extends LDA_Variational {
     }
 
     // fixed cross validation with specified fold number
-    public void fixedCrossValidation(int kFold, String prefix){
+    public void fixedCrossValidation(int kFold, String saveDir){
         double perplexity = 0;
         constructNetwork();
 //        double[] perplexity = new double[kFold];
@@ -986,7 +994,7 @@ public class EUB extends LDA_Variational {
         buildUserDocMap();
         EM();
         perplexity = evaluation();
-        printStat4OneFold(prefix, kFold);
+        printStat4OneFold(saveDir, perplexity);
         System.out.format("[Output]Perpelexity for fold %d is: %.4f.\n", kFold, perplexity);
 
 //        double avg = Utils.sumOfArray(perplexity)/perplexity.length;
@@ -998,18 +1006,27 @@ public class EUB extends LDA_Variational {
 //        System.out.format("[Output]Avg perpelexity is: (%.4f +- %.4f).\n", avg, std);
     }
 
-    public void printStat4OneFold(String prefix, int fold){
+    public void printStat4OneFold(String saveDir, double perplexity){
         // record related information
-        String saveDir = String.format("%s/fold_%d", prefix, fold);
         File fileDir = new File(saveDir);
         if(!fileDir.exists())
             fileDir.mkdirs();
 
+        printOneFoldPerplexity(saveDir, perplexity);
         printTopWords(30, String.format("%s/topkWords.txt", saveDir));
         printTopicEmbedding(String.format("%s/topicEmbedding.txt", saveDir));
         printUserEmbedding(String.format("%s/userEmbedding.txt", saveDir));
     }
 
+    public void printOneFoldPerplexity(String saveDir, double perplexity){
+        try{
+            PrintWriter writer  = new PrintWriter(new File(String.format("%s/perplexity.txt", saveDir)));
+            writer.format("perplexity: %.5f\n", perplexity);
+            writer.close();
+        } catch(IOException e){
+            e.printStackTrace();
+        }
+    }
     // evaluation in single-thread
     public double evaluation() {
 

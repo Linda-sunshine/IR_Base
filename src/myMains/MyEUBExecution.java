@@ -63,10 +63,11 @@ public class MyEUBExecution {
         ((EUB) tModel).setModelParamsUpdateFlags(param.m_alphaFlag, param.m_gammaFlag, param.m_betaFlag,
                 param.m_tauFlag, param.m_xiFlag);
         ((EUB) tModel).setAdaFlag(param.m_ada);
+        ((EUB) tModel).setInnerMaxIter(param.m_innerIter);
         ((EUB) tModel).initLookupTables(analyzer.getUsers());
         ((EUB) tModel).setDisplayLv(0);
         ((EUB) tModel).setStepSize(param.m_stepSize);
-        ((EUB) tModel).fixedCrossValidation(param.m_kFold, param.m_savePrefix);
+        ((EUB) tModel).fixedCrossValidation(param.m_kFold, param.m_saveDir);
         long end = System.currentTimeMillis();
 
         // the total time of training and testing in the unit of hours
