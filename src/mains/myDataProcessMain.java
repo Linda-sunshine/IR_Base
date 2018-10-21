@@ -85,7 +85,9 @@ public class myDataProcessMain {
                 Ngram, lengthThreshold, numberOfCores, true);
         analyzer.setReleaseContent(false);
         analyzer.loadUserDir(reviewFolder);
+        System.out.format("[Info]%d docs are loaded.", analyzer.getCorpus().getCollection().size());
         analyzer.constructUserIDIndex();
+        System.out.format("[Info]%d users are loaded.", analyzer.getUsers().size());
         analyzer.loadCVIndex(cvIndexFile);
         analyzer.saveCV2Folds(cvFolder);
     }

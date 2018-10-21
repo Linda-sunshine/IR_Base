@@ -140,11 +140,15 @@ public class MultiThreadedNetworkAnalyzer extends MultiThreadedLinkPredAnalyzer 
         for(int i=0; i<m_users.size(); i++){
             m_userIDIndex.put(m_users.get(i).getUserID(), i);
         }
+        System.out.println("user index number: " + m_userIDIndex.size());
     }
 
     // load cv index for all the documents
     public void loadCVIndex(String filename){
         try {
+            if(m_userIDIndex==null)
+                constructUserIDIndex();
+
             File file = new File(filename);
             BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(file), "UTF-8"));
             String line;
