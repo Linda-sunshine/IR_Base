@@ -351,10 +351,10 @@ public class LDA_Variational extends pLSA {
 
 			for(int idx = 0; idx < m_trainSet.size(); idx++) {
 				gammaWriter.write(String.format("No. %d Doc(user: %s, item: %s) ***************\n", idx,
-                        ((_Doc4ETBIR) m_trainSet.get(idx)).getUserID(),
-                        ((_Doc4ETBIR) m_trainSet.get(idx)).getItemID()));
+						((_Review)m_trainSet.get(idx)).getUserID(),
+                         m_trainSet.get(idx).getItemID()));
 				for (int i = 0; i < number_of_topics; i++)
-					gammaWriter.format("%.5f\t", ((_Doc4ETBIR) m_trainSet.get(idx)).m_sstat[i]);
+					gammaWriter.format("%.5f\t", ((_Review) m_trainSet.get(idx)).m_sstat[i]);
 				gammaWriter.println();
 			}
 			gammaWriter.close();

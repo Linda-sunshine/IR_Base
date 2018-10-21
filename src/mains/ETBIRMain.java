@@ -46,13 +46,13 @@ public class ETBIRMain {
         double sigma = 0.1, rho = 0.1;
 
         int topK = 50;
-        int crossV = 1;
+        int crossV = 5;
         boolean flag_coldstart = false;
         boolean setRandomFold = false;
 
         /*****data setting*****/
-        String trainset = "byUser_20k_review";
-        String source = "YelpNew";
+        String trainset = "byUser_4k_review";
+        String source = "yelp";
         String dataset = "./myData/" + source + "/" + trainset;
         String outputFolder = String.format("%s/output/%dfoldsCV%s/", dataset, crossV, flag_coldstart?"Coldstart":"");
 
@@ -77,8 +77,8 @@ public class ETBIRMain {
         }
 
         String reviewFolder = String.format("%s/data/", dataset); //2foldsCV/folder0/train/, data/
-        MultiThreadedReviewAnalyzer analyzer = new MultiThreadedReviewAnalyzer(tokenModel, classNumber, fvFiles[fvFile_point],
-                Ngram, lengthThreshold, numberOfCores, true, source);
+        MultiThreadedUserAnalyzer analyzer = new MultiThreadedUserAnalyzer(tokenModel, classNumber, fvFiles[fvFile_point],
+                Ngram, lengthThreshold, numberOfCores, true);
 //        analyzer.loadUserDir(reviewFolder);
         _Corpus corpus = analyzer.getCorpus();
 
@@ -132,6 +132,7 @@ public class ETBIRMain {
             tModel.printTopWords(topK);
             tModel.closeWriter();
         } else if(setRandomFold == true){//cross validation with random folds
+            analyzer.setAllocateReviewFlag(false);
             analyzer.loadUserDir(reviewFolder);
             tModel.setRandomFold(setRandomFold);
             double trainProportion = ((double)crossV - 1)/(double)crossV;
@@ -139,6 +140,8 @@ public class ETBIRMain {
             tModel.setPerplexityProportion(testProportion);
             tModel.crossValidation(crossV);
         } else{//cross validation with fixed folds
+            analyzer.setAllocateReviewFlag(false);
+            reviewFolder = String.format("%s/%dfoldsCV/", dataset, crossV);
             double[][] perf = new double[crossV][result_dim];
             double[][] like = new double[crossV][result_dim];
             System.out.println("[Info]Start FIXED cross validation...");

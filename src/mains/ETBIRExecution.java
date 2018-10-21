@@ -94,6 +94,7 @@ public class ETBIRExecution {
             tModel.printTopWords(param.m_topk);
             tModel.closeWriter();
         } else if(setRandomFold == true){//cross validation with random folds
+            analyzer.setAllocateReviewFlag(false);
             reviewFolder = String.format("%s/data/", dataset);
             analyzer.loadUserDir(reviewFolder);
             tModel.setRandomFold(setRandomFold);
@@ -102,6 +103,7 @@ public class ETBIRExecution {
             tModel.setPerplexityProportion(testProportion);
             tModel.crossValidation(param.m_crossV);
         } else{//cross validation with fixed folds
+            analyzer.setAllocateReviewFlag(false);
             double[][] perf = new double[param.m_crossV][result_dim];
             double[][] like = new double[param.m_crossV][result_dim];
             System.out.println("[Info]Start FIXED cross validation...");
