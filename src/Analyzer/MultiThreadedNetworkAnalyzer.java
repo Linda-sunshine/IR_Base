@@ -140,7 +140,6 @@ public class MultiThreadedNetworkAnalyzer extends MultiThreadedLinkPredAnalyzer 
         for(int i=0; i<m_users.size(); i++){
             m_userIDIndex.put(m_users.get(i).getUserID(), i);
         }
-        System.out.println("user index number: " + m_userIDIndex.size());
     }
 
     // load cv index for all the documents
@@ -159,8 +158,7 @@ public class MultiThreadedNetworkAnalyzer extends MultiThreadedLinkPredAnalyzer 
                 int mask = Integer.valueOf(strs[2]);
 
                 if(!m_userIDIndex.containsKey(uId))
-                    continue;
-//                    System.out.println("No such user!");
+                    System.out.println("No such user!");
                 else {
                     int uIndex = m_userIDIndex.get(uId);
                     if (uIndex > m_users.size())

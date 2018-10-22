@@ -269,11 +269,11 @@ public class LDA_Variational extends pLSA {
 		super.printParameterAggregation(k, folderName, topicmodel);
 
         String gammaPathByUser = String.format("%s%s_postByUser_%d.txt", folderName, topicmodel, number_of_topics);
-        String gammaPathByItem = String.format("%s%s_postByItem_%d.txt", folderName, topicmodel, number_of_topics);
+//        String gammaPathByItem = String.format("%s%s_postByItem_%d.txt", folderName, topicmodel, number_of_topics);
         printAggreTopWords(k, gammaPathByUser, getDocByUser());
-        printAggreTopWords(k, gammaPathByItem, getDocByItem());
+//        printAggreTopWords(k, gammaPathByItem, getDocByItem());
 
-		printParam(folderName, topicmodel);
+//		printParam(folderName, topicmodel);
 	}
 
     public void printAggreTopWords(int k, String topWordPath, HashMap<String, List<_Doc>> docCluster) {

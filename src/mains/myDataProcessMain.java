@@ -4,6 +4,7 @@ import Analyzer.BipartiteAnalyzer;
 import Analyzer.MultiThreadedNetworkAnalyzer;
 import Analyzer.MultiThreadedReviewAnalyzer;
 import Analyzer.MultiThreadedUserAnalyzer;
+import EDU.oswego.cs.dl.util.concurrent.FJTask;
 import structures.*;
 
 import java.io.*;
@@ -27,51 +28,13 @@ public class myDataProcessMain {
         dataprocesser.splitCVByIndex(args);
     }
 
-    public void genCV(String[] args) throws IOException {
-        TopicModelParameter param = new TopicModelParameter(args);
-
-        int classNumber = 6; //Define the number of classes in this Naive Bayes.
-        int Ngram = 2; //The default value is unigram.
-        int lengthThreshold = 5; //Document length threshold
-        int numberOfCores = Runtime.getRuntime().availableProcessors();
-
-        String tokenModel = "./data/Model/en-token.bin";
-        String dataset = String.format("%s/%s/%s", param.m_prefix, param.m_source, param.m_set);
-        String fvFile = String.format("%s/%s/%s_features.txt", param.m_prefix, param.m_source, param.m_source);
-        String reviewFolder = String.format("%s/data/", dataset);
-
-        MultiThreadedReviewAnalyzer analyzer = new MultiThreadedReviewAnalyzer(tokenModel, classNumber, fvFile,
-                Ngram, lengthThreshold, numberOfCores, true, param.m_source);
-        analyzer.setReleaseContent(false);//Remember to set it as false when generating crossfolders!!!
-        analyzer.loadUserDir(reviewFolder);
-        System.out.format("%d docs are load.\n", analyzer.getCorpus().getCollection().size());
-
-        reviewFolder = String.format("%s/%dfoldsCV%s/", dataset, param.m_crossV, param.m_flag_coldstart?"Coldstart":"");
-        //if no data, generate
-        String cvFolder = String.format("%s/0/", reviewFolder);
-        File testFile = new File(cvFolder);
-        if(!testFile.exists() && !testFile.isDirectory()){
-            System.err.format("[Warning]Cross validation dataset %s not exist! Now generating...", cvFolder);
-            BipartiteAnalyzer cv = new BipartiteAnalyzer(analyzer.getCorpus()); // split corpus into folds
-            cv.analyzeCorpus();
-            if(param.m_flag_coldstart)
-                cv.splitCorpusColdStart(param.m_crossV, reviewFolder);
-            else
-                cv.splitCorpus(param.m_crossV, reviewFolder);
-        }
-
-    }
-
     public void splitCVByIndex(String[] args)  throws IOException {
         TopicModelParameter param = new TopicModelParameter(args);
 
         int classNumber = 6; //Define the number of classes in this Naive Bayes.
         int Ngram = 2; //The default value is unigram.
-        String featureValue = "TF"; //The way of calculating the feature value, which can also be "TFIDF", "BM25"
-        int norm = 0;//The way of normalization.(only 1 and 2)
         int lengthThreshold = 5; //Document length threshold
         int numberOfCores = Runtime.getRuntime().availableProcessors();
-        int crossV = 5;
 
         /*****data setting*****/
         String tokenModel = "./data/Model/en-token.bin";
@@ -85,40 +48,59 @@ public class myDataProcessMain {
                 Ngram, lengthThreshold, numberOfCores, true);
         analyzer.setReleaseContent(false);
         analyzer.loadUserDir(reviewFolder);
-        System.out.format("[Info]%d docs are loaded.", analyzer.getCorpus().getCollection().size());
+        System.out.format("[Info]%d docs are loaded.\n", analyzer.getCorpus().getCollection().size());
         analyzer.constructUserIDIndex();
-        System.out.format("[Info]%d users are loaded.", analyzer.getUsers().size());
+        System.out.format("[Info]%d users are loaded.\n", analyzer.getUsers().size());
         analyzer.loadCVIndex(cvIndexFile);
         analyzer.saveCV2Folds(cvFolder);
     }
 
-    public void transfer2HFT(String[] args) throws IOException, ParseException {
+    public void transfer2HFT(String[] args) throws IOException {
         TopicModelParameter param = new TopicModelParameter(args);
 
         int classNumber = 6; //Define the number of classes in this Naive Bayes.
         int Ngram = 2; //The default value is unigram.
-        String featureValue = "TF"; //The way of calculating the feature value, which can also be "TFIDF", "BM25"
-        int norm = 0;//The way of normalization.(only 1 and 2)
         int lengthThreshold = 5; //Document length threshold
         int numberOfCores = Runtime.getRuntime().availableProcessors();
-        String tokenModel = "./data/Model/en-token.bin";
         int crossV = 5;
 
         /*****data setting*****/
-        String folder = String.format("%s/%s/%s", param.m_prefix, param.m_source, param.m_set);
-        String fvFile = String.format("%s/%s/SelectedVocab.csv", param.m_prefix, param.m_source);
-        String outputFolder = String.format("%s/%s/", folder, param.m_topicmodel);
-//        String folder = String.format("./myData/yelp/byUser_4k_review");
-//        String fvFile = String.format("./data/Features/fv_2gram_IG_yelp_byUser_30_50_25.txt");
-//        String outputFolder = String.format("%s/CTR/", folder);
+        String tokenModel = "./data/Model/en-token.bin";
+        String dataset = String.format("%s/%s/%s", param.m_prefix, param.m_source, param.m_set);
+        String fvFile = String.format("%s/%s/%s_features.txt", param.m_prefix, param.m_source, param.m_source);
+        String reviewFolder = String.format("%s/%dfoldsCV%s", dataset, param.m_crossV, param.m_flag_coldstart?"Coldstart":"");
+        String outputFolder = String.format("%s/%s/", dataset, param.m_topicmodel);
         new File(outputFolder).mkdirs();
 
-        String reviewFolder =  String.format("%s/%dfoldsCV%s/", folder, crossV, param.m_flag_coldstart?"Coldstart":"");
         MultiThreadedUserAnalyzer analyzer = new MultiThreadedUserAnalyzer(tokenModel, classNumber, fvFile,
                 Ngram, lengthThreshold, numberOfCores, false);
 
-        if(crossV <= 1){
-            analyzer.loadUserDir(folder);
+        for (int k = 0; k < crossV; k++) {
+            analyzer.getCorpus().reset();
+            //load test set
+            String testFolder = reviewFolder + k + "/";
+            analyzer.loadUserDir(testFolder);
+            for (_Doc d : analyzer.getCorpus().getCollection()) {
+                d.setType(_Review.rType.TEST);
+            }
+            //load validation set
+            int val = 0;
+            if (k < crossV - 1)
+                val = k + 1;
+            String validationFolder = reviewFolder + val + "/";
+            analyzer.loadUserDir(validationFolder);
+            for (_Doc d : analyzer.getCorpus().getCollection()) {
+                if (d.getType() != _Review.rType.TEST)
+                    d.setType(_Review.rType.ADAPTATION);
+            }
+            //load train set
+            for (int i = 0; i < crossV; i++) {
+                if (i != k && i != val) {
+                    String trainFolder = reviewFolder + i + "/";
+                    analyzer.loadUserDir(trainFolder);
+                }
+            }
+
             m_bipartite = new BipartiteAnalyzer(analyzer.getCorpus());
             m_bipartite.analyzeCorpus();
             m_users = m_bipartite.getUsers();
@@ -130,89 +112,146 @@ public class myDataProcessMain {
             m_itemsIndex = m_bipartite.getItemsIndex();
             m_reviewIndex = m_bipartite.getReviewIndex();
 
-            m_bipartite.analyzeBipartite(analyzer.getCorpus().getCollection(), "train");
-            m_mapByUser = m_bipartite.getMapByUser();
-            m_mapByItem = m_bipartite.getMapByItem();
-            save2FileHFT(outputFolder, param.m_source, "train", 1, analyzer.getCorpus().getCollection());
+            ArrayList<_Doc> m_trainSet = new ArrayList<_Doc>();
+            ArrayList<_Doc> m_testSet = new ArrayList<_Doc>();
+            ArrayList<_Doc> m_validationSet = new ArrayList<>();
+            for (_Doc d : analyzer.getCorpus().getCollection()) {
+                if (d.getType() == _Doc.rType.TRAIN) {
+                    m_trainSet.add(d);
+                } else if (d.getType() == _Doc.rType.TEST) {
+                    m_testSet.add(d);
+                } else if (d.getType() == _Doc.rType.ADAPTATION) {
+                    m_validationSet.add(d);
+                }
+            }
+
+            String[] modes = new String[]{"train", "validation", "test"};
+            ArrayList<_Doc> docs;
+            for (String mode : modes) {
+                if (mode.equals("train")) {
+                    docs = m_trainSet;
+                    m_bipartite.analyzeBipartite(docs, mode);
+                    m_mapByUser = m_bipartite.getMapByUser();
+                    m_mapByItem = m_bipartite.getMapByItem();
+                } else if (mode.equals("test")) {
+                    docs = m_testSet;
+                    m_bipartite.analyzeBipartite(docs, mode);
+                    m_mapByUser = m_bipartite.getMapByUser_test();
+                    m_mapByItem = m_bipartite.getMapByItem_test();
+                } else {
+                    docs = m_validationSet;
+                    m_bipartite.analyzeBipartite(docs, mode);
+                    m_mapByUser = m_bipartite.getMapByUser_global();
+                    m_mapByItem = m_bipartite.getMapByItem_global();
+                }
+
+                if (param.m_topicmodel.equals("CTR")) {
+                    save2FileCTPE(outputFolder, param.m_source, mode, k);
+                } else if (param.m_topicmodel.equals("RTM")) {
+                    save2FileRTM(outputFolder, param.m_source, mode, k);
+                } else if (param.m_topicmodel.equals("HFT")) {
+                    save2FileHFT(outputFolder, param.m_source, mode, k, docs);
+                }
+            }
         }
-        if(crossV > 1) {
-            for (int k = 0; k < crossV; k++) {
-                analyzer.getCorpus().reset();
-                //load test set
-                String testFolder = reviewFolder + k + "/";
-                analyzer.loadUserDir(testFolder);
-                for (_Doc d : analyzer.getCorpus().getCollection()) {
-                    d.setType(_Review.rType.TEST);
+    }
+
+    public void transfer2CTR(String[] args) throws IOException, ParseException {
+        TopicModelParameter param = new TopicModelParameter(args);
+
+        int classNumber = 6; //Define the number of classes in this Naive Bayes.
+        int Ngram = 2; //The default value is unigram.
+        int lengthThreshold = 5; //Document length threshold
+        int numberOfCores = Runtime.getRuntime().availableProcessors();
+        int crossV = 5;
+
+        /*****data setting*****/
+        String tokenModel = "./data/Model/en-token.bin";
+        String dataset = String.format("%s/%s/%s", param.m_prefix, param.m_source, param.m_set);
+        String fvFile = String.format("%s/%s/%s_features.txt", param.m_prefix, param.m_source, param.m_source);
+        String reviewFolder = String.format("%s/%dfoldsCV%s", dataset, param.m_crossV, param.m_flag_coldstart?"Coldstart":"");
+        String outputFolder = String.format("%s/%s/", dataset, param.m_topicmodel);
+        new File(outputFolder).mkdirs();
+
+        MultiThreadedUserAnalyzer analyzer = new MultiThreadedUserAnalyzer(tokenModel, classNumber, fvFile,
+                Ngram, lengthThreshold, numberOfCores, false);
+
+        for (int k = 0; k < crossV; k++) {
+            analyzer.getCorpus().reset();
+            //load test set
+            String testFolder = reviewFolder + k + "/";
+            analyzer.loadUserDir(testFolder);
+            for (_Doc d : analyzer.getCorpus().getCollection()) {
+                d.setType(_Review.rType.TEST);
+            }
+            //load validation set
+            int val = 0;
+            if (k < crossV - 1)
+                val = k + 1;
+            String validationFolder = reviewFolder + val + "/";
+            analyzer.loadUserDir(validationFolder);
+            for (_Doc d : analyzer.getCorpus().getCollection()) {
+                if (d.getType() != _Review.rType.TEST)
+                    d.setType(_Review.rType.ADAPTATION);
+            }
+            //load train set
+            for (int i = 0; i < crossV; i++) {
+                if (i != k && i != val) {
+                    String trainFolder = reviewFolder + i + "/";
+                    analyzer.loadUserDir(trainFolder);
                 }
-                //load validation set
-                int val = 0;
-                if (k < crossV - 1)
-                    val = k + 1;
-                String validationFolder = reviewFolder + val + "/";
-                analyzer.loadUserDir(validationFolder);
-                for (_Doc d : analyzer.getCorpus().getCollection()) {
-                    if (d.getType() != _Review.rType.TEST)
-                        d.setType(_Review.rType.ADAPTATION);
+            }
+
+            m_bipartite = new BipartiteAnalyzer(analyzer.getCorpus());
+            m_bipartite.analyzeCorpus();
+            m_users = m_bipartite.getUsers();
+            m_items = new ArrayList<>();
+            for (_Product prd : m_bipartite.getItems()) {
+                m_items.add(new _Item(prd.getID()));
+            }
+            m_usersIndex = m_bipartite.getUsersIndex();
+            m_itemsIndex = m_bipartite.getItemsIndex();
+            m_reviewIndex = m_bipartite.getReviewIndex();
+
+            ArrayList<_Doc> m_trainSet = new ArrayList<_Doc>();
+            ArrayList<_Doc> m_testSet = new ArrayList<_Doc>();
+            ArrayList<_Doc> m_validationSet = new ArrayList<>();
+            for (_Doc d : analyzer.getCorpus().getCollection()) {
+                if (d.getType() == _Doc.rType.TRAIN) {
+                    m_trainSet.add(d);
+                } else if (d.getType() == _Doc.rType.TEST) {
+                    m_testSet.add(d);
+                } else if (d.getType() == _Doc.rType.ADAPTATION) {
+                    m_validationSet.add(d);
                 }
-                //load train set
-                for (int i = 0; i < crossV; i++) {
-                    if (i != k && i != val) {
-                        String trainFolder = reviewFolder + i + "/";
-                        analyzer.loadUserDir(trainFolder);
-                    }
+            }
+
+            String[] modes = new String[]{"train", "validation", "test"};
+            ArrayList<_Doc> docs;
+            for (String mode : modes) {
+                if (mode.equals("train")) {
+                    docs = m_trainSet;
+                    m_bipartite.analyzeBipartite(docs, mode);
+                    m_mapByUser = m_bipartite.getMapByUser();
+                    m_mapByItem = m_bipartite.getMapByItem();
+                } else if (mode.equals("test")) {
+                    docs = m_testSet;
+                    m_bipartite.analyzeBipartite(docs, mode);
+                    m_mapByUser = m_bipartite.getMapByUser_test();
+                    m_mapByItem = m_bipartite.getMapByItem_test();
+                } else {
+                    docs = m_validationSet;
+                    m_bipartite.analyzeBipartite(docs, mode);
+                    m_mapByUser = m_bipartite.getMapByUser_global();
+                    m_mapByItem = m_bipartite.getMapByItem_global();
                 }
 
-                m_bipartite = new BipartiteAnalyzer(analyzer.getCorpus());
-                m_bipartite.analyzeCorpus();
-                m_users = m_bipartite.getUsers();
-                m_items = new ArrayList<>();
-                for (_Product prd : m_bipartite.getItems()) {
-                    m_items.add(new _Item(prd.getID()));
-                }
-                m_usersIndex = m_bipartite.getUsersIndex();
-                m_itemsIndex = m_bipartite.getItemsIndex();
-                m_reviewIndex = m_bipartite.getReviewIndex();
-
-                ArrayList<_Doc> m_trainSet = new ArrayList<_Doc>();
-                ArrayList<_Doc> m_testSet = new ArrayList<_Doc>();
-                ArrayList<_Doc> m_validationSet = new ArrayList<>();
-                for (_Doc d : analyzer.getCorpus().getCollection()) {
-                    if (d.getType() == _Doc.rType.TRAIN) {
-                        m_trainSet.add(d);
-                    } else if (d.getType() == _Doc.rType.TEST) {
-                        m_testSet.add(d);
-                    } else if (d.getType() == _Doc.rType.ADAPTATION) {
-                        m_validationSet.add(d);
-                    }
-                }
-
-                String[] modes = new String[]{"train", "validation", "test"};
-                ArrayList<_Doc> docs;
-                for (String mode : modes) {
-                    if (mode.equals("train")) {
-                        docs = m_trainSet;
-                        m_bipartite.analyzeBipartite(docs, mode);
-                        m_mapByUser = m_bipartite.getMapByUser();
-                        m_mapByItem = m_bipartite.getMapByItem();
-                    } else if (mode.equals("test")) {
-                        docs = m_testSet;
-                        m_bipartite.analyzeBipartite(docs, mode);
-                        m_mapByUser = m_bipartite.getMapByUser_test();
-                        m_mapByItem = m_bipartite.getMapByItem_test();
-                    } else {
-                        docs = m_validationSet;
-                        m_bipartite.analyzeBipartite(docs, mode);
-                        m_mapByUser = m_bipartite.getMapByUser_global();
-                        m_mapByItem = m_bipartite.getMapByItem_global();
-                    }
-
-                    if (param.m_topicmodel.equals("CTR")) {
-                        save2FileCTPE(outputFolder, param.m_source, mode, k);
-                    } else if (param.m_topicmodel.equals("RTM")) {
-                        save2FileRTM(outputFolder, param.m_source, mode, k);
-                    } else if (param.m_topicmodel.equals("HFT")) {
-                        save2FileHFT(outputFolder, param.m_source, mode, k, docs);
-                    }
+                if (param.m_topicmodel.equals("CTR")) {
+                    save2FileCTPE(outputFolder, param.m_source, mode, k);
+                } else if (param.m_topicmodel.equals("RTM")) {
+                    save2FileRTM(outputFolder, param.m_source, mode, k);
+                } else if (param.m_topicmodel.equals("HFT")) {
+                    save2FileHFT(outputFolder, param.m_source, mode, k, docs);
                 }
             }
         }
@@ -450,4 +489,40 @@ public class myDataProcessMain {
             e.printStackTrace();
         }
     }
+
+    public void genCV(String[] args) throws IOException {
+        TopicModelParameter param = new TopicModelParameter(args);
+
+        int classNumber = 6; //Define the number of classes in this Naive Bayes.
+        int Ngram = 2; //The default value is unigram.
+        int lengthThreshold = 5; //Document length threshold
+        int numberOfCores = Runtime.getRuntime().availableProcessors();
+
+        String tokenModel = "./data/Model/en-token.bin";
+        String dataset = String.format("%s/%s/%s", param.m_prefix, param.m_source, param.m_set);
+        String fvFile = String.format("%s/%s/%s_features.txt", param.m_prefix, param.m_source, param.m_source);
+        String reviewFolder = String.format("%s/data/", dataset);
+
+        MultiThreadedReviewAnalyzer analyzer = new MultiThreadedReviewAnalyzer(tokenModel, classNumber, fvFile,
+                Ngram, lengthThreshold, numberOfCores, true, param.m_source);
+        analyzer.setReleaseContent(false);//Remember to set it as false when generating crossfolders!!!
+        analyzer.loadUserDir(reviewFolder);
+        System.out.format("%d docs are load.\n", analyzer.getCorpus().getCollection().size());
+
+        reviewFolder = String.format("%s/%dfoldsCV%s/", dataset, param.m_crossV, param.m_flag_coldstart?"Coldstart":"");
+        //if no data, generate
+        String cvFolder = String.format("%s/0/", reviewFolder);
+        File testFile = new File(cvFolder);
+        if(!testFile.exists() && !testFile.isDirectory()){
+            System.err.format("[Warning]Cross validation dataset %s not exist! Now generating...", cvFolder);
+            BipartiteAnalyzer cv = new BipartiteAnalyzer(analyzer.getCorpus()); // split corpus into folds
+            cv.analyzeCorpus();
+            if(param.m_flag_coldstart)
+                cv.splitCorpusColdStart(param.m_crossV, reviewFolder);
+            else
+                cv.splitCorpus(param.m_crossV, reviewFolder);
+        }
+
+    }
+
 }
