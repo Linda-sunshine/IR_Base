@@ -453,8 +453,8 @@ public class pLSA extends twoTopic {
 						fVector.add(new _RankItem(m_corpus.getFeature(j), topic_term_probabilty[i][j]));
 
 					topWordWriter.format("-- Topic %d(%.5f):\t", i, gamma[i]);
-					for (_RankItem it : fVector)
-						topWordWriter.format("%s(%.5f)\t", it.m_name, m_logSpace ? Math.exp(it.m_value) : it.m_value);
+//					for (_RankItem it : fVector)
+//						topWordWriter.format("%s(%.5f)\t", it.m_name, m_logSpace ? Math.exp(it.m_value) : it.m_value);
 					topWordWriter.write("\n");
 				}
 			}
