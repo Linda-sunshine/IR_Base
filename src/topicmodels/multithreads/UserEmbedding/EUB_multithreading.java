@@ -318,6 +318,7 @@ public class EUB_multithreading extends EUB {
         for(TopicModelWorker worker:m_workers) {
             perplexity += worker.getPerplexity();
             totalWords += worker.getTotalWords();
+            System.out.println(perplexity);
         }
 
         double[] results = new double[2];

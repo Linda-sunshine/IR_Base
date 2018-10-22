@@ -991,6 +991,7 @@ public class EUB extends LDA_Variational {
             }
             m_users.get(i);
         }
+        System.out.println("Inside cv, the test size: " + m_testSet.size());
         buildUserDocMap();
         EM();
         perplexity = evaluation();
@@ -1033,6 +1034,7 @@ public class EUB extends LDA_Variational {
         System.out.println("[Info]Start evaluation in single thread...");
         double perplexity = 0;
         double totalWords = 0.0;
+        System.out.println("Test set size: " + m_testSet.size());
         for(_Doc d: m_testSet) {
             perplexity += inference(d);
             totalWords += d.getTotalDocLength();

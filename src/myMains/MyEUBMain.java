@@ -27,36 +27,25 @@ public class MyEUBMain {
         int lengthThreshold = 5; // Document length threshold
         int numberOfCores = Runtime.getRuntime().availableProcessors();
 
-        String dataset = "YelpNew"; // "StackOverflow", "YelpNew"
+        String dataset = "StackOverflow"; // "StackOverflow", "YelpNew"
         String tokenModel = "./data/Model/en-token.bin"; // Token model.
 
-        String machine = "desktop"; // "hcdm", "gcloud"
         boolean cvFlag = dataset.equals("StackOverflow") ? true : false;
 
-        String prefix = "";
-
-        // save prefix based on different platforms
-        if(machine.equals("desktop")){
-            prefix = "./data/CoLinAdapt";
-        } else if(machine.equals("hcdm")){
-            prefix = "/zf8/lg5bt/DataSigir";
-        } else if(machine.equals("gcloud")){
-            prefix = "/home/lin/DataSigir";
-        }
-
+        String prefix = "./data/CoLinAdapt";
         String providedCV = String.format("%s/%s/SelectedVocab.csv", prefix, dataset);
-        String userFolder = String.format("%s/%s/Users_1000", prefix, dataset);
+        String userFolder = String.format("%s/%s/Users", prefix, dataset);
 
         /***Feature selection**/
 //        UserAnalyzer analyzer = new UserAnalyzer(tokenModel, classNumber, null, Ngram, lengthThreshold, cvFlag);
 //        analyzer.loadUserDir(userFolder);
 //        analyzer.featureSelection("./data/StackOverflowSelectedVocab_DF_8k.txt", "DF",8000, 100, 5000);
 
-        String friendFile = String.format("%s/%s/%sFriends_1000.txt", prefix, dataset, dataset);
-        String cvIndexFile = String.format("%s/%s/%sCVIndex_1000.txt", prefix, dataset, dataset);
+        String friendFile = String.format("%s/%s/%sFriends.txt", prefix, dataset, dataset);
+        String cvIndexFile = String.format("%s/%s/%sCVIndex.txt", prefix, dataset, dataset);
         //String userIdFile = String.format("%s/%s/%sUserIds.txt", prefix, dataset, dataset);
 
-        int kFold = 5;
+        int kFold = 1;
         MultiThreadedNetworkAnalyzer analyzer = new MultiThreadedNetworkAnalyzer(tokenModel, classNumber, providedCV,
                 Ngram, lengthThreshold, numberOfCores, cvFlag);
         analyzer.setAllocateReviewFlag(false); // do not allocate reviews
@@ -89,7 +78,7 @@ public class MyEUBMain {
         analyzer.loadCVIndex(cvIndexFile);
 
         /***Start running joint modeling of user embedding and topic embedding****/
-        int emMaxIter = 25, number_of_topics = 20, varMaxIter = 10, embeddingDim = 10;
+        int emMaxIter = 50, number_of_topics = 20, varMaxIter = 1, embeddingDim = 10;
         double emConverge = 1e-10, alpha = 1 + 1e-2, beta = 1 + 1e-3, lambda = 1 + 1e-3, varConverge = 1e-6;//these two parameters must be larger than 1!!!
         _Corpus corpus = analyzer.getCorpus();
 
@@ -102,7 +91,8 @@ public class MyEUBMain {
             tModel = new EUB_multithreading(emMaxIter, emConverge, beta, corpus, lambda, number_of_topics, alpha, varMaxIter, varConverge, embeddingDim);
         else
             tModel = new EUB(emMaxIter, emConverge, beta, corpus, lambda, number_of_topics, alpha, varMaxIter, varConverge, embeddingDim);
-        boolean alphaFlag = true, gammaFlag = true, betaFlag = true, tauFlag = true, xiFlag = true;
+
+        boolean alphaFlag = false, gammaFlag = false, betaFlag = false, tauFlag = false, xiFlag = false;
         ((EUB) tModel).setModelParamsUpdateFlags(alphaFlag, gammaFlag, betaFlag, tauFlag, xiFlag);
         ((EUB) tModel).initLookupTables(analyzer.getUsers());
         ((EUB) tModel).setDisplayLv(0);
