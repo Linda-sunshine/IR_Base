@@ -28,6 +28,27 @@ public class myDataProcessMain {
         dataprocesser.splitCVByIndex(args);
     }
 
+    public void json2Txt4Data(String[] args) throws IOException {
+        TopicModelParameter param = new TopicModelParameter(args);
+
+        int classNumber = 6; //Define the number of classes in this Naive Bayes.
+        int Ngram = 2; //The default value is unigram.
+        int lengthThreshold = 5; //Document length threshold
+        int numberOfCores = Runtime.getRuntime().availableProcessors();
+
+        /*****data setting*****/
+        String tokenModel = "./data/Model/en-token.bin";
+        String dataset = String.format("%s/%s/%s", param.m_prefix, param.m_source, param.m_set);
+        String fvFile = String.format("%s/%s/%s_features.txt", param.m_prefix, param.m_source, param.m_source);
+        String reviewFolder = String.format("%s/data/", dataset);
+        String cvFolder = String.format("%s/%dfoldsCV%s", dataset, param.m_crossV, param.m_flag_coldstart?"Coldstart":"");
+
+        MultiThreadedNetworkAnalyzer analyzer = new MultiThreadedNetworkAnalyzer(tokenModel, classNumber, fvFile,
+                Ngram, lengthThreshold, numberOfCores, true);
+        analyzer.setReleaseContent(false);
+        analyzer.loadUserDir(reviewFolder);
+    }
+
     public void splitCVByIndex(String[] args)  throws IOException {
         TopicModelParameter param = new TopicModelParameter(args);
 
