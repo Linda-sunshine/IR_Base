@@ -124,13 +124,11 @@ public class ETBIRMain {
 
         tModel.setDisplayLap(1);
         new File(outputFolder).mkdirs();
-        tModel.setInforWriter(outputFolder + topicmodel + "_info.txt");
         if (crossV<=1) {//just train
             analyzer.loadUserDir(reviewFolder);
             tModel.EMonCorpus();
             tModel.printParameterAggregation(topK, outputFolder, topicmodel);
             tModel.printTopWords(topK);
-            tModel.closeWriter();
         } else if(setRandomFold == true){//cross validation with random folds
             analyzer.setAllocateReviewFlag(false);
             analyzer.loadUserDir(reviewFolder);

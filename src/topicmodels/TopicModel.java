@@ -281,13 +281,11 @@ public abstract class TopicModel {
 				if (m_converge>0) {
 				    System.out.println("==============");
 					System.out.format("[Info]Likelihood %.5f at step %s converge to %.10f...\n", current, i, delta);
-					infoWriter.format("[Info]Likelihood %.5f at step %s converge to %.10f...\n", current, i, delta);
 
 				} else {
 					System.out.print(".");
 					if (displayCount > 6){
 						System.out.format("\t%d:%.3f\n", i, current);
-//						infoWriter.format("\t%d:%.3f\n", i, current);
 					}
 					displayCount ++;
 				}
@@ -301,7 +299,6 @@ public abstract class TopicModel {
 		
 		long endtime = System.currentTimeMillis() - starttime;
 		System.out.format("[Info]Likelihood %.3f after step %s converge to %f after %d seconds...\n", current, i, delta, endtime/1000);
-		infoWriter.format("[Info]Likelihood %.3f after step %s converge to %f after %d seconds...\n", current, i, delta, endtime/1000);
 
 		return true;
 	}

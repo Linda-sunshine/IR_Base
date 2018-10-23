@@ -173,6 +173,18 @@ public class MultiThreadedNetworkAnalyzer extends MultiThreadedLinkPredAnalyzer 
         }
     }
 
+    public void maskDocByCVIndex(int k){
+        for(_User u : m_users){
+            for(_Review r : u.getReviews()){
+                int cvIdx = r.getMask4CV();
+                if(cvIdx == k)
+                    r.setType(_Review.rType.TEST);
+                else
+                    r.setType(_Review.rType.TRAIN);
+            }
+        }
+    }
+
     public void saveCV2Folds(String folder){
         try{
             for(_User u : m_users){

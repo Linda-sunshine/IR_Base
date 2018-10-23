@@ -5,11 +5,9 @@ import java.io.IOException;
 import java.text.ParseException;
 import java.util.Arrays;
 
+import Analyzer.MultiThreadedNetworkAnalyzer;
 import Analyzer.MultiThreadedUserAnalyzer;
-import structures.TopicModelParameter;
-import structures._Corpus;
-import structures._Doc;
-import structures._Review;
+import structures.*;
 import topicmodels.CTM.CTM;
 import topicmodels.LDA.LDA_Gibbs;
 import topicmodels.embeddingModel.ETBIR;
@@ -35,19 +33,16 @@ public class ETBIRExecution {
 		String tokenModel = "./data/Model/en-token.bin";
 		String dataset = String.format("%s/%s/%s", param.m_prefix, param.m_source, param.m_set);
 		String fvFile = String.format("%s/%s/%s_features.txt", param.m_prefix, param.m_source, param.m_source);
-		String reviewFolder = String.format("%s/%dfoldsCV/", dataset, param.m_crossV);
-		String outputFolder = String.format("%s/output/%dfoldsCV%s/", dataset, param.m_crossV, param.m_flag_coldstart?"Coldstart":"");
+		String reviewFolder = String.format("%s/data/", dataset);
+		String cvIndexFile = String.format("%s/%sCVIndex.txt", dataset, param.m_source);
+		String outputFolder = String.format("%s/output/%s/%s/", param.m_prefix, param.m_source, param.m_set);
 
-//		MultiThreadedReviewAnalyzer analyzer = new MultiThreadedReviewAnalyzer(tokenModel, classNumber, fvFile,
-//				Ngram, lengthThreshold, numberOfCores, true, param.m_source);//previous wrong: not assign doc to corpus
-        MultiThreadedUserAnalyzer analyzer = new MultiThreadedUserAnalyzer(tokenModel, classNumber, fvFile,
+        MultiThreadedNetworkAnalyzer analyzer = new MultiThreadedNetworkAnalyzer(tokenModel, classNumber, fvFile,
                 Ngram, lengthThreshold, numberOfCores, true);
-//		analyzer.loadUserDir(reviewFolder);
 		_Corpus corpus = analyzer.getCorpus();
 
         int result_dim = 1;
 		pLSA tModel = null;
-		long current = System.currentTimeMillis();
 		if (param.m_topicmodel.equals("pLSA")) {
 			tModel = new pLSA_multithread(param.m_emIter, param.m_emConverge, param.m_beta, corpus,
 					param.m_lambda, param.m_number_of_topics, param.m_alpha);
@@ -88,14 +83,12 @@ public class ETBIRExecution {
 
         tModel.setDisplayLap(1);
         new File(outputFolder).mkdirs();
-        tModel.setInforWriter(outputFolder + param.m_topicmodel + "_info.txt");
+
         if (param.m_crossV<=1) {//just train
-            reviewFolder = String.format("%s/data/", dataset);
             analyzer.loadUserDir(reviewFolder);
             tModel.EMonCorpus();
             tModel.printParameterAggregation(param.m_topk, outputFolder, param.m_topicmodel);
             tModel.printTopWords(param.m_topk);
-            tModel.closeWriter();
         } else if(setRandomFold == true){//cross validation with random folds
             analyzer.setAllocateReviewFlag(false);
             reviewFolder = String.format("%s/data/", dataset);
@@ -105,26 +98,20 @@ public class ETBIRExecution {
             double testProportion = 1-trainProportion;
             tModel.setPerplexityProportion(testProportion);
             tModel.crossValidation(param.m_crossV);
-        } else{//cross validation with fixed folds
+        } else{//cross validation with fixed folds, indexed by CVIndex file
             analyzer.setAllocateReviewFlag(false);
+            analyzer.loadUserDir(reviewFolder);
+            System.out.format("[Dataset]%d docs are loaded.\n", analyzer.getCorpus().getCollection().size());
+            analyzer.constructUserIDIndex();
+            System.out.format("[Dataset]%d users are loaded.\n", analyzer.getUsers().size());
+            analyzer.loadCVIndex(cvIndexFile);
+
             double[][] perf = new double[param.m_crossV][result_dim];
             double[][] like = new double[param.m_crossV][result_dim];
             System.out.println("[Info]Start FIXED cross validation...");
             for(int k = 0; k <param.m_crossV; k++){
-                analyzer.getCorpus().reset();
-                //load test set
-                String testFolder = reviewFolder + k + "/";
-                analyzer.loadUserDir(testFolder);
-                for(_Doc d : analyzer.getCorpus().getCollection()){
-                    d.setType(_Review.rType.TEST);
-                }
-                //load train set
-                for(int i = 0; i < param.m_crossV; i++){
-                    if(i!=k){
-                        String trainFolder = reviewFolder + i + "/";
-                        analyzer.loadUserDir(trainFolder);
-                    }
-                }
+                // label test by cvIndex==k
+                analyzer.maskDocByCVIndex(k);
                 tModel.setCorpus(analyzer.getCorpus());
 
                 System.out.format("====================\n[Info]Fold No. %d: \n", k);
