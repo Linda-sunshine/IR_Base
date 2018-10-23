@@ -75,10 +75,10 @@ public class TopicModelParameter {
 				m_topk = Integer.valueOf(argv[i]);
 			else if(argv[i-1].equals("-emIter"))
 				m_emIter = Integer.valueOf(argv[i]);
-			else if(argv[i-1].equals("-nuOfTopics"))
-				m_number_of_topics = Integer.valueOf(argv[i]);
 			else if(argv[i-1].equals("-varMaxIter"))
 				m_varMaxIter = Integer.valueOf(argv[i]);
+			else if(argv[i-1].equals("-nuOfTopics"))
+				m_number_of_topics = Integer.valueOf(argv[i]);
 			
 			else if(argv[i-1].equals("-varConverge"))
 				m_varConverge = Double.valueOf(argv[i]);
