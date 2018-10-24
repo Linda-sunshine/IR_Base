@@ -45,7 +45,7 @@ public class MyEUBExecution {
         analyzer.loadUserDir(userFolder);
         analyzer.constructUserIDIndex();
         analyzer.loadInteractions(friendFile);
-        analyzer.loadCVIndex(cvIndexFile);
+        analyzer.loadCVIndex(cvIndexFile, kFold);
 
         /***Start running joint modeling of user embedding and topic embedding****/
         double emConverge = 1e-10, alpha = 1 + 1e-2, beta = 1 + 1e-3, lambda = 1 + 1e-3, varConverge = 1e-6;//these two parameters must be larger than 1!!!

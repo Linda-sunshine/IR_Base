@@ -969,18 +969,17 @@ public class EUB extends LDA_Variational {
     }
 
     // fixed cross validation with specified fold number
-    public void fixedCrossValidation(int kFold, String saveDir){
+    public void fixedCrossValidation(int k, String saveDir){
         double perplexity = 0;
         constructNetwork();
-//        double[] perplexity = new double[kFold];
         m_trainSet = new ArrayList<>();
         m_testSet = new ArrayList<>();
-        System.out.format("\n==========Start %d-fold cross validation=========\n", kFold);
+        System.out.format("\n==========Start %d-fold cross validation=========\n", k);
         m_trainSet.clear();
         m_testSet.clear();
         for(int i=0; i<m_users.size(); i++){
             for(_Review r: m_users.get(i).getReviews()){
-                if(r.getMask4CV() == kFold){
+                if(r.getMask4CV() == k){
                     r.setType(_Doc.rType.TEST);
                     m_testSet.add(r);
 //                    totalLen += r.getTotalDocLength();
@@ -996,15 +995,7 @@ public class EUB extends LDA_Variational {
         EM();
         perplexity = evaluation();
         printStat4OneFold(saveDir, perplexity);
-        System.out.format("[Output]Perpelexity for fold %d is: %.4f.\n", kFold, perplexity);
-
-//        double avg = Utils.sumOfArray(perplexity)/perplexity.length;
-//        double std = 0;
-//        for(double p: perplexity)
-//            std += (p - avg) * (p - avg);
-//        std /= perplexity.length;
-//        std = Math.sqrt(std);
-//        System.out.format("[Output]Avg perpelexity is: (%.4f +- %.4f).\n", avg, std);
+        System.out.format("[Output]Perpelexity for fold %d is: %.4f.\n", k, perplexity);
     }
 
     public void printStat4OneFold(String saveDir, double perplexity){

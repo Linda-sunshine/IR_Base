@@ -1,4 +1,4 @@
-package Application;
+package Application.CollaborativeFiltering;
 
 import java.util.ArrayList;
 

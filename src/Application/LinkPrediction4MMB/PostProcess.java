@@ -1,5 +1,5 @@
-//package Application;
-package Application;
+package Application.LinkPrediction4MMB;
+
 import java.io.BufferedReader;
 import java.io.FileInputStream;
 import java.io.IOException;

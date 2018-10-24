@@ -1,7 +1,6 @@
-package Application;
+package Application.LinkPrediction4MMB;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 
 import Classifier.supervised.SVM;
 import Classifier.supervised.liblinear.Feature;
@@ -13,50 +12,41 @@ import Classifier.supervised.liblinear.Problem;
 import Classifier.supervised.liblinear.SolverType;
 import Classifier.supervised.modelAdaptation.MMB._MMBAdaptStruct;
 
-public class LinkPredictionWithSVMPerEdge extends LinkPredictionWithMMBPerEdge {
+public class LinkPredictionWithSVM extends LinkPredictionWithMMB{
+
 	double m_C = 0;
 	Model m_libModel;
 	double m_rho;
 	
-	public LinkPredictionWithSVMPerEdge(double c, double rho, HashMap<String, String[]> trainMap, HashMap<String, String[]> testMap){
-		super(trainMap, testMap);
+	public LinkPredictionWithSVM(double c, double rho){
 		m_C = c;
 		m_rho = rho;
 	}
-	
 	@Override
 	public void linkPrediction(){
 		initLinkPred();
 		calculateMixturePerUser();
 
 		trainSVM();
-		// calculate the symmetric similarity between user pairs
-		for(int i=0; i<m_testSize; i++){
-			_MMBAdaptStruct ui = m_testSet.get(i);
-			for(int j=i+1; j<m_testSize; j++){
-				_MMBAdaptStruct uj = m_testSet.get(j);
-				double sim = calcSimilarity(ui, uj);
-				m_simMtx[i][j] = sim;
-				m_simMtx[j][i] = sim;
-			}
+		_MMBAdaptStruct ui;
+		// for each training user, rank their neighbors.
+		for(int i=0; i<m_trainSize; i++){
+			ui = m_trainSet.get(i);
+			linkPrediction4TrainUsers(i, ui);
 		}
-				
-		// for each user, rank their neighbors.
-		int testUser = 0;
+		// for each testing user, rank their neighbors.
 		for(int i=0; i<m_testSize; i++){
-			_MMBAdaptStruct ui = m_testSet.get(i);
-			if(m_testMap.containsKey(ui.getUserID()) && ui.getUser().getTestFriendSize() != 0 && ui.getUser().getNonFriendSize() !=0){
-				linkPrediction4TestUsers(i, ui);
-				testUser++;
-			}
+			ui = m_testSet.get(i);
+			if(ui.getUser().getTestFriendSize() == 0)
+				continue;
+			linkPrediction4TestUsers(i, ui);
 		}
-		System.out.format("[Info]Finish link prediction on (%d,%d) testing users/pairs.\n", testUser, m_testPair);
 	}
 	
 	// we construct user pair as training instances and input into svm for training
 	public void trainSVM(){
 		// train svm model
-			
+		
 		ArrayList<Feature[]> fvsArr = new ArrayList<Feature[]>();
 		ArrayList<Double> ysArr = new ArrayList<Double>();
 		constructXsYs(fvsArr, ysArr);
@@ -68,7 +58,7 @@ public class LinkPredictionWithSVMPerEdge extends LinkPredictionWithMMBPerEdge {
 			fvs[i] = fvsArr.get(i);
 			ys[i] = ysArr.get(i);
 		}
-			
+		
 		Problem libProblem = new Problem();
 		libProblem.l = trainSize;
 		libProblem.x = fvs;
@@ -91,15 +81,13 @@ public class LinkPredictionWithSVMPerEdge extends LinkPredictionWithMMBPerEdge {
 		// construct training instances
 		double eij = 0;
 		_MMBAdaptStruct ui, uj;
-		for(int i=0; i<m_testSize; i++){
-			ui = m_testSet.get(i);
-			for(int j=0; j<m_testSize; j++){
-				if(j == i) continue;
-				uj = m_testSet.get(j);
+		for(int i=0; i<m_trainSize; i++){
+			ui = m_trainSet.get(i);
+			for(int j=i+1; j<m_trainSize; j++){
+				uj = m_trainSet.get(j);
 				eij = ui.getUser().hasFriend(uj.getUserID()) ? 1 : 0;
 				// we only pick some of the zero edges for training
-				// we reserve some zero edges for testing, don't touch them in training
-				if(eij == 1 || (eij == 0 && Math.random() <= m_rho && !ui.getUser().hasNonFriend(uj.getUserID()))){
+				if(eij == 1 || (eij == 0 && Math.random() <= m_rho)){
 					fvsArr.add(constructOneX(ui, uj));
 					ysArr.add(eij);
 				}
@@ -123,5 +111,4 @@ public class LinkPredictionWithSVMPerEdge extends LinkPredictionWithMMBPerEdge {
 		}
 		return x;
 	}
-
 }

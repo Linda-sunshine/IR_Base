@@ -1,4 +1,4 @@
-package Application;
+package Application.CollaborativeFiltering;
 
 import Classifier.supervised.modelAdaptation._AdaptStruct.SimType;
 import structures.*;

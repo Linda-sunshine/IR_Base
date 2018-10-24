@@ -1,4 +1,4 @@
-package Application;
+package Application.LinkPrediction4MMB;
 
 import java.io.BufferedReader;
 import java.io.File;

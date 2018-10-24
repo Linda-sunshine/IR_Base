@@ -1,4 +1,4 @@
-package Application;
+package Application.CollaborativeFiltering;
 
 import java.io.BufferedReader;
 import java.io.FileInputStream;
