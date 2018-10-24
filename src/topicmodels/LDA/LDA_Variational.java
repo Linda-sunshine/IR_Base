@@ -265,18 +265,18 @@ public class LDA_Variational extends pLSA {
 	}
 
 	@Override
-	public void printParameterAggregation(int k, String folderName, String topicmodel) {
-		super.printParameterAggregation(k, folderName, topicmodel);
+	public void printParameterAggregation(int k, String folderName, String topicmodel, String mode) {
+		super.printParameterAggregation(k, folderName, topicmodel, mode);
 
         String gammaPathByUser = String.format("%s%s_postByUser_%d.txt", folderName, topicmodel, number_of_topics);
 //        String gammaPathByItem = String.format("%s%s_postByItem_%d.txt", folderName, topicmodel, number_of_topics);
-        printAggreTopWords(k, gammaPathByUser, getDocByUser());
+        printAggreTopWords(k, gammaPathByUser, getDocByUser(), mode);
 //        printAggreTopWords(k, gammaPathByItem, getDocByItem());
 
 //		printParam(folderName, topicmodel);
 	}
 
-    public void printAggreTopWords(int k, String topWordPath, HashMap<String, List<_Doc>> docCluster) {
+    public void printAggreTopWords(int k, String topWordPath, HashMap<String, List<_Doc>> docCluster, String mode) {
 		File file = new File(topWordPath);
 		try{
 			file.getParentFile().mkdirs();
@@ -287,30 +287,58 @@ public class LDA_Variational extends pLSA {
 
         try{
             PrintWriter topWordWriter = new PrintWriter(file);
-            for(Map.Entry<String, List<_Doc>> entryU : docCluster.entrySet()) {
-                double[] gamma = new double[number_of_topics];
-                Arrays.fill(gamma, 0);
-                for(_Doc d:entryU.getValue()) {
-                    for (int i = 0; i < number_of_topics; i++) {
-                        gamma[i] += d.m_sstat[i];
-                    }
-                }
-                for(int i = 0; i < number_of_topics; i++){
-                	gamma[i] /= entryU.getValue().size();
+
+			if(mode.equals("EUB")){
+				topWordWriter.format("%d\t%d\n", docCluster.size(), number_of_topics);
+
+				for (Map.Entry<String, List<_Doc>> entryU : docCluster.entrySet()) {
+					double[] gamma = new double[number_of_topics];
+					Arrays.fill(gamma, 0);
+					for (_Doc d : entryU.getValue()) {
+						for (int i = 0; i < number_of_topics; i++) {
+							gamma[i] += d.m_sstat[i];
+						}
+					}
+					for (int i = 0; i < number_of_topics; i++) {
+						gamma[i] /= entryU.getValue().size();
+					}
+
+					topWordWriter.format("%s", entryU.getKey());
+					for (int i = 0; i < topic_term_probabilty.length; i++) {
+						MyPriorityQueue<_RankItem> fVector = new MyPriorityQueue<_RankItem>(k);
+						for (int j = 0; j < vocabulary_size; j++)
+							fVector.add(new _RankItem(m_corpus.getFeature(j), topic_term_probabilty[i][j]));
+
+						topWordWriter.format("\t%.5f", gamma[i]);
+					}
+					topWordWriter.write("\n");
 				}
+			} else {
+				for (Map.Entry<String, List<_Doc>> entryU : docCluster.entrySet()) {
+					double[] gamma = new double[number_of_topics];
+					Arrays.fill(gamma, 0);
+					for (_Doc d : entryU.getValue()) {
+						for (int i = 0; i < number_of_topics; i++) {
+							gamma[i] += d.m_sstat[i];
+						}
+					}
+					for (int i = 0; i < number_of_topics; i++) {
+						gamma[i] /= entryU.getValue().size();
+					}
 
-                topWordWriter.format("ID %s(%d reviews)\n", entryU.getKey(), entryU.getValue().size());
-                for (int i = 0; i < topic_term_probabilty.length; i++) {
-                    MyPriorityQueue<_RankItem> fVector = new MyPriorityQueue<_RankItem>(k);
-                    for (int j = 0; j < vocabulary_size; j++)
-                        fVector.add(new _RankItem(m_corpus.getFeature(j), topic_term_probabilty[i][j]));
+					topWordWriter.format("ID %s(%d reviews)\n", entryU.getKey(), entryU.getValue().size());
+					for (int i = 0; i < topic_term_probabilty.length; i++) {
+						MyPriorityQueue<_RankItem> fVector = new MyPriorityQueue<_RankItem>(k);
+						for (int j = 0; j < vocabulary_size; j++)
+							fVector.add(new _RankItem(m_corpus.getFeature(j), topic_term_probabilty[i][j]));
 
-                    topWordWriter.format("-- Topic %d(%.5f):\t", i, gamma[i]);
+						topWordWriter.format("-- Topic %d(%.5f):\t", i, gamma[i]);
 //                    for (_RankItem it : fVector)
 //                        topWordWriter.format("%s(%.5f)\t", it.m_name, m_logSpace ? Math.exp(it.m_value) : it.m_value);
-                    topWordWriter.write("\n");
-                }
-            }
+						topWordWriter.write("\n");
+					}
+				}
+			}
             topWordWriter.close();
         } catch(FileNotFoundException ex){
 			System.err.format("[Error]Failed to open file %s\n", topWordPath);

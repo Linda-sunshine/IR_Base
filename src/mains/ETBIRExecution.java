@@ -87,7 +87,7 @@ public class ETBIRExecution {
         if (param.m_crossV<=1) {//just train
             analyzer.loadUserDir(reviewFolder);
             tModel.EMonCorpus();
-            tModel.printParameterAggregation(param.m_topk, outputFolder, param.m_topicmodel);
+            tModel.printParameterAggregation(param.m_topk, outputFolder, param.m_topicmodel, "EUB");
             tModel.printTopWords(param.m_topk);
         } else if(setRandomFold == true){//cross validation with random folds
             analyzer.setAllocateReviewFlag(false);
@@ -123,7 +123,7 @@ public class ETBIRExecution {
 
                 String resultFolder = outputFolder + k + "/";
                 new File(resultFolder).mkdirs();
-                tModel.printParameterAggregation(param.m_topk, resultFolder, param.m_topicmodel);
+                tModel.printParameterAggregation(param.m_topk, resultFolder, param.m_topicmodel, "EUB");
                 tModel.printTopWords(param.m_topk);
 
                 if(param.m_flag_tune){

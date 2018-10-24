@@ -325,7 +325,7 @@ public class pLSA extends twoTopic {
 		}
 	}
 
-	public void printParameterAggregation(int k, String folderName, String topicmodel){
+	public void printParameterAggregation(int k, String folderName, String topicmodel, String mode){
 		String phiPathByUser = String.format("%s%s_phiByUser_%d.txt", folderName, topicmodel, number_of_topics);
 //		String phiPathByItem = String.format("%s%s_phiByItem_%d.txt", folderName, topicmodel, number_of_topics);
 //		String phiPath = String.format("%s%s_phi_%d.txt", folderName, topicmodel, number_of_topics);
@@ -336,7 +336,7 @@ public class pLSA extends twoTopic {
 //		printBeta(betaPath);
 
 		//aggregate parameter \gamma by user/item
-		printTopWords(k, phiPathByUser, getDocByUser());
+		printTopWords(k, phiPathByUser, getDocByUser(), mode);
 //		printTopWords(k, phiPathByItem, getDocByItem());
 
 		//overall topic words
@@ -425,7 +425,7 @@ public class pLSA extends twoTopic {
 		return docByItem;
 	}
 
-	public void printTopWords(int k, String topWordPath, HashMap<String, List<_Doc>> docCluster) {
+	public void printTopWords(int k, String topWordPath, HashMap<String, List<_Doc>> docCluster, String mode) {
 		File file = new File(topWordPath);
 		try{
 			file.getParentFile().mkdirs();
@@ -437,27 +437,55 @@ public class pLSA extends twoTopic {
 		try{
 			PrintWriter topWordWriter = new PrintWriter(file);
 
-			for(Map.Entry<String, List<_Doc>> entryU : docCluster.entrySet()) {
-				double[] gamma = new double[number_of_topics];
-				Arrays.fill(gamma, 0);
-				for(_Doc d:entryU.getValue()) {
-					for (int i = 0; i < number_of_topics; i++)
-						gamma[i] += m_logSpace ? Math.exp(d.m_topics[i]):d.m_topics[i];
-				}
-				Utils.L1Normalization(gamma);
+			if(mode.equals("EUB")){
+				topWordWriter.format("%d\t%d\n", docCluster.size(), number_of_topics);
 
-				topWordWriter.format("ID %s(%d reviews)\n", entryU.getKey(), entryU.getValue().size());
-				for (int i = 0; i < topic_term_probabilty.length; i++) {
-					MyPriorityQueue<_RankItem> fVector = new MyPriorityQueue<_RankItem>(k);
-					for (int j = 0; j < vocabulary_size; j++)
-						fVector.add(new _RankItem(m_corpus.getFeature(j), topic_term_probabilty[i][j]));
+				for (Map.Entry<String, List<_Doc>> entryU : docCluster.entrySet()) {
+					double[] gamma = new double[number_of_topics];
+					Arrays.fill(gamma, 0);
+					for (_Doc d : entryU.getValue()) {
+						for (int i = 0; i < number_of_topics; i++)
+							gamma[i] += m_logSpace ? Math.exp(d.m_topics[i]) : d.m_topics[i];
+					}
+					Utils.L1Normalization(gamma);
 
-					topWordWriter.format("-- Topic %d(%.5f):\t", i, gamma[i]);
-//					for (_RankItem it : fVector)
-//						topWordWriter.format("%s(%.5f)\t", it.m_name, m_logSpace ? Math.exp(it.m_value) : it.m_value);
+
+					topWordWriter.format("%s", entryU.getKey());
+					for (int i = 0; i < topic_term_probabilty.length; i++) {
+						MyPriorityQueue<_RankItem> fVector = new MyPriorityQueue<_RankItem>(k);
+						for (int j = 0; j < vocabulary_size; j++)
+							fVector.add(new _RankItem(m_corpus.getFeature(j), topic_term_probabilty[i][j]));
+
+						topWordWriter.format("\t%.5f", gamma[i]);
+					}
 					topWordWriter.write("\n");
 				}
+			} else {
+				for (Map.Entry<String, List<_Doc>> entryU : docCluster.entrySet()) {
+					double[] gamma = new double[number_of_topics];
+					Arrays.fill(gamma, 0);
+					for (_Doc d : entryU.getValue()) {
+						for (int i = 0; i < number_of_topics; i++)
+							gamma[i] += m_logSpace ? Math.exp(d.m_topics[i]) : d.m_topics[i];
+					}
+					Utils.L1Normalization(gamma);
+
+
+					topWordWriter.format("ID %s(%d reviews)\n", entryU.getKey(), entryU.getValue().size());
+					for (int i = 0; i < topic_term_probabilty.length; i++) {
+						MyPriorityQueue<_RankItem> fVector = new MyPriorityQueue<_RankItem>(k);
+						for (int j = 0; j < vocabulary_size; j++)
+							fVector.add(new _RankItem(m_corpus.getFeature(j), topic_term_probabilty[i][j]));
+
+						topWordWriter.format("-- Topic %d(%.5f):\t", i, gamma[i]);
+//					for (_RankItem it : fVector)
+//						topWordWriter.format("%s(%.5f)\t", it.m_name, m_logSpace ? Math.exp(it.m_value) : it.m_value);
+						topWordWriter.write("\n");
+					}
+
+				}
 			}
+
 			topWordWriter.close();
 		} catch(FileNotFoundException ex){
 			System.err.println("File Not Found: " + topWordPath);

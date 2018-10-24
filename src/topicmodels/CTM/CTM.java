@@ -613,7 +613,7 @@ public class CTM extends LDA_Variational {
     }
 
     @Override
-    public void printAggreTopWords(int k, String topWordPath, HashMap<String, List<_Doc>> docCluster) {
+    public void printAggreTopWords(int k, String topWordPath, HashMap<String, List<_Doc>> docCluster, String mode) {
         File file = new File(topWordPath);
         try{
             file.getParentFile().mkdirs();
