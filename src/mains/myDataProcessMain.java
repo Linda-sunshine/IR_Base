@@ -25,7 +25,9 @@ public class myDataProcessMain {
 
     public static void main(String[] args) throws IOException {
         myDataProcessMain dataprocesser = new myDataProcessMain();
-        dataprocesser.splitCVByIndex(args);
+
+//        dataprocesser.splitCVByIndex(args);
+        dataprocesser.transfer2HFT(args);
     }
 
     public void json2Txt4Data(String[] args) throws IOException {
@@ -89,92 +91,16 @@ public class myDataProcessMain {
         String tokenModel = "./data/Model/en-token.bin";
         String dataset = String.format("%s/%s/%s", param.m_prefix, param.m_source, param.m_set);
         String fvFile = String.format("%s/%s/%s_features.txt", param.m_prefix, param.m_source, param.m_source);
-        String reviewFolder = String.format("%s/%dfoldsCV%s", dataset, param.m_crossV, param.m_flag_coldstart?"Coldstart":"");
+        String reviewFolder = String.format("%s/data/", dataset);
         String outputFolder = String.format("%s/%s/", dataset, param.m_topicmodel);
         new File(outputFolder).mkdirs();
 
         MultiThreadedUserAnalyzer analyzer = new MultiThreadedUserAnalyzer(tokenModel, classNumber, fvFile,
-                Ngram, lengthThreshold, numberOfCores, false);
-
-        for (int k = 0; k < crossV; k++) {
-            analyzer.getCorpus().reset();
-            //load test set
-            String testFolder = reviewFolder + k + "/";
-            analyzer.loadUserDir(testFolder);
-            for (_Doc d : analyzer.getCorpus().getCollection()) {
-                d.setType(_Review.rType.TEST);
-            }
-            //load validation set
-            int val = 0;
-            if (k < crossV - 1)
-                val = k + 1;
-            String validationFolder = reviewFolder + val + "/";
-            analyzer.loadUserDir(validationFolder);
-            for (_Doc d : analyzer.getCorpus().getCollection()) {
-                if (d.getType() != _Review.rType.TEST)
-                    d.setType(_Review.rType.ADAPTATION);
-            }
-            //load train set
-            for (int i = 0; i < crossV; i++) {
-                if (i != k && i != val) {
-                    String trainFolder = reviewFolder + i + "/";
-                    analyzer.loadUserDir(trainFolder);
-                }
-            }
-
-            m_bipartite = new BipartiteAnalyzer(analyzer.getCorpus());
-            m_bipartite.analyzeCorpus();
-            m_users = m_bipartite.getUsers();
-            m_items = new ArrayList<>();
-            for (_Product prd : m_bipartite.getItems()) {
-                m_items.add(new _Item(prd.getID()));
-            }
-            m_usersIndex = m_bipartite.getUsersIndex();
-            m_itemsIndex = m_bipartite.getItemsIndex();
-            m_reviewIndex = m_bipartite.getReviewIndex();
-
-            ArrayList<_Doc> m_trainSet = new ArrayList<_Doc>();
-            ArrayList<_Doc> m_testSet = new ArrayList<_Doc>();
-            ArrayList<_Doc> m_validationSet = new ArrayList<>();
-            for (_Doc d : analyzer.getCorpus().getCollection()) {
-                if (d.getType() == _Doc.rType.TRAIN) {
-                    m_trainSet.add(d);
-                } else if (d.getType() == _Doc.rType.TEST) {
-                    m_testSet.add(d);
-                } else if (d.getType() == _Doc.rType.ADAPTATION) {
-                    m_validationSet.add(d);
-                }
-            }
-
-            String[] modes = new String[]{"train", "validation", "test"};
-            ArrayList<_Doc> docs;
-            for (String mode : modes) {
-                if (mode.equals("train")) {
-                    docs = m_trainSet;
-                    m_bipartite.analyzeBipartite(docs, mode);
-                    m_mapByUser = m_bipartite.getMapByUser();
-                    m_mapByItem = m_bipartite.getMapByItem();
-                } else if (mode.equals("test")) {
-                    docs = m_testSet;
-                    m_bipartite.analyzeBipartite(docs, mode);
-                    m_mapByUser = m_bipartite.getMapByUser_test();
-                    m_mapByItem = m_bipartite.getMapByItem_test();
-                } else {
-                    docs = m_validationSet;
-                    m_bipartite.analyzeBipartite(docs, mode);
-                    m_mapByUser = m_bipartite.getMapByUser_global();
-                    m_mapByItem = m_bipartite.getMapByItem_global();
-                }
-
-                if (param.m_topicmodel.equals("CTR")) {
-                    save2FileCTPE(outputFolder, param.m_source, mode, k);
-                } else if (param.m_topicmodel.equals("RTM")) {
-                    save2FileRTM(outputFolder, param.m_source, mode, k);
-                } else if (param.m_topicmodel.equals("HFT")) {
-                    save2FileHFT(outputFolder, param.m_source, mode, k, docs);
-                }
-            }
-        }
+                Ngram, lengthThreshold, numberOfCores, true);
+        analyzer.loadUserDir(reviewFolder);
+        System.out.format("[Info]%d docs are loaded.\n", analyzer.getCorpus().getCollection().size());
+        m_bipartite = new BipartiteAnalyzer(analyzer.getCorpus());
+        save2FileHFT(outputFolder);
     }
 
     public void transfer2CTR(String[] args) throws IOException, ParseException {
@@ -272,18 +198,18 @@ public class myDataProcessMain {
                 } else if (param.m_topicmodel.equals("RTM")) {
                     save2FileRTM(outputFolder, param.m_source, mode, k);
                 } else if (param.m_topicmodel.equals("HFT")) {
-                    save2FileHFT(outputFolder, param.m_source, mode, k, docs);
+                    save2FileHFT(outputFolder);
                 }
             }
         }
     }
 
-    public static void save2FileHFT(String prefix, String source, String mode, int k, ArrayList<_Doc> docs) throws IOException{
-        String outFile = String.format("%s/%s/%d/%s_%s.tsv", prefix, source, k, source, mode);
+    public static void save2FileHFT(String prefix) throws IOException{
+        String outFile = String.format("%s/data.tsv", prefix);
         (new File(outFile)).getParentFile().mkdirs();
 
         BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(outFile)));
-        for(_Doc doc:docs) {
+        for(_Doc doc : m_bipartite.getCorpus().getCollection()) {
             //userID itemID rating time docLength words
             _Review r = (_Review) doc;
             String userID = r.getUserID();
@@ -303,7 +229,7 @@ public class myDataProcessMain {
         }
         writer.close();
 
-        System.out.format("[Info]%d rates saved to %s\n", docs.size(), outFile);
+        System.out.format("[Info]%d rates saved to %s\n", m_bipartite.getCorpus().getCollection().size(), outFile);
     }
 
 
