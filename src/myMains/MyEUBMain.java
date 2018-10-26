@@ -29,17 +29,19 @@ public class MyEUBMain {
         String tokenModel = "./data/Model/en-token.bin"; // Token model.
 
         String prefix = "./data/CoLinAdapt";
-        String providedCV = String.format("%s/%s/SelectedVocab.txt", prefix, dataset);
-        String userFolder = String.format("%s/%s/Users", prefix, dataset);
+        String providedCV = String.format("%s/%s/yelp_features.txt", prefix, dataset);
+        String userFolder = String.format("%s/%s/Users_1000", prefix, dataset);
 
         int kFold = 5, k = 0, time = 2;
 //        /***Feature selection**/
-//        UserAnalyzer analyzer = new UserAnalyzer(tokenModel, classNumber, null, Ngram, lengthThreshold, cvFlag);
+//        UserAnalyzer analyzer = new UserAnalyzer(tokenModel, classNumber, null, Ngram, lengthThreshold, true);
+//        analyzer.LoadStopwords("./data/Model/stopwords.dat");
 //        analyzer.loadUserDir(userFolder);
-//        analyzer.featureSelection("./data/YelpNew_DF_5k.txt", "DF", 7000, 100, 5000);
+//        analyzer.featureSelection("./data/YelpNew_DF_3k.txt", "DF", 7000, 100, 3000);
 
-        String friendFile = String.format("%s/%s/%sFriends.txt", prefix, dataset, dataset);
-        String cvIndexFile = String.format("%s/%s/%sCVIndex.txt", prefix, dataset, dataset);
+        String orgFriendFile = String.format("%s/%s/%sFriends_org.txt", prefix, dataset, dataset);
+        String friendFile = String.format("%s/%s/%sFriends_1000.txt", prefix, dataset, dataset);
+        String cvIndexFile = String.format("%s/%s/%sCVIndex_1000.txt", prefix, dataset, dataset);
         String cvIndexFile4Interaction = String.format("%s/%s/%sCVIndex4Interaction.txt", prefix, dataset, dataset);
         String cvIndexFile4NonInteraction = String.format("%s/%s/%sCVIndex4NonInteraction_time_%d.txt", prefix, dataset, dataset, time);
 
@@ -54,9 +56,9 @@ public class MyEUBMain {
         /****save cv index for documents before-hand****/
 //        analyzer.loadUserDir(userFolder);
 //        analyzer.constructUserIDIndex();
-//        //analyzer.saveCVIndex(5, cvIndexFile);
-//        analyzer.loadInteractions(friendFile);
-//        //analyzer.saveNetwork(friendFile);
+//        analyzer.saveCVIndex(5, cvIndexFile);
+//        analyzer.loadInteractions(orgFriendFile);
+//        analyzer.saveNetwork(friendFile);
 
         /****save cv index for interactions before-hand****/
 //        analyzer.loadUserDir(userFolder);
@@ -86,10 +88,10 @@ public class MyEUBMain {
         _Corpus corpus = analyzer.getCorpus();
 
         /***Start running joint modeling of user embedding and topic embedding****/
-        int emMaxIter = 50, number_of_topics = 20, varMaxIter = 1, embeddingDim = 10, innerIter = 1, inferIter = 3;
+        int emMaxIter = 50, number_of_topics = 20, varMaxIter = 10, embeddingDim = 10, innerIter = 1, inferIter = 3;
         //these two parameters must be larger than 1!!!
         double emConverge = 1e-10, alpha = 1 + 1e-2, beta = 1 + 1e-3, lambda = 1 + 1e-3, varConverge = 1e-6, stepSize = 1e-3;
-        boolean alphaFlag = false, gammaFlag = false, betaFlag = false, tauFlag = false, xiFlag = false, multiFlag = true, adaFlag = false;
+        boolean alphaFlag = true, gammaFlag = true, betaFlag = true, tauFlag = true, xiFlag = true, multiFlag = true, adaFlag = false;
 
         long start = System.currentTimeMillis();
         LDA_Variational tModel = null;

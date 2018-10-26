@@ -53,9 +53,9 @@ public class FeatureSelector {
 		System.out.format("Feature value min: %.5f, max: %.5f\n", m_selectedFeatures.get(0).m_value,
 				m_selectedFeatures.get(m_selectedFeatures.size()-1).m_value);
 
-//		for(_RankItem it: m_selectedFeatures){
-//			System.out.println(it.m_name + '\t' + it.m_value);
-//		}
+		for(_RankItem it: m_selectedFeatures){
+			System.out.println(it.m_name + '\t' + it.m_value);
+		}
 
 		int start = (int) (totalSize * m_startProb);
 		int end = (int) (totalSize * m_endProb);

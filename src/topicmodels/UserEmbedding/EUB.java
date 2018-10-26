@@ -302,7 +302,7 @@ public class EUB extends LDA_Variational {
                 if(Double.isNaN(totalLikelihood) || Double.isInfinite(totalLikelihood))
                     System.out.println("[error] The likelihood is Nan or Infinity!!");
             }
-
+//            setStepSize(1e-4);
             for(_User4EUB user: m_users){
                 totalLikelihood += varInference4User(user);
                 if(Double.isNaN(totalLikelihood) || Double.isInfinite(totalLikelihood))
@@ -478,7 +478,7 @@ public class EUB extends LDA_Variational {
     }
 
     protected double varInference4Doc(_Doc4EUB doc) {
-        int maxIter = (doc.getType() == _Doc.rType.TEST) ? m_innerMaxIter : m_innerMaxIter;
+        int maxIter = (doc.getType() == _Doc.rType.TEST) ? m_inferMaxIter : m_innerMaxIter;
         double curLoglikelihood = 0.0, lastLoglikelihood = 1.0, converge = 0.0;
         int iter = 0;
         boolean warning;
@@ -891,6 +891,8 @@ public class EUB extends LDA_Variational {
 
         double logLikelihood = 0.5 * m_embeddingDim * (Math.log(m_alpha_s) + 1);
         double determinant = new Matrix(topic.m_sigma_phi).det();
+        if(determinant < 0)
+            System.out.println("[error]Negative determinant in likelihood for topic!");
         logLikelihood += 0.5 * Math.log(Math.abs(determinant)) - 0.5 * m_alpha_s *
                 sumSigmaDiagAddMuTransposeMu(topic.m_sigma_phi, topic.m_mu_phi);
         return logLikelihood;
@@ -906,6 +908,8 @@ public class EUB extends LDA_Variational {
         for(int k=0; k<number_of_topics; k++){
             determinant *= doc.m_sigma_theta[k];
         }
+        if(determinant < 0)
+            System.out.println("[error]Negative determinant in likelihood for doc!");
         logLikelihood += 0.5 * Math.log(Math.abs(determinant));
         if(Double.isNaN(logLikelihood) || Double.isInfinite(logLikelihood))
             System.out.println("[error] Doc: loglikelihood is Nan or Infinity!!");
@@ -934,7 +938,7 @@ public class EUB extends LDA_Variational {
                 if(Double.isNaN(logLikelihood) || Double.isInfinite(logLikelihood))
                     System.out.println("[error] Doc: loglikelihood is Nan or Infinity!!");
             }
-            logLikelihood += -Math.exp(doc.m_mu_theta[k] + 0.5 * doc.m_sigma_theta[k])/Math.exp(doc.m_logZeta);
+            logLikelihood -= doc.getTotalDocLength() * Math.exp(doc.m_mu_theta[k] + 0.5 * doc.m_sigma_theta[k] - doc.m_logZeta);
             if(Double.isNaN(logLikelihood) || Double.isInfinite(logLikelihood))
                 System.out.println("[error] Doc: loglikelihood is Nan or Infinity!!");
         }
@@ -947,6 +951,8 @@ public class EUB extends LDA_Variational {
 
         // calculate the determinant of the matrix
         double determinant = new Matrix(ui.m_sigma_u).det();
+        if(determinant < 0)
+            System.out.println("[error]Negative determinant in likelihood for user!");
         logLikelihood += 0.5 * Math.log(Math.abs(determinant));
         if(Double.isNaN(logLikelihood) || Double.isInfinite(logLikelihood))
             System.out.println("[error] User: the likelihood is Nan or Infinity!!");
@@ -1022,7 +1028,7 @@ public class EUB extends LDA_Variational {
         System.out.format("In one fold, (train: test)=(%d : %d)\n", m_trainSet.size(), m_testSet.size());
         if(m_mType == modelType.CV4DOC){
             System.out.println("[Info]Current mode is cv for docs, start evaluation....");
-            for(int inferIter : new int[]{1, 3, 5, 7, 9}) {
+            for(int inferIter : new int[]{10, 50}) {
                 perplexity = evaluation(inferIter);
             }
         } else if(m_mType == modelType.CV4EDGE){

@@ -205,6 +205,7 @@ public class EUB_multithreading extends EUB {
             }
 
             likelihood = docLikelihood + topicLikelihood + userLikelihood;
+
             if(iter > 0)
                 converge = Math.abs((likelihood - last) / last);
             else
