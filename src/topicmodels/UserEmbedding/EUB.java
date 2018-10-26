@@ -18,6 +18,14 @@ import java.util.*;
 
 public class EUB extends LDA_Variational {
 
+    public enum modelType {
+        CV4DOC, // cross validation for testing document perplexity
+        CV4EDGE, // cross validation for testing link prediction
+    }
+
+    // Default is CV4Doc
+    protected modelType m_mType = modelType.CV4DOC;
+
     protected ArrayList<_Topic4EUB> m_topics;
     protected ArrayList<_User4EUB> m_users;
     protected ArrayList<_Doc4EUB> m_docs;
@@ -63,6 +71,7 @@ public class EUB extends LDA_Variational {
     protected boolean m_adaFlag = false;
 
     protected int m_innerMaxIter = 1;
+    protected int m_inferMaxIter = 3;
 
     public EUB(int number_of_iteration, double converge, double beta,
                _Corpus c, double lambda, int number_of_topics, double alpha,
@@ -76,6 +85,10 @@ public class EUB extends LDA_Variational {
         m_networkMap = new HashMap<Integer, HashSet<Integer>>();
     }
 
+    public String toString(){
+        return String.format("[EUB]Mode: %s, Dim: %d, Topic number: %d, EmIter: %d, VarIter: %d, innIter: %d.\n",
+                m_mType.toString(), m_embeddingDim, number_of_topics, number_of_iteration, m_varMaxIter, m_innerMaxIter);
+    }
     public void setModelParamsUpdateFlags(boolean alphaFlag, boolean gammaFlag, boolean betaFlag,
                                           boolean tauFlag, boolean xiFlag){
         m_alphaFlag = alphaFlag;
@@ -83,6 +96,14 @@ public class EUB extends LDA_Variational {
         m_betaFlag = betaFlag;
         m_tauFlag = tauFlag;
         m_xiFlag = xiFlag;
+    }
+
+    public void setMode(String mode){
+        if(mode.equals("cv4edge")) {
+            m_mType = modelType.CV4EDGE;
+        } else if(mode.equals("cv4doc")){
+            m_mType = modelType.CV4DOC;
+        }
     }
 
     public void setAdaFlag(boolean b){
@@ -96,6 +117,10 @@ public class EUB extends LDA_Variational {
     // iteration time of inside variational inference
     public void setInnerMaxIter(int it){
         m_innerMaxIter = it;
+    }
+
+    public void setInferMaxIter(int it){
+        m_inferMaxIter = it;
     }
 
     // Load the data for later user
@@ -453,6 +478,7 @@ public class EUB extends LDA_Variational {
     }
 
     protected double varInference4Doc(_Doc4EUB doc) {
+        int maxIter = (doc.getType() == _Doc.rType.TEST) ? m_innerMaxIter : m_innerMaxIter;
         double curLoglikelihood = 0.0, lastLoglikelihood = 1.0, converge = 0.0;
         int iter = 0;
         boolean warning;
@@ -478,7 +504,7 @@ public class EUB extends LDA_Variational {
                 converge = 1.0;
 
             lastLoglikelihood = curLoglikelihood;
-        } while (++iter < m_innerMaxIter && Math.abs(converge) > m_varConverge && !warning);
+        } while (++iter < maxIter && Math.abs(converge) > m_varConverge && !warning);
 
         return curLoglikelihood;
     }
@@ -875,14 +901,14 @@ public class EUB extends LDA_Variational {
         double logLikelihood = 0.5 * number_of_topics * (Math.log(m_tau) + 1) - doc.getTotalDocLength() *
                 (doc.m_logZeta -1 ) - 0.5 * m_tau * sumSigmaDiagAddMuTransposeMu(doc.m_sigma_theta, doc.m_mu_theta);
         if(Double.isNaN(logLikelihood) || Double.isInfinite(logLikelihood))
-            System.out.println("[line 925] Doc: loglikelihood is Nan or Infinity!!");
+            System.out.println("[error] Doc: loglikelihood is Nan or Infinity!!");
         double determinant = 1;
         for(int k=0; k<number_of_topics; k++){
             determinant *= doc.m_sigma_theta[k];
         }
         logLikelihood += 0.5 * Math.log(Math.abs(determinant));
         if(Double.isNaN(logLikelihood) || Double.isInfinite(logLikelihood))
-            System.out.println("[line 932] Doc: loglikelihood is Nan or Infinity!!");
+            System.out.println("[error] Doc: loglikelihood is Nan or Infinity!!");
         double term1 = 0, term2 = 0;
         for(int m=0; m<m_embeddingDim; m++){
             for(int k=0; k<number_of_topics; k++){
@@ -897,7 +923,7 @@ public class EUB extends LDA_Variational {
         }
         logLikelihood += m_tau * term1 - 0.5 * m_tau * term2;
         if(Double.isNaN(logLikelihood) || Double.isInfinite(logLikelihood))
-            System.out.println("[line 947] Doc: loglikelihood is Nan or Infinity!!");
+            System.out.println("[error] Doc: loglikelihood is Nan or Infinity!!");
         // the second part which involves with words
         _SparseFeature[] fv = doc.getSparse();
         for(int k = 0; k < number_of_topics; k++) {
@@ -906,11 +932,11 @@ public class EUB extends LDA_Variational {
                 double v = fv[n].getValue() * doc.m_phi[n][k];
                 logLikelihood += v * (doc.m_mu_theta[k] - Math.log(doc.m_phi[n][k]) + topic_term_probabilty[k][wid]);
                 if(Double.isNaN(logLikelihood) || Double.isInfinite(logLikelihood))
-                    System.out.println("[line 956] Doc: loglikelihood is Nan or Infinity!!");
+                    System.out.println("[error] Doc: loglikelihood is Nan or Infinity!!");
             }
             logLikelihood += -Math.exp(doc.m_mu_theta[k] + 0.5 * doc.m_sigma_theta[k])/Math.exp(doc.m_logZeta);
             if(Double.isNaN(logLikelihood) || Double.isInfinite(logLikelihood))
-                System.out.println("[line 960] Doc: loglikelihood is Nan or Infinity!!");
+                System.out.println("[error] Doc: loglikelihood is Nan or Infinity!!");
         }
         return logLikelihood;
     }
@@ -970,6 +996,8 @@ public class EUB extends LDA_Variational {
 
     // fixed cross validation with specified fold number
     public void fixedCrossValidation(int k, String saveDir){
+        System.out.println(toString());
+
         double perplexity = 0;
         constructNetwork();
         m_trainSet = new ArrayList<>();
@@ -982,7 +1010,6 @@ public class EUB extends LDA_Variational {
                 if(r.getMask4CV() == k){
                     r.setType(_Doc.rType.TEST);
                     m_testSet.add(r);
-//                    totalLen += r.getTotalDocLength();
                 } else {
                     r.setType(_Doc.rType.TRAIN);
                     m_trainSet.add(r);
@@ -990,29 +1017,39 @@ public class EUB extends LDA_Variational {
             }
             m_users.get(i);
         }
-        System.out.println("Inside cv, the test size: " + m_testSet.size());
         buildUserDocMap();
         EM();
-        perplexity = evaluation();
-        printStat4OneFold(saveDir, perplexity);
-        System.out.format("[Output]Perpelexity for fold %d is: %.4f.\n", k, perplexity);
+        System.out.format("In one fold, (train: test)=(%d : %d)\n", m_trainSet.size(), m_testSet.size());
+        if(m_mType == modelType.CV4DOC){
+            System.out.println("[Info]Current mode is cv for docs, start evaluation....");
+            for(int inferIter : new int[]{1, 3, 5, 7, 9}) {
+                perplexity = evaluation(inferIter);
+            }
+        } else if(m_mType == modelType.CV4EDGE){
+            System.out.println("[Info]Current mode is cv for edges, link predication is performed later.");
+        } else{
+            System.out.println("[error]Please specify the correct mode for evaluation!");
+        }
+        printStat4OneFold(k, saveDir, perplexity);
     }
 
-    public void printStat4OneFold(String saveDir, double perplexity){
+    public void printStat4OneFold(int k, String saveDir, double perplexity){
         // record related information
+        System.out.println("[Info]Finish training, start saving data...");
         File fileDir = new File(saveDir);
         if(!fileDir.exists())
             fileDir.mkdirs();
 
         printOneFoldPerplexity(saveDir, perplexity);
-        printTopWords(30, String.format("%s/topkWords.txt", saveDir));
-        printTopicEmbedding(String.format("%s/topicEmbedding.txt", saveDir));
-        printUserEmbedding(String.format("%s/userEmbedding.txt", saveDir));
+        printTopWords(30, String.format("%s/TopKWords.txt", saveDir));
+        printTopicEmbedding(String.format("%s/TopicEmbedding.txt", saveDir));
+        printUserEmbedding(String.format("%s/EUB_embedding_dim_%d_fold_%d.txt", saveDir, m_embeddingDim, k));
+        printUserEmbeddingWithDetails(String.format("%s/EUB_EmbeddingWithDetails_dim_%d_fold_%d.txt", saveDir, m_embeddingDim, k));
     }
 
     public void printOneFoldPerplexity(String saveDir, double perplexity){
         try{
-            PrintWriter writer  = new PrintWriter(new File(String.format("%s/perplexity.txt", saveDir)));
+            PrintWriter writer  = new PrintWriter(new File(String.format("%s/Perplexity.txt", saveDir)));
             writer.format("perplexity: %.5f\n", perplexity);
             writer.close();
         } catch(IOException e){
@@ -1020,24 +1057,23 @@ public class EUB extends LDA_Variational {
         }
     }
     // evaluation in single-thread
-    public double evaluation() {
+    public double evaluation(int inferIter) {
 
-        System.out.println("[Info]Start evaluation in single thread...");
-        double perplexity = 0;
-        double totalWords = 0.0;
-        System.out.println("Test set size: " + m_testSet.size());
+        setInferMaxIter(inferIter);
+        double allLoglikelihood = 0;
+        int totalWords = 0;
         for(_Doc d: m_testSet) {
-            perplexity += inference(d);
+            allLoglikelihood += inference(d);
             totalWords += d.getTotalDocLength();
         }
 
-        double[] results = new double[2];
-        results[0] = Math.exp(-perplexity/totalWords);
-        results[1] = perplexity / m_testSet.size();
+        double perplexity = Math.exp(-allLoglikelihood/totalWords);
+        double avgLoglikelihood = allLoglikelihood / m_testSet.size();
 
-        System.out.format("[Debug] Loglikelihood: %.4f, total words: %.1f\n", perplexity, totalWords);
-        System.out.format("[Stat]Test set perplexity is %.3f and log-likelihood is %.3f\n\n", results[0], results[1]);
-        return results[0];
+        System.out.format("[Stat]InferIter=%d, perplexity=%.4f, total words=%d, all_log-likelihood=%.4f, " +
+                        "avg_log-likelihood=%.4f\n\n",
+                inferIter, perplexity, totalWords, allLoglikelihood, avgLoglikelihood);
+        return perplexity;
     }
 
     @Override
@@ -1085,12 +1121,13 @@ public class EUB extends LDA_Variational {
         }
     }
 
-    public void printUserEmbedding(String filename){
+    // print out user embedding with both mean and variance
+    public void printUserEmbeddingWithDetails(String filename){
         try{
             PrintWriter writer = new PrintWriter(new File(filename));
             for(int i=0; i<m_users.size(); i++){
                 _User4EUB user = m_users.get(i);
-                writer.format("User %d\nmu_u:\n", i);
+                writer.format("User %s\nmu_u:\n", user.getUserID());
                 for(double mu: user.m_mu_u){
                     writer.format("%.3f\t", mu);
                 }
@@ -1101,6 +1138,26 @@ public class EUB extends LDA_Variational {
                     writer.write("\n");
                 }
                 writer.write("----------------------------\n");
+            }
+            writer.close();
+        }
+        catch(IOException e){
+            e.printStackTrace();
+        }
+    }
+
+    // print out user embedding with mean
+    public void printUserEmbedding(String filename){
+        try{
+            PrintWriter writer = new PrintWriter(new File(filename));
+            writer.format("%d\t%d\n", m_users.size(), m_embeddingDim);
+            for(int i=0; i<m_users.size(); i++){
+                _User4EUB user = m_users.get(i);
+                writer.format("%s\t", user.getUserID());
+                for(double mu: user.m_mu_u){
+                    writer.format("%.4f\t", mu);
+                }
+                writer.write("\n");
             }
             writer.close();
         }

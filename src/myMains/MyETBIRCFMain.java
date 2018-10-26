@@ -10,9 +10,9 @@ import opennlp.tools.util.InvalidFormatException;
 import structures._User;
 import Analyzer.MultiThreadedLMAnalyzer;
 import Analyzer.MultiThreadedReviewAnalyzer;
-import Application.CollaborativeFiltering;
-import Application.CollaborativeFilteringWithETBIR;
-import Application.CollaborativeFilteringWithMMB;
+import Application.CollaborativeFiltering.CollaborativeFiltering;
+import Application.CollaborativeFiltering.CollaborativeFilteringWithETBIR;
+import Application.CollaborativeFiltering.CollaborativeFilteringWithMMB;
 
 public class MyETBIRCFMain {
 	public static void main(String[] args) throws InvalidFormatException, FileNotFoundException, IOException{

@@ -302,33 +302,32 @@ public class EUB_multithreading extends EUB {
             System.out.format("[Inference]Likelihood: %.2f\n", last);
         }while(iter++ < m_varMaxIter);
 
-        System.out.print(String.format("[Info]Inference finished: likelihood: %.4f\n", perplexity));
+//        System.out.print(String.format("[Info]Inference finished: likelihood: %.4f\n", perplexity));
 
         return perplexity;
     }
 
     @Override
     // evaluation in multi-thread
-    public double evaluation() {
-        double perplexity = 0;
-        double totalWords = 0.0;
+    public double evaluation(int inferIter) {
+
+        setInferMaxIter(inferIter);
+        double allLoglikelihood = 0;
+        int totalWords = 0;
         multithread_inference();
 
-        System.out.println("[Info]Start evaluation in multi-thread....");
         for(TopicModelWorker worker:m_workers) {
-            perplexity += worker.getPerplexity();
+            allLoglikelihood += worker.getPerplexity();
             totalWords += worker.getTotalWords();
-//            System.out.println(perplexity);
         }
 
-        double[] results = new double[2];
-        results[0] = Math.exp(-perplexity/totalWords);
-        results[1] = perplexity / m_testSet.size();
+        double perplexity = Math.exp(-allLoglikelihood/totalWords);
+        double avgLoglikelihood = allLoglikelihood / m_testSet.size();
 
-        System.out.format("[Debug] Loglikelihood: %.4f, total words: %.1f\n", perplexity, totalWords);
-        System.out.format("[Stat]Test set perplexity is %.3f and log-likelihood is %.3f\n", results[0], results[1]);
-
-        return results[0];
+        System.out.format("[Stat]InferIter=%d, perplexity=%.4f, total words=%d, all_log-likelihood=%.4f, " +
+                        "avg_log-likelihood=%.4f\n\n",
+                inferIter, perplexity, totalWords, allLoglikelihood, avgLoglikelihood);
+        return perplexity;
     }
 
 }

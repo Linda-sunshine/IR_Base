@@ -6,11 +6,11 @@ import java.util.HashMap;
 
 import opennlp.tools.util.InvalidFormatException;
 import Analyzer.MultiThreadedLMAnalyzer;
-import Application.LinkPredictionWithMMB;
-import Application.LinkPredictionWithMMBPerEdge;
-import Application.LinkPredictionWithSVM;
-import Application.LinkPredictionWithSVMPerEdge;
-import Application.LinkPredictionWithSVMWithText;
+import Application.LinkPrediction4MMB.LinkPredictionWithMMB;
+import Application.LinkPrediction4MMB.LinkPredictionWithMMBPerEdge;
+import Application.LinkPrediction4MMB.LinkPredictionWithSVM;
+import Application.LinkPrediction4MMB.LinkPredictionWithSVMPerEdge;
+import Application.LinkPrediction4MMB.LinkPredictionWithSVMWithText;
 
 public class MyLinkPredMain {
 	

@@ -125,9 +125,8 @@ public class MultiThreadedUserAnalyzer extends UserAnalyzer {
 				count++;
 
 		}
-		
 		if (count>0)
-			System.out.format("%d users are loaded from %s...\n", count, folder);
+			System.out.format("%d users/%d docs are loaded from %s...\n", count, m_corpus.getSize(), folder);
 	}
 		
 	// Load one file as a user here. 

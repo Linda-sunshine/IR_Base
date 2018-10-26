@@ -12,6 +12,7 @@ public class EmbeddingParameter {
     public int m_number_of_topics = 10;
     public int m_varIter = 10;
     public int m_innerIter = 1;
+    public int m_inferIter = 3;
     public int m_embeddingDim = 10;
     public int m_kFold = 0;
 
@@ -26,6 +27,7 @@ public class EmbeddingParameter {
     public boolean m_ada = false;
 
     public String m_saveDir = "";
+    public String m_mode = "cv4doc";
 
     public EmbeddingParameter(String argv[]) {
 
@@ -71,6 +73,11 @@ public class EmbeddingParameter {
                 m_kFold = Integer.valueOf(argv[i]);
             else if (argv[i - 1].equals("-ada"))
                 m_ada = Boolean.valueOf(argv[i]);
+            else if (argv[i - 1].equals("-mode")){
+                m_mode = argv[i];
+            } else if(argv[i - 1].equals("-inferIter")){
+                m_inferIter = Integer.valueOf(argv[i]);
+            }
 
         }
         // must specify the save directory for data

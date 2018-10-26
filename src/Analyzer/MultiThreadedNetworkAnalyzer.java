@@ -442,6 +442,7 @@ public class MultiThreadedNetworkAnalyzer extends MultiThreadedLinkPredAnalyzer 
                 }
             }
             writer.close();
+            System.out.format("Finish writing %d users' data for TADW.\n", m_users.size());
         } catch(IOException e){
             e.printStackTrace();
         }

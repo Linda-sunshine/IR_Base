@@ -10,8 +10,8 @@ import opennlp.tools.util.InvalidFormatException;
 import structures.CFParameter;
 import structures._User;
 import Analyzer.MultiThreadedLMAnalyzer;
-import Application.CollaborativeFiltering;
-import Application.CollaborativeFilteringWithMMB;
+import Application.CollaborativeFiltering.CollaborativeFiltering;
+import Application.CollaborativeFiltering.CollaborativeFilteringWithMMB;
 
 public class MyCFExecution {
 	public static void main(String[] args) throws InvalidFormatException, FileNotFoundException, IOException{

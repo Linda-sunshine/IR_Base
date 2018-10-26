@@ -9,8 +9,8 @@ import java.util.ArrayList;
 import opennlp.tools.util.InvalidFormatException;
 import structures._User;
 import Analyzer.MultiThreadedLMAnalyzer;
-import Application.CollaborativeFiltering;
-import Application.CollaborativeFilteringWithMMB;
+import Application.CollaborativeFiltering.CollaborativeFiltering;
+import Application.CollaborativeFiltering.CollaborativeFilteringWithMMB;
 
 public class MyCFMain {
 	public static void main(String[] args) throws InvalidFormatException, FileNotFoundException, IOException{

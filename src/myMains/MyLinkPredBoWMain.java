@@ -6,7 +6,7 @@ import java.util.HashMap;
 
 import opennlp.tools.util.InvalidFormatException;
 import Analyzer.MultiThreadedLMAnalyzer;
-import Application.LinkPrediction;
+import Application.LinkPrediction4MMB.LinkPrediction;
 
 public class MyLinkPredBoWMain {
 	

@@ -56,10 +56,6 @@ public class FeatureSelector {
 //		for(_RankItem it: m_selectedFeatures){
 //			System.out.println(it.m_name + '\t' + it.m_value);
 //		}
-//		System.out.println("Top fetures:");
-//		for(int i=m_selectedFeatures.size()-1; i>m_selectedFeatures.size()-20; i--)
-//			System.out.print(m_selectedFeatures.get(i).m_name + "\t");
-//		System.out.println();
 
 		int start = (int) (totalSize * m_startProb);
 		int end = (int) (totalSize * m_endProb);
