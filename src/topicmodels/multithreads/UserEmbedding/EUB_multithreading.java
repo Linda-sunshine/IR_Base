@@ -59,6 +59,11 @@ public class EUB_multithreading extends EUB {
             return super.accumluateStats(word_topic_sstat);
         }
 
+//        @Override
+//        public void resetStats(){
+//            super.resetStats();
+//        }
+
     }
 
     public class User_worker extends EmbedModel_worker {
@@ -141,7 +146,6 @@ public class EUB_multithreading extends EUB {
 
     protected void initialize_probability(Collection<_Doc> collection) {
 
-        super.initialize_probability(collection);
 
         int cores = Runtime.getRuntime().availableProcessors();
         m_threadpool = new Thread[cores];
@@ -170,7 +174,18 @@ public class EUB_multithreading extends EUB {
             m_userWorkers[workerID%cores].addObject(u);
             workerID++;
         }
+        super.initialize_probability(collection);
+    }
 
+    @Override
+    protected void init() { // clear up for next iteration
+        super.init();
+        for(TopicModelWorker worker:m_workers)
+            worker.resetStats();
+//        for(EmbedModelWorker worker:m_topicWorkers)
+//            worker.resetStats();
+//        for(EmbedModelWorker worker:m_userWorkers)
+//            worker.resetStats();
     }
 
 

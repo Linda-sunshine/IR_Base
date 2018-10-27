@@ -29,7 +29,7 @@ public class MyEUBMain {
         String tokenModel = "./data/Model/en-token.bin"; // Token model.
 
         String prefix = "./data/CoLinAdapt";
-        String providedCV = String.format("%s/%s/yelp_features.txt", prefix, dataset);
+        String providedCV = String.format("%s/%s/SelectedVocab_DF_5k_2.txt", prefix, dataset);
         String userFolder = String.format("%s/%s/Users_1000", prefix, dataset);
 
         int kFold = 5, k = 0, time = 2;
@@ -37,7 +37,7 @@ public class MyEUBMain {
 //        UserAnalyzer analyzer = new UserAnalyzer(tokenModel, classNumber, null, Ngram, lengthThreshold, true);
 //        analyzer.LoadStopwords("./data/Model/stopwords.dat");
 //        analyzer.loadUserDir(userFolder);
-//        analyzer.featureSelection("./data/YelpNew_DF_3k.txt", "DF", 7000, 100, 3000);
+//        analyzer.featureSelection("./data/YelpNew_DF_10k.txt", "DF", 10000, 100, 5000);
 
         String orgFriendFile = String.format("%s/%s/%sFriends_org.txt", prefix, dataset, dataset);
         String friendFile = String.format("%s/%s/%sFriends_1000.txt", prefix, dataset, dataset);
@@ -88,7 +88,7 @@ public class MyEUBMain {
         _Corpus corpus = analyzer.getCorpus();
 
         /***Start running joint modeling of user embedding and topic embedding****/
-        int emMaxIter = 50, number_of_topics = 20, varMaxIter = 10, embeddingDim = 10, innerIter = 1, inferIter = 3;
+        int emMaxIter = 100, number_of_topics = 20, varMaxIter = 10, embeddingDim = 10, innerIter = 2, inferIter = 3;
         //these two parameters must be larger than 1!!!
         double emConverge = 1e-10, alpha = 1 + 1e-2, beta = 1 + 1e-3, lambda = 1 + 1e-3, varConverge = 1e-6, stepSize = 1e-3;
         boolean alphaFlag = true, gammaFlag = true, betaFlag = true, tauFlag = true, xiFlag = true, multiFlag = true, adaFlag = false;
