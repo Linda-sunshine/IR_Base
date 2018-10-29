@@ -98,6 +98,7 @@ public class myDataProcessMain {
 
         MultiThreadedUserAnalyzer analyzer = new MultiThreadedUserAnalyzer(tokenModel, classNumber, fvFile,
                 Ngram, lengthThreshold, numberOfCores, true);
+        analyzer.setAllocateReviewFlag(false);
         analyzer.loadUserDir(reviewFolder);
         System.out.format("[Info]%d docs are loaded.\n", analyzer.getCorpus().getCollection().size());
         m_bipartite = new BipartiteAnalyzer(analyzer.getCorpus());
@@ -128,6 +129,7 @@ public class myDataProcessMain {
         MultiThreadedNetworkAnalyzer analyzer = new MultiThreadedNetworkAnalyzer(tokenModel, classNumber, fvFile,
                 Ngram, lengthThreshold, numberOfCores, true);
         analyzer.setReleaseContent(false);
+        analyzer.setAllocateReviewFlag(false);
         analyzer.loadUserDir(reviewFolder);
         System.out.format("[Info]%d docs are loaded.\n", analyzer.getCorpus().getCollection().size());
         analyzer.constructUserIDIndex();

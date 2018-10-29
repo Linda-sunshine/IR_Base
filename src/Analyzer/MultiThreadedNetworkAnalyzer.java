@@ -100,7 +100,7 @@ public class MultiThreadedNetworkAnalyzer extends MultiThreadedLinkPredAnalyzer 
                 String[] users = line.trim().split("\t");
                 String uid = users[0];
                 if(!m_userIDIndex.containsKey(users[0])){
-                    System.err.println("The user does not exist in user set!");
+                    System.err.format("[err]user %d does not exist in user set.\n", users[0]);
                     continue;
                 }
                 String[] interactions = Arrays.copyOfRange(users, 1, users.length);
@@ -409,8 +409,10 @@ public class MultiThreadedNetworkAnalyzer extends MultiThreadedLinkPredAnalyzer 
                 String[] strs = pair.split(" ");
                 if(m_CV4LinkMap.get(pair) == testFold){
                     writer_test.write(String.format("%d\t%d\n", idx_test.get(strs[0]), idx_test.get(strs[1])));
+                    link_test_size++;
                 } else {
                     writer_train.write(String.format("%d\t%d\n", idx_train.get(strs[0]), idx_train.get(strs[1])));
+                    link_train_size++;
                 }
             }
             writer_train.flush();
