@@ -100,7 +100,7 @@ public class MultiThreadedNetworkAnalyzer extends MultiThreadedLinkPredAnalyzer 
                 String[] users = line.trim().split("\t");
                 String uid = users[0];
                 if(!m_userIDIndex.containsKey(users[0])){
-                    System.err.format("[err]user %d does not exist in user set.\n", users[0]);
+                    System.err.format("[err]user %s does not exist in user set.\n", users[0]);
                     continue;
                 }
                 String[] interactions = Arrays.copyOfRange(users, 1, users.length);
