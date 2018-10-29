@@ -184,7 +184,7 @@ public class MultiThreadedNetworkAnalyzer extends MultiThreadedLinkPredAnalyzer 
                 int mask = Integer.valueOf(strs[2]);
 
                 if(!m_userIDIndex.containsKey(uId))
-                    System.out.println("No such user!");
+                    System.out.format("[error]No such user %s!\n", uId);
                 else {
                     int uIndex = m_userIDIndex.get(uId);
                     if (uIndex > m_users.size())
