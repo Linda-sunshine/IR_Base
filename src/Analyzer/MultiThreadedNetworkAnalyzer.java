@@ -408,9 +408,13 @@ public class MultiThreadedNetworkAnalyzer extends MultiThreadedLinkPredAnalyzer 
             for(String pair : m_CV4LinkMap.keySet()){
                 String[] strs = pair.split(" ");
                 if(m_CV4LinkMap.get(pair) == testFold){
+                    if(!idx_test.containsKey(strs[0]) || !idx_test.containsKey(strs[1]))
+                        continue;
                     writer_test.write(String.format("%d\t%d\n", idx_test.get(strs[0]), idx_test.get(strs[1])));
                     link_test_size++;
                 } else {
+                    if(!idx_train.containsKey(strs[0]) || !idx_train.containsKey(strs[1]))
+                        continue;
                     writer_train.write(String.format("%d\t%d\n", idx_train.get(strs[0]), idx_train.get(strs[1])));
                     link_train_size++;
                 }
