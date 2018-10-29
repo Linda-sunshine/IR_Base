@@ -567,8 +567,10 @@ public class _User {
 	}
 
 	public _Review getReviewByID(int id){
-		if(id >= m_reviews.size())
-			System.err.println("[error] Index exceeds the array length!");
+		if(id >= m_reviews.size()) {
+            System.err.format("[error]Index %d exceeds the length of user %s.\n", id, m_userID);
+            return null;
+        }
 		return m_reviews.get(id);
 	}
 }

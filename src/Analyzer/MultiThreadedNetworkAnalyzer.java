@@ -190,7 +190,8 @@ public class MultiThreadedNetworkAnalyzer extends MultiThreadedLinkPredAnalyzer 
                     if (uIndex > m_users.size())
                         System.out.println("Exceeds the array size!");
                     else {
-                        m_users.get(m_userIDIndex.get(uId)).getReviewByID(id).setMask4CV(mask);
+                        if(m_users.get(m_userIDIndex.get(uId)).getReviewByID(id) != null)
+                            m_users.get(m_userIDIndex.get(uId)).getReviewByID(id).setMask4CV(mask);
                     }
                 }
             }
