@@ -27,8 +27,8 @@ public class myDataProcessMain {
         myDataProcessMain dataprocesser = new myDataProcessMain();
 
 //        dataprocesser.splitCVByIndex(args);
-//        dataprocesser.transfer2HFT(args);
-        dataprocesser.transfer2RTM(args);
+        dataprocesser.transfer2HFT(args);
+//        dataprocesser.transfer2RTM(args);
     }
 
     public void json2Txt4Data(String[] args) throws IOException {
