@@ -27,7 +27,8 @@ public class myDataProcessMain {
         myDataProcessMain dataprocesser = new myDataProcessMain();
 
 //        dataprocesser.splitCVByIndex(args);
-        dataprocesser.transfer2HFT(args);
+//        dataprocesser.transfer2HFT(args);
+        dataprocesser.transfer2RTM(args);
     }
 
     public void json2Txt4Data(String[] args) throws IOException {
@@ -101,6 +102,43 @@ public class myDataProcessMain {
         System.out.format("[Info]%d docs are loaded.\n", analyzer.getCorpus().getCollection().size());
         m_bipartite = new BipartiteAnalyzer(analyzer.getCorpus());
         save2FileHFT(outputFolder);
+    }
+
+    public void transfer2RTM(String[] args) throws IOException {
+        TopicModelParameter param = new TopicModelParameter(args);
+
+        int classNumber = 6; //Define the number of classes in this Naive Bayes.
+        int Ngram = 2; //The default value is unigram.
+        int lengthThreshold = 5; //Document length threshold
+        int numberOfCores = Runtime.getRuntime().availableProcessors();
+        int crossV = 5;
+
+        /*****data setting*****/
+        String tokenModel = "./data/Model/en-token.bin";
+        String dataset = String.format("%s/%s/%s", param.m_prefix, param.m_source, param.m_set);
+        String fvFile = String.format("%s/%s/%s_features.txt", param.m_prefix, param.m_source, param.m_source);
+        String reviewFolder = String.format("%s/data/", dataset);
+        String cvIndexFile = String.format("%s/%sCVIndex.txt", dataset, param.m_source);
+        String friendFile = String.format("%s/%sFriends.txt", dataset, param.m_source);
+        String cv4FriendFile = String.format("%s/%sCVIndex4Interaction.txt", dataset, param.m_source);
+
+        String outputFolder = String.format("%s/%s/", dataset, param.m_topicmodel);
+        new File(outputFolder).mkdirs();
+
+        MultiThreadedNetworkAnalyzer analyzer = new MultiThreadedNetworkAnalyzer(tokenModel, classNumber, fvFile,
+                Ngram, lengthThreshold, numberOfCores, true);
+        analyzer.setReleaseContent(false);
+        analyzer.loadUserDir(reviewFolder);
+        System.out.format("[Info]%d docs are loaded.\n", analyzer.getCorpus().getCollection().size());
+        analyzer.constructUserIDIndex();
+        System.out.format("[Info]%d users are loaded.\n", analyzer.getUsers().size());
+        analyzer.loadCVIndex(cvIndexFile);
+        analyzer.loadInteractions(friendFile);
+        analyzer.loadCV4Interactions(cv4FriendFile);
+
+        for (int k = 0; k < crossV; k++) {
+            analyzer.printData4RTM(outputFolder, k);
+        }
     }
 
     public void transfer2CTR(String[] args) throws IOException, ParseException {
@@ -277,10 +315,11 @@ public class myDataProcessMain {
         return itemProfile;
     }
 
-
-    public static void save2FileRTM(String prefix, String source, String mode, int k) throws IOException{
+    public static void save2FileRTM_User(String prefix, String source, String mode, int k) throws IOException{
         ArrayList<_Doc> docs = new ArrayList<>();
         ArrayList<int[]> links = new ArrayList<>();
+
+        //for user
         for(Map.Entry<Integer, ArrayList<Integer>> entry : m_mapByUser.entrySet()){
             ArrayList<Integer> cluster = new ArrayList<>();
             for(Integer iIdx : entry.getValue()) {
@@ -301,6 +340,55 @@ public class myDataProcessMain {
         if(mode.equals("test"))
             (new File(String.format("%s/%s_user_link_%s_test_%d.txt", prefix, source, mode, k))).createNewFile();
 
+        //for item
+        for(Map.Entry<Integer, ArrayList<Integer>> entry : m_mapByItem.entrySet()){
+            ArrayList<Integer> cluster = new ArrayList<>();
+            for(Integer uIdx : entry.getValue()) {
+                _Doc temp = m_bipartite.getCorpus().getCollection().get(m_reviewIndex.get(String.format("%d_%d", entry.getKey(), uIdx)));
+                cluster.add(docs.size());
+                docs.add(temp);
+            }
+            for(int i = 0; i < cluster.size(); i++){
+                for(int j = i+1; j < cluster.size(); j++){
+                    links.add(new int[]{i,j});
+                }
+            }
+        }
+        docFile = String.format("%s/%s_item_corpus_%s_%d.txt", prefix,source, mode, k);
+        linkFile = mode.equals("test") ? String.format("%s/%s_item_link_%s_train_%d.txt", prefix, source, mode, k) : String.format("%s/%s_item_link_%s_%d.txt", prefix, source, mode, k);
+        saveDoc4RTM(docFile, docs);
+        saveLink(linkFile, links);
+        if(mode.equals("test"))
+            (new File(String.format("%s/%s_item_link_%s_test_%d.txt", prefix, source, mode, k))).createNewFile();
+    }
+
+
+    public static void save2FileRTM(String prefix, String source, String mode, int k) throws IOException{
+        ArrayList<_Doc> docs = new ArrayList<>();
+        ArrayList<int[]> links = new ArrayList<>();
+
+        //for user
+        for(Map.Entry<Integer, ArrayList<Integer>> entry : m_mapByUser.entrySet()){
+            ArrayList<Integer> cluster = new ArrayList<>();
+            for(Integer iIdx : entry.getValue()) {
+                _Doc temp = m_bipartite.getCorpus().getCollection().get(m_reviewIndex.get(String.format("%d_%d", iIdx, entry.getKey())));
+                cluster.add(docs.size());
+                docs.add(temp);
+            }
+            for(int i = 0; i < cluster.size(); i++){
+                for(int j = i+1; j < cluster.size(); j++){
+                    links.add(new int[]{i,j});
+                }
+            }
+        }
+        String docFile = String.format("%s/%s_user_corpus_%s_%d.txt", prefix,source, mode, k);
+        String linkFile = mode.equals("test") ? String.format("%s/%s_user_link_%s_train_%d.txt", prefix, source, mode, k) : String.format("%s/%s_user_link_%s_%d.txt", prefix, source, mode, k);
+        saveDoc4RTM(docFile, docs);
+        saveLink(linkFile, links);
+        if(mode.equals("test"))
+            (new File(String.format("%s/%s_user_link_%s_test_%d.txt", prefix, source, mode, k))).createNewFile();
+
+        //for item
         for(Map.Entry<Integer, ArrayList<Integer>> entry : m_mapByItem.entrySet()){
             ArrayList<Integer> cluster = new ArrayList<>();
             for(Integer uIdx : entry.getValue()) {

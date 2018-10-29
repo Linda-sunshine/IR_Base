@@ -8,10 +8,7 @@ import structures._User;
 import utils.Utils;
 
 import java.io.*;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.HashSet;
+import java.util.*;
 
 /**
  * @author Lin Gong (lg5bt@virginia.edu)
@@ -20,6 +17,7 @@ import java.util.HashSet;
 public class MultiThreadedNetworkAnalyzer extends MultiThreadedLinkPredAnalyzer {
 
     HashMap<String, HashSet<String>> m_networkMap = new HashMap<String, HashSet<String>>();
+    HashMap<String, Integer> m_CV4LinkMap;
 
     public MultiThreadedNetworkAnalyzer(String tokenModel, int classNo,
                                         String providedCV, int Ngram, int threshold, int numberOfCores, boolean b)
@@ -52,6 +50,34 @@ public class MultiThreadedNetworkAnalyzer extends MultiThreadedLinkPredAnalyzer 
                 writer.write('\n');
             }
             writer.close();
+        } catch(IOException e){
+            e.printStackTrace();
+        }
+    }
+
+    public void loadCV4Interactions(String filename){
+        m_CV4LinkMap = new HashMap<>();
+        try {
+            if(m_userIDIndex==null)
+                constructUserIDIndex();
+
+            File file = new File(filename);
+            BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(file), "UTF-8"));
+            String line;
+            while((line = reader.readLine()) != null) {
+                String[] strs = line.trim().split(",");
+                String uId = strs[0];
+                String vId = strs[1];
+                int mask = Integer.valueOf(strs[2]);
+
+                if(!m_userIDIndex.containsKey(uId))
+                    System.out.format("[err]1st user %s not exits\n", uId);
+                if(!m_userIDIndex.containsKey(vId))
+                    System.out.format("[err]2nd user %s not exits\n", vId);
+                if(m_userIDIndex.containsKey(uId) && m_userIDIndex.containsKey(vId)) {
+                    m_CV4LinkMap.put(uId + " " + vId, mask);
+                }
+            }
         } catch(IOException e){
             e.printStackTrace();
         }
@@ -316,7 +342,95 @@ public class MultiThreadedNetworkAnalyzer extends MultiThreadedLinkPredAnalyzer 
         } catch(IOException e){
             e.printStackTrace();
         }
+    }
 
+    public void printData4RTM(String dir, int testFold){
+        String trtCorpusFile = String.format("%s/corpus_train_%d.txt", dir, testFold);
+        String tstCorpusFile = String.format("%s/corpus_test_%d.txt", dir, testFold);
+        String trtLinkFile = String.format("%s/link_train_%d.txt", dir, testFold);
+        String tstLinkFile = String.format("%s/link_test_train_%d.txt", dir, testFold);
+        String tsttstLinkFile = String.format("%s/link_test_test_%d.txt", dir, testFold);
+
+        try {
+            //write train and test corpus
+            PrintWriter writer_train = new PrintWriter(new File(trtCorpusFile));
+            PrintWriter writer_test = new PrintWriter(new File(tstCorpusFile));
+            HashMap<String, Integer> idx_train = new HashMap<>();
+            HashMap<String, Integer> idx_test = new HashMap<>();
+            int idx_train_size = 0, idx_test_size = 0;
+
+            //construct sparse vector for this fold
+            for (_User user : m_users) {
+                _SparseFeature[] profile_train, profile_test;
+                ArrayList<_SparseFeature[]> reviews_train = new ArrayList<_SparseFeature[]>();
+                ArrayList<_SparseFeature[]> reviews_test = new ArrayList<_SparseFeature[]>();
+                for (_Review r : user.getReviews()) {
+                    if (r.getMask4CV() == testFold)
+                        reviews_test.add(r.getSparse());
+                    else
+                        reviews_train.add(r.getSparse());
+                }
+                profile_train = Utils.MergeSpVcts(reviews_train);
+                profile_test = Utils.MergeSpVcts(reviews_test);
+
+                if(profile_train.length > 0){
+                    writer_train.write(String.format("%d", calcTotalLength(profile_train)));
+                    for(_SparseFeature fv : profile_train)
+                        writer_train.write(String.format(" %d:%d", fv.getIndex(), (int) fv.getValue()));
+                    writer_train.write("\n");
+
+                    idx_train.put(user.getUserID(), idx_train_size++);
+                }
+
+                if(profile_test.length > 0){
+                    writer_test.write(String.format("%d", calcTotalLength(profile_test)));
+                    for(_SparseFeature fv : profile_test)
+                        writer_test.write(String.format(" %d:%d", fv.getIndex(), (int) fv.getValue()));
+                    writer_test.write("\n");
+
+                    idx_test.put(user.getUserID(), idx_test_size++);
+                }
+            }
+            writer_train.flush();
+            writer_train.close();
+            writer_test.flush();
+            writer_test.close();
+
+            System.out.format("[Info]%d training users saved to %s\n", idx_train_size, trtCorpusFile);
+            System.out.format("[Info]%d test users saved to %s\n", idx_test_size, tstCorpusFile);
+
+            //write train test link
+            if(m_CV4LinkMap == null)
+                System.err.format("[err]Load CVIndex4Interation first!\n");
+            writer_train = new PrintWriter(new File(trtLinkFile));
+            writer_test = new PrintWriter(new File(tstLinkFile));
+            int link_train_size=0, link_test_size=0;
+            for(String pair : m_CV4LinkMap.keySet()){
+                String[] strs = pair.split(" ");
+                if(m_CV4LinkMap.get(pair) == testFold){
+                    writer_test.write(String.format("%d\t%d\n", idx_test.get(strs[0]), idx_test.get(strs[1])));
+                } else {
+                    writer_train.write(String.format("%d\t%d\n", idx_train.get(strs[0]), idx_train.get(strs[1])));
+                }
+            }
+            writer_train.flush();
+            writer_train.close();
+            writer_test.flush();
+            writer_test.close();
+            (new File(tsttstLinkFile)).createNewFile();
+
+            System.out.format("[Info]%d training links saved to %s\n", link_train_size, trtLinkFile);
+            System.out.format("[Info]%d test links saved to %s\n", link_test_size, tstLinkFile);
+        } catch (IOException e){
+            e.printStackTrace();
+        }
+    }
+
+    private int calcTotalLength(_SparseFeature[] x_sparse) {
+        int length = 0;
+        for(_SparseFeature fv : x_sparse)
+            length += fv.getValue();
+        return length;
     }
 
 }
