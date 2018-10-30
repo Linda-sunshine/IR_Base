@@ -85,6 +85,7 @@ public class MultiThreadedNetworkAnalyzer extends MultiThreadedLinkPredAnalyzer 
 
     // load the interactions, filter the users who are not in the user
     public void loadInteractions(String filename){
+        m_networkMap.clear();
         try{
             File file = new File(filename);
             BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(file), "UTF-8"));
@@ -345,12 +346,12 @@ public class MultiThreadedNetworkAnalyzer extends MultiThreadedLinkPredAnalyzer 
         }
     }
 
-    public void printData4RTM(String dir, int testFold){
-        String trtCorpusFile = String.format("%s/corpus_train_%d.txt", dir, testFold);
-        String tstCorpusFile = String.format("%s/corpus_test_%d.txt", dir, testFold);
-        String trtLinkFile = String.format("%s/link_train_%d.txt", dir, testFold);
-        String tstLinkFile = String.format("%s/link_test_train_%d.txt", dir, testFold);
-        String tsttstLinkFile = String.format("%s/link_test_test_%d.txt", dir, testFold);
+    public void printData4RTM_CVdoc(String dir, int testFold){
+        String trtCorpusFile = String.format("%s/CVdoc_corpus_train_%d.txt", dir, testFold);
+        String tstCorpusFile = String.format("%s/CVdoc_corpus_test_%d.txt", dir, testFold);
+        String trtLinkFile = String.format("%s/CVdoc_link_train_%d.txt", dir, testFold);
+        String tstLinkFile = String.format("%s/CVdoc_link_test_train_%d.txt", dir, testFold);
+        String tsttstLinkFile = String.format("%s/CVdoc_link_test_test_%d.txt", dir, testFold);
 
         try {
             //write train and test corpus
@@ -398,26 +399,23 @@ public class MultiThreadedNetworkAnalyzer extends MultiThreadedLinkPredAnalyzer 
             writer_test.close();
 
             System.out.format("[Info]%d training users saved to %s\n", idx_train_size, trtCorpusFile);
-            System.out.format("[Info]%d test users saved to %s\n", idx_test_size, tstCorpusFile);
+            System.out.format("[Info]%d testing users saved to %s\n", idx_test_size, tstCorpusFile);
 
             //write train test link
-            if(m_CV4LinkMap == null)
-                System.err.format("[err]Load CVIndex4Interation first!\n");
             writer_train = new PrintWriter(new File(trtLinkFile));
             writer_test = new PrintWriter(new File(tstLinkFile));
             int link_train_size=0, link_test_size=0;
-            for(String pair : m_CV4LinkMap.keySet()){
-                String[] strs = pair.split(" ");
-                if(m_CV4LinkMap.get(pair) == testFold){
-                    if(!idx_test.containsKey(strs[0]) || !idx_test.containsKey(strs[1]))
-                        continue;
-                    writer_test.write(String.format("%d\t%d\n", idx_test.get(strs[0]), idx_test.get(strs[1])));
-                    link_test_size++;
-                } else {
-                    if(!idx_train.containsKey(strs[0]) || !idx_train.containsKey(strs[1]))
-                        continue;
-                    writer_train.write(String.format("%d\t%d\n", idx_train.get(strs[0]), idx_train.get(strs[1])));
-                    link_train_size++;
+            for(String uId : m_networkMap.keySet()){
+                HashSet<String> friends = m_networkMap.get(uId);
+                for(String vId : friends){
+                    if(idx_train.containsKey(uId) && idx_train.containsKey(vId)){
+                        writer_train.write(String.format("%d\t%d\n", idx_train.get(uId), idx_train.get(vId)));
+                        link_train_size++;
+                    }
+                    if(idx_test.containsKey(uId) && idx_test.containsKey(vId)){
+                        writer_test.write(String.format("%d\t%d\n", idx_test.get(uId), idx_test.get(vId)));
+                        link_test_size++;
+                    }
                 }
             }
             writer_train.flush();
@@ -428,6 +426,89 @@ public class MultiThreadedNetworkAnalyzer extends MultiThreadedLinkPredAnalyzer 
 
             System.out.format("[Info]%d training links saved to %s\n", link_train_size, trtLinkFile);
             System.out.format("[Info]%d test links saved to %s\n", link_test_size, tstLinkFile);
+        } catch (IOException e){
+            e.printStackTrace();
+        }
+    }
+
+    public void printData4RTM_CVlink(String dir, int testFold){
+        String trtCorpusFile = String.format("%s/CVlink_corpus_train_%d.txt", dir, testFold);
+        String tstCorpusFile = String.format("%s/CVlink_corpus_test_%d.txt", dir, testFold);
+        String trtLinkFile = String.format("%s/CVlink_link_train_%d.txt", dir, testFold);
+        String tstLinkFile = String.format("%s/CVlink_link_test_train_%d.txt", dir, testFold);
+        String tsttstLinkFile = String.format("%s/CVlink_link_test_test_%d.txt", dir, testFold);
+
+        try {
+            HashSet<String> link_user_set = new HashSet<>();
+            for(String uId : m_networkMap.keySet()){
+                HashSet<String> friends = m_networkMap.get(uId);
+                for(String vId : friends){
+                    link_user_set.add(uId);
+                    link_user_set.add(vId);
+                }
+            }
+
+            PrintWriter writer_train = new PrintWriter(new File(trtCorpusFile));
+            HashMap<String, Integer> idx_train = new HashMap<>();
+            int idx_train_size = 0;
+            for(_User user : m_users){
+                if(!link_user_set.contains(user.getUserID()))
+                    continue;
+
+                _SparseFeature[] profile_train;
+                ArrayList<_SparseFeature[]> reviews_train = new ArrayList<_SparseFeature[]>();
+                for (_Review r : user.getReviews()) {
+                    reviews_train.add(r.getSparse());
+                }
+                profile_train = Utils.MergeSpVcts(reviews_train);
+
+                writer_train.write(String.format("%d", calcTotalLength(profile_train)));
+                for(_SparseFeature fv : profile_train)
+                    writer_train.write(String.format(" %d:%d", fv.getIndex(), (int) fv.getValue()));
+                writer_train.write("\n");
+
+                idx_train.put(user.getUserID(), idx_train_size++);
+            }
+            writer_train.flush();
+            writer_train.close();
+            (new File(tstCorpusFile)).createNewFile();
+
+            System.out.format("[Info]CVIndex4Interation_fold_%d contains %d users, and %d are in corpus.\n",
+                    testFold, link_user_set.size(), idx_train_size);
+
+
+            //write train test link
+            writer_train = new PrintWriter(new File(trtLinkFile));
+            int link_train_size=0, link_invalid_size=0;
+            HashSet<String> invalid_user = new HashSet<>();
+            for(String uId : m_networkMap.keySet()){
+                HashSet<String> friends = m_networkMap.get(uId);
+                for(String vId : friends){
+                    if(idx_train.containsKey(uId) && idx_train.containsKey(vId)){
+                        writer_train.write(String.format("%d\t%d\n", idx_train.get(uId), idx_train.get(vId)));
+                        link_train_size++;
+                    } else {
+                        link_invalid_size++;
+                        if (!idx_train.containsKey(uId))
+                            invalid_user.add(uId);
+                        else if(!idx_train.containsKey(vId))
+                            invalid_user.add(vId);
+                    }
+                }
+            }
+            writer_train.flush();
+            writer_train.close();
+            (new File(tsttstLinkFile)).createNewFile();
+            (new File(tstLinkFile)).createNewFile();
+
+            System.out.format("[Info]%d training links (%d-%d users) saved to %s\n",
+                    link_train_size, link_user_set.size(), invalid_user.size(), trtLinkFile);
+
+            System.out.print("invalide user that not in corpus:\n");
+            for(String uId : invalid_user){
+                System.out.format("-- %s\n", uId);
+            }
+
         } catch (IOException e){
             e.printStackTrace();
         }

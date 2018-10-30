@@ -27,8 +27,8 @@ public class myDataProcessMain {
         myDataProcessMain dataprocesser = new myDataProcessMain();
 
 //        dataprocesser.splitCVByIndex(args);
-        dataprocesser.transfer2HFT(args);
-//        dataprocesser.transfer2RTM(args);
+//        dataprocesser.transfer2HFT(args);
+        dataprocesser.transfer2RTM(args);
     }
 
     public void json2Txt4Data(String[] args) throws IOException {
@@ -136,10 +136,20 @@ public class myDataProcessMain {
         System.out.format("[Info]%d users are loaded.\n", analyzer.getUsers().size());
         analyzer.loadCVIndex(cvIndexFile);
         analyzer.loadInteractions(friendFile);
-        analyzer.loadCV4Interactions(cv4FriendFile);
 
+        System.out.format("Generating for CVdoc......");
         for (int k = 0; k < crossV; k++) {
-            analyzer.printData4RTM(outputFolder, k);
+            System.out.format("====== %d fold =====", k);
+            if(param.m_mode.equals("CVdoc")) {
+                System.out.format("Generating for CVdoc......");
+                analyzer.printData4RTM_CVdoc(outputFolder, k);
+            } else {
+                System.out.format("Generating for CVlink......");
+                String friend_fold = String.format("%s/%sCVIndex4Interaction_fold_%d_train.txt",
+                        dataset, param.m_source, k);
+                analyzer.loadInteractions(friend_fold);
+                analyzer.printData4RTM_CVlink(outputFolder, k);
+            }
         }
     }
 
