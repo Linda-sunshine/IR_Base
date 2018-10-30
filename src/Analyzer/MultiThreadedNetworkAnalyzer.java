@@ -352,7 +352,7 @@ public class MultiThreadedNetworkAnalyzer extends MultiThreadedLinkPredAnalyzer 
         String trtLinkFile = String.format("%s/CVdoc_link_train_%d.txt", dir, testFold);
         String tstLinkFile = String.format("%s/CVdoc_link_test_train_%d.txt", dir, testFold);
         String tsttstLinkFile = String.format("%s/CVdoc_link_test_test_%d.txt", dir, testFold);
-        String userIdIdxFile = String.format("%s/CVlink_userId_train_%d.txt", dir, testFold);
+        String userIdIdxFile = String.format("%s/CVdoc_userId_train_%d.txt", dir, testFold);
 
         try {
             //write train and test corpus
