@@ -137,14 +137,14 @@ public class myDataProcessMain {
         analyzer.loadCVIndex(cvIndexFile);
         analyzer.loadInteractions(friendFile);
 
-        System.out.format("Generating for CVdoc......");
+        System.out.format("Generating for CVdoc......\n");
         for (int k = 0; k < crossV; k++) {
-            System.out.format("====== %d fold =====", k);
+            System.out.format("====== %d fold =====\n", k);
             if(param.m_mode.equals("CVdoc")) {
-                System.out.format("Generating for CVdoc......");
+                System.out.format("Generating for CVdoc......\n");
                 analyzer.printData4RTM_CVdoc(outputFolder, k);
             } else {
-                System.out.format("Generating for CVlink......");
+                System.out.format("Generating for CVlink......\n");
                 String friend_fold = String.format("%s/%sCVIndex4Interaction_fold_%d_train.txt",
                         dataset, param.m_source, k);
                 analyzer.loadInteractions(friend_fold);
