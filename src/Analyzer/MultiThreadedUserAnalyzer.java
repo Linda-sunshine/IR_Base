@@ -46,6 +46,8 @@ public class MultiThreadedUserAnalyzer extends UserAnalyzer {
 	protected String m_suffix = null;//filter by suffix
 	protected boolean m_allocateFlag = true;
 
+	protected HashMap<String, Integer> m_userIDIndex;
+
 	public MultiThreadedUserAnalyzer(String tokenModel, int classNo,
 			String providedCV, int Ngram, int threshold, int numberOfCores, boolean b)
 					throws InvalidFormatException, FileNotFoundException, IOException {
@@ -265,7 +267,13 @@ public class MultiThreadedUserAnalyzer extends UserAnalyzer {
 			return false;
 		}
 	}
-	
+
+	public void constructUserIDIndex(){
+		m_userIDIndex = new HashMap<String, Integer>();
+		for(int i=0; i<m_users.size(); i++)
+			m_userIDIndex.put(m_users.get(i).getUserID(), i);
+	}
+
 	//convert the input token sequence into a sparse vector (docWordMap cannot be changed)
 	// Since multiple threads access the featureStat, we need lock for this variable.
 	@Override

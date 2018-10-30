@@ -1,9 +1,6 @@
 package structures;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Set;
+import java.util.*;
 
 import structures._Doc.rType;
 import utils.Utils;
@@ -335,7 +332,18 @@ public class _User {
 	public String[] getFriends(){
 		return m_friends;
 	}
-	
+
+	public void removeOneFriend(String frd){
+		String[]
+		for(String f: m_friends){
+
+		}
+		if(!frdList.contains(frd))
+			return;
+		frdList.remove(frd);
+		m_friends = new String[frdList.size()];
+		m_friends = frdList.toArray(m_friends);
+	}
 	public int getFriendSize(){
 		if(m_friends == null)
 			return 0;

@@ -1,6 +1,7 @@
 package Analyzer;
 
 import opennlp.tools.util.InvalidFormatException;
+import org.netlib.util.StringW;
 import structures._Doc;
 import structures._Review;
 import structures._SparseFeature;
@@ -91,10 +92,12 @@ public class MultiThreadedNetworkAnalyzer extends MultiThreadedLinkPredAnalyzer 
                 for(String frd: m_networkMap.get(ui)){
                     if(!m_networkMap.containsKey(frd))
                         missing++;
+                    if(!m_networkMap.get(frd).contains(ui))
+                        System.out.println("Asymmetric!!");
                 }
             }
-
-            System.out.println("Some edges are not in the set: " + missing);
+            if(missing > 0)
+                System.out.println("[error]Some edges are not in the set: " + missing);
             // set the friends for each user
             for(String ui: m_networkMap.keySet()){
                 totalEdges += m_networkMap.get(ui).size();
@@ -144,6 +147,29 @@ public class MultiThreadedNetworkAnalyzer extends MultiThreadedLinkPredAnalyzer 
         }
     }
 
+
+    // shuffle the document index based on each user
+    public void saveCVIndex4TADW(String filename){
+
+        int[] stat = new int[5];
+        try{
+            PrintWriter writer = new PrintWriter(new File(filename));
+            for(_User u: m_users){
+                for(_Review r: u.getReviews()){
+                    writer.write(String.format("%s,%s,%d\n", r.getUserID(), r.getItemID(), r.getMask4CV()));
+                    stat[r.getMask4CV()]++;
+                }
+            }
+            writer.close();
+            System.out.println("[Info]Finish writing cv index for TADW! Stat as follow:");
+            for(int s: stat)
+                System.out.print(s + "\t");
+        } catch(IOException e){
+            e.printStackTrace();
+        }
+    }
+
+
     // set masks for one users' all reviews for CV
     public void setMasks4Reviews(ArrayList<_Review> reviews, int k){
         int[] masks = new int[reviews.size()];
@@ -172,14 +198,6 @@ public class MultiThreadedNetworkAnalyzer extends MultiThreadedLinkPredAnalyzer 
                 masks[index] = masks[i];
                 masks[i] = tmp;
             }
-        }
-    }
-
-    @Override
-    public void constructUserIDIndex(){
-        m_userIDIndex = new HashMap<String, Integer>();
-        for(int i=0; i<m_users.size(); i++){
-            m_userIDIndex.put(m_users.get(i).getUserID(), i);
         }
     }
 
@@ -240,6 +258,9 @@ public class MultiThreadedNetworkAnalyzer extends MultiThreadedLinkPredAnalyzer 
 
     // Assign interactions to different folds for CV, try to balance different folds.
     public void assignCVIndex4Network(int kFold, int time){
+        m_uidInteractionsMap.clear();
+        m_uidNonInteractionsMap.clear();
+
         System.out.println("[Info]Start CV Index assignment for network....");
 
         ArrayList<Integer> interactions = new ArrayList<Integer>();
@@ -430,22 +451,275 @@ public class MultiThreadedNetworkAnalyzer extends MultiThreadedLinkPredAnalyzer 
         }
     }
 
-    public void printData4TADW(String filename){
+    public void writeAggregatedUsers(String filename, int kFold){
         try{
+            int count = 0;
+            int[] masks = new int[kFold];
+            for(int i=0; i<kFold; i++){
+                masks[i] = i;
+            }
             PrintWriter writer = new PrintWriter(new File(filename));
-            for(_User user: m_users) {
-                user.constructLRSparseVector();
-                user.normalizeProfile();
-                String uid = user.getUserID();
-                for (_SparseFeature fv : user.getBoWProfile()) {
-                    writer.write(String.format("%s\t%d\t%.3f\n", uid, fv.getIndex(), fv.getValue()));
+            HashMap<Integer, ArrayList<String>> indexContentMap = new HashMap<>();
+            for(_User user: m_users){
+                if(user.getUserID().equals("-dF9A2Q3L8C0d2ZyEIgDSQ"))
+                    System.out.println("!!!!The user exists in the dataset!!!!");
+                indexContentMap.clear();
+                for(_Review r: user.getReviews()){
+                    if(!indexContentMap.containsKey(r.getMask4CV())){
+                        indexContentMap.put(r.getMask4CV(), new ArrayList<>());
+                    }
+                    indexContentMap.get(r.getMask4CV()).add(r.getSource());
+                }
+                if(indexContentMap.size() == 0) continue;
+                // write the data for the user
+                count++;
+                writer.write(user.getUserID()+"\n");
+                for(int mask: masks){
+                    if(!indexContentMap.containsKey(mask)){
+                        writer.write(mask+"\n");
+                        writer.write(" \n");
+                    } else{
+                        writer.write(mask+"\n");
+                        for(String cont: indexContentMap.get(mask)){
+                            writer.write(cont + " ");
+                        }
+                        writer.write("\n");
+                    }
                 }
             }
             writer.close();
-            System.out.format("Finish writing %d users' data for TADW.\n", m_users.size());
+            System.out.format("%d/%d users' data are writenn in %s.\n", count, m_users.size(), filename);
         } catch(IOException e){
             e.printStackTrace();
         }
+    }
+
+    // reserve docs for perplexity calculation, group users based on connectivity
+    // e1 and e2 are thresholds for splitting users into light, medium and heavy users
+    public void sampleUsers4ColdStart4Docs(String filename, int e1, int e2, int sampleSize){
+        Random rand = new Random();
+        ArrayList<String> light = new ArrayList<>();
+        ArrayList<String> medium = new ArrayList<>();
+        ArrayList<String> heavy = new ArrayList<>();
+
+        // step 1: collect all the user ids in different groups
+        for(_User user: m_users){
+            if(user.getFriends() == null) continue;
+            String userId = user.getUserID();
+            int frdSize = user.getFriends().length;
+            if(frdSize > e2){
+                heavy.add(userId);
+            } else if(frdSize > e1){
+                medium.add(userId);
+            } else
+                light.add(userId);
+        }
+        // step 2: sample specified number of users from each group
+        HashSet<String> sampledLight = sample(light, sampleSize);
+        HashSet<String> sampledMedium = sample(medium, sampleSize);
+        HashSet<String> sampledHeavey = sample(heavy, sampleSize);
+
+        // step 3: save the sampled users and their documenets
+        writeCVIndex4Docs(filename, sampledLight, sampledMedium, sampledHeavey);
+    }
+
+    // reserve edges for link prediction, group users based on document size
+    // d1 and d2 are thresholds for splitting users into light, medium and heavy users
+    public void sampleUsers4ColdStart4Edges(String dir, int d1, int d2, int sampleSize){
+        Random rand = new Random();
+        ArrayList<String> light = new ArrayList<>();
+        ArrayList<String> medium = new ArrayList<>();
+        ArrayList<String> heavy = new ArrayList<>();
+
+        // step 1: collect all the user ids in different groups
+        for(_User user: m_users){
+            if(user.getReviews() == null) continue;
+            String userId = user.getUserID();
+            int rvwSize = user.getReviews().size();
+            if(rvwSize > d2){
+                heavy.add(userId);
+            } else if(rvwSize > d1){
+                medium.add(userId);
+            } else
+                light.add(userId);
+        }
+        // step 2: sample specified number of users from each group
+        HashSet<String> sampledLight = sample(light, sampleSize);
+        HashSet<String> sampledMedium = sample(medium, sampleSize);
+        HashSet<String> sampledHeavy = sample(heavy, sampleSize);
+
+        // step 3: since edges are symmetric, remove the associated edges
+        removeSymmetricEdges(sampledLight);
+        removeSymmetricEdges(sampledMedium);
+        removeSymmetricEdges(sampledHeavy);
+
+        // step 4: save the sampled users and their interactions
+        writeCVIndex4Edges(dir+".txt", sampledLight, sampledMedium, sampledHeavy);
+
+        // step 5: sample non-interactions for different groups of users
+        for(int time: new int[]{2, 3, 4, 5, 6, 7, 8}) {
+            String filename = String.format("%s_non_interactions_time_%d_light.txt", dir, time);
+            sampleNonInteractions4OneGroup(filename, sampledLight, time);
+            filename = String.format("%s_non_interactions_time_%d_medium.txt", dir, time);
+            sampleNonInteractions4OneGroup(filename, sampledMedium, time);
+            filename = String.format("%s_non_interactions_time_%d_heavy.txt", dir, time);
+            sampleNonInteractions4OneGroup(filename, sampledHeavy, time);
+        }
+    }
+
+    public void sampleNonInteractions4OneGroup(String filename, HashSet<String> uids, int time){
+        ArrayList<Integer> interactions = new ArrayList<Integer>();
+        ArrayList<Integer> nonInteractions = new ArrayList<Integer>();
+
+        HashMap<String, HashSet<Integer>> userNonInteractionMap = new HashMap<>();
+        for(String uid: uids){
+
+            int i = m_userIDIndex.get(uid);
+            _User ui = m_users.get(i);
+            interactions.clear();
+            nonInteractions.clear();
+
+            for(String frd: ui.getFriends()){
+                interactions.add(m_userIDIndex.get(frd));
+            }
+            for(int j=0; j<m_users.size(); j++){
+                if(i == j) continue;
+                if(interactions.contains(j)) continue;
+                nonInteractions.add(j);
+            }
+
+            int number = time * interactions.size();
+            userNonInteractionMap.put(uid, sampleNonInteractions(nonInteractions, number));
+        }
+
+        try{
+            PrintWriter writer = new PrintWriter(new File(filename));
+            for(String uid: userNonInteractionMap.keySet()){
+                writer.write(uid + "\t");
+                for(int nonIdx: userNonInteractionMap.get(uid)){
+                    String nonId = m_users.get(nonIdx).getUserID();
+                    writer.write(nonId + "\t");
+                }
+                writer.write("\n");
+            }
+            writer.close();
+            System.out.format("[Stat]%d users' non-interactions are written in %s.\n", uids.size(), filename);
+        } catch(IOException e){
+            e.printStackTrace();
+        }
+    }
+
+    public void removeSymmetricEdges(HashSet<String> uids){
+        for(String uid: uids){
+            _User ui = m_users.get(m_userIDIndex.get(uid));
+            if(ui.getFriends() == null)
+                System.out.println("The user does not have any friends!!");
+            for(String frd: ui.getFriends()){
+                _User uj = m_users.get(m_userIDIndex.get(frd));
+                uj.removeOneFriend(uid);
+            }
+        }
+    }
+
+    public HashSet<String> sample(ArrayList<String> candidates, int size){
+        Random rand = new Random();
+        HashSet<String> sampledUsers = new HashSet<>();
+        while(sampledUsers.size() < size){
+            int index = rand.nextInt(candidates.size());
+            _User user = m_users.get(m_userIDIndex.get(candidates.get(index)));
+            if(user.getFriends() != null) {
+                sampledUsers.add(candidates.get(index));
+            }
+        }
+        return sampledUsers;
+    }
+
+    public void writeCVIndex4Docs(String filename, HashSet<String> light, HashSet<String> medium, HashSet<String> heavy){
+
+        try{
+            int[] stat = new int[4];
+            PrintWriter writer = new PrintWriter(new File(filename));
+            for(String uid: m_userIDIndex.keySet()){
+                _User user = m_users.get(m_userIDIndex.get(uid));
+                if(light.contains(uid)){
+                    writeOneUserReviews(writer, user, 0, stat);
+                } else if(medium.contains(uid)){
+                    writeOneUserReviews(writer, user, 1, stat);
+                } else if(heavy.contains(uid)){
+                    writeOneUserReviews(writer, user, 2, stat);
+                } else{
+                    writeOneUserReviews(writer, user, 3, stat);
+                }
+            }
+            writer.close();
+            System.out.println("[Info]Finish writing cv index! Stat as follow:");
+            for(int s: stat)
+                System.out.print(s + "\t");
+        } catch(IOException e){
+            e.printStackTrace();
+        }
+    }
+
+    // write out the training interactions for users
+    public void writeCVIndex4Edges(String filename, HashSet<String> light, HashSet<String> medium, HashSet<String> heavy){
+        try{
+            int count = 0;
+            PrintWriter writer = new PrintWriter(new File(filename));
+            for(String uid: m_networkMap.keySet()){
+                _User user = m_users.get(m_userIDIndex.get(uid));
+                if(user.getFriends() == null || user.getFriends().length == 0)
+                    continue;
+                if(!light.contains(uid) && !medium.contains(uid) && !heavy.contains(uid)){
+                    count++;
+                    writer.write(uid+"\t");
+                    for(String frd: user.getFriends())
+                        writer.write(frd + "\t");
+                    writer.write("\n");
+                }
+            }
+            writer.close();
+            System.out.format("[stat]%d/%d users' interactions are written in filname.\n", count, m_networkMap.keySet().size());
+        } catch(IOException e){
+            e.printStackTrace();
+        }
+    }
+
+    public void writeOneUserReviews(PrintWriter writer, _User user, int mask, int[] stat){
+        for(_Review r: user.getReviews()){
+            writer.write(String.format("%s,%d,%d\n", r.getUserID(), r.getID(), mask));
+        }
+        stat[mask]++;
+    }
+
+    public void calcDocStat4LightMediumHeavy(int k1, int k2){
+        int light = 0, medium = 0, heavy = 0, max = 0;
+        for(_User user: m_users) {
+            int reviewSize = user.getReviews().size();
+            max = Math.max(max, reviewSize);
+            if(reviewSize > k2){
+                heavy++;
+            } else if(reviewSize > k1){
+                medium++;
+            } else
+                light++;
+        }
+        System.out.format("[Stat]Dos-Light: %d, Medium: %d, Heavy: %d, max: %d.\n", light, medium, heavy, max);
+    }
+
+    public void calcEdgeStat4LightMediumHeavy(int k1, int k2){
+        int light = 0, medium = 0, heavy = 0, max = 0;
+        for(_User user: m_users) {
+            if(user.getFriends() == null) continue;
+            int frdSize = user.getFriends().length;
+            max = Math.max(frdSize, max);
+            if(frdSize > k2){
+                heavy++;
+            } else if(frdSize > k1){
+                medium++;
+            } else
+                light++;
+        }
+        System.out.format("[Stat]Edges-Light: %d, Medium: %d, Heavy: %d, max: %d.\n", light, medium, heavy, max);
     }
 
 }

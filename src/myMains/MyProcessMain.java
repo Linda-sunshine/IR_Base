@@ -179,23 +179,7 @@ public class MyProcessMain {
         }
     }
 
-    public static void main(String[] args){
-        int kFold = 5;
-        String dataset = "YelpNew";
-        String prefix = "./data/CoLinAdapt";
-
-        String orgCV = String.format("%s/%s/SelectedVocab.csv", prefix, dataset);
-        String df3kCV = String.format("%s/%s/SelectedVocab_DF_5k.txt", prefix, dataset);
-        String ig6kCV = String.format("%s/%s/SelectedVocab_Lu_6k.txt", prefix, dataset);
-
-        String orgCVtxt = String.format("%s/%s/SelectedVocab.txt", prefix, dataset);
-
-//        HashSet<String> fs1 = loadOriginalCV(orgCV);
-//        writeFeatures(orgCVtxt, fs1);
-
-        HashSet<String> fs1 = loadDFFeatures(df3kCV);
-        HashSet<String> fs2 = loadDFFeatures(ig6kCV);
-
+    public static void checkOverlapping(HashSet<String> fs1, HashSet<String> fs2){
         int count = 0;
         for(String fs: fs1){
             if(fs2.contains(fs)){
@@ -204,15 +188,33 @@ public class MyProcessMain {
             }
         }
         System.out.format("%d features in common!", count);
+    }
+
+    public static void main(String[] args){
+        int kFold = 5;
+        String dataset = "StackOverflow";
+        String prefix = "./data/CoLinAdapt";
+
+        String orgCV = String.format("%s/%s/SelectedVocab.csv", prefix, dataset);
+        String df3kCV = String.format("%s/%s/SelectedVocab_DF_5k.txt", prefix, dataset);
+        String ig6kCV = String.format("%s/%s/SelectedVocab_DF_5k.txt", prefix, dataset);
+
+//        String orgCVtxt = String.format("%s/%s/SelectedVocab.txt", prefix, dataset);
+//        HashSet<String> fs1 = loadOriginalCV(orgCV);
+//        writeFeatures(orgCVtxt, fs1);
+
+//        HashSet<String> fs1 = loadDFFeatures(df3kCV);
+//        HashSet<String> fs2 = loadDFFeatures(ig6kCV);
+//        checkOverlapping(fs1, fs2);
 
 
-//        String cvIndexFile4Interaction = String.format("%s/%s/%sCVIndex4Interaction.txt", prefix, dataset, dataset);
-//        String dir = String.format("%s/%s/%s", prefix, dataset, dataset);
-//        printTrainTestData(loadFoldData(cvIndexFile4Interaction, kFold), dir, kFold);
-//
-//        for(int time: new int[]{2, 3, 4, 5, 6, 7, 8}) {
-//            String cvIndexFile4NonInteraction = String.format("%s/%s/%sCVIndex4NonInteraction_time_%d.txt", prefix, dataset, dataset, time);
-//            printTestData(loadFoldData(cvIndexFile4NonInteraction, kFold), dir, kFold, time);
-//        }
+        String cvIndexFile4Interaction = String.format("%s/%s/%sCVIndex4Interaction.txt", prefix, dataset, dataset);
+        String dir = String.format("%s/%s/%s", prefix, dataset, dataset);
+        printTrainTestData(loadFoldData(cvIndexFile4Interaction, kFold), dir, kFold);
+
+        for(int time: new int[]{2, 3, 4, 5, 6, 7, 8}) {
+            String cvIndexFile4NonInteraction = String.format("%s/%s/%sCVIndex4NonInteraction_time_%d.txt", prefix, dataset, dataset, time);
+            printTestData(loadFoldData(cvIndexFile4NonInteraction, kFold), dir, kFold, time);
+        }
     }
 }

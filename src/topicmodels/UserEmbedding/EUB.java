@@ -1028,7 +1028,7 @@ public class EUB extends LDA_Variational {
         System.out.format("In one fold, (train: test)=(%d : %d)\n", m_trainSet.size(), m_testSet.size());
         if(m_mType == modelType.CV4DOC){
             System.out.println("[Info]Current mode is cv for docs, start evaluation....");
-            for(int inferIter : new int[]{50, 100, 200}) {
+            for(int inferIter : new int[]{100, 300, 500}) {
                 perplexity = evaluation(inferIter);
             }
         } else if(m_mType == modelType.CV4EDGE){

@@ -318,8 +318,6 @@ public class EUB_multithreading extends EUB {
             System.out.format("[Inference]Likelihood: %.2f\n", last);
         }while(iter++ < m_varMaxIter);
 
-//        System.out.print(String.format("[Info]Inference finished: likelihood: %.4f\n", perplexity));
-
         return perplexity;
     }
 

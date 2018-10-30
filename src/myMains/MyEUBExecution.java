@@ -30,7 +30,7 @@ public class MyEUBExecution {
 
         EmbeddingParameter param = new EmbeddingParameter(args);
 
-        String providedCV = String.format("%s/%s/SelectedVocab.txt", param.m_prefix, param.m_data);
+        String providedCV = String.format("%s/%s/%sSelectedVocab.txt", param.m_prefix, param.m_data, param.m_data);
         String userFolder = String.format("%s/%s/Users", param.m_prefix, param.m_data);
         String friendFile = String.format("%s/%s/%sFriends.txt", param.m_prefix, param.m_data, param.m_data);
         String cvIndexFile = String.format("%s/%s/%sCVIndex.txt", param.m_prefix, param.m_data, param.m_data);

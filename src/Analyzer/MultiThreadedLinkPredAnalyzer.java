@@ -17,7 +17,6 @@ import java.util.*;
  */
 public class MultiThreadedLinkPredAnalyzer extends MultiThreadedUserAnalyzer {
 
-    protected HashMap<String, Integer> m_userIDIndex;
     protected HashSet<String> m_userIDs;
 
     public MultiThreadedLinkPredAnalyzer(String tokenModel, int classNo,
@@ -158,12 +157,6 @@ public class MultiThreadedLinkPredAnalyzer extends MultiThreadedUserAnalyzer {
             }
         }
         System.out.format("%d users weights are loaded!\n", count);
-    }
-
-    public void constructUserIDIndex(){
-        m_userIDIndex = new HashMap<String, Integer>();
-        for(int i=0; i<m_users.size(); i++)
-            m_userIDIndex.put(m_users.get(i).getUserID(), i);
     }
 
     public double[] loadOneUserWeight(String fileName) {
