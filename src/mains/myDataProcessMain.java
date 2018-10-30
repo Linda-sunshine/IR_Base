@@ -126,31 +126,31 @@ public class myDataProcessMain {
         String outputFolder = String.format("%s/%s/", dataset, param.m_topicmodel);
         new File(outputFolder).mkdirs();
 
-        MultiThreadedNetworkAnalyzer analyzer = new MultiThreadedNetworkAnalyzer(tokenModel, classNumber, fvFile,
+        MultiThreadedUserAnalyzer analyzer = new MultiThreadedUserAnalyzer(tokenModel, classNumber, fvFile,
                 Ngram, lengthThreshold, numberOfCores, true);
         analyzer.setReleaseContent(false);
         analyzer.setAllocateReviewFlag(false);
         analyzer.loadUserDir(reviewFolder);
         System.out.format("[Info]%d docs are loaded.\n", analyzer.getCorpus().getCollection().size());
-        analyzer.constructUserIDIndex();
+//        analyzer.constructUserIDIndex();
         System.out.format("[Info]%d users are loaded.\n", analyzer.getUsers().size());
-        analyzer.loadCVIndex(cvIndexFile);
-        analyzer.loadInteractions(friendFile);
-
-        System.out.format("Generating for CVdoc......\n");
-        for (int k = 0; k < crossV; k++) {
-            System.out.format("====== %d fold =====\n", k);
-            if(param.m_mode.equals("CVdoc")) {
-                System.out.format("Generating for CVdoc......\n");
-                analyzer.printData4RTM_CVdoc(outputFolder, k);
-            } else {
-                System.out.format("Generating for CVlink......\n");
-                String friend_fold = String.format("%s/%sCVIndex4Interaction_fold_%d_train.txt",
-                        dataset, param.m_source, k);
-                analyzer.loadInteractions(friend_fold);
-                analyzer.printData4RTM_CVlink(outputFolder, k);
-            }
-        }
+//        analyzer.loadCVIndex(cvIndexFile);
+//        analyzer.loadInteractions(friendFile);
+//
+//        System.out.format("Generating for CVdoc......\n");
+//        for (int k = 0; k < crossV; k++) {
+//            System.out.format("====== %d fold =====\n", k);
+//            if(param.m_mode.equals("CVdoc")) {
+//                System.out.format("Generating for CVdoc......\n");
+//                analyzer.printData4RTM_CVdoc(outputFolder, k);
+//            } else {
+//                System.out.format("Generating for CVlink......\n");
+//                String friend_fold = String.format("%s/%sCVIndex4Interaction_fold_%d_train.txt",
+//                        dataset, param.m_source, k);
+//                analyzer.loadInteractions(friend_fold);
+//                analyzer.printData4RTM_CVlink(outputFolder, k);
+//            }
+//        }
     }
 
     public void transfer2CTR(String[] args) throws IOException, ParseException {
