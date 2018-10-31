@@ -529,7 +529,7 @@ public class MultiThreadedNetworkAnalyzer extends MultiThreadedLinkPredAnalyzer 
 
         BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(outFile)));
         //calculate the average upvotes for stackoverflow user
-        if(source.equals("StackOverflow")){
+        if(source.equals("StackOverflow") && mode.equals("CVlink")){
             for(_User u : m_users){
                 int total_upvotes = 0;
                 for(_Review r : u.getReviews())
