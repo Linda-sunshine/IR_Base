@@ -439,14 +439,15 @@ public class MultiThreadedNetworkAnalyzer extends MultiThreadedLinkPredAnalyzer 
         }
     }
 
-    public void printData4RTM_CVlink(String dir, int testFold){
+    public void printData4RTM_CVlink(String dir, int testFold, boolean flag_cold){
         (new File(dir)).mkdirs();
-        String trtCorpusFile = String.format("%s/CVlink_corpus_train_%d.txt", dir, testFold);
-        String tstCorpusFile = String.format("%s/CVlink_corpus_test_%d.txt", dir, testFold);
-        String trtLinkFile = String.format("%s/CVlink_link_train_%d.txt", dir, testFold);
-        String tstLinkFile = String.format("%s/CVlink_link_test_train_%d.txt", dir, testFold);
-        String tsttstLinkFile = String.format("%s/CVlink_link_test_test_%d.txt", dir, testFold);
-        String userIdIdxFile = String.format("%s/CVlink_userId_train_%d.txt", dir, testFold);
+        String flagstr = flag_cold?"_coldstart_":"";
+        String trtCorpusFile = String.format("%s/CVlink%s_corpus_train_%d.txt", dir, flagstr, testFold);
+        String tstCorpusFile = String.format("%s/CVlink%s_corpus_test_%d.txt", dir, flagstr, testFold);
+        String trtLinkFile = String.format("%s/CVlink%s_link_train_%d.txt", dir, flagstr, testFold);
+        String tstLinkFile = String.format("%s/CVlink%s_link_test_train_%d.txt", dir, flagstr, testFold);
+        String tsttstLinkFile = String.format("%s/CVlink%s_link_test_test_%d.txt", dir, flagstr, testFold);
+        String userIdIdxFile = String.format("%s/CVlink%s_userId_train_%d.txt", dir, flagstr, testFold);
 
         try {
             PrintWriter writer_train = new PrintWriter(new File(trtCorpusFile));
@@ -471,7 +472,7 @@ public class MultiThreadedNetworkAnalyzer extends MultiThreadedLinkPredAnalyzer 
             writer_train.close();
             (new File(tstCorpusFile)).createNewFile();
 
-            System.out.format("[Info]CVIndex4Interation_fold_%d contains %d users.\n",
+            System.out.format("[Info]CVIndex4Interation%s_fold_%d contains %d users.\n", flagstr,
                     testFold, idx_train.size());
 
             writer_train = new PrintWriter(new File(userIdIdxFile));

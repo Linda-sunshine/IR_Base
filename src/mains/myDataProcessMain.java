@@ -144,11 +144,16 @@ public class myDataProcessMain {
                 System.out.format("Generating for CVdoc......\n");
                 analyzer.printData4RTM_CVdoc(outputFolder, k);
             } else {
-                System.out.format("Generating for CVlink......\n");
-                String friend_fold = String.format("%s/%sCVIndex4Interaction_fold_%d_train.txt",
+                System.out.format("Generating for CVlink......");
+                String friend_fold;
+                if(param.m_flag_coldstart)
+                    friend_fold = String.format("%s/%sCVIndex4Interaction_fold_%d_train.txt",
                         dataset, param.m_source, k);
+                else
+                    friend_fold = String.format("%s/%s_cold_start_4edges_fold_%d_interactions.txt",
+                            dataset, param.m_source, k);
                 analyzer.loadInteractions(friend_fold);
-                analyzer.printData4RTM_CVlink(outputFolder, k);
+                analyzer.printData4RTM_CVlink(outputFolder, k, param.m_flag_coldstart);
             }
         }
     }
