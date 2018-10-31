@@ -545,8 +545,8 @@ public class MultiThreadedNetworkAnalyzer extends MultiThreadedLinkPredAnalyzer 
         for(_Doc doc : m_corpus.getCollection()) {
             //userID itemID rating time docLength words
             _Review r = (_Review) doc;
-            if(mode.equals("CVdoc") && r.getItemID().equals("-1"))
-                continue;
+//            if(mode.equals("CVdoc") && r.getItemID().equals("-1"))
+//                continue;
             writenum++;
             valid_users.add(r.getUserID());
 
