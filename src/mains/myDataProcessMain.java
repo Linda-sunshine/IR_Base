@@ -146,7 +146,7 @@ public class myDataProcessMain {
             } else {
                 System.out.format("Generating for CVlink %s......\n", param.m_flag_coldstart?"COLD start":"");
                 String friend_fold;
-                if(param.m_flag_coldstart)
+                if(!param.m_flag_coldstart)
                     friend_fold = String.format("%s/%sCVIndex4Interaction_fold_%d_train.txt",
                         dataset, param.m_source, k);
                 else
