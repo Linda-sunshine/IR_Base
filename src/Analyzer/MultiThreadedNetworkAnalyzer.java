@@ -440,6 +440,7 @@ public class MultiThreadedNetworkAnalyzer extends MultiThreadedLinkPredAnalyzer 
     }
 
     public void printData4RTM_CVlink(String dir, int testFold){
+        (new File(dir)).mkdirs();
         String trtCorpusFile = String.format("%s/CVlink_corpus_train_%d.txt", dir, testFold);
         String tstCorpusFile = String.format("%s/CVlink_corpus_test_%d.txt", dir, testFold);
         String trtLinkFile = String.format("%s/CVlink_link_train_%d.txt", dir, testFold);
@@ -521,5 +522,51 @@ public class MultiThreadedNetworkAnalyzer extends MultiThreadedLinkPredAnalyzer 
             length += fv.getValue();
         return length;
     }
+
+    public void printData4HFT(String dir, String source) throws IOException{
+        String outFile = String.format("%s/data.tsv", dir);
+        (new File(outFile)).getParentFile().mkdirs();
+
+        BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(outFile)));
+        //calculate the average upvotes for stackoverflow user
+        if(source.equals("StackOverflow")){
+            for(_User u : m_users){
+                int total_upvotes = 0;
+                for(_Review r : u.getReviews())
+                    total_upvotes += r.getYLabel();
+                float ave_upvotes = u.getReviewSize() > 0?(float)total_upvotes/u.getReviewSize():0;
+                for(_Review r : u.getReviews())
+                    r.setYLabel(r.getYLabel()>=ave_upvotes?1:0);
+            }
+        }
+
+        int writenum = 0;
+        for(_Doc doc : m_corpus.getCollection()) {
+            //userID itemID rating time docLength words
+            _Review r = (_Review) doc;
+            if(r.getItemID().equals("-1"))
+                continue;
+            writenum++;
+
+            String userID = r.getUserID();
+            String itemID = r.getItemID();
+            int rate = r.getYLabel();
+            writer.write(String.format("%s\t%s\t%d\t0", userID, itemID, rate));
+
+            writer.write(String.format("\t%d", doc.getTotalDocLength()));
+            for(_SparseFeature fv:doc.getSparse()) {
+                int count = (int) fv.getValue();
+                String word = m_corpus.getFeature(fv.getIndex());
+                for(int i = 0; i < count; i++){
+                    writer.write(String.format("\t%s", word));//index starts from 1
+                }
+            }
+            writer.write("\n");
+        }
+        writer.close();
+
+        System.out.format("[Info]%d in %d rates saved to %s\n", writenum, m_corpus.getCollection().size(), outFile);
+    }
+
 
 }

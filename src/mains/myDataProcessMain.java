@@ -99,13 +99,12 @@ public class myDataProcessMain {
         String outputFolder = String.format("%s/%s/", dataset, param.m_topicmodel);
         new File(outputFolder).mkdirs();
 
-        MultiThreadedUserAnalyzer analyzer = new MultiThreadedUserAnalyzer(tokenModel, classNumber, fvFile,
+        MultiThreadedNetworkAnalyzer analyzer = new MultiThreadedNetworkAnalyzer(tokenModel, classNumber, fvFile,
                 Ngram, lengthThreshold, numberOfCores, true);
         analyzer.setAllocateReviewFlag(false);
         analyzer.loadUserDir(reviewFolder);
         System.out.format("[Info]%d docs are loaded.\n", analyzer.getCorpus().getCollection().size());
-        m_bipartite = new BipartiteAnalyzer(analyzer.getCorpus());
-        save2FileHFT(outputFolder);
+        analyzer.printData4HFT(outputFolder, param.m_source);
     }
 
     public void transfer2RTM(String[] args) throws IOException {
@@ -248,41 +247,10 @@ public class myDataProcessMain {
                     save2FileCTPE(outputFolder, param.m_source, mode, k);
                 } else if (param.m_topicmodel.equals("RTM")) {
                     save2FileRTM(outputFolder, param.m_source, mode, k);
-                } else if (param.m_topicmodel.equals("HFT")) {
-                    save2FileHFT(outputFolder);
                 }
             }
         }
     }
-
-    public static void save2FileHFT(String prefix) throws IOException{
-        String outFile = String.format("%s/data.tsv", prefix);
-        (new File(outFile)).getParentFile().mkdirs();
-
-        BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(outFile)));
-        for(_Doc doc : m_bipartite.getCorpus().getCollection()) {
-            //userID itemID rating time docLength words
-            _Review r = (_Review) doc;
-            String userID = r.getUserID();
-            String itemID = r.getItemID();
-            int rate = r.getYLabel();
-            writer.write(String.format("%s\t%s\t%d\t0", userID, itemID, rate));
-
-            writer.write(String.format("\t%d", doc.getTotalDocLength()));
-            for(_SparseFeature fv:doc.getSparse()) {
-                int count = (int) fv.getValue();
-                String word = m_bipartite.getCorpus().getFeature(fv.getIndex());
-                for(int i = 0; i < count; i++){
-                    writer.write(String.format("\t%s", word));//index starts from 1
-                }
-            }
-            writer.write("\n");
-        }
-        writer.close();
-
-        System.out.format("[Info]%d rates saved to %s\n", m_bipartite.getCorpus().getCollection().size(), outFile);
-    }
-
 
     public static void save2FileCTPE(String prefix, String source, String mode, int k) throws IOException{
         ArrayList<_Doc> docs = new ArrayList<>();
