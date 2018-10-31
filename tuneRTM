@@ -1,1 +1,0 @@
-./runRTM -set byUser_70k_review -topicmodel CTR -crossV 5 -flagColdstart true
