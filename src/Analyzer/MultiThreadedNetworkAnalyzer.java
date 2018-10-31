@@ -523,8 +523,8 @@ public class MultiThreadedNetworkAnalyzer extends MultiThreadedLinkPredAnalyzer 
         return length;
     }
 
-    public void printData4HFT(String dir, String source) throws IOException{
-        String outFile = String.format("%s/data.tsv", dir);
+    public void printData4HFT(String dir, String source, String mode) throws IOException{
+        String outFile = String.format("%s/%s_data.tsv", dir, mode);
         (new File(outFile)).getParentFile().mkdirs();
 
         BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(outFile)));
@@ -545,7 +545,7 @@ public class MultiThreadedNetworkAnalyzer extends MultiThreadedLinkPredAnalyzer 
         for(_Doc doc : m_corpus.getCollection()) {
             //userID itemID rating time docLength words
             _Review r = (_Review) doc;
-            if(r.getItemID().equals("-1"))
+            if(mode.equals("CVdoc") && r.getItemID().equals("-1"))
                 continue;
             writenum++;
             valid_users.add(r.getUserID());
