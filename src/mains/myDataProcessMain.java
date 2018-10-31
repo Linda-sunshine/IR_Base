@@ -144,7 +144,7 @@ public class myDataProcessMain {
                 System.out.format("Generating for CVdoc......\n");
                 analyzer.printData4RTM_CVdoc(outputFolder, k);
             } else {
-                System.out.format("Generating for CVlink......");
+                System.out.format("Generating for CVlink %s......\n", param.m_flag_coldstart?"COLD start":"");
                 String friend_fold;
                 if(param.m_flag_coldstart)
                     friend_fold = String.format("%s/%sCVIndex4Interaction_fold_%d_train.txt",
