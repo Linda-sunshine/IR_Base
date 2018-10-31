@@ -25,10 +25,13 @@ public class myDataProcessMain {
 
     public static void main(String[] args) throws IOException {
         myDataProcessMain dataprocesser = new myDataProcessMain();
+        TopicModelParameter param = new TopicModelParameter(args);
 
 //        dataprocesser.splitCVByIndex(args);
-//        dataprocesser.transfer2HFT(args);
-        dataprocesser.transfer2RTM(args);
+        if(param.m_topicmodel.equals("HFT"))
+            dataprocesser.transfer2HFT(args);
+        else if(param.m_topicmodel.equals("RTM"))
+            dataprocesser.transfer2RTM(args);
     }
 
     public void json2Txt4Data(String[] args) throws IOException {
