@@ -124,7 +124,6 @@ public class myDataProcessMain {
         String reviewFolder = String.format("%s/data/", dataset);
         String cvIndexFile = String.format("%s/%sCVIndex.txt", dataset, param.m_source);
         String friendFile = String.format("%s/%sFriends.txt", dataset, param.m_source);
-        String cv4FriendFile = String.format("%s/%sCVIndex4Interaction.txt", dataset, param.m_source);
 
         String outputFolder = String.format("%s/%s/", dataset, param.m_topicmodel);
         new File(outputFolder).mkdirs();
