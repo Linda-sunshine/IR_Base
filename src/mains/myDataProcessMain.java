@@ -104,7 +104,7 @@ public class myDataProcessMain {
         analyzer.setAllocateReviewFlag(false);
         analyzer.loadUserDir(reviewFolder);
         System.out.format("[Info]%d docs are loaded.\n", analyzer.getCorpus().getCollection().size());
-        analyzer.printData4HFT(outputFolder, param.m_source);
+        analyzer.printData4HFT(outputFolder, param.m_source, param.m_mode);
     }
 
     public void transfer2RTM(String[] args) throws IOException {
