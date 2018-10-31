@@ -541,12 +541,14 @@ public class MultiThreadedNetworkAnalyzer extends MultiThreadedLinkPredAnalyzer 
         }
 
         int writenum = 0;
+        HashSet<String> valid_users = new HashSet<>();
         for(_Doc doc : m_corpus.getCollection()) {
             //userID itemID rating time docLength words
             _Review r = (_Review) doc;
             if(r.getItemID().equals("-1"))
                 continue;
             writenum++;
+            valid_users.add(r.getUserID());
 
             String userID = r.getUserID();
             String itemID = r.getItemID();
@@ -565,7 +567,8 @@ public class MultiThreadedNetworkAnalyzer extends MultiThreadedLinkPredAnalyzer 
         }
         writer.close();
 
-        System.out.format("[Info]%d in %d rates saved to %s\n", writenum, m_corpus.getCollection().size(), outFile);
+        System.out.format("[Info]%d in %d rates (from %d-%d users) saved to %s\n",
+                writenum, m_corpus.getCollection().size(), valid_users.size(), m_users.size(), outFile);
     }
 
 
