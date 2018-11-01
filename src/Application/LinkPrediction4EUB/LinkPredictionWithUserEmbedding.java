@@ -328,7 +328,7 @@ public class LinkPredictionWithUserEmbedding {
     }
 
     public static void main(String[] args){
-        String data = "YelpNew";
+        String data = "StackOverflow";
         int dim = 10;
         for(int fold : new int[]{0}) {
             int[] times = new int[]{2, 3, 4, 5, 6, 7, 8};
