@@ -5,6 +5,7 @@ import Analyzer.MultiThreadedTADWAnalyzer;
 import Analyzer.UserAnalyzer;
 import opennlp.tools.util.InvalidFormatException;
 import structures._Corpus;
+import structures._User;
 import topicmodels.LDA.LDA_Variational;
 import topicmodels.UserEmbedding.EUB;
 import topicmodels.multithreads.UserEmbedding.EUB4ColdStart_multithreading;
@@ -12,6 +13,7 @@ import topicmodels.multithreads.UserEmbedding.EUB_multithreading;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.util.HashSet;
 
 /**
  * @author Lin Gong (lg5bt@virginia.edu)
