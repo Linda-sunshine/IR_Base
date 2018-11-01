@@ -122,12 +122,16 @@ public class ETBIRExecution {
                 } else {
                     result_dim = 4;
                     results = new double[8];
+                    cvIndexFile = String.format("%s/%s_cold_start_4docs_fold_%d.txt", dataset, param.m_source, k);
+                    analyzer.loadCVIndex(cvIndexFile);
+                    //train
                     tModel.setTrainSet(analyzer.getDocsByCVIndex(3));//3 indicates training doc
                     System.out.format("[Info]train size = %d....\n", tModel.getTrainSize());
                     long start = System.currentTimeMillis();
                     tModel.EM();
                     System.out.format("[Info]%s Train finished in %.2f seconds...\n",
                             tModel.toString(), (System.currentTimeMillis()-start)/1000.0);
+                    //test
                     for(int i = 0; i < result_dim; i++) {
                         if(i < result_dim-1)
                             tModel.setTestSet(analyzer.getDocsByCVIndex(i));
