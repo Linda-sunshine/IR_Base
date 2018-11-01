@@ -83,6 +83,9 @@ public class EUB extends LDA_Variational {
         m_users = new ArrayList<_User4EUB>();
         m_docs = new ArrayList<_Doc4EUB>();
         m_networkMap = new HashMap<Integer, HashSet<Integer>>();
+
+        m_trainSet = new ArrayList<>();
+        m_testSet = new ArrayList<>();
     }
 
     public String toString(){
@@ -1000,14 +1003,13 @@ public class EUB extends LDA_Variational {
         return logLikelihood;
     }
 
+
     // fixed cross validation with specified fold number
     public void fixedCrossValidation(int k, String saveDir){
         System.out.println(toString());
 
         double perplexity = 0;
         constructNetwork();
-        m_trainSet = new ArrayList<>();
-        m_testSet = new ArrayList<>();
         System.out.format("\n==========Start %d-fold cross validation=========\n", k);
         m_trainSet.clear();
         m_testSet.clear();
@@ -1021,14 +1023,13 @@ public class EUB extends LDA_Variational {
                     m_trainSet.add(r);
                 }
             }
-            m_users.get(i);
         }
         buildUserDocMap();
         EM();
         System.out.format("In one fold, (train: test)=(%d : %d)\n", m_trainSet.size(), m_testSet.size());
         if(m_mType == modelType.CV4DOC){
             System.out.println("[Info]Current mode is cv for docs, start evaluation....");
-            for(int inferIter : new int[]{100, 300, 500}) {
+            for(int inferIter : new int[]{500, 1000, 2000}) {
                 perplexity = evaluation(inferIter);
             }
         } else if(m_mType == modelType.CV4EDGE){

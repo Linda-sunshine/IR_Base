@@ -334,12 +334,14 @@ public class _User {
 	}
 
 	public void removeOneFriend(String frd){
-		String[]
+		ArrayList<String> frdList = new ArrayList<>();
 		for(String f: m_friends){
-
+			frdList.add(f);
 		}
-		if(!frdList.contains(frd))
+		if(!frdList.contains(frd)){
+			System.out.println("The friend does not exist!!");
 			return;
+		}
 		frdList.remove(frd);
 		m_friends = new String[frdList.size()];
 		m_friends = frdList.toArray(m_friends);

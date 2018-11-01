@@ -59,11 +59,6 @@ public class EUB_multithreading extends EUB {
             return super.accumluateStats(word_topic_sstat);
         }
 
-//        @Override
-//        public void resetStats(){
-//            super.resetStats();
-//        }
-
     }
 
     public class User_worker extends EmbedModel_worker {

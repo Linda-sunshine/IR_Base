@@ -20,14 +20,14 @@ public class MyEUBProcesMain {
         int lengthThreshold = 5; // Document length threshold
         int numberOfCores = Runtime.getRuntime().availableProcessors();
 
-        String dataset = "YelpNew"; // "StackOverflow", "YelpNew"
+        String dataset = "StackOverflow"; // "StackOverflow", "YelpNew"
         String tokenModel = "./data/Model/en-token.bin"; // Token model.
 
         String prefix = "./data/CoLinAdapt";
         String providedCV = String.format("%s/%s/%sSelectedVocab.txt", prefix, dataset, dataset);
         String userFolder = String.format("%s/%s/Users", prefix, dataset);
 
-        for(int k: new int[]{0}) {
+        for(int k: new int[]{0, 1, 2, 3, 4}) {
             int kFold = 5;
             int time = 2;
 

@@ -554,15 +554,15 @@ public class MultiThreadedNetworkAnalyzer extends MultiThreadedLinkPredAnalyzer 
         removeSymmetricEdges(sampledHeavy);
 
         // step 4: save the sampled users and their interactions
-        writeCVIndex4Edges(dir+".txt", sampledLight, sampledMedium, sampledHeavy);
+        writeCVIndex4Edges(dir+"_interactions.txt", sampledLight, sampledMedium, sampledHeavy);
 
         // step 5: sample non-interactions for different groups of users
         for(int time: new int[]{2, 3, 4, 5, 6, 7, 8}) {
-            String filename = String.format("%s_non_interactions_time_%d_light.txt", dir, time);
+            String filename = String.format("%s_noninteractions_time_%d_light.txt", dir, time);
             sampleNonInteractions4OneGroup(filename, sampledLight, time);
-            filename = String.format("%s_non_interactions_time_%d_medium.txt", dir, time);
+            filename = String.format("%s_noninteractions_time_%d_medium.txt", dir, time);
             sampleNonInteractions4OneGroup(filename, sampledMedium, time);
-            filename = String.format("%s_non_interactions_time_%d_heavy.txt", dir, time);
+            filename = String.format("%s_noninteractions_time_%d_heavy.txt", dir, time);
             sampleNonInteractions4OneGroup(filename, sampledHeavy, time);
         }
     }

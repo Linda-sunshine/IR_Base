@@ -328,7 +328,7 @@ public class LinkPredictionWithUserEmbedding {
     }
 
     public static void main(String[] args){
-        String data = "StackOverflow";
+        String data = "YelpNew";
         int dim = 10;
         for(int fold : new int[]{0}) {
             int[] times = new int[]{5, 6, 7, 8};
@@ -344,9 +344,9 @@ public class LinkPredictionWithUserEmbedding {
 
                         System.out.format("-----current model-%s-time-%d-dim-%d------\n", model, time, dim);
 
-                        String embedFile = String.format("./data/LinkPred/%s_%s_embedding_fold_%d_dim_%d%s.txt", model, data, fold, dim, inn);
-                        String testInterFile = String.format("./data/LinkPred/%s/%sCVIndex4Interaction_fold_%d_test.txt", data, data, fold);
-                        String testNonInterFile = String.format("./data/LinkPred/%s/%sCVIndex4NonInteraction_time_%d_fold_%d.txt", data, data, time, fold);
+                        String embedFile = String.format("./data/DataEUB/%s/LinkPred/embedding/%s_%s_embedding_fold_%d_dim_%d.txt", data, model, data, fold, dim);
+                        String testInterFile = String.format("./data/DataEUB/%s/LinkPred/%sCVIndex4Interaction_fold_%d_test.txt", data, data, fold);
+                        String testNonInterFile = String.format("./data/DataEUB/%s/LinkPred/%sCVIndex4NonInteraction_time_%d_fold_%d.txt", data, data, time, fold);
 
                         LinkPredictionWithUserEmbedding link = new LinkPredictionWithUserEmbedding();
                         link.ininLinkPred(embedFile, testInterFile, testNonInterFile);

@@ -6,6 +6,7 @@ import structures.EmbeddingParameter;
 import structures._Corpus;
 import topicmodels.LDA.LDA_Variational;
 import topicmodels.UserEmbedding.EUB;
+import topicmodels.multithreads.UserEmbedding.EUB4ColdStart_multithreading;
 import topicmodels.multithreads.UserEmbedding.EUB_multithreading;
 
 import java.io.File;
@@ -46,12 +47,25 @@ public class MyEUBExecution {
         analyzer.constructUserIDIndex();
 
         // if it is cv for doc, use all the interactions + part of docs
-        if(param.m_mode.equals("cv4doc")){
-            analyzer.loadInteractions(friendFile);
+        if(param.m_mode.equals("cv4doc") && !param.m_coldStartFlag){
             analyzer.loadCVIndex(cvIndexFile, kFold);
-            // if it is cv for edge, use all the docs + part of edges
-        } else if(param.m_mode.equals("cv4edge")){
-            // if no cv index file for doc is loaded, then all documents will be training docs.
+            analyzer.loadInteractions(friendFile);
+        }
+        // if it is cv for edge, use all the docs + part of edges
+        else if(param.m_mode.equals("cv4edge") && !param.m_coldStartFlag){
+            analyzer.loadInteractions(cvIndexFile4Interaction);
+        }
+        // cold start for doc, use all edges, test doc perplexity on light/medium/heavy users
+        else if(param.m_mode.equals("cv4doc") && param.m_coldStartFlag) {
+            cvIndexFile = String.format("%s/%s/ColdStart/%s_cold_start_4docs_fold_%d.txt", param.m_prefix, param.m_data,
+                    param.m_data, param.m_kFold);
+            analyzer.loadCVIndex(cvIndexFile, kFold);
+            analyzer.loadInteractions(friendFile);
+        }
+        // cold start for edge, use all edges, learn user embedding for light/medium/heavy users
+        else if(param.m_mode.equals("cv4edge") && param.m_coldStartFlag){
+            cvIndexFile4Interaction = String.format("%s/%s/ColdStart/%s_cold_start_4edges_fold_%d_interactions.txt",
+                    param.m_prefix, param.m_data, param.m_data, param.m_kFold);
             analyzer.loadInteractions(cvIndexFile4Interaction);
         }
 
@@ -61,10 +75,14 @@ public class MyEUBExecution {
 
         long start = System.currentTimeMillis();
         LDA_Variational tModel = null;
-        if(param.m_multiFlag) {
+
+        if(param.m_multiFlag && param.m_coldStartFlag) {
+            tModel = new EUB4ColdStart_multithreading(param.m_emIter, emConverge, beta, corpus, lambda, param.m_number_of_topics,
+                    alpha, param.m_varIter, varConverge, param.m_embeddingDim);
+        } else if(param.m_multiFlag && !param.m_coldStartFlag){
             tModel = new EUB_multithreading(param.m_emIter, emConverge, beta, corpus, lambda, param.m_number_of_topics,
                     alpha, param.m_varIter, varConverge, param.m_embeddingDim);
-        } else {
+        } else{
             tModel = new EUB(param.m_emIter, emConverge, beta, corpus, lambda, param.m_number_of_topics, alpha,
                     param.m_varIter, varConverge, param.m_embeddingDim);
         }
@@ -78,7 +96,11 @@ public class MyEUBExecution {
         ((EUB) tModel).setInferMaxIter(param.m_inferIter);
         ((EUB) tModel).setStepSize(param.m_stepSize);
 
-        ((EUB) tModel).fixedCrossValidation(param.m_kFold, param.m_saveDir);
+        if(param.m_multiFlag && param.m_coldStartFlag){
+            ((EUB4ColdStart_multithreading) tModel).fixedCrossValidation(param.m_kFold, param.m_saveDir);
+        } else{
+            ((EUB) tModel).fixedCrossValidation(param.m_kFold, param.m_saveDir);
+        }
         long end = System.currentTimeMillis();
 
         // the total time of training and testing in the unit of hours

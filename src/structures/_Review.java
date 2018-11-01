@@ -24,11 +24,22 @@ public class _Review extends _Doc {
 	// mask used for cross validation
 	protected int m_mask = -1;
 
+	// this is designed for stackoverflow post
+	// if parent_id is -1, it is question, other wise it is answer (the corresponding question id)
+	protected int m_parentId = -1;
+
 	//Constructor for route project.
 	public _Review(int ID, String source, int ylabel){
 		super(ID, source, ylabel);
 	}
-	
+
+	public _Review(int ID, String source, int ylabel, int parentId, String userID, long timestamp){
+		super(ID, source, ylabel);
+		m_userID = userID;
+		m_parentId = parentId;
+		m_timeStamp = timestamp;
+	}
+
 	public _Review(int ID, String source, int ylabel, String userID, String productID, String category, long timeStamp){
 		super(ID, source, ylabel);
 		m_userID = userID;
@@ -36,7 +47,10 @@ public class _Review extends _Doc {
 		m_category = category;
 		m_timeStamp = timeStamp;
 	}
-	
+
+	public int getParentId(){
+		return m_parentId;
+	}
 	//Compare the timestamp of two documents and sort them based on timestamps.
 	@Override
 	public int compareTo(_Doc d){
