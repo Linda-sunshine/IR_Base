@@ -35,7 +35,8 @@ public class ETBIRExecution {
 		String fvFile = String.format("%s/%s/%s_features.txt", param.m_prefix, param.m_source, param.m_source);
 		String reviewFolder = String.format("%s/data/", dataset);
 		String cvIndexFile = String.format("%s/%sCVIndex.txt", dataset, param.m_source);
-		String outputFolder = String.format("%s/output/%s/%s/", param.m_prefix, param.m_source, param.m_set);
+		String outputFolder = String.format("%s/output%s/%s/%s/",
+                param.m_prefix, param.m_flag_coldstart?"Coldstart":"", param.m_source, param.m_set);
 
         MultiThreadedNetworkAnalyzer analyzer = new MultiThreadedNetworkAnalyzer(tokenModel, classNumber, fvFile,
                 Ngram, lengthThreshold, numberOfCores, true);
@@ -110,14 +111,13 @@ public class ETBIRExecution {
             double[][] like = new double[param.m_crossV][result_dim];
             System.out.println("[Info]Start FIXED cross validation...");
             for(int k = 0; k <param.m_crossV; k++){
-                // label test by cvIndex==k
+                System.out.format("====================\n[Info]%s Fold No. %d: \n",
+                        param.m_flag_coldstart?"COLD start":"", k);
                 double[] results;
 
                 if(!param.m_flag_coldstart) {
                     analyzer.maskDocByCVIndex(k);
                     tModel.setCorpus(analyzer.getCorpus());
-
-                    System.out.format("====================\n[Info]Fold No. %d: \n", k);
                     results = tModel.oneFoldValidation();
                 } else {
                     result_dim = 4;
@@ -139,6 +139,7 @@ public class ETBIRExecution {
                         double[] cur_result = tModel.Evaluation2();
                         results[2*i] = cur_result[0];
                         results[2*i+1] = cur_result[1];
+                        System.out.format("[Info]Part %d test size = %d...\n", i, tModel.getTestSize());
                     }
 
                 }
