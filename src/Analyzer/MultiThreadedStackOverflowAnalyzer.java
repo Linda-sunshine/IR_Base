@@ -1,5 +1,6 @@
 package Analyzer;
 
+import opennlp.tools.util.InvalidFormatException;
 import structures._Review;
 import structures._User;
 import utils.Utils;
@@ -36,7 +37,6 @@ public class MultiThreadedStackOverflowAnalyzer  extends MultiThreadedNetworkAna
             ArrayList<_Review> reviews = new ArrayList<_Review>();
 
             _Review review;
-            int ylabel, index = 0;
             long timestamp;
             while((line = reader.readLine()) != null){
                 postId = Integer.valueOf(line.trim());
@@ -104,5 +104,36 @@ public class MultiThreadedStackOverflowAnalyzer  extends MultiThreadedNetworkAna
         avg /= m_questionAnswersMap.keySet().size();
         System.out.format("[stat] Total questions: %d, questions with answers: %d, avg anser: %.2f\n",
                 m_questionMap.size(), m_questionAnswersMap.size(), avg);
+    }
+
+    public static void main(String[] args) throws InvalidFormatException, FileNotFoundException, IOException {
+        int classNumber = 2;
+        int Ngram = 2; // The default value is unigram.
+        int lengthThreshold = 5; // Document length threshold
+        int numberOfCores = Runtime.getRuntime().availableProcessors();
+
+        String dataset = "StackOverflow"; // "StackOverflow", "YelpNew"
+        String tokenModel = "./data/Model/en-token.bin"; // Token model.
+
+        String prefix = "./data/CoLinAdapt";
+        String providedCV = String.format("%s/%s/%sSelectedVocab.txt", prefix, dataset, dataset);
+        String userFolder = String.format("%s/%s/Users", prefix, dataset);
+//
+//        int kFold = 5, k = -1;
+//        int time = 2;
+//
+//        String orgFriendFile = String.format("%s/%s/%sFriends_org.txt", prefix, dataset, dataset);
+//        String friendFile = String.format("%s/%s/%sFriends.txt", prefix, dataset, dataset);
+//        String cvIndexFile = String.format("%s/%s/%sCVIndex.txt", prefix, dataset, dataset);
+////        String cvIndexFile4Interaction = String.format("%s/%s/%sCVIndex4Interaction.txt", prefix, dataset, dataset);
+//        String cvIndexFile4Interaction = String.format("%s/%s/%sCVIndex4Interaction_fold_%d_train.txt", prefix, dataset, dataset, k);
+//        String cvIndexFile4NonInteraction = String.format("%s/%s/%sCVIndex4NonInteraction_time_%d.txt", prefix, dataset, dataset, time);
+
+        MultiThreadedNetworkAnalyzer analyzer = new MultiThreadedNetworkAnalyzer(tokenModel, classNumber, providedCV,
+                Ngram, lengthThreshold, numberOfCores, true);
+        analyzer.setAllocateReviewFlag(false); // do not allocate reviews
+        analyzer.loadUserDir(userFolder);
+        analyzer.constructUserIDIndex();
+//        analyzer.buildQuestionAnswerMap();
     }
 }

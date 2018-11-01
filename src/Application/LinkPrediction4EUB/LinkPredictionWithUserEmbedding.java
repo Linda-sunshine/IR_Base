@@ -330,10 +330,11 @@ public class LinkPredictionWithUserEmbedding {
     public static void main(String[] args){
         String data = "YelpNew";
         int dim = 10;
-        for(int fold : new int[]{1}) {
+        for(int fold : new int[]{0}) {
             int[] times = new int[]{2, 3, 4, 5, 6, 7, 8};
             String[] models = new String[]{"EUB", "LDA", "HFT"}; //"TADW"
 
+            String prefix = "";
             double[][][] perfs = new double[models.length][times.length][2];
                 for (int t = 0; t < times.length; t++) {
                     int time = times[t];
