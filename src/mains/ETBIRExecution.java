@@ -111,11 +111,38 @@ public class ETBIRExecution {
             System.out.println("[Info]Start FIXED cross validation...");
             for(int k = 0; k <param.m_crossV; k++){
                 // label test by cvIndex==k
-                analyzer.maskDocByCVIndex(k);
-                tModel.setCorpus(analyzer.getCorpus());
+                double[] results;
 
-                System.out.format("====================\n[Info]Fold No. %d: \n", k);
-                double[] results = tModel.oneFoldValidation();
+                if(!param.m_flag_coldstart) {
+                    analyzer.maskDocByCVIndex(k);
+                    tModel.setCorpus(analyzer.getCorpus());
+
+                    System.out.format("====================\n[Info]Fold No. %d: \n", k);
+                    results = tModel.oneFoldValidation();
+                } else {
+                    result_dim = 4;
+                    results = new double[8];
+                    tModel.setTrainSet(analyzer.getDocsByCVIndex(3));//3 indicates training doc
+                    System.out.format("[Info]train size = %d....\n", tModel.getTrainSize());
+                    long start = System.currentTimeMillis();
+                    tModel.EM();
+                    System.out.format("[Info]%s Train finished in %.2f seconds...\n",
+                            tModel.toString(), (System.currentTimeMillis()-start)/1000.0);
+                    for(int i = 0; i < result_dim; i++) {
+                        if(i < result_dim-1)
+                            tModel.setTestSet(analyzer.getDocsByCVIndex(i));
+                        else {
+                            tModel.setTestSet(analyzer.getDocsByCVIndex(0));
+                            tModel.addTestSet(analyzer.getDocsByCVIndex(1));
+                            tModel.addTestSet(analyzer.getDocsByCVIndex(2));
+                        }
+                        double[] cur_result = tModel.Evaluation2();
+                        results[2*i] = cur_result[0];
+                        results[2*i+1] = cur_result[1];
+                    }
+
+                }
+
                 for(int i = 0; i < result_dim; i++){
                     perf[k][i] = results[2*i];
                     like[k][i] = results[2*i+1];

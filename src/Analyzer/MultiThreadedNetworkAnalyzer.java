@@ -213,6 +213,18 @@ public class MultiThreadedNetworkAnalyzer extends MultiThreadedLinkPredAnalyzer 
         }
     }
 
+    public ArrayList<_Doc> getDocsByCVIndex(int k){
+        ArrayList<_Doc> docs = new ArrayList<>();
+        for(_User u : m_users){
+            for(_Review r: u.getReviews()){
+                int cvIdx = r.getMask4CV();
+                if(cvIdx == k)
+                    docs.add(r);
+            }
+        }
+        return docs;
+    }
+
     public void saveCV2Folds(String folder){
         try{
             for(_User u : m_users){
