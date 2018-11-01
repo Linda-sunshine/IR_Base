@@ -107,6 +107,9 @@ public class ETBIRExecution {
             System.out.format("[Dataset]%d users are loaded.\n", analyzer.getUsers().size());
             analyzer.loadCVIndex(cvIndexFile);
 
+            if(param.m_flag_coldstart)
+                result_dim=4;
+
             double[][] perf = new double[param.m_crossV][result_dim];
             double[][] like = new double[param.m_crossV][result_dim];
             System.out.println("[Info]Start FIXED cross validation...");
@@ -145,7 +148,6 @@ public class ETBIRExecution {
                         results[2*i+1] = cur_result[1];
                         System.out.format("[Info]Part %d test size = %d...\n", i, tModel.getTestSize());
                     }
-
                 }
 
                 for(int i = 0; i < result_dim; i++){
