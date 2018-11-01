@@ -330,33 +330,41 @@ public class LinkPredictionWithUserEmbedding {
     public static void main(String[] args){
         String data = "YelpNew";
         int dim = 10;
-        for(int fold : new int[]{0}) {
-            int[] times = new int[]{5, 6, 7, 8};
-            String[] models = new String[]{"EUB", "LDA"};
+        for(int fold : new int[]{1}) {
+            int[] times = new int[]{2, 3, 4, 5, 6, 7, 8};
+            String[] models = new String[]{"EUB", "LDA", "HFT"}; //"TADW"
 
             double[][][] perfs = new double[models.length][times.length][2];
                 for (int t = 0; t < times.length; t++) {
                     int time = times[t];
-                    for (String model : models) {
-                        String inn = "";
-                        if(model.equals("EUB"))
-                            inn = "_inn_1";
-
+                    for (int i=0; i<models.length; i++) {
+                        String model = models[i];
+                        if(model.equals("LDA") || model.equals("HFT"))
+                            fold = 0;
                         System.out.format("-----current model-%s-time-%d-dim-%d------\n", model, time, dim);
 
-                        String embedFile = String.format("./data/DataEUB/%s/LinkPred/embedding/%s_%s_embedding_fold_%d_dim_%d.txt", data, model, data, fold, dim);
-                        String testInterFile = String.format("./data/DataEUB/%s/LinkPred/%sCVIndex4Interaction_fold_%d_test.txt", data, data, fold);
-                        String testNonInterFile = String.format("./data/DataEUB/%s/LinkPred/%sCVIndex4NonInteraction_time_%d_fold_%d.txt", data, data, time, fold);
+                        String embedFile = String.format("/Users/lin/DataWWW2019/UserEmbedding/%s_%s_embedding_dim_%d_fold_%d.txt", data, model, dim, fold);
+                        String testInterFile = String.format("./data/DataEUB/CV4Edges/%sCVIndex4Interaction_fold_%d_test.txt", data, fold);
+                        String testNonInterFile = String.format("./data/DataEUB/CV4Edges/%sCVIndex4NonInteraction_time_%d_fold_%d.txt", data, time, fold);
 
                         LinkPredictionWithUserEmbedding link = new LinkPredictionWithUserEmbedding();
                         link.ininLinkPred(embedFile, testInterFile, testNonInterFile);
                         link.calculateAllNDCGMAP();
-                        double[] onePerf = link.calculateAvgNDCGMAP();
+                        perfs[i][t] = link.calculateAvgNDCGMAP();
 
                 }
             }
-//        System.out.format("\t\t")
+            for(int time: times) {
+                System.out.format("\t\t%d\t\t", time);
+            }
+            System.out.println();
+            for(int i=0; i<models.length; i++){
+                System.out.print(models[i] + "\t");
+                for(double[] ndcgMap: perfs[i]){
+                    System.out.format("%.4f\t%.4f\t", ndcgMap[0], ndcgMap[1]);
+                }
+                System.out.println();
+            }
         }
-
     }
 }
