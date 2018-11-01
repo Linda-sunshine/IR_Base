@@ -106,7 +106,18 @@ public class _Doc extends _DocBase implements Comparable<_Doc> {
 		m_sentences = null;
 		m_type = rType.TRAIN; // by default, every doc is used for training the model
 	}
-	
+
+//	public _Doc(int ID, String source, int ylabel, int parentId, String userID, long timestamp){
+//		this.m_ID = ID;
+//		this.m_source = source;
+//		this.m_y_label = ylabel;
+//		m_topics = null;
+//		m_sstat = null;
+//		m_words = null;
+//		m_sentences = null;
+//		m_type = rType.TRAIN; // by default, every doc is used for training the model
+//	}
+//
 	public _Doc (int ID, String name, String prodID, String title, String source, int ylabel, long timeStamp){
 		this.m_ID = ID;
 		this.m_name = name;

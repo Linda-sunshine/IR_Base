@@ -45,7 +45,7 @@ public class MultiThreadedStackOverflowAnalyzer  extends MultiThreadedNetworkAna
                 score = Integer.valueOf(reader.readLine()); // ylabel
                 timestamp = Long.valueOf(reader.readLine());
 
-                review = new _Review(postId, source, score, parentId, userID, timestamp);
+                review = new _Review(postId, source, 0, parentId, userID, timestamp);
                 if(AnalyzeDoc(review,core)){ //Create the sparse vector for the review.
                     reviews.add(review);
                 }
@@ -98,12 +98,15 @@ public class MultiThreadedStackOverflowAnalyzer  extends MultiThreadedNetworkAna
 
         // step 3: calculate stat of the answers to the questions
         double avg = 0;
+        int lgFive = 0;
         for(int qId: m_questionAnswersMap.keySet()){
             avg += m_questionAnswersMap.get(qId).size();
+            if(m_questionAnswersMap.get(qId).size() > 5)
+                lgFive++;
         }
         avg /= m_questionAnswersMap.keySet().size();
-        System.out.format("[stat] Total questions: %d, questions with answers: %d, avg anser: %.2f\n",
-                m_questionMap.size(), m_questionAnswersMap.size(), avg);
+        System.out.format("[stat] Total questions: %d, questions with answers: %d,questions with >5 answers: %d, avg anser: %.2f\n",
+                m_questionMap.size(), m_questionAnswersMap.size(), lgFive, avg);
     }
 
     public static void main(String[] args) throws InvalidFormatException, FileNotFoundException, IOException {
@@ -129,11 +132,11 @@ public class MultiThreadedStackOverflowAnalyzer  extends MultiThreadedNetworkAna
 //        String cvIndexFile4Interaction = String.format("%s/%s/%sCVIndex4Interaction_fold_%d_train.txt", prefix, dataset, dataset, k);
 //        String cvIndexFile4NonInteraction = String.format("%s/%s/%sCVIndex4NonInteraction_time_%d.txt", prefix, dataset, dataset, time);
 
-        MultiThreadedNetworkAnalyzer analyzer = new MultiThreadedNetworkAnalyzer(tokenModel, classNumber, providedCV,
+        MultiThreadedStackOverflowAnalyzer analyzer = new MultiThreadedStackOverflowAnalyzer(tokenModel, classNumber, providedCV,
                 Ngram, lengthThreshold, numberOfCores, true);
         analyzer.setAllocateReviewFlag(false); // do not allocate reviews
         analyzer.loadUserDir(userFolder);
         analyzer.constructUserIDIndex();
-//        analyzer.buildQuestionAnswerMap();
+        analyzer.buildQuestionAnswerMap();
     }
 }

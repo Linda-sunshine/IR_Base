@@ -71,6 +71,7 @@ public class EUB extends LDA_Variational {
     protected boolean m_adaFlag = false;
 
     protected int m_innerMaxIter = 1;
+    protected int m_docInnerMaxIter = 5;
     protected int m_inferMaxIter = 3;
 
     public EUB(int number_of_iteration, double converge, double beta,
@@ -481,7 +482,7 @@ public class EUB extends LDA_Variational {
     }
 
     protected double varInference4Doc(_Doc4EUB doc) {
-        int maxIter = (doc.getType() == _Doc.rType.TEST) ? m_inferMaxIter : m_innerMaxIter;
+        int maxIter = (doc.getType() == _Doc.rType.TEST) ? m_inferMaxIter : m_docInnerMaxIter;
         double curLoglikelihood = 0.0, lastLoglikelihood = 1.0, converge = 0.0;
         int iter = 0;
         boolean warning;
@@ -1029,7 +1030,7 @@ public class EUB extends LDA_Variational {
         System.out.format("In one fold, (train: test)=(%d : %d)\n", m_trainSet.size(), m_testSet.size());
         if(m_mType == modelType.CV4DOC){
             System.out.println("[Info]Current mode is cv for docs, start evaluation....");
-            for(int inferIter : new int[]{500, 1000, 2000}) {
+            for(int inferIter : new int[]{500, 1000}) {
                 perplexity = evaluation(inferIter);
             }
         } else if(m_mType == modelType.CV4EDGE){

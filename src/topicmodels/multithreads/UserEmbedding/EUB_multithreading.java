@@ -264,6 +264,14 @@ public class EUB_multithreading extends EUB {
             m_workers[i].setType(TopicModel_worker.RunType.RT_inference);
             m_workers[i].clearCorpus();
         }
+        for(int i =0; i<m_topicWorkers.length; i++){
+            m_topicWorkers[i].setType(TopicModel_worker.RunType.RT_inference);
+            m_topicWorkers[i].clearObjects();
+        }
+        for(int i = 0;i < m_userWorkers.length; i++){
+            m_userWorkers[i].setType(TopicModel_worker.RunType.RT_inference);
+            m_userWorkers[i].clearObjects();
+        }
 
         //evenly allocate the testing work load
         int workerID = 0;
@@ -271,13 +279,22 @@ public class EUB_multithreading extends EUB {
             m_workers[workerID % m_workers.length].addDoc(d);
             workerID++;
         }
-
+        workerID = 0;
+        for(_Topic4EUB t: m_topics){
+            m_topicWorkers[workerID%m_topicWorkers.length].addObject(t);
+            workerID++;
+        }
+        workerID = 0;
+        for(_User4EUB u: m_users) {
+            m_userWorkers[workerID%m_userWorkers.length].addObject(u);
+            workerID++;
+        }
         do {
             init();
             perplexity = 0.0;
             totalWords = 0;
 
-            //run
+            // doc
             for (int i = 0; i < m_workers.length; i++) {
                 m_threadpool[i] = new Thread(m_workers[i]);
                 m_threadpool[i].start();
@@ -300,6 +317,36 @@ public class EUB_multithreading extends EUB {
             if(Double.isNaN(perplexity) || Double.isInfinite(perplexity)){
                 System.err.format("[Error]Inference generate NaN\n");
                 break;
+            }
+
+            // topic
+            for(int i=0; i<m_topicWorkers.length; i++){
+                m_threadpool[i] = new Thread(m_topicWorkers[i]);
+                m_threadpool[i].start();
+            }
+
+            //wait till all finished
+            for (Thread thread : m_threadpool) {
+                try {
+                    thread.join();
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+            }
+
+            // user
+            for(int i=0; i<m_userWorkers.length; i++){
+                m_threadpool[i] = new Thread(m_userWorkers[i]);
+                m_threadpool[i].start();
+            }
+
+            //wait till all finished
+            for (Thread thread : m_threadpool) {
+                try {
+                    thread.join();
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
             }
 
             if(iter > 0)
