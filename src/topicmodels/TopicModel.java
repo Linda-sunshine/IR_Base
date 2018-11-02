@@ -7,6 +7,8 @@ import java.util.Collection;
 
 import structures._Corpus;
 import structures._Doc;
+import structures._Review;
+import structures._User;
 import topicmodels.markovmodel.HTSM;
 import topicmodels.multithreads.TopicModelWorker;
 import topicmodels.multithreads.TopicModel_worker;
@@ -267,21 +269,27 @@ public abstract class TopicModel {
 			
 			calculate_M_step(i);
 			
-			if (m_converge>0 || (m_displayLap>0 && i%m_displayLap==0 && displayCount > 6)){//required to display log-likelihood
-				current += calculate_log_likelihood();//together with corpus-level log-likelihood
-			
-				if (i>0)
-					delta = (last-current)/last;
-				else
-					delta = 1.0;
-				last = current;
-			}
+//			if (m_converge>0 || (m_displayLap>0 && i%m_displayLap==0 && displayCount > 6)){//required to display log-likelihood
+//				current += calculate_log_likelihood();//together with corpus-level log-likelihood
+//
+//				if (i>0)
+//					delta = (last-current)/last;
+//				else
+//					delta = 1.0;
+//				last = current;
+//			}
+
+			if (i>0)
+				delta = (last-current)/last;
+			else
+				delta = 1.0;
+			last = current;
 			
 			if (m_displayLap>0 && i%m_displayLap==0) {
 				if (m_converge>0) {
 				    System.out.println("==============");
 					System.out.format("[Info]Likelihood %.5f at step %s converge to %.10f...\n", current, i, delta);
-					infoWriter.format("[Info]Likelihood %.5f at step %s converge to %.10f...\n", current, i, delta);
+//					infoWriter.format("[Info]Likelihood %.5f at step %s converge to %.10f...\n", current, i, delta);
 
 				} else {
 					System.out.print(".");
@@ -301,7 +309,7 @@ public abstract class TopicModel {
 		
 		long endtime = System.currentTimeMillis() - starttime;
 		System.out.format("[Info]Likelihood %.3f after step %s converge to %f after %d seconds...\n", current, i, delta, endtime/1000);
-		infoWriter.format("[Info]Likelihood %.3f after step %s converge to %f after %d seconds...\n", current, i, delta, endtime/1000);
+//		infoWriter.format("[Info]Likelihood %.3f after step %s converge to %f after %d seconds...\n", current, i, delta, endtime/1000);
 	}
 
 	public double Evaluation() {
@@ -545,20 +553,46 @@ public abstract class TopicModel {
         return results;
     }
 
+
+	// fixed cross validation with specified fold number
+	// added by Lin for debugging purpose
+	public void fixedCrossValidation(ArrayList<_User> users, int k){
+		m_trainSet = new ArrayList<_Doc>();
+		m_testSet = new ArrayList<_Doc>();
+
+		System.out.format("\n==========Start %d-fold cross validation=========\n", k);
+		m_trainSet.clear();
+		m_testSet.clear();
+		for(int i=0; i<users.size(); i++){
+			for(_Review r: users.get(i).getReviews()){
+				if(r.getMask4CV() == k){
+					r.setType(_Doc.rType.TEST);
+					m_testSet.add(r);
+				} else {
+					r.setType(_Doc.rType.TRAIN);
+					m_trainSet.add(r);
+				}
+			}
+		}
+		System.out.format("-- train size = %d, test size = %d....\n", m_trainSet.size(), m_testSet.size());
+		EM();
+		double[] results = EvaluationMultipleMetrics();
+	}
+
     public double[] EvaluationMultipleMetrics() {
         m_collectCorpusStats = false;
         double perplexity = 0, loglikelihood, sumLikelihood = 0;
         double totalWords = 0.0;
         if (m_multithread) {
             multithread_inference();
-            System.out.println("[Info]Start evaluation in thread");
+            System.out.println("[Info]Start evaluation in thread...");
             for(TopicModelWorker worker:m_workers) {
                 sumLikelihood += worker.getLogLikelihood();
-                perplexity += worker.getPerplexity();
+//                perplexity += worker.getPerplexity();
                 totalWords += worker.getTotalWords();
             }
         } else {
-            System.out.println("[Info]Start evaluation in Normal");
+            System.out.println("[Info]Start evaluation in Normal...");
             for(_Doc d:m_testSet) {
                 loglikelihood = inference(d);
                 sumLikelihood += loglikelihood;
@@ -568,14 +602,13 @@ public abstract class TopicModel {
 
         }
         double[] results = new double[2];
-        results[0] = Math.exp(-perplexity/totalWords);
+        results[0] = Math.exp(-sumLikelihood/totalWords);
         results[1] = sumLikelihood / m_testSet.size();
 
         if(this instanceof HTSM)
             calculatePrecisionRecall();
-
-        System.out.format("[Stat]Test set perplexity is %.3f and log-likelihood is %.3f\n", results[0], results[1]);
-
+		System.out.format("[Stat]perplexity=%.4f, all-log-likelihood=%.4f, total_words=%.1f, avg_log-likelihood=%.4f\n\n",
+				results[0], sumLikelihood, totalWords, results[1]);
         return results;
     }
 }

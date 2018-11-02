@@ -56,7 +56,7 @@ public abstract class TopicModel_worker implements TopicModelWorker {
 		m_totalWords = 0;
 		
 		double loglikelihood = 0, log2 = Math.log(2.0);
-		System.out.println("[Info]Thread corpus size\t" + m_corpus.size());
+//		System.out.println("[Info]Thread corpus size\t" + m_corpus.size());
 		long eStartTime = System.currentTimeMillis();
 
 		for(_Doc d:m_corpus) {
@@ -71,7 +71,7 @@ public abstract class TopicModel_worker implements TopicModelWorker {
 		}
 		long eEndTime = System.currentTimeMillis();
 
-		System.out.format("[Info]Execution time in E-step time %.2fs\n", (eEndTime - eStartTime)/1000.0);
+//		System.out.format("[Info]Execution time in E-step time %.2fs\n", (eEndTime - eStartTime)/1000.0);
 	}
 	
 	@Override

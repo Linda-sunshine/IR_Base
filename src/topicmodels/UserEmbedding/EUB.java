@@ -71,8 +71,8 @@ public class EUB extends LDA_Variational {
     protected boolean m_adaFlag = false;
 
     protected int m_innerMaxIter = 1;
-    protected int m_docInnerMaxIter = 5;
-    protected int m_inferMaxIter = 3;
+    protected int m_docInnerMaxIter = 1;
+    protected int m_inferMaxIter = 1;
 
     public EUB(int number_of_iteration, double converge, double beta,
                _Corpus c, double lambda, int number_of_topics, double alpha,
@@ -1007,6 +1007,7 @@ public class EUB extends LDA_Variational {
 
     // fixed cross validation with specified fold number
     public void fixedCrossValidation(int k, String saveDir){
+
         System.out.println(toString());
 
         double perplexity = 0;

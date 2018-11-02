@@ -104,7 +104,7 @@ public class MyEUBExecution {
         long end = System.currentTimeMillis();
 
         // the total time of training and testing in the unit of hours
-        double hours = (end - start)/(1000*60*60);
+        double hours = (end - start)/((1000*60*60) * 1.0);
         System.out.print(String.format("[Time]This training+testing process took %.2f hours.\n", hours));
 
     }

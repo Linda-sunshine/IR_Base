@@ -6,10 +6,14 @@ import Analyzer.UserAnalyzer;
 import opennlp.tools.util.InvalidFormatException;
 import structures._Corpus;
 import structures._User;
+import topicmodels.LDA.LDA_Gibbs;
 import topicmodels.LDA.LDA_Variational;
 import topicmodels.UserEmbedding.EUB;
+import topicmodels.multithreads.LDA.LDA_Variational_multithread;
 import topicmodels.multithreads.UserEmbedding.EUB4ColdStart_multithreading;
 import topicmodels.multithreads.UserEmbedding.EUB_multithreading;
+import topicmodels.multithreads.pLSA.pLSA_multithread;
+import topicmodels.pLSA.pLSA;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -117,7 +121,7 @@ public class MyEUBMain {
         _Corpus corpus = analyzer.getCorpus();
 
         /***Start running joint modeling of user embedding and topic embedding****/
-        int emMaxIter = 30, number_of_topics = 30, varMaxIter = 10, embeddingDim = 10, innerIter = 1, inferIter = 3;
+        int emMaxIter = 100, number_of_topics = 20, varMaxIter = 10, embeddingDim = 10, innerIter = 1;
         //these two parameters must be larger than 1!!!
         double emConverge = 1e-10, alpha = 1 + 1e-2, beta = 1 + 1e-3, lambda = 1 + 1e-3, varConverge = 1e-6, stepSize = 1e-3;
         boolean alphaFlag = true, gammaFlag = true, betaFlag = true, tauFlag = true, xiFlag = true;
@@ -125,34 +129,42 @@ public class MyEUBMain {
 
         long start = System.currentTimeMillis();
         LDA_Variational tModel = null;
+        String model = "EUB";
 
-        if(multiFlag && coldStartFlag)
-            tModel = new EUB4ColdStart_multithreading(emMaxIter, emConverge, beta, corpus, lambda, number_of_topics, alpha, varMaxIter, varConverge, embeddingDim);
-        else if(multiFlag && !coldStartFlag)
-            tModel = new EUB_multithreading(emMaxIter, emConverge, beta, corpus, lambda, number_of_topics, alpha, varMaxIter, varConverge, embeddingDim);
-        else
-            tModel = new EUB(emMaxIter, emConverge, beta, corpus, lambda, number_of_topics, alpha, varMaxIter, varConverge, embeddingDim);
-        ((EUB) tModel).initLookupTables(analyzer.getUsers());
-        ((EUB) tModel).setModelParamsUpdateFlags(alphaFlag, gammaFlag, betaFlag, tauFlag, xiFlag);
-        ((EUB) tModel).setMode(mode);
+        if(model.equals("LDA")){
+            tModel = new LDA_Variational_multithread(emMaxIter, emConverge, beta, corpus,
+                    lambda, number_of_topics, alpha, 10, 1e-6);
+            tModel.setDisplayLap(1);
+            tModel.fixedCrossValidation(analyzer.getUsers(), k);
+            tModel.printTopWords(30);
 
-        ((EUB) tModel).setInnerMaxIter(innerIter);
-        ((EUB) tModel).setInferMaxIter(inferIter);
-        ((EUB) tModel).setStepSize(stepSize);
+        } else{
+            if(multiFlag && coldStartFlag)
+                tModel = new EUB4ColdStart_multithreading(emMaxIter, emConverge, beta, corpus, lambda, number_of_topics, alpha, varMaxIter, varConverge, embeddingDim);
+            else if(multiFlag && !coldStartFlag)
+                tModel = new EUB_multithreading(emMaxIter, emConverge, beta, corpus, lambda, number_of_topics, alpha, varMaxIter, varConverge, embeddingDim);
+            else
+                tModel = new EUB(emMaxIter, emConverge, beta, corpus, lambda, number_of_topics, alpha, varMaxIter, varConverge, embeddingDim);
+            ((EUB) tModel).initLookupTables(analyzer.getUsers());
+            ((EUB) tModel).setModelParamsUpdateFlags(alphaFlag, gammaFlag, betaFlag, tauFlag, xiFlag);
+            ((EUB) tModel).setMode(mode);
 
-        long current = System.currentTimeMillis();
-        String saveDir = String.format("./data/emebddingExp/eub/%s_emIter_%d_nuTopics_%d_varIter_%d_innerIter_%d_dim_%d_ada_%b/" +
-                "fold_%d_%d", dataset, emMaxIter, number_of_topics, varMaxIter, innerIter, embeddingDim, adaFlag, kFold, current);
+            ((EUB) tModel).setInnerMaxIter(innerIter);
+            ((EUB) tModel).setStepSize(stepSize);
 
-        if(multiFlag && coldStartFlag)
-            ((EUB4ColdStart_multithreading) tModel).fixedCrossValidation(k, saveDir);
-        else
-            ((EUB) tModel).fixedCrossValidation(k, saveDir);
-        long end = System.currentTimeMillis();
-        System.out.println("\n[Info]Start time: " + start);
-        // the total time of training and testing in the unit of hours
-        double hours = (end - start)/(1000*60*60);
-        System.out.print(String.format("[Time]This training+testing process took %.4f hours.\n", hours));
+            long current = System.currentTimeMillis();
+            String saveDir = String.format("./data/embeddingExp/eub/%s_emIter_%d_nuTopics_%d_varIter_%d_innerIter_%d_dim_%d_ada_%b/" +
+                    "fold_%d_%d", dataset, emMaxIter, number_of_topics, varMaxIter, innerIter, embeddingDim, adaFlag, kFold, current);
 
+            if(multiFlag && coldStartFlag)
+                ((EUB4ColdStart_multithreading) tModel).fixedCrossValidation(k, saveDir);
+            else
+                ((EUB) tModel).fixedCrossValidation(k, saveDir);
+            long end = System.currentTimeMillis();
+            System.out.println("\n[Info]Start time: " + start);
+            // the total time of training and testing in the unit of hours
+            double hours = (end - start)/((1000*60*60) * 1.0);
+            System.out.print(String.format("[Time]This training+testing process took %.4f hours.\n", hours));
+        }
     }
 }
