@@ -187,7 +187,7 @@ public class EUB_multithreading extends EUB {
     @Override
     public double multithread_E_step() {
         int iter = 0;
-        double likelihood = 0, docLikelihood, topicLikelihood, userLikelihood=0, last = -1.0, converge;
+        double likelihood = 0, docLikelihood, topicLikelihood = 0, userLikelihood=0, last = -1.0, converge;
 
         do {
             init();
@@ -206,13 +206,13 @@ public class EUB_multithreading extends EUB {
                 break;
             }
 
-//            // user
-//            userLikelihood = multithread_general(m_userWorkers);
-//
-//            if(Double.isNaN(userLikelihood) || Double.isInfinite(userLikelihood)){
-//                System.err.println("[Error]E_step for users results in NaN likelihood...");
-//                break;
-//            }
+            // user
+            userLikelihood = multithread_general(m_userWorkers);
+
+            if(Double.isNaN(userLikelihood) || Double.isInfinite(userLikelihood)){
+                System.err.println("[Error]E_step for users results in NaN likelihood...");
+                break;
+            }
 
             likelihood = docLikelihood + topicLikelihood + userLikelihood;
 
