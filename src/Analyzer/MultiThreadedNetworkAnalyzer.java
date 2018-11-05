@@ -358,7 +358,9 @@ public class MultiThreadedNetworkAnalyzer extends MultiThreadedLinkPredAnalyzer 
         }
     }
 
-    public void printData4RTM_CVdoc(String dir, int testFold){
+    public void printData4RTM_CVdoc(String dir, int testFold, boolean flag_cold){
+        (new File(dir)).mkdirs();
+        String flagstr = flag_cold?"_coldstart":"";
         String trtCorpusFile = String.format("%s/CVdoc_corpus_train_%d.txt", dir, testFold);
         String tstCorpusFile = String.format("%s/CVdoc_corpus_test_%d.txt", dir, testFold);
         String trtLinkFile = String.format("%s/CVdoc_link_train_%d.txt", dir, testFold);
