@@ -1081,7 +1081,9 @@ public class EUB extends LDA_Variational {
         double allLoglikelihood = 0;
         int totalWords = 0;
         for(_Doc d: m_testSet) {
-            allLoglikelihood += inference(d);
+            double likelihood = inference(d);
+//            System.out.println(likelihood);
+            allLoglikelihood += likelihood;
             totalWords += d.getTotalDocLength();
         }
 

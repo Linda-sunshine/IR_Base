@@ -121,7 +121,7 @@ public class MyEUBMain {
         _Corpus corpus = analyzer.getCorpus();
 
         /***Start running joint modeling of user embedding and topic embedding****/
-        int emMaxIter = 100, number_of_topics = 20, varMaxIter = 10, embeddingDim = 10, innerIter = 1;
+        int emMaxIter = 50, number_of_topics = 20, varMaxIter = 10, embeddingDim = 10, innerIter = 1;
         //these two parameters must be larger than 1!!!
         double emConverge = 1e-10, alpha = 1 + 1e-2, beta = 1 + 1e-3, lambda = 1 + 1e-3, varConverge = 1e-6, stepSize = 1e-3;
         boolean alphaFlag = true, gammaFlag = true, betaFlag = true, tauFlag = true, xiFlag = true;

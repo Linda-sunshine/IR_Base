@@ -595,6 +595,7 @@ public abstract class TopicModel {
             System.out.println("[Info]Start evaluation in Normal...");
             for(_Doc d:m_testSet) {
                 loglikelihood = inference(d);
+//                System.out.println(loglikelihood);
                 sumLikelihood += loglikelihood;
                 perplexity += loglikelihood;
                 totalWords += d.getTotalDocLength();
