@@ -124,7 +124,7 @@ public class MyEUBMain {
         int emMaxIter = 50, number_of_topics = 20, varMaxIter = 10, embeddingDim = 10, innerIter = 1;
         //these two parameters must be larger than 1!!!
         double emConverge = 1e-10, alpha = 1 + 1e-2, beta = 1 + 1e-3, lambda = 1 + 1e-3, varConverge = 1e-6, stepSize = 1e-3;
-        boolean alphaFlag = true, gammaFlag = true, betaFlag = true, tauFlag = true, xiFlag = true;
+        boolean alphaFlag = true, gammaFlag = true, betaFlag = true, tauFlag = true, xiFlag = true, rhoFlag = true;
         boolean multiFlag = true, adaFlag = false;
 
         long start = System.currentTimeMillis();
@@ -137,6 +137,7 @@ public class MyEUBMain {
             tModel.setDisplayLap(1);
             tModel.fixedCrossValidation(analyzer.getUsers(), k);
             tModel.printTopWords(30);
+            tModel.printPhiBeta("./data/embeddingExp/");
 
         } else{
             if(multiFlag && coldStartFlag)
@@ -146,7 +147,7 @@ public class MyEUBMain {
             else
                 tModel = new EUB(emMaxIter, emConverge, beta, corpus, lambda, number_of_topics, alpha, varMaxIter, varConverge, embeddingDim);
             ((EUB) tModel).initLookupTables(analyzer.getUsers());
-            ((EUB) tModel).setModelParamsUpdateFlags(alphaFlag, gammaFlag, betaFlag, tauFlag, xiFlag);
+            ((EUB) tModel).setModelParamsUpdateFlags(alphaFlag, gammaFlag, betaFlag, tauFlag, xiFlag, rhoFlag);
             ((EUB) tModel).setMode(mode);
 
             ((EUB) tModel).setInnerMaxIter(innerIter);
@@ -154,8 +155,11 @@ public class MyEUBMain {
 
             long current = System.currentTimeMillis();
             String saveDir = String.format("./data/embeddingExp/eub/%s_emIter_%d_nuTopics_%d_varIter_%d_innerIter_%d_dim_%d_ada_%b/" +
-                    "fold_%d_%d", dataset, emMaxIter, number_of_topics, varMaxIter, innerIter, embeddingDim, adaFlag, kFold, current);
+                    "fold_%d_%d", dataset, emMaxIter, number_of_topics, varMaxIter, innerIter, embeddingDim, adaFlag, k, current);
 
+            String paramDir = "./data/embeddingExp/";
+            ((EUB) tModel).loadTopicTermProbability(paramDir+"LDA_beta.txt");
+            ((EUB) tModel).loadDocsPhi(paramDir+"LDA_phi.txt");
             if(multiFlag && coldStartFlag)
                 ((EUB4ColdStart_multithreading) tModel).fixedCrossValidation(k, saveDir);
             else

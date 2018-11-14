@@ -362,4 +362,36 @@ public class LDA_Variational extends pLSA {
 			System.err.format("[Error]Failed to open file %s\n", postGammaPath);
 		}
 	}
+
+	// save each document's phi and the beta learned from all the documents
+	public void printPhiBeta(String dir){
+		try{
+			String phiFileName = String.format("%sLDA_phi.txt", dir);
+			PrintWriter writer = new PrintWriter(new File(phiFileName));
+			for(_Doc d: m_trainSet){
+				_Review r = (_Review) d;
+				writer.write("-----\n");
+				writer.format("%s\t%s\t%d\t%d\n", r.getUserID(), r.getID(), r.m_phi.length, number_of_topics);
+				for(double[] phi: r.m_phi){
+					for(double v: phi){
+						writer.format("%.5f\t", v);
+					}
+					writer.write("\n");
+				}
+			}
+			writer.close();
+			String betaFileName = String.format("%sLDA_beta.txt", dir);
+			writer = new PrintWriter(new File(betaFileName));
+			writer.format("%d\t%d\n", number_of_topics, vocabulary_size);
+			for(double[] topic: topic_term_probabilty){
+				for(double v: topic){
+					writer.format("%.2f\t", v);
+				}
+				writer.write("\n");
+			}
+			writer.close();
+		} catch(IOException e){
+			e.printStackTrace();
+		}
+	}
 }

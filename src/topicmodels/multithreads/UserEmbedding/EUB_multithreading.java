@@ -177,10 +177,6 @@ public class EUB_multithreading extends EUB {
         super.init();
         for(TopicModelWorker worker:m_workers)
             worker.resetStats();
-//        for(EmbedModelWorker worker:m_topicWorkers)
-//            worker.resetStats();
-//        for(EmbedModelWorker worker:m_userWorkers)
-//            worker.resetStats();
     }
 
 
@@ -203,12 +199,10 @@ public class EUB_multithreading extends EUB {
             topicLikelihood = multithread_general(m_topicWorkers);
             if(Double.isNaN(topicLikelihood) || Double.isInfinite(topicLikelihood)){
                 System.err.println("[Error]E_step for topics results in NaN likelihood...");
-                break;
             }
 
             // user
             userLikelihood = multithread_general(m_userWorkers);
-
             if(Double.isNaN(userLikelihood) || Double.isInfinite(userLikelihood)){
                 System.err.println("[Error]E_step for users results in NaN likelihood...");
                 break;
@@ -264,14 +258,6 @@ public class EUB_multithreading extends EUB {
             m_workers[i].setType(TopicModel_worker.RunType.RT_inference);
             m_workers[i].clearCorpus();
         }
-//        for(int i =0; i<m_topicWorkers.length; i++){
-//            m_topicWorkers[i].setType(TopicModel_worker.RunType.RT_inference);
-//            m_topicWorkers[i].clearObjects();
-//        }
-//        for(int i = 0;i < m_userWorkers.length; i++){
-//            m_userWorkers[i].setType(TopicModel_worker.RunType.RT_inference);
-//            m_userWorkers[i].clearObjects();
-//        }
 
         //evenly allocate the testing work load
         int workerID = 0;
@@ -279,16 +265,7 @@ public class EUB_multithreading extends EUB {
             m_workers[workerID % m_workers.length].addDoc(d);
             workerID++;
         }
-//        workerID = 0;
-//        for(_Topic4EUB t: m_topics){
-//            m_topicWorkers[workerID%m_topicWorkers.length].addObject(t);
-//            workerID++;
-//        }
-//        workerID = 0;
-//        for(_User4EUB u: m_users) {
-//            m_userWorkers[workerID%m_userWorkers.length].addObject(u);
-//            workerID++;
-//        }
+
         do {
             init();
             perplexity = 0.0;
@@ -318,36 +295,6 @@ public class EUB_multithreading extends EUB {
                 System.err.format("[Error]Inference generate NaN\n");
                 break;
             }
-
-//            // topic
-//            for(int i=0; i<m_topicWorkers.length; i++){
-//                m_threadpool[i] = new Thread(m_topicWorkers[i]);
-//                m_threadpool[i].start();
-//            }
-//
-//            //wait till all finished
-//            for (Thread thread : m_threadpool) {
-//                try {
-//                    thread.join();
-//                } catch (InterruptedException e) {
-//                    e.printStackTrace();
-//                }
-//            }
-//
-//            // user
-//            for(int i=0; i<m_userWorkers.length; i++){
-//                m_threadpool[i] = new Thread(m_userWorkers[i]);
-//                m_threadpool[i].start();
-//            }
-//
-//            //wait till all finished
-//            for (Thread thread : m_threadpool) {
-//                try {
-//                    thread.join();
-//                } catch (InterruptedException e) {
-//                    e.printStackTrace();
-//                }
-//            }
 
             if(iter > 0)
                 converge = Math.abs((perplexity - last) / last);

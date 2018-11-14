@@ -89,7 +89,7 @@ public class MyEUBExecution {
 
         ((EUB) tModel).initLookupTables(analyzer.getUsers());
         ((EUB) tModel).setModelParamsUpdateFlags(param.m_alphaFlag, param.m_gammaFlag, param.m_betaFlag,
-                param.m_tauFlag, param.m_xiFlag);
+                param.m_tauFlag, param.m_xiFlag, param.m_rhoFlag);
         ((EUB) tModel).setMode(param.m_mode);
 
         ((EUB) tModel).setInnerMaxIter(param.m_innerIter);

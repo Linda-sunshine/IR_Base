@@ -2,6 +2,8 @@ package structures;
 
 import utils.Utils;
 
+import java.util.Arrays;
+
 /**
  * @author Lin Gong (lg5bt@virginia.edu)
  * Each document has a set of variational parameters:
@@ -16,24 +18,48 @@ public class _Doc4EUB extends _Review {
     public double[] m_sigma_theta; // only diagonal values are non-zero
     public double[] m_sigma_sqrt_theta; // square root of the sigma
 
-    public int m_index;
+    public int m_gloIndex;
 
     public _Doc4EUB(_Review r, int idx){
         super(r.getID(), r.getSource(), r.getYLabel(), r.getUserID(), r.getItemID(), r.getCategory(), r.getTimeStamp());
         m_mask = r.getMask4CV();
-        m_index = idx;
+        m_gloIndex = idx;
         m_x_sparse = r.getSparse();
         m_totalLength = r.getTotalDocLength();
     }
 
     public void setIndex(int idx){
-        m_index = idx;
+        m_gloIndex = idx;
     }
     public int getIndex(){
-        return m_index;
+        return m_gloIndex;
     }
+
+    public void setPhi(double[][] phi){
+        m_phi = phi;
+    }
+
+    //create necessary structure for variational inference
+    public void setTopics4Variational(int k, double alpha) {
+        if (m_topics==null || m_topics.length!=k) {
+            m_topics = new double[k];
+            m_sstat = new double[k];//used as p(z|w,\phi)
+        }
+
+        Arrays.fill(m_sstat, alpha);
+        for(int n=0; n<m_x_sparse.length; n++) {
+            double v = m_x_sparse[n].getValue();
+            for(int i=0; i<k; i++)
+                m_sstat[i] += m_phi[n][i] * v;
+        }
+    }
+
     public void setTopics4Variational(int k, double alpha, double mu, double sigma){
-        super.setTopics4Variational(k, alpha);
+        if(m_phi == null)
+            super.setTopics4Variational(k, alpha);
+        else
+            setTopics4Variational(k, alpha);
+
         m_mu_theta = new double[k];
         m_sigma_theta = new double[k];
         m_sigma_sqrt_theta = new double[k];

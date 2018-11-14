@@ -5,9 +5,7 @@ import structures.*;
 import topicmodels.LDA.LDA_Variational;
 import utils.Utils;
 
-import java.io.File;
-import java.io.IOException;
-import java.io.PrintWriter;
+import java.io.*;
 import java.util.*;
 
 
@@ -51,12 +49,12 @@ public class EUB extends LDA_Variational {
     // alpha is precision parameter for topic embedding in EUB
     // alpha is a vector parameter for dirichlet distribution
     protected double m_alpha_s = 5;
-    protected double m_tau = 0.01;
+    protected double m_tau = 0.15;
     protected double m_gamma = 10;
     protected double m_xi = 2.0;
 
     /*****Sparsity parameter******/
-    protected double m_rho = 0.01;
+    protected double m_rho = 0.001;
 
     protected int m_displayLv = 0;
     protected double m_stepSize = 1e-3;
@@ -66,6 +64,7 @@ public class EUB extends LDA_Variational {
     protected boolean m_betaFlag = true;
     protected boolean m_tauFlag = false;
     protected boolean m_xiFlag = false;
+    protected boolean m_rhoFlag = false;
 
     // whehter we use adam grad to optimize or not
     protected boolean m_adaFlag = false;
@@ -94,12 +93,13 @@ public class EUB extends LDA_Variational {
                 m_mType.toString(), m_embeddingDim, number_of_topics, number_of_iteration, m_varMaxIter, m_innerMaxIter);
     }
     public void setModelParamsUpdateFlags(boolean alphaFlag, boolean gammaFlag, boolean betaFlag,
-                                          boolean tauFlag, boolean xiFlag){
+                                          boolean tauFlag, boolean xiFlag, boolean rhoFlag){
         m_alphaFlag = alphaFlag;
         m_gammaFlag = gammaFlag;
         m_betaFlag = betaFlag;
         m_tauFlag = tauFlag;
         m_xiFlag = xiFlag;
+        m_rhoFlag = rhoFlag;
     }
 
     public void setMode(String mode){
@@ -148,17 +148,91 @@ public class EUB extends LDA_Variational {
 
     protected void initUserDocs(int i, _User4EUB user, ArrayList<_Review> reviews){
 
-//        m_userDocMap.put(i, new ArrayList<Integer>());
         ArrayList<_Doc4EUB> docs = new ArrayList<_Doc4EUB>();
         for(_Review r: reviews){
             int dIndex = m_docs.size();
             _Doc4EUB doc = new _Doc4EUB(r, dIndex);
             docs.add(doc);
             m_docs.add(doc);
-//            m_userDocMap.get(i).add(dIndex);
             m_docUserMap.put(dIndex, i);
         }
         user.setReviews(docs);
+    }
+
+    public void loadTopicTermProbability(String betaFilename){
+
+        try {
+            // load beta for the whole corpus first
+            File betaFile = new File(betaFilename);
+            BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(betaFile), "UTF-8"));
+            String line = reader.readLine();
+            String[] strs = line.split("\t");
+            int nuTopics = Integer.valueOf(strs[0]);
+            int vocabSize = Integer.valueOf(strs[1]);
+            if(nuTopics != number_of_topics || vocabSize != vocabulary_size){
+                System.out.println("Wrong input files for EUB!");
+            }
+            int count = 0;
+            double[][] topic_term_probability = new double[number_of_topics][vocabulary_size];
+            while((line = reader.readLine()) != null) {
+                strs = line.trim().split("\t");
+                if(strs.length != vocabulary_size)
+                    System.out.println("Wrong vocabulary size!!");
+                double[] oneTopic = new double[vocabulary_size];
+                for(int i=0; i<strs.length; i++){
+                    oneTopic[i] = Double.valueOf(strs[i]);
+                }
+                topic_term_probability[count++] = oneTopic;
+            }
+            // assign the topics to the model
+            this.topic_term_probabilty = topic_term_probability;
+            System.out.format("[Info]Finish loading beta from %s\n", betaFilename);
+        } catch(IOException e){
+            e.printStackTrace();
+        }
+
+    }
+
+    public void loadDocsPhi(String phiFilename){
+
+        try {
+            // load beta for the whole corpus first
+            File betaFile = new File(phiFilename);
+            BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(betaFile), "UTF-8"));
+            String line;
+            String[] strs;
+            while((line = reader.readLine()) != null) {
+                // start reading one user's data
+                if(line.equals("-----")){
+                    strs = reader.readLine().trim().split("\t");
+                    if(strs.length != 4)
+                        System.out.println("[error]Wrong format!!!");
+                    String uid = strs[0];
+                    int id = Integer.valueOf(strs[1]);
+                    int fvSize = Integer.valueOf(strs[2]);
+                    int nuTopics = Integer.valueOf(strs[3]);
+                    // read phi
+                    double[][] phi = new double[fvSize][nuTopics];
+                    for(int i=0; i<fvSize; i++){
+                        strs = reader.readLine().trim().split("\t");
+                        if(strs.length != number_of_topics){
+                            System.out.println("[error]Wrong dimension for the phi!");
+                        }
+                        double[] oneFv = new double[number_of_topics];
+                        for(int j=0; j<strs.length; j++){
+                            oneFv[j] = Double.valueOf(strs[j]);
+                        }
+                        phi[i] = oneFv;
+                    }
+                    _Doc4EUB r = (_Doc4EUB) m_users.get(m_usersIndex.get(uid)).getReviewByID(id);
+                    r.setPhi(phi);
+                }
+            }
+            System.out.format("[Info]Finish loading beta from %s\n", phiFilename);
+        } catch(IOException e){
+            e.printStackTrace();
+        }
+
     }
 
     protected void buildUserDocMap(){
@@ -258,8 +332,9 @@ public class EUB extends LDA_Variational {
         for(_Topic4EUB t: m_topics)
              t.setTopics4Variational(m_embeddingDim, t_mu, t_sigma);
 
-        for(_Doc d: m_trainSet)
+        for(_Doc d: m_trainSet) {
             ((_Doc4EUB) d).setTopics4Variational(number_of_topics, d_alpha, d_mu, d_sigma);
+        }
 
         for(_User4EUB u: m_users)
             u.setTopics4Variational(m_embeddingDim, m_users.size(), u_mu, u_sigma, m_xi);
@@ -306,7 +381,7 @@ public class EUB extends LDA_Variational {
                 if(Double.isNaN(totalLikelihood) || Double.isInfinite(totalLikelihood))
                     System.out.println("[error] The likelihood is Nan or Infinity!!");
             }
-//            setStepSize(1e-4);
+
             for(_User4EUB user: m_users){
                 totalLikelihood += varInference4User(user);
                 if(Double.isNaN(totalLikelihood) || Double.isInfinite(totalLikelihood))
@@ -344,9 +419,12 @@ public class EUB extends LDA_Variational {
             est_tau(); // precision for topic proportion
         if(m_xiFlag)
             est_xi(); // sigma for the affinity \delta_{ij}
-        System.out.format("[ModelParam]alpha:%.3f, gamma:%.3f,tau:%.3f,xi:%.3f\n", m_alpha_s, m_gamma, m_tau, m_xi);
-        finalEst();
+        if(m_rhoFlag)
+            est_rho();
 
+        System.out.format("[ModelParam]alpha:%.3f, gamma:%.3f,tau:%.3f,xi:%.3f, rho:%.5f\n",
+                m_alpha_s, m_gamma, m_tau, m_xi, m_rho);
+        finalEst();
     }
 
     protected void est_alpha(){
@@ -410,6 +488,24 @@ public class EUB extends LDA_Variational {
         double totalConnection = m_users.size() * (m_users.size() - 1);
         m_xi = (xiSquare > 0) ? Math.sqrt(xiSquare/totalConnection) : 0;
 
+    }
+
+    protected void est_rho(){
+        System.out.println("[M-step]Estimate rho....");
+        double numerator = 0, denominator = 0;
+
+        for(int i=0; i<m_users.size(); i++){
+            _User4EUB ui = m_users.get(i);
+            HashSet<Integer> interactions = m_networkMap.containsKey(i) ? m_networkMap.get(i) : null;
+            for(int j=0; j<m_users.size(); j++) {
+                if (i == j) continue;
+                int eij = interactions != null && interactions.contains(j) ? 1 : 0;
+                numerator += eij;
+                denominator += (1 - eij) * Math.exp(ui.m_mu_delta[j] + 0.5 * ui.m_sigma_delta[j] *
+                        ui.m_sigma_delta[j]) / ui.m_epsilon_prime[j];
+            }
+        }
+        m_rho = numerator / denominator;
     }
 
     protected double calculateStat4Xi(_User4EUB ui, _User4EUB uj, int j){

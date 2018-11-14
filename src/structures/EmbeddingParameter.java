@@ -24,6 +24,7 @@ public class EmbeddingParameter {
     public boolean m_betaFlag = true;
     public boolean m_tauFlag = true;
     public boolean m_xiFlag = true;
+    public boolean m_rhoFlag = true;
     public boolean m_ada = false;
     public boolean m_coldStartFlag = false;
 
@@ -71,6 +72,8 @@ public class EmbeddingParameter {
                 m_tauFlag = Boolean.valueOf(argv[i]);
             else if (argv[i - 1].equals("-xiFlag"))
                 m_xiFlag = Boolean.valueOf(argv[i]);
+            else if (argv[i - 1].equals("-rhoFlag"))
+                m_rhoFlag = Boolean.valueOf(argv[i]);
             else if (argv[i - 1].equals("-kFold"))
                 m_kFold = Integer.valueOf(argv[i]);
             else if (argv[i - 1].equals("-ada"))
