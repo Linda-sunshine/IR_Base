@@ -158,8 +158,8 @@ public class MyEUBMain {
                     "fold_%d_%d", dataset, emMaxIter, number_of_topics, varMaxIter, innerIter, embeddingDim, adaFlag, k, current);
 
             String paramDir = "./data/embeddingExp/";
-            ((EUB) tModel).loadTopicTermProbability(paramDir+"LDA_beta.txt");
-            ((EUB) tModel).loadDocsPhi(paramDir+"LDA_phi.txt");
+//            ((EUB) tModel).loadTopicTermProbability(paramDir+"LDA_beta.txt");
+//            ((EUB) tModel).loadDocsPhi(paramDir+"LDA_phi.txt");
             if(multiFlag && coldStartFlag)
                 ((EUB4ColdStart_multithreading) tModel).fixedCrossValidation(k, saveDir);
             else
