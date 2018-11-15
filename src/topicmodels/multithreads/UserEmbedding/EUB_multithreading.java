@@ -195,11 +195,11 @@ public class EUB_multithreading extends EUB {
                 break;
             }
 
-//            // topic
-//            topicLikelihood = multithread_general(m_topicWorkers);
-//            if(Double.isNaN(topicLikelihood) || Double.isInfinite(topicLikelihood)){
-//                System.err.println("[Error]E_step for topics results in NaN likelihood...");
-//            }
+            // topic
+            topicLikelihood = multithread_general(m_topicWorkers);
+            if(Double.isNaN(topicLikelihood) || Double.isInfinite(topicLikelihood)){
+                System.err.println("[Error]E_step for topics results in NaN likelihood...");
+            }
 
             // user
             userLikelihood = multithread_general(m_userWorkers);
@@ -222,11 +222,7 @@ public class EUB_multithreading extends EUB {
             System.out.format("[Multi-E-step] %d iteration, likelihood(d:t:u)=(%.2f, %.2f, %.2f), converge to %.8f\n",
                     iter, docLikelihood, topicLikelihood, userLikelihood, converge);
         }while(iter++ < m_varMaxIter);
-        // topic
-        topicLikelihood = multithread_general(m_topicWorkers);
-        if(Double.isNaN(topicLikelihood) || Double.isInfinite(topicLikelihood)){
-            System.err.println("[Error]E_step for topics results in NaN likelihood...");
-        }
+
         return likelihood;
     }
 
