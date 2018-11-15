@@ -222,7 +222,6 @@ public class EUB_multithreading extends EUB {
             System.out.format("[Multi-E-step] %d iteration, likelihood(d:t:u)=(%.2f, %.2f, %.2f), converge to %.8f\n",
                     iter, docLikelihood, topicLikelihood, userLikelihood, converge);
         }while(iter++ < m_varMaxIter);
-
         return likelihood;
     }
 
