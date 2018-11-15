@@ -108,7 +108,7 @@ public class LinkPredictionWithUserEmbedding {
                 m_embeddings[count++] = embedding;
             }
             reader.close();
-            System.out.format("[Info]Finish loading %d user embeddins from %s.\n", count, filename);
+            System.out.format("[Info]Finish loading %d user embeddings from %s.\n", count, filename);
         } catch(IOException e){
             e.printStackTrace();
         }
@@ -329,19 +329,18 @@ public class LinkPredictionWithUserEmbedding {
 
     public static void main(String[] args){
         String data = "StackOverflow";
-        int dim = 10;
-        for(int fold : new int[]{0}) {
-            int[] times = new int[]{2, 3, 4, 5, 6, 7, 8};
-            String[] models = new String[]{"EUB", "LDA", "HFT"}; //"TADW"
+        for(int dim: new int[]{10}) {
 
-            String prefix = "";
-            double[][][] perfs = new double[models.length][times.length][2];
+            for (int fold : new int[]{1}) {
+                int[] times = new int[]{2, 3, 4};
+                String[] models = new String[]{"EUB", "LDA", "HFT"}; // "LDA", "HFT", "TADW""
+
+                String prefix = "";
+                double[][][] perfs = new double[models.length][times.length][2];
                 for (int t = 0; t < times.length; t++) {
                     int time = times[t];
-                    for (int i=0; i<models.length; i++) {
+                    for (int i = 0; i < models.length; i++) {
                         String model = models[i];
-                        if(model.equals("LDA") || model.equals("HFT"))
-                            fold = 0;
                         System.out.format("-----current model-%s-time-%d-dim-%d------\n", model, time, dim);
 
                         String embedFile = String.format("/Users/lin/DataWWW2019/UserEmbedding/%s_%s_embedding_dim_%d_fold_%d.txt", data, model, dim, fold);
@@ -353,18 +352,19 @@ public class LinkPredictionWithUserEmbedding {
                         link.calculateAllNDCGMAP();
                         perfs[i][t] = link.calculateAvgNDCGMAP();
 
+                    }
                 }
-            }
-            for(int time: times) {
-                System.out.format("\t\t%d\t\t", time);
-            }
-            System.out.println();
-            for(int i=0; i<models.length; i++){
-                System.out.print(models[i] + "\t");
-                for(double[] ndcgMap: perfs[i]){
-                    System.out.format("%.4f\t%.4f\t", ndcgMap[0], ndcgMap[1]);
+                for (int time : times) {
+                    System.out.format("\t\t%d\t\t", time);
                 }
                 System.out.println();
+                for (int i = 0; i < models.length; i++) {
+                    System.out.print(models[i] + "\t");
+                    for (double[] ndcgMap : perfs[i]) {
+                        System.out.format("%.4f\t%.4f\t", ndcgMap[0], ndcgMap[1]);
+                    }
+                    System.out.println();
+                }
             }
         }
     }
