@@ -45,7 +45,8 @@ public class MultiThreadedUserAnalyzer extends UserAnalyzer {
 	private Object m_mapLock = null;
 	
 	protected String m_suffix = null;//filter by suffix
-	
+	protected boolean m_allocateFlag = true;
+
 	public MultiThreadedUserAnalyzer(String tokenModel, int classNo,
 			String providedCV, int Ngram, int threshold, int numberOfCores, boolean b)
 					throws InvalidFormatException, FileNotFoundException, IOException {
@@ -66,6 +67,11 @@ public class MultiThreadedUserAnalyzer extends UserAnalyzer {
 		m_rollbackLock = new Object(); // lock when revising corpus statistics
 		m_featureStatLock = new Object();
 		m_mapLock = new Object();
+	}
+
+	// Decide whether we will allocate reviews or not
+	public void setAllocateReviewFlag(boolean b){
+		m_allocateFlag = b;
 	}
 	
 	public void setSuffixFilter(String suffix) {
