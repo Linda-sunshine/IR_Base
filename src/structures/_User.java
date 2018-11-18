@@ -572,4 +572,9 @@ public class _User {
 			}
 		}
 	}
+	public _Review getReviewByID(int id){
+		if(id >= m_reviews.size())
+			System.err.println("[error] Index exceeds the array length!");
+		return m_reviews.get(id);
+	}
 }
