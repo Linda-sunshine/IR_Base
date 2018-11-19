@@ -2,42 +2,42 @@ package structures;
 
 import java.util.HashMap;
 
-import utils.Utils;
-
 public class _Review extends _Doc {
-	public enum rType {
-		TRAIN, // for training the global model
-		ADAPTATION, // for training the personalized model
-		TEST, // for testing
-		SEPARATE // added by Lin for sanity check.
-	}
-	
+
 	String m_userID;
-	String m_category; 
-	rType m_type; // specification of this review
-	
+	String m_category;
+
+	// mask used for cross validation
+	protected int m_mask = -1;
+
+	// this is designed for stackoverflow post
+	// if parent_id is -1, it is question, other wise it is answer (the corresponding question id)
+	protected int m_parentId = -1;
+
 	//Constructor for route project.
 	public _Review(int ID, String source, int ylabel){
 		super(ID, source, ylabel);
 	}
-	
+
+	public _Review(int ID, String source, int ylabel, int parentId, String userID, long timestamp){
+		super(ID, source, ylabel);
+		m_userID = userID;
+		m_parentId = parentId;
+		m_timeStamp = timestamp;
+	}
+
 	public _Review(int ID, String source, int ylabel, String userID, String productID, String category, long timeStamp){
 		super(ID, source, ylabel);
 		m_userID = userID;
 		m_itemID = productID;
 		m_category = category;
 		m_timeStamp = timeStamp;
-		m_type = rType.TRAIN; // by default, every review is used for training the global model
 	}
-	
-	public rType getType() {
-		return m_type;
+
+	public int getParentId(){
+		return m_parentId;
 	}
-	
-	public void setType(rType type) {
-		m_type = type;
-	}
-	
+
 	//Compare the timestamp of two documents and sort them based on timestamps.
 	@Override
 	public int compareTo(_Doc d){
@@ -86,11 +86,9 @@ public class _Review extends _Doc {
 	public HashMap<_HDPThetaStar, Integer> getThetaCountMap(){
 		return m_thetaCountMap;
 	}
-	
 	public void clearThetaCountMap(){
 		m_thetaCountMap.clear();
 	}
-	
 	public _HDPThetaStar getHDPThetaStar(){
 		return m_hdpThetaStar;
 	}
@@ -107,7 +105,6 @@ public class _Review extends _Doc {
 	public double[] getCluPosterior(){
 		return m_cluPosterior;
 	}
-	
 	double m_L4New = 0;
 	public void setL4NewCluster(double l){
 		m_L4New = l;
@@ -122,11 +119,12 @@ public class _Review extends _Doc {
 		if(m_lmSum != -1)
 			return m_lmSum;
 		else{
-			m_lmSum = Utils.sumOfArray(m_lm_x_sparse);
-			return m_lmSum;
+			double sum = 0;
+			for(_SparseFeature sf: m_lm_x_sparse)
+				sum += sf.getValue();
+			return sum;
 		}
 	}
-	
 	// Assign each review a confidence, used in hdp model.
 	protected double m_confidence = 1;
 	public void setConfidence(double conf){
@@ -135,5 +133,15 @@ public class _Review extends _Doc {
 	
 	public double getConfidence(){
 		return m_confidence;
+	}
+
+
+
+	public void setMask4CV(int k){
+		m_mask = k;
+	}
+
+	public int getMask4CV(){
+		return m_mask;
 	}
 }

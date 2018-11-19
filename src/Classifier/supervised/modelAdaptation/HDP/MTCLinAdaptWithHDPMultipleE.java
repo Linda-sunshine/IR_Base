@@ -6,7 +6,7 @@ import Classifier.supervised.modelAdaptation._AdaptStruct;
 import structures._Doc;
 import structures._HDPThetaStar;
 import structures._Review;
-import structures._Review.rType;
+import structures._Doc.rType;
 
 /***
  * In the class, we consider the cluster sampling multiple times to get an expectation of the sampling results. 

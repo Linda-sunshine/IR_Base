@@ -8,7 +8,7 @@ import Analyzer.MultiThreadedLMAnalyzer;
 import Classifier.supervised.modelAdaptation.MMB.MTCLinAdaptWithMMB;
 import opennlp.tools.util.InvalidFormatException;
 
-public class MyMMBMain {
+public class MMBMain {
 	
 	//In the main function, we want to input the data and do adaptation 
 	public static void main(String[] args) throws InvalidFormatException, FileNotFoundException, IOException{

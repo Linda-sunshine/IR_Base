@@ -14,7 +14,7 @@ import Classifier.supervised.modelAdaptation.ModelAdaptation;
 import Classifier.supervised.modelAdaptation._AdaptStruct;
 import structures._PerformanceStat.TestMode;
 import structures._Review;
-import structures._Review.rType;
+import structures._Doc.rType;
 import structures._SparseFeature;
 import structures._User;
 

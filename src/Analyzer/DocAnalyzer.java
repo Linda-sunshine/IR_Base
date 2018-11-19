@@ -7,7 +7,6 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.text.Normalizer;
-import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -15,11 +14,7 @@ import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.Set;
 
-import org.tartarus.snowball.SnowballStemmer;
-import org.tartarus.snowball.ext.englishStemmer;
-
 import json.JSONArray;
-import json.JSONException;
 import json.JSONObject;
 import opennlp.tools.cmdline.postag.POSModelLoader;
 import opennlp.tools.postag.POSTaggerME;
@@ -29,11 +24,14 @@ import opennlp.tools.tokenize.Tokenizer;
 import opennlp.tools.tokenize.TokenizerME;
 import opennlp.tools.tokenize.TokenizerModel;
 import opennlp.tools.util.InvalidFormatException;
+
+import org.tartarus.snowball.SnowballStemmer;
+import org.tartarus.snowball.ext.englishStemmer;
+
 import structures.SentiWordNet;
 import structures.TokenizeResult;
 import structures._Doc;
 import structures._Post;
-import structures._Product;
 import structures._Stn;
 import utils.Utils;
 
@@ -313,46 +311,66 @@ public class DocAnalyzer extends Analyzer {
 		}
 	}
 	
+//	//Load a document and analyze it.
+//	protected void LoadJsonDoc(String filename) {
+//		_Product prod = null;
+//		JSONArray jarray = null;
+//		
+//		try {
+//			JSONObject json = LoadJSON(filename);
+//			prod = new _Product(json.getJSONObject("ProductInfo"));
+//			jarray = json.getJSONArray("Reviews");
+//		} catch (Exception e) {
+//			System.err.print('X');//fail to parse a json document
+//			return;
+//		}	
+//		
+//		for(int i=0; i<jarray.length(); i++) {
+//			try {
+//				_Post post = new _Post(jarray.getJSONObject(i));
+//				if (post.isValid(m_dateFormatter)) {
+//					long timeStamp = m_dateFormatter.parse(post.getDate()).getTime();
+//					String content;
+//					
+//					//append document title into document content
+//					if (Utils.endWithPunct(post.getTitle()))
+//						content = post.getTitle() + " " + post.getContent();
+//					else
+//						content = post.getTitle() + ". " + post.getContent();
+//					
+//					//int ID, String name, String prodID, String title, String source, int ylabel, long timeStamp
+//					_Doc review = new _Doc(m_corpus.getSize(), post.getID(), prod.getID(), post.getTitle(), content, post.getLabel()-1, timeStamp);
+//					if(this.m_stnDetector!=null)
+//						AnalyzeDocWithStnSplit(review);
+//					else
+//						AnalyzeDoc(review);
+//				}
+//			} catch (ParseException e) {
+//				System.out.print('T');
+//			} catch (JSONException e) {
+//				System.out.print('P');
+//			}
+//		}
+//	}
+	
 	//Load a document and analyze it.
 	protected void LoadJsonDoc(String filename) {
-		_Product prod = null;
 		JSONArray jarray = null;
 		
 		try {
 			JSONObject json = LoadJSON(filename);
-			prod = new _Product(json.getJSONObject("ProductInfo"));
 			jarray = json.getJSONArray("Reviews");
+			for(int i=0; i<jarray.length(); i++) {
+				_Post post = new _Post(jarray.getJSONObject(i));
+				int ylabel = post.getLabel() < 4 ? 0: 1;
+				_Doc review = new _Doc(m_corpus.getSize(), post.getContent(), ylabel);
+				AnalyzeDoc(review);
+			}
 		} catch (Exception e) {
 			System.err.print('X');//fail to parse a json document
 			return;
 		}	
 		
-		for(int i=0; i<jarray.length(); i++) {
-			try {
-				_Post post = new _Post(jarray.getJSONObject(i));
-				if (post.isValid(m_dateFormatter)) {
-					long timeStamp = m_dateFormatter.parse(post.getDate()).getTime();
-					String content;
-					
-					//append document title into document content
-					if (Utils.endWithPunct(post.getTitle()))
-						content = post.getTitle() + " " + post.getContent();
-					else
-						content = post.getTitle() + ". " + post.getContent();
-					
-					//int ID, String name, String prodID, String title, String source, int ylabel, long timeStamp
-					_Doc review = new _Doc(m_corpus.getSize(), post.getID(), prod.getID(), post.getTitle(), content, post.getLabel()-1, timeStamp);
-					if(this.m_stnDetector!=null)
-						AnalyzeDocWithStnSplit(review);
-					else
-						AnalyzeDoc(review);
-				}
-			} catch (ParseException e) {
-				System.out.print('T');
-			} catch (JSONException e) {
-				System.out.print('P');
-			}
-		}
 	}
 	
 	//convert the input token sequence into a sparse vector (docWordMap cannot be changed)
@@ -434,27 +452,40 @@ public class DocAnalyzer extends Analyzer {
 	}
 	
 	/*Analyze a document and add the analyzed document back to corpus.*/
+//	protected boolean AnalyzeDoc(_Doc doc) {
+//		TokenizeResult result = TokenizerNormalizeStemmer(doc.getSource());// Three-step analysis.
+//		String[] tokens = result.getTokens();
+//		int y = doc.getYLabel();
+//		
+//		// Construct the sparse vector.
+//		HashMap<Integer, Double> spVct = constructSpVct(tokens, y, null);
+//		if (spVct.size()>m_lengthThreshold) {
+//			doc.createSpVct(spVct);
+//			doc.setStopwordProportion(result.getStopwordProportion());
+//			
+//			m_corpus.addDoc(doc);
+//			m_classMemberNo[y]++;
+//			if (m_releaseContent)
+//				doc.clearSource();
+//			return true;
+//		} else {
+//			/****Roll back here!!******/
+//			rollBack(spVct, y);
+//			return false;
+//		}
+//	}
+	/*Analyze a document and add the analyzed document back to corpus.*/
 	protected boolean AnalyzeDoc(_Doc doc) {
 		TokenizeResult result = TokenizerNormalizeStemmer(doc.getSource());// Three-step analysis.
 		String[] tokens = result.getTokens();
 		int y = doc.getYLabel();
 		
-		// Construct the sparse vector.
 		HashMap<Integer, Double> spVct = constructSpVct(tokens, y, null);
-		if (spVct.size()>m_lengthThreshold) {
-			doc.createSpVct(spVct);
-			doc.setStopwordProportion(result.getStopwordProportion());
-			
-			m_corpus.addDoc(doc);
-			m_classMemberNo[y]++;
-			if (m_releaseContent)
-				doc.clearSource();
-			return true;
-		} else {
-			/****Roll back here!!******/
-			rollBack(spVct, y);
-			return false;
-		}
+		doc.createSpVct(spVct);
+		m_corpus.addDoc(doc);
+		m_classMemberNo[y]++;
+
+		return true;
 	}
 	
 	protected boolean AnalyzeDocByStn(_Doc doc, String[] sentences) {

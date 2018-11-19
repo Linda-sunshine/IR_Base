@@ -5,7 +5,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Set;
 
-import structures._Review.rType;
+import structures._Doc.rType;
 import utils.Utils;
 
 /***
@@ -14,16 +14,16 @@ import utils.Utils;
  */
 
 public class _User {
-	
+
 	protected String m_userID;
-	
+
 	//text reviews associated with this user
 	protected ArrayList<_Review> m_reviews; //The reviews the user have, they should be by ordered by time stamps.
-	
+
 	//profile for this user
 	protected double[] m_lowDimProfile;
 	protected _SparseFeature[] m_BoWProfile; //The BoW representation of a user.
-	
+
 	//personalized prediction model
 	protected double[] m_pWeight;
 	protected int m_classNo;
@@ -34,57 +34,58 @@ public class _User {
 
 	// performance statistics
 	_PerformanceStat m_perfStat;
-	
+
 	int m_cIndex = 0; // added by Lin, cluster number.
 	double m_posRatio = 0;
 	double m_avgIDF = 0;
-	
+
 	double m_adaPos = 0;
 	double m_testPos = 0;
-	
+
 	// added by Lin for friendship.
 	String[] m_friends;
 	String[] m_testFriends;
 	String[] m_nonFriends;
-	
+
 	private ArrayList<_Review> m_trainReviews;
 	private ArrayList<_Review> m_testReviews;
+	private ArrayList<String> m_trainItems;
 	protected int m_trainReviewSize = -1;
 	protected int m_testReviewSize = -1;
-	
+
 	private final HashMap<String, Integer> m_itemIDRating;
 	private String[] m_rankingItems;
 	private HashMap<String, _Review> m_testReviewMap;
-	
+
 	// The function is used for finding friends from Amazon data set.
 	protected ArrayList<String> m_amazonFriends = new ArrayList<String>();
-	
+
 	public _User(String userID){
 		m_userID = userID;
-		m_reviews = null;		
+		m_reviews = null;
 		m_lowDimProfile = null;
 		m_BoWProfile = null;
 		m_pWeight = null;
 		m_itemIDRating = new HashMap<String, Integer>();
 //		constructTrainTestReviews();
 	}
-	
+
 	public _User(int cindex, int classNo){
 		m_cIndex = cindex;
 		m_classNo = classNo;
-		m_reviews = new ArrayList<_Review>();		
+		m_reviews = new ArrayList<_Review>();
 
 		m_userID = null;
 		m_lowDimProfile = null;
 		m_BoWProfile = null;
 		m_pWeight = null;
-		
+
 		m_perfStat = new _PerformanceStat(classNo);
 		m_itemIDRating = new HashMap<String, Integer>();
 		constructTrainTestReviews();
 
 	}
-	
+
 	public _User(String userID, int classNo, ArrayList<_Review> reviews){
 		m_userID = userID;
 		m_classNo = classNo;
@@ -104,34 +105,34 @@ public class _User {
 //		calcCtgSize();
 //		calcAdpatTestPosRatio();
 	}
-	
+
 	public void addOneItemIDRatingPair(String item, int r){
 		if(!m_itemIDRating.containsKey(item))
 			m_itemIDRating.put(item, r);
 	}
-	
+
 	public void addOnePredResult(int predL, int trueL){
 		m_perfStat.addOnePredResult(predL, trueL);
 	}
-	
+
 	// construct the sparse vectors based on the feature used for sentiment model
 	public void constructLRSparseVector(){
 		ArrayList<_SparseFeature[]> reviews = new ArrayList<_SparseFeature[]>();
-		for(_Review r: m_trainReviews) 
+		for(_Review r: m_trainReviews)
 			reviews.add(r.getSparse());
-		
+
 		m_BoWProfile = Utils.MergeSpVcts(reviews);// this BoW representation is not normalized?!
 	}
-	
+
 	// construct the sparse vectors based on the feature used for language model
 	public void constructLMSparseVector(){
 		ArrayList<_SparseFeature[]> reviews = new ArrayList<_SparseFeature[]>();
-		for(_Review r: m_trainReviews) 
+		for(_Review r: m_trainReviews)
 			reviews.add(r.getLMSparse());
-		
+
 		m_BoWProfile = Utils.MergeSpVcts(reviews);// this BoW representation is not normalized?!
 	}
-	
+
 	// build the profile for the user
 	public void buildProfile(String model){
 		if(model.equals("lm"))
@@ -139,7 +140,7 @@ public class _User {
 		else
 			constructLRSparseVector();
 	}
-	
+
 	public void normalizeProfile(){
 		double sum = 0;
 		for(_SparseFeature fv: m_BoWProfile){
@@ -164,12 +165,12 @@ public class _User {
 	public String getUserID(){
 		return m_userID;
 	}
-	
+
 	@Override
 	public String toString() {
 		return String.format("%s-R:%d", m_userID, getReviewSize());
 	}
-	
+
 	public boolean hasAdaptationData() {
 		for(_Review r:m_reviews) {
 			if (r.getType() == rType.ADAPTATION) {
@@ -178,11 +179,11 @@ public class _User {
 		}
 		return false;
 	}
-	
+
 	public void initModel(int featureSize) {
 		m_pWeight = new double[featureSize];
 	}
-	
+
 	public void setModel(double[] weight) {
 		initModel(weight.length);
 		System.arraycopy(weight, 0, m_pWeight, 0, weight.length);
@@ -192,44 +193,44 @@ public class _User {
 	public int getClassNo(){
 		return m_classNo;
 	}
-	
+
 	public double[] getPersonalizedModel() {
 		return m_pWeight;
 	}
-	
+
 	//Get the sparse vector of the user.
 	public _SparseFeature[] getBoWProfile(){
 		return m_BoWProfile;
 	}
-	
+
 	public int getReviewSize() {
 		return m_reviews==null?0:m_reviews.size();
 	}
-	
+
 	public ArrayList<_Review> getReviews(){
 		return m_reviews;
 	}
-	
+
 	public double getBoWSim(_User u) {
 		return Utils.cosine(m_BoWProfile, u.getBoWProfile());
 	}
-	
+
 	public double getBoWSimBaseSVMWeights(_User u){
 		return Utils.cosine(m_svmWeights, u.getSVMWeights());
 	}
-	
+
 	public double getSVDSim(_User u) {
 		return Utils.cosine(u.m_lowDimProfile, m_lowDimProfile);
 	}
-	
+
 	public double[] getSVMWeights(){
 		return m_svmWeights;
 	}
-	
+
 	public double linearFunc(_SparseFeature[] fvs, int classid) {
 		return Utils.dotProduct(m_pWeight, fvs, classid*m_featureSize);
 	}
-	
+
 	public int predict(_Doc doc) {
 		_SparseFeature[] fv = doc.getSparse();
 
@@ -238,8 +239,8 @@ public class _User {
 			return maxScore>0?1:0;
 		} else {//we will have k classes for multi-class classification
 			double score;
-			int pred = 0; 
-		
+			int pred = 0;
+
 			for(int i = 1; i < m_classNo; i++) {
 				score = Utils.dotProduct(m_pWeight, fv, i * (m_featureSize + 1));
 				if (score>maxScore) {
@@ -254,17 +255,17 @@ public class _User {
 	public _PerformanceStat getPerfStat() {
 		return m_perfStat;
 	}
-	
+
 	// Added by Lin for lowDimProfile.
 	public void setLowDimProfile(double[] ld){
 		m_lowDimProfile = ld;
 	}
-	
+
 	// Added by Lin to access the low dim profile.
 	public double[] getLowDimProfile(){
 		return m_lowDimProfile;
 	}
-	
+
 	public double calculatePosRatio(){
 		double count = 0;
 		for(_Review r: m_reviews){
@@ -278,16 +279,16 @@ public class _User {
 	public void setAvgIDF(double v){
 		m_avgIDF = v;
 	}
-	
+
 	public void setSimilarity(double sim){
 		m_sim = sim;
 	}
-	
+
 	public void appendRvws(ArrayList<_Review> rs){
 		for(_Review r: rs)
 			m_reviews.add(r);
 	}
-	
+
 	public void calcPosRatio(){
 		double pos = 0;
 		for(_Review r: m_reviews){
@@ -296,11 +297,11 @@ public class _User {
 		}
 		m_posRatio = pos / m_reviews.size();
 	}
-	
+
 	public double getPosRatio(){
 		return m_posRatio;
 	}
-	
+
 	// Added by Lin for accumulating super user.
 	public void mergeReviews(ArrayList<_Review> reviews) {
 		m_reviews.addAll(reviews);
@@ -316,12 +317,12 @@ public class _User {
 	}
 	public double[] getProfValues() {
 		double[] values = new double[m_BoWProfile.length];
-		for(int i=0; i<m_BoWProfile.length; i++) 
+		for(int i=0; i<m_BoWProfile.length; i++)
 			values[i] = m_BoWProfile[i].m_value;
-		
+
 		return values;
 	}
-	
+
 	public void removeOneReview(String prodID){
 		int index = 0;
 		for(_Review r: m_reviews){
@@ -347,49 +348,63 @@ public class _User {
 	public double getTestPos(){
 		return m_testPos;
 	}
-	
+
 	public void setSVMWeights(double[] weights){
 		m_svmWeights = new double[weights.length];
 		m_svmWeights = Arrays.copyOf(weights, weights.length);
 	}
-	
+
 	public void setFriends(String[] fs){
 		m_friends = Arrays.copyOf(fs, fs.length);
 	}
-	
+
 	public void setTestFriends(String[] fs){
 		m_testFriends = Arrays.copyOf(fs, fs.length);
 	}
-	
+
 	public void setNonFriends(String[] nonfs){
 		m_nonFriends = Arrays.copyOf(nonfs, nonfs.length);
 	}
 	public String[] getFriends(){
 		return m_friends;
 	}
-	
+
+	public void removeOneFriend(String frd){
+		ArrayList<String> frdList = new ArrayList<>();
+		for(String f: m_friends){
+			frdList.add(f);
+		}
+		if(!frdList.contains(frd)){
+			System.out.println("The friend does not exist!!");
+			return;
+		}
+		frdList.remove(frd);
+		m_friends = new String[frdList.size()];
+		m_friends = frdList.toArray(m_friends);
+	}
+
 	public int getFriendSize(){
 		if(m_friends == null)
 			return 0;
 		else
 			return m_friends.length;
 	}
-	
+
 	public String[] getNonFriends(){
 		return m_nonFriends;
 	}
-	
+
 	public String[] getTestFriends(){
 		return m_testFriends;
 	}
-	
+
 	public int getTestFriendSize(){
 		if(m_testFriends == null)
 			return 0;
 		else
 			return m_testFriends.length;
 	}
-	
+
 	public int getNonFriendSize(){
 		if(m_nonFriends == null)
 			return 0;
@@ -407,7 +422,7 @@ public class _User {
 		}
 		return false;
 	}
-	
+
 	// check if a user is a friend of the current user
 	public boolean hasNonFriend(String str){
 		if(m_nonFriends == null || m_nonFriends.length == 0){
@@ -419,7 +434,7 @@ public class _User {
 		}
 		return false;
 	}
-	
+
 	public boolean hasTestFriend(String str){
 		if(m_testFriends.length == 0){
 			return false;
@@ -433,27 +448,33 @@ public class _User {
 	public void addAmazonFriend(String s){
 		m_amazonFriends.add(s);
 	}
-	
+
 	public ArrayList<String> getAmazonFriends(){
 		return m_amazonFriends;
 	}
-	
+
 	// In order to construct the friends for testing
 	ArrayList<String> m_amazonTestFriends = new ArrayList<String>();
 	public void addAmazonTestFriend(String s){
 		m_amazonTestFriends.add(s);
 	}
-	
+
 	public ArrayList<String> getAmazonTestFriends(){
 		return m_amazonTestFriends;
 	}
 	public void constructTrainTestReviews(){
 		m_trainReviews = new ArrayList<>();
+		m_trainItems = new ArrayList<>();
 		m_testReviews = new ArrayList<>();
 		m_testReviewMap = new HashMap<String, _Review>();
 		for(_Review r: m_reviews){
-			if(r.getType() == rType.ADAPTATION)
+			if(r.getType() == rType.ADAPTATION) {
 				m_trainReviews.add(r);
+				if (!m_trainItems.contains(r.getItemID()))
+					m_trainItems.add(r.getItemID());
+//				else
+//					System.err.println("[Warning]One user reviewed item twice!");
+			}
 			else{
 				m_testReviews.add(r);
 				m_testReviewMap.put(r.getItemID(), r);
@@ -462,25 +483,40 @@ public class _User {
 		m_trainReviewSize = m_trainReviews.size();
 		m_testReviewSize = m_testReviews.size();
 	}
-	
+
+	public ArrayList<String> getTrainItems(){
+		return m_trainItems;
+	}
+
+	// set the test reveiws for the current user
+	public void setTestReviews(ArrayList<_Review> reviews){
+		m_testReviews = reviews;
+		m_testReviewSize = m_testReviews.size();
+		m_reviews.addAll(m_testReviews);
+		m_testReviewMap = new HashMap<String, _Review>();
+
+		for(_Review r: m_testReviews){
+			m_testReviewMap.put(r.getItemID(), r);
+		}
+	}
 	public ArrayList<_Review> getTrainReviews(){
 		return m_trainReviews;
 	}
 	public ArrayList<_Review> getTestReviews(){
 		return m_testReviews;
 	}
-	
+
 	public _Review getTestReview(String item){
 		return m_testReviewMap.get(item);
 	}
 	public int getTrainReviewSize(){
 		return m_trainReviewSize;
 	}
-	
+
 	public int getTestReviewSize(){
 		return m_testReviewSize;
 	}
-	
+
 	public int getItemRating(String item){
 		// rating is 0 or 1, thus non-existing is -1
 		if(m_itemIDRating.containsKey(item))
@@ -497,17 +533,17 @@ public class _User {
 	public int getRankingItemSize(){
 		if(m_rankingItems == null)
 			return 0;
-		else 
+		else
 			return m_rankingItems.length;
 	}
-	
+
 	public String[] getRankingItems(){
 		return m_rankingItems;
 	}
-	
+
 	public void setRankingItems(Set<String> items){
 		if(items.size() == 0)
-			m_rankingItems = null; 
+			m_rankingItems = null;
 		else{
 			m_rankingItems = new String[items.size()];
 			int index = 0;
@@ -516,13 +552,13 @@ public class _User {
 			}
 		}
 	}
-	
+
 	// load the candidates from file instead of constructing online
 	ArrayList<String> m_candidates = new ArrayList<String>();
 	public void addOneCandidate(String item){
 		m_candidates.add(item);
 	}
-	
+
 	public void setRankingItems(HashMap<String, ArrayList<String>> itemMap){
 		// check if it is a valid user or not
 		int relevant = 0;
@@ -549,5 +585,10 @@ public class _User {
 				m_rankingItems[index++] = item;
 			}
 		}
+	}
+	public _Review getReviewByID(int id){
+		if(id >= m_reviews.size())
+			System.err.println("[error] Index exceeds the array length!");
+		return m_reviews.get(id);
 	}
 }

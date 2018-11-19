@@ -13,9 +13,16 @@ public abstract class EmbedModel_worker implements EmbedModelWorker{
     protected int vocabulary_size;
     protected RunType m_type = RunType.RT_EM;//EM is the default type
 
+    protected int m_dim;
+
     public EmbedModel_worker(int number_of_topics, int vocabulary_size){
         this.number_of_topics = number_of_topics;
         this.vocabulary_size = vocabulary_size;
+        m_objects = new ArrayList<>();
+    }
+
+    public EmbedModel_worker(int dim){
+        m_dim = dim;
         m_objects = new ArrayList<>();
     }
 
