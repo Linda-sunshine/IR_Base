@@ -24,7 +24,7 @@ public class ETBIRMain {
         String featureValue = "TF"; //The way of calculating the feature value, which can also be "TFIDF", "BM25"
         int norm = 0;//The way of normalization.(only 1 and 2)
         int lengthThreshold = 5; //Document length threshold
-        int numberOfCores = 1; //Runtime.getRuntime().availableProcessors();
+        int numberOfCores = Runtime.getRuntime().availableProcessors();
         String tokenModel = "./data/Model/en-token.bin";
 
         String trainset = "byUser_4k_review";
@@ -48,10 +48,10 @@ public class ETBIRMain {
             fvFile_point = 3;
         }
 
-        String reviewFolder = dataset; //2foldsCV/folder0/train/, data/
+        String reviewFolder = dataset + "70k/"; //2foldsCV/folder0/train/, data/
         String outputFolder = dataset + "output/feature_infer_" + fvFile_point + "/";
         String suffix = ".json";
-        String topicmodel = "ETBIR"; // pLSA, LDA_Gibbs, LDA_Variational, ETBIR
+        String topicmodel = "LDA_Variational"; // pLSA, LDA_Gibbs, LDA_Variational, ETBIR
 
         MultiThreadedReviewAnalyzer analyzer = new MultiThreadedReviewAnalyzer(tokenModel, classNumber, fvFiles[fvFile_point],
                 Ngram, lengthThreshold, numberOfCores, true, source);
@@ -62,7 +62,7 @@ public class ETBIRMain {
 
 //        corpus.save2File(dataset + "yelp_40_50_12.dat");//for CTM
 
-        int number_of_topics = 20;
+        int number_of_topics = 50;
 
         int varMaxIter = 4;
         double varConverge = 1e-3;

@@ -13,6 +13,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 
+import Analyzer.FeatureSelector;
 import structures._Corpus;
 import structures._Doc;
 import structures._SparseFeature;
