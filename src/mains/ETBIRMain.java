@@ -127,7 +127,7 @@ public class ETBIRMain {
         if (crossV<=1) {//just train
             analyzer.loadUserDir(reviewFolder);
             tModel.EMonCorpus();
-            tModel.printParameterAggregation(topK, outputFolder, topicmodel, "EUB");
+            tModel.printParameterAggregation(topK, outputFolder, topicmodel);
             tModel.printTopWords(topK);
         } else if(setRandomFold == true){//cross validation with random folds
             analyzer.setAllocateReviewFlag(false);
@@ -169,7 +169,7 @@ public class ETBIRMain {
 
                 String resultFolder = outputFolder + k + "/";
                 new File(resultFolder).mkdirs();
-                tModel.printParameterAggregation(topK, resultFolder, topicmodel, "EUB");
+                tModel.printParameterAggregation(topK, resultFolder, topicmodel);
                 tModel.printTopWords(topK);
             }
 
