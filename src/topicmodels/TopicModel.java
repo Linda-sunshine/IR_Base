@@ -124,7 +124,13 @@ public abstract class TopicModel {
 
 	public void setTrainSet(ArrayList<_Doc> trainset){ this.m_trainSet = trainset; }
 
+	public int getTrainSize() { return this.m_trainSet.size(); }
+
 	public void setTestSet(ArrayList<_Doc> testset) { this.m_testSet = testset; }
+
+	public void addTestSet(ArrayList<_Doc> testset) { this.m_testSet.addAll(testset); }
+
+	public int getTestSize() { return this.m_testSet.size(); }
 
 	//initialize necessary model parameters
 	protected abstract void initialize_probability(Collection<_Doc> collection);	
@@ -339,7 +345,7 @@ public abstract class TopicModel {
 
     public double[] Evaluation2() {
         m_collectCorpusStats = false;
-        double perplexity = 0, loglikelihood, log2 = Math.log(2.0), sumLikelihood = 0;
+        double perplexity = 0, loglikelihood, sumLikelihood = 0;
         double totalWords = 0.0;
         if (m_multithread) {
             multithread_inference();

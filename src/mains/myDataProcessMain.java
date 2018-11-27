@@ -141,8 +141,11 @@ public class myDataProcessMain {
         for (int k = 0; k < crossV; k++) {
             System.out.format("====== %d fold =====\n", k);
             if(param.m_mode.equals("CVdoc")) {
-                System.out.format("Generating for CVdoc......\n");
-                analyzer.printData4RTM_CVdoc(outputFolder, k);
+                System.out.format("Generating for CVdoc %s......\n", param.m_flag_coldstart?"COLD start":"");
+                if(!param.m_flag_coldstart)
+                    analyzer.printData4RTM_CVdoc(outputFolder, k, param.co);
+                else
+
             } else {
                 System.out.format("Generating for CVlink %s......\n", param.m_flag_coldstart?"COLD start":"");
                 String friend_fold;

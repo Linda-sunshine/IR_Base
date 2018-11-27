@@ -213,6 +213,18 @@ public class MultiThreadedNetworkAnalyzer extends MultiThreadedLinkPredAnalyzer 
         }
     }
 
+    public ArrayList<_Doc> getDocsByCVIndex(int k){
+        ArrayList<_Doc> docs = new ArrayList<>();
+        for(_User u : m_users){
+            for(_Review r: u.getReviews()){
+                int cvIdx = r.getMask4CV();
+                if(cvIdx == k)
+                    docs.add(r);
+            }
+        }
+        return docs;
+    }
+
     public void saveCV2Folds(String folder){
         try{
             for(_User u : m_users){
@@ -346,7 +358,9 @@ public class MultiThreadedNetworkAnalyzer extends MultiThreadedLinkPredAnalyzer 
         }
     }
 
-    public void printData4RTM_CVdoc(String dir, int testFold){
+    public void printData4RTM_CVdoc(String dir, int testFold, boolean flag_cold){
+        (new File(dir)).mkdirs();
+        String flagstr = flag_cold?"_coldstart":"";
         String trtCorpusFile = String.format("%s/CVdoc_corpus_train_%d.txt", dir, testFold);
         String tstCorpusFile = String.format("%s/CVdoc_corpus_test_%d.txt", dir, testFold);
         String trtLinkFile = String.format("%s/CVdoc_link_train_%d.txt", dir, testFold);
