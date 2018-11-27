@@ -34,7 +34,7 @@ public class ETBIRExecution {
         String tokenModel = "./data/Model/en-token.bin";
         String dataset = String.format("%s/%s/%s", param.m_prefix, param.m_source, param.m_set);
         String fvFile = String.format("%s/%s/%s_features.txt", param.m_prefix, param.m_source, param.m_source);
-        String reviewFolder = String.format("%s/data/", dataset);
+        String reviewFolder = String.format("%s/%dfoldsCV%s/", dataset, param.m_crossV, param.m_flag_coldstart?"Coldstart":"");
         String outputFolder = String.format("%s/output/%dfoldsCV%s/", dataset, param.m_crossV, param.m_flag_coldstart?"Coldstart":"");
 
         MultiThreadedReviewAnalyzer analyzer = new MultiThreadedReviewAnalyzer(tokenModel, classNumber, fvFile,
@@ -44,21 +44,21 @@ public class ETBIRExecution {
         analyzer.loadUserDir(reviewFolder);
         _Corpus corpus = analyzer.getCorpus();
 
-        if(param.m_crossV>1 && setRandomFold==false){
-            reviewFolder = String.format("%s/%dfoldsCV%s/", dataset, param.m_crossV, param.m_flag_coldstart?"Coldstart":"");
-            //if no data, generate
-            String cvFolder = String.format("%s/0/", reviewFolder);
-            File testFile = new File(cvFolder);
-            if(!testFile.exists() && !testFile.isDirectory()){
-                System.err.format("[Warning]Cross validation dataset %s not exist! Now generating...", cvFolder);
-                BipartiteAnalyzer cv = new BipartiteAnalyzer(corpus); // split corpus into folds
-                cv.analyzeCorpus();
-                if(param.m_flag_coldstart)
-                    cv.splitCorpusColdStart(param.m_crossV, reviewFolder);
-                else
-                    cv.splitCorpus(param.m_crossV, reviewFolder);
-            }
-        }
+//        if(param.m_crossV>1 && setRandomFold==false){
+//            reviewFolder = String.format("%s/%dfoldsCV%s/", dataset, param.m_crossV, param.m_flag_coldstart?"Coldstart":"");
+//            //if no data, generate
+//            String cvFolder = String.format("%s/0/", reviewFolder);
+//            File testFile = new File(cvFolder);
+//            if(!testFile.exists() && !testFile.isDirectory()){
+//                System.err.format("[Warning]Cross validation dataset %s not exist! Now generating...", cvFolder);
+//                BipartiteAnalyzer cv = new BipartiteAnalyzer(corpus); // split corpus into folds
+//                cv.analyzeCorpus();
+//                if(param.m_flag_coldstart)
+//                    cv.splitCorpusColdStart(param.m_crossV, reviewFolder);
+//                else
+//                    cv.splitCorpus(param.m_crossV, reviewFolder);
+//            }
+//        }
 
         int result_dim = 1;
 		pLSA tModel = null;
