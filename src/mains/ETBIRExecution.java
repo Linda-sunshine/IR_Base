@@ -138,6 +138,8 @@ public class ETBIRExecution {
                 }
                 tModel.setCorpus(analyzer.getCorpus());
 
+                System.out.format("====================\n[Info]Fold No. %d: \n", k);
+                double[] results = tModel.oneFoldValidation();
                 for(int i = 0; i < result_dim; i++){
                     perf[k][i] = results[2*i];
                     like[k][i] = results[2*i+1];
