@@ -58,6 +58,7 @@ public class LinkPredictionWithUserEmbedding {
 
     double[][] m_similarity;
     double[][] m_embeddings;
+    ArrayList<String> m_userIds;
     ArrayList<String> m_testUserIds;
     HashMap<String, Integer> m_idIndexMap;
     HashMap<String, _User4Link> m_testUserMap;
@@ -70,6 +71,25 @@ public class LinkPredictionWithUserEmbedding {
         m_testUserIds = new ArrayList<>();
     }
 
+    // load user ids for later use
+    public void loadUserIds(String idFile){
+        try {
+            m_userIds = new ArrayList<>();
+            File file = new File(idFile);
+            BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(file), "UTF-8"));
+            String line;
+
+            while ((line = reader.readLine()) != null) {
+                String uid = line.trim();
+                m_idIndexMap.put(uid, m_userIds.size());
+                m_userIds.add(uid);
+            }
+            m_userSize = m_userIds.size();
+            System.out.format("Finish loading %d user ids from %s.\n", m_userIds.size(), idFile);
+        }catch(IOException e){
+            e.printStackTrace();
+        }
+    }
     // load each user's embedding
     public void loadUserEmbedding(String filename){
         try {
@@ -83,10 +103,13 @@ public class LinkPredictionWithUserEmbedding {
                 System.out.println("[error]The file is not correct!! Double check user embedding file!");
                 return;
             }
-            m_userSize = Integer.valueOf(strs[0]);
+            int userSize = Integer.valueOf(strs[0]);
             m_dim = Integer.valueOf(strs[1]);
-            m_embeddings = new double[m_userSize][m_dim];
-
+            m_embeddings = new double[m_userIds.size()][m_dim];
+            if(userSize > m_userIds.size()) {
+                System.out.println("[error]The file is not correct!! Double check user embedding file!");
+                return;
+            }
             // read each user's embedding one by one
             int count = 0;
             while ((line = reader.readLine()) != null) {
@@ -104,8 +127,9 @@ public class LinkPredictionWithUserEmbedding {
                 for(int i=1; i<valStrs.length; i++){
                     embedding[i-1] = Double.valueOf(valStrs[i]);
                 }
-                m_idIndexMap.put(uid, count);
-                m_embeddings[count++] = embedding;
+                int index = m_idIndexMap.get(uid);
+                m_embeddings[index] = embedding;
+                count++;
             }
             reader.close();
             System.out.format("[Info]Finish loading %d user embeddings from %s.\n", count, filename);
@@ -189,14 +213,49 @@ public class LinkPredictionWithUserEmbedding {
             }
         }
     }
+    public void saveUserIds(String embedFile, String idFile){
+        try {
+            File file = new File(embedFile);
+            BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(file), "UTF-8"));
+            String line;
 
-    public void ininLinkPred(String embedFile, String testInterFile, String testNonInterFile) {
+            ArrayList<String> uids = new ArrayList<>();
+            String firstLine = reader.readLine();
+            String[] strs = firstLine.trim().split("\t");
+            if(strs.length != 2){
+                System.out.println("[error]The file is not correct!! Double check user embedding file!");
+                return;
+            }
+            int userSize = Integer.valueOf(strs[0]);
+            // read each user's embedding one by one
+            while ((line = reader.readLine()) != null) {
+
+                String[] valStrs = line.trim().split("\t");
+                String uid = valStrs[0];
+                uids.add(uid);
+            }
+            reader.close();
+            System.out.format("[Info]Finish loading %d user ids from %s.\n", uids.size(), embedFile);
+            PrintWriter writer = new PrintWriter(new File(idFile));
+            for(String id: uids)
+                writer.write(id + "\n");
+            writer.close();
+            System.out.format("[Info]Finish saving %d user ids to %s.\n", uids.size(), idFile);
+
+        } catch(IOException e){
+            e.printStackTrace();
+        }
+    }
+
+    public void ininLinkPred(String idFile, String embedFile, String testInterFile, String testNonInterFile) {
+        loadUserIds(idFile);
         loadUserEmbedding(embedFile);
         calcSimilarity();
         // load both one-edges ans zero-edges
         loadTestOneEdges(testInterFile);
         loadTestZeroEdges(testNonInterFile);
     }
+
 
     // The function for calculating all NDCGs and MAPs.
     public void calculateAllNDCGMAP(){
@@ -327,28 +386,76 @@ public class LinkPredictionWithUserEmbedding {
         return new double[]{avgNDCG, avgMAP};
     }
 
+//    public static void main(String[] args){
+//        String data = "YelpNew";
+//        for(int dim: new int[]{10}) {
+//
+//            for (int fold : new int[]{0}) {
+//                int[] times = new int[]{2, 3, 4, 5};
+//                String[] models = new String[]{"EUB", "LDA", "HFT", "TADW"}; // "LDA", "HFT", "TADW", "EUB", "LDA", "HFT",
+//
+//                String prefix = "";
+//                double[][][] perfs = new double[models.length][times.length][2];
+//                for (int t = 0; t < times.length; t++) {
+//                    int time = times[t];
+//                    for (int i = 0; i < models.length; i++) {
+//                        String model = models[i];
+//                        System.out.format("-----current model-%s-time-%d-dim-%d------\n", model, time, dim);
+//
+//                        String idFile = String.format("/Users/lin/DataWWW2019/UserEmbedding/%s_userids.txt", data);
+//                        String embedFile = String.format("/Users/lin/DataWWW2019/UserEmbedding/%s_%s_embedding_dim_%d_fold_%d.txt", data, model, dim, fold);
+//                        String testInterFile = String.format("./data/DataEUB/CV4Edges/%sCVIndex4Interaction_fold_%d_test.txt", data, fold);
+//                        String testNonInterFile = String.format("./data/DataEUB/CV4Edges/%sCVIndex4NonInteraction_time_%d_fold_%d.txt", data, time, fold);
+//
+//                        LinkPredictionWithUserEmbedding link = new LinkPredictionWithUserEmbedding();
+////                        link.saveUserIds(embedFile, idFile);
+//                        link.ininLinkPred(idFile, embedFile, testInterFile, testNonInterFile);
+//                        link.calculateAllNDCGMAP();
+//                        perfs[i][t] = link.calculateAvgNDCGMAP();
+//
+//                    }
+//                }
+//                for (int time : times) {
+//                    System.out.format("\t\t%d\t\t", time);
+//                }
+//                System.out.println();
+//                for (int i = 0; i < models.length; i++) {
+//                    System.out.print(models[i] + "\t");
+//                    for (double[] ndcgMap : perfs[i]) {
+//                        System.out.format("%.4f\t%.4f\t", ndcgMap[0], ndcgMap[1]);
+//                    }
+//                    System.out.println();
+//                }
+//            }
+//        }
+//    }
+
     public static void main(String[] args){
         String data = "StackOverflow";
+        int[] topics = new int[]{10, 15, 20, 25, 30, 35, 40, 45, 50};
         for(int dim: new int[]{10}) {
 
             for (int fold : new int[]{1}) {
-                int[] times = new int[]{2, 3, 4};
-                String[] models = new String[]{"EUB", "LDA", "HFT"}; // "LDA", "HFT", "TADW""
+                int[] times = new int[]{2, 3, 4, 5};
+                String[] models = new String[]{"EUB"}; // "LDA", "HFT", "TADW", "EUB", "LDA", "HFT",
 
                 String prefix = "";
-                double[][][] perfs = new double[models.length][times.length][2];
+                double[][][] perfs = new double[topics.length][times.length][2];
                 for (int t = 0; t < times.length; t++) {
                     int time = times[t];
-                    for (int i = 0; i < models.length; i++) {
-                        String model = models[i];
+                    for (int i = 0; i < topics.length; i++) {
+                        String model = models[0];
+                        int topic = topics[i];
                         System.out.format("-----current model-%s-time-%d-dim-%d------\n", model, time, dim);
 
-                        String embedFile = String.format("/Users/lin/DataWWW2019/UserEmbedding/%s_%s_embedding_dim_%d_fold_%d.txt", data, model, dim, fold);
+                        String idFile = String.format("/Users/lin/DataWWW2019/UserEmbedding/%s_userids.txt", data);
+                        String embedFile = String.format("/Users/lin/DataWWW2019/UserEmbedding/%s_%s_embedding_dim_%d_fold_%d_topic_%d.txt", data, model, dim, fold, topic);
                         String testInterFile = String.format("./data/DataEUB/CV4Edges/%sCVIndex4Interaction_fold_%d_test.txt", data, fold);
                         String testNonInterFile = String.format("./data/DataEUB/CV4Edges/%sCVIndex4NonInteraction_time_%d_fold_%d.txt", data, time, fold);
 
                         LinkPredictionWithUserEmbedding link = new LinkPredictionWithUserEmbedding();
-                        link.ininLinkPred(embedFile, testInterFile, testNonInterFile);
+//                        link.saveUserIds(embedFile, idFile);
+                        link.ininLinkPred(idFile, embedFile, testInterFile, testNonInterFile);
                         link.calculateAllNDCGMAP();
                         perfs[i][t] = link.calculateAvgNDCGMAP();
 
@@ -358,8 +465,8 @@ public class LinkPredictionWithUserEmbedding {
                     System.out.format("\t\t%d\t\t", time);
                 }
                 System.out.println();
-                for (int i = 0; i < models.length; i++) {
-                    System.out.print(models[i] + "\t");
+                for (int i = 0; i < topics.length; i++) {
+                    System.out.print(topics[i] + "\t");
                     for (double[] ndcgMap : perfs[i]) {
                         System.out.format("%.4f\t%.4f\t", ndcgMap[0], ndcgMap[1]);
                     }
