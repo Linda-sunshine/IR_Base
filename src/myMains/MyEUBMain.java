@@ -129,7 +129,7 @@ public class MyEUBMain {
 
         long start = System.currentTimeMillis();
         LDA_Variational tModel = null;
-        String model = "EUB";
+        String model = "LDA";
 
         if(model.equals("LDA")){
             tModel = new LDA_Variational_multithread(emMaxIter, emConverge, beta, corpus,
