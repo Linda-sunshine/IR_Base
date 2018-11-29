@@ -722,4 +722,17 @@ public class MultiThreadedNetworkAnalyzer extends MultiThreadedLinkPredAnalyzer 
         System.out.format("[Stat]Edges-Light: %d, Medium: %d, Heavy: %d, max: %d.\n", light, medium, heavy, max);
     }
 
+    public void calcDataStat(){
+        double avgDocLen = 0;
+        double docSize = 0;
+        for(_User u: m_users){
+            for(_Review r: u.getReviews()){
+                docSize++;
+                avgDocLen += r.getTotalDocLength();
+            }
+        }
+        avgDocLen /= docSize;
+        System.out.format("[Info]Avg doc length: %.2f\n", avgDocLen);
+    }
+
 }
