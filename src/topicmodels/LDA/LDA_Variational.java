@@ -394,4 +394,31 @@ public class LDA_Variational extends pLSA {
 			e.printStackTrace();
 		}
 	}
+
+	public void printGamma(String dir){
+		try{
+			String gammaFileName = String.format("%sLDA_gamma.txt", dir);
+			PrintWriter writer = new PrintWriter(new File(gammaFileName));
+			for(_Doc d: m_trainSet){
+				_Review r = (_Review) d;
+				writer.format("%s\t%s\t%d\t", r.getUserID(), r.getID(), r.m_sstat.length);
+				for(double stat: r.m_sstat){
+					writer.format("%.5f\t", stat);
+				}
+				writer.write("\n");
+				writer.write(r.getSource()+"\n");
+			}
+			writer.close();
+			String sourceFileName = String.format("%sLDA_source.txt", dir);
+			writer = new PrintWriter(new File(sourceFileName));
+			for(_Doc d: m_trainSet){
+				_Review r = (_Review) d;
+				writer.format("%s\t%s\t%d\t", r.getUserID(), r.getID(), r.m_sstat.length);
+				writer.write(r.getSource()+"\n");
+			}
+			writer.close();
+		} catch(IOException e){
+			e.printStackTrace();
+		}
+	}
 }
