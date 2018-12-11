@@ -431,47 +431,43 @@ public class LinkPredictionWithUserEmbedding {
 //    }
 
     public static void main(String[] args){
-        String data = "StackOverflow";
-        int[] topics = new int[]{10, 15, 20, 25, 30, 35, 40, 45, 50};
+        String data = "YelpNew";
+        int[] times = new int[]{2, 3, 4, 5};
+        String[] models = new String[]{"EUB"}; // "LDA", "HFT", "TADW", "EUB", "LDA", "HFT"
+        int[] folds = new int[]{0, 1, 2, 3, 4};
         for(int dim: new int[]{10}) {
+            double[][][] perfs = new double[folds.length][times.length][2];
+            String prefix = "";
+            for (int t = 0; t < times.length; t++) {
+                int time = times[t];
+                for (int i = 0; i < folds.length; i++) {
+                    int fold = folds[i];
+                    String model = models[0];
+                    System.out.format("-----current model-%s-time-%d-dim-%d------\n", model, time, dim);
 
-            for (int fold : new int[]{1}) {
-                int[] times = new int[]{2, 3, 4, 5};
-                String[] models = new String[]{"EUB"}; // "LDA", "HFT", "TADW", "EUB", "LDA", "HFT",
+                    String idFile = String.format("/Users/lin/DataWWW2019/UserEmbedding/%s_userids.txt", data);
+                    String embedFile = String.format("/Users/lin/DataWWW2019/UserEmbedding/%s_%s_embedding_dim_%d_fold_%d.txt", data, model, dim, fold);
+                    String testInterFile = String.format("./data/DataEUB/CV4Edges/%sCVIndex4Interaction_fold_%d_test.txt", data, fold);
+                    String testNonInterFile = String.format("./data/DataEUB/CV4Edges/%sCVIndex4NonInteraction_time_%d_fold_%d.txt", data, time, fold);
 
-                String prefix = "";
-                double[][][] perfs = new double[topics.length][times.length][2];
-                for (int t = 0; t < times.length; t++) {
-                    int time = times[t];
-                    for (int i = 0; i < topics.length; i++) {
-                        String model = models[0];
-                        int topic = topics[i];
-                        System.out.format("-----current model-%s-time-%d-dim-%d------\n", model, time, dim);
-
-                        String idFile = String.format("/Users/lin/DataWWW2019/UserEmbedding/%s_userids.txt", data);
-                        String embedFile = String.format("/Users/lin/DataWWW2019/UserEmbedding/%s_%s_embedding_dim_%d_fold_%d_topic_%d.txt", data, model, dim, fold, topic);
-                        String testInterFile = String.format("./data/DataEUB/CV4Edges/%sCVIndex4Interaction_fold_%d_test.txt", data, fold);
-                        String testNonInterFile = String.format("./data/DataEUB/CV4Edges/%sCVIndex4NonInteraction_time_%d_fold_%d.txt", data, time, fold);
-
-                        LinkPredictionWithUserEmbedding link = new LinkPredictionWithUserEmbedding();
+                    LinkPredictionWithUserEmbedding link = new LinkPredictionWithUserEmbedding();
 //                        link.saveUserIds(embedFile, idFile);
-                        link.ininLinkPred(idFile, embedFile, testInterFile, testNonInterFile);
-                        link.calculateAllNDCGMAP();
-                        perfs[i][t] = link.calculateAvgNDCGMAP();
+                    link.ininLinkPred(idFile, embedFile, testInterFile, testNonInterFile);
+                    link.calculateAllNDCGMAP();
+                    perfs[i][t] = link.calculateAvgNDCGMAP();
 
-                    }
                 }
-                for (int time : times) {
-                    System.out.format("\t\t%d\t\t", time);
+            }
+            for (int time : times) {
+                System.out.format("\t\t%d\t\t", time);
+            }
+            System.out.println();
+            for (int i = 0; i < folds.length; i++) {
+                System.out.print(folds[i] + "\t");
+                for (double[] ndcgMap : perfs[i]) {
+                    System.out.format("%.4f\t%.4f\t", ndcgMap[0], ndcgMap[1]);
                 }
                 System.out.println();
-                for (int i = 0; i < topics.length; i++) {
-                    System.out.print(topics[i] + "\t");
-                    for (double[] ndcgMap : perfs[i]) {
-                        System.out.format("%.4f\t%.4f\t", ndcgMap[0], ndcgMap[1]);
-                    }
-                    System.out.println();
-                }
             }
         }
     }
