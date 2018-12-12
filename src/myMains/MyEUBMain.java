@@ -38,9 +38,9 @@ public class MyEUBMain {
 
         String prefix = "./data/CoLinAdapt";
         String providedCV = String.format("%s/%s/%sSelectedVocab.txt", prefix, dataset, dataset);
-        String userFolder = String.format("%s/%s/Users", prefix, dataset);
-
-        int kFold = 5, k = 0;
+        String userFolder = String.format("%s/%s/Users_1000", prefix, dataset);
+        for(int k: new int[]{0, 1, 2, 3, 4}){
+        int kFold = 5;
         int time = 2;
 //        for(int time: new int[]{2, 3, 4, 5, 6, 7, 8}) {
 //        /***Feature selection**/
@@ -50,8 +50,8 @@ public class MyEUBMain {
 //        analyzer.featureSelection("./data/StackOverflow_DF_10k.txt", "DF", 10000, 100, 5000);
 
         String orgFriendFile = String.format("%s/%s/%sFriends_org.txt", prefix, dataset, dataset);
-        String friendFile = String.format("%s/%s/%sFriends.txt", prefix, dataset, dataset);
-        String cvIndexFile = String.format("%s/%s/%sCVIndex.txt", prefix, dataset, dataset);
+        String friendFile = String.format("%s/%s/%sFriends_1000.txt", prefix, dataset, dataset);
+        String cvIndexFile = String.format("%s/%s/%sCVIndex_1000.txt", prefix, dataset, dataset);
 //        String cvIndexFile4Interaction = String.format("%s/%s/%sCVIndex4Interaction.txt", prefix, dataset, dataset);
         String cvIndexFile4Interaction = String.format("%s/%s/%sCVIndex4Interaction_fold_%d_train.txt", prefix, dataset, dataset, k);
         String cvIndexFile4NonInteraction = String.format("%s/%s/%sCVIndex4NonInteraction_time_%d.txt", prefix, dataset, dataset, time);
@@ -125,7 +125,7 @@ public class MyEUBMain {
         _Corpus corpus = analyzer.getCorpus();
 
         /***Start running joint modeling of user embedding and topic embedding****/
-        int emMaxIter = 50, number_of_topics = 20, varMaxIter = 10, embeddingDim = 10, innerIter = 1;
+        int emMaxIter = 50, number_of_topics = 30, varMaxIter = 10, embeddingDim = 10, innerIter = 1;
         //these two parameters must be larger than 1!!!
         double emConverge = 1e-10, alpha = 1 + 1e-2, beta = 1 + 1e-3, lambda = 1 + 1e-3, varConverge = 1e-6, stepSize = 1e-3;
         boolean alphaFlag = true, gammaFlag = true, betaFlag = true, tauFlag = true, xiFlag = true, rhoFlag = true;
@@ -133,7 +133,7 @@ public class MyEUBMain {
 
         long start = System.currentTimeMillis();
         LDA_Variational tModel = null;
-        String model = "LDA";
+        String model = "EUB";
 
         if(model.equals("LDA")){
             tModel = new LDA_Variational_multithread(emMaxIter, emConverge, beta, corpus,
@@ -174,6 +174,6 @@ public class MyEUBMain {
             // the total time of training and testing in the unit of hours
             double hours = (end - start)/((1000*60*60) * 1.0);
             System.out.print(String.format("[Time]This training+testing process took %.4f hours.\n", hours));
-        }
+        }}
     }
 }
