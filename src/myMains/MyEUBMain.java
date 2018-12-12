@@ -33,12 +33,12 @@ public class MyEUBMain {
         int lengthThreshold = 5; // Document length threshold
         int numberOfCores = Runtime.getRuntime().availableProcessors();
 
-        String dataset = "YelpNew"; // "StackOverflow", "YelpNew"
+        String dataset = "StackOverflow"; // "StackOverflow", "YelpNew"
         String tokenModel = "./data/Model/en-token.bin"; // Token model.
 
         String prefix = "./data/CoLinAdapt";
         String providedCV = String.format("%s/%s/%sSelectedVocab.txt", prefix, dataset, dataset);
-        String userFolder = String.format("%s/%s/Users_1000", prefix, dataset);
+        String userFolder = String.format("%s/%s/Users", prefix, dataset);
         for(int k: new int[]{0, 1, 2, 3, 4}){
         int kFold = 5;
         int time = 2;
@@ -50,8 +50,8 @@ public class MyEUBMain {
 //        analyzer.featureSelection("./data/StackOverflow_DF_10k.txt", "DF", 10000, 100, 5000);
 
         String orgFriendFile = String.format("%s/%s/%sFriends_org.txt", prefix, dataset, dataset);
-        String friendFile = String.format("%s/%s/%sFriends_1000.txt", prefix, dataset, dataset);
-        String cvIndexFile = String.format("%s/%s/%sCVIndex_1000.txt", prefix, dataset, dataset);
+        String friendFile = String.format("%s/%s/%sFriends.txt", prefix, dataset, dataset);
+        String cvIndexFile = String.format("%s/%s/%sCVIndex.txt", prefix, dataset, dataset);
 //        String cvIndexFile4Interaction = String.format("%s/%s/%sCVIndex4Interaction.txt", prefix, dataset, dataset);
         String cvIndexFile4Interaction = String.format("%s/%s/%sCVIndex4Interaction_fold_%d_train.txt", prefix, dataset, dataset, k);
         String cvIndexFile4NonInteraction = String.format("%s/%s/%sCVIndex4NonInteraction_time_%d.txt", prefix, dataset, dataset, time);
@@ -133,7 +133,7 @@ public class MyEUBMain {
 
         long start = System.currentTimeMillis();
         LDA_Variational tModel = null;
-        String model = "EUB";
+        String model = "LDA";
 
         if(model.equals("LDA")){
             tModel = new LDA_Variational_multithread(emMaxIter, emConverge, beta, corpus,
