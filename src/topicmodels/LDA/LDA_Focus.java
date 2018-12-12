@@ -240,7 +240,7 @@ public class LDA_Focus extends LDA_Variational {
             wid = fv[n].getIndex();
             v = fv[n].getValue();
             for(int i=0; i<number_of_topics; i++)
-                logLikelihood += d.m_phi[n][i] * (diGamma[i] + v*topic_term_probabilty[i][wid] - Math.log(d.m_phi[n][i]));
+                logLikelihood += v * d.m_phi[n][i] * (diGamma[i] + topic_term_probabilty[i][wid] - Math.log(d.m_phi[n][i]));
         }
 
         return logLikelihood;
