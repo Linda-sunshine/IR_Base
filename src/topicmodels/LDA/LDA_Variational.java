@@ -364,9 +364,9 @@ public class LDA_Variational extends pLSA {
 	}
 
 	// save each document's phi and the beta learned from all the documents
-	public void printPhiBeta(String dir){
+	public void printPhi(String dir){
 		try{
-			String phiFileName = String.format("%sLDA_phi.txt", dir);
+			String phiFileName = String.format("%s_Phi.txt", dir);
 			PrintWriter writer = new PrintWriter(new File(phiFileName));
 			for(_Doc d: m_trainSet){
 				_Review r = (_Review) d;
@@ -380,7 +380,17 @@ public class LDA_Variational extends pLSA {
 				}
 			}
 			writer.close();
-			String betaFileName = String.format("%sLDA_beta.txt", dir);
+
+		} catch(IOException e){
+			e.printStackTrace();
+		}
+	}
+
+	// save each document's phi and the beta learned from all the documents
+	public void printBeta(String dir){
+		try{
+			String betaFileName = String.format("%s_Beta.txt", dir);
+			PrintWriter writer = new PrintWriter(new File(betaFileName));
 			writer = new PrintWriter(new File(betaFileName));
 			writer.format("%d\t%d\n", number_of_topics, vocabulary_size);
 			for(double[] topic: topic_term_probabilty){
@@ -397,7 +407,7 @@ public class LDA_Variational extends pLSA {
 
 	public void printGamma(String dir){
 		try{
-			String gammaFileName = String.format("%sLDA_gamma.txt", dir);
+			String gammaFileName = String.format("%s_gamma.txt", dir);
 			PrintWriter writer = new PrintWriter(new File(gammaFileName));
 			for(_Doc d: m_trainSet){
 				_Review r = (_Review) d;
@@ -409,7 +419,7 @@ public class LDA_Variational extends pLSA {
 				writer.write(r.getSource()+"\n");
 			}
 			writer.close();
-			String sourceFileName = String.format("%sLDA_source.txt", dir);
+			String sourceFileName = String.format("%s_source.txt", dir);
 			writer = new PrintWriter(new File(sourceFileName));
 			for(_Doc d: m_trainSet){
 				_Review r = (_Review) d;

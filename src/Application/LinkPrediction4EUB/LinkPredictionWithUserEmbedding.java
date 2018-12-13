@@ -434,7 +434,7 @@ public class LinkPredictionWithUserEmbedding {
         String data = "YelpNew";
         int[] times = new int[]{2, 3, 4, 5};
         String[] models = new String[]{"EUB"}; // "LDA", "HFT", "TADW", "EUB", "LDA", "HFT"
-        int[] folds = new int[]{0, 1, 2, 3, 4};
+        int[] folds = new int[]{1, 2, 3, 4};
         for(int dim: new int[]{10}) {
             double[][][] perfs = new double[folds.length][times.length][2];
             String prefix = "";

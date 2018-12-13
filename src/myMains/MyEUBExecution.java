@@ -101,6 +101,7 @@ public class MyEUBExecution {
         } else{
             ((EUB) tModel).fixedCrossValidation(param.m_kFold, param.m_saveDir);
         }
+        tModel.printBeta(param.m_saveDir);
         long end = System.currentTimeMillis();
 
         // the total time of training and testing in the unit of hours
