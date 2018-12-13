@@ -336,8 +336,8 @@ public class pLSA extends twoTopic {
 //		printBeta(betaPath);
 
 		//aggregate parameter \gamma by user/item
-		printTopWords(k, phiPathByUser, getDocByUser(), topicmodel);
-		printTopWords(k, phiPathByItem, getDocByItem(), topicmodel);
+		printTopWords(k, phiPathByUser, getDocByUser(), "EUB");
+		printTopWords(k, phiPathByItem, getDocByItem(), "EUB");
 
 		//overall topic words
 		printTopWords(k, String.format("%s%s_topWords_%d.txt", folderName, topicmodel, number_of_topics));
