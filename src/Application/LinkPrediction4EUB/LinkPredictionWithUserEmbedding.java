@@ -142,6 +142,8 @@ public class LinkPredictionWithUserEmbedding {
     public void loadTestOneEdges(String filename){
         int label = 1, count = 0;
         try {
+            m_testUserMap.clear();
+            m_testUserIds.clear();
             File file = new File(filename);
             BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(file), "UTF-8"));
             String line;
@@ -431,10 +433,10 @@ public class LinkPredictionWithUserEmbedding {
 //    }
 
     public static void main(String[] args){
-        String data = "YelpNew";
+        String data = "StackOverflow";
         int[] times = new int[]{2, 3, 4, 5};
         String[] models = new String[]{"EUB"}; // "LDA", "HFT", "TADW", "EUB", "LDA", "HFT"
-        int[] folds = new int[]{1, 2, 3, 4};
+        int[] folds = new int[]{1};
         for(int dim: new int[]{10}) {
             double[][][] perfs = new double[folds.length][times.length][2];
             String prefix = "";
