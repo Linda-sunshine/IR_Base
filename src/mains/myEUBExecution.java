@@ -131,10 +131,7 @@ public class myEUBExecution {
                     //train
                     tModel.setTrainSet(analyzer.getDocsByCVIndex(3));//3 indicates training doc
                     System.out.format("[Info]train size = %d....\n", tModel.getTrainSize());
-                    long start = System.currentTimeMillis();
-                    tModel.EM();
-                    System.out.format("[Info]%s Train finished in %.2f seconds...\n",
-                            tModel.toString(), (System.currentTimeMillis()-start)/1000.0);
+
                     //test
                     for(int i = 0; i < result_dim; i++) {
                         if(i < result_dim-1)
