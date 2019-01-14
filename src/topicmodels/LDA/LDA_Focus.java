@@ -292,7 +292,7 @@ public class LDA_Focus extends LDA_Variational {
         m_mapByUser_test = m_bipartite.getMapByUser_test();
         m_mapByItem_test = m_bipartite.getMapByItem_test();
 
-        double[] results = Evaluation2();
+        double[] results = Evaluation3();
         System.out.format("[Info]%s Train/Test finished in %.2f seconds...\n", this.toString(), (System.currentTimeMillis()-start)/1000.0);
 
         return results;
@@ -300,6 +300,31 @@ public class LDA_Focus extends LDA_Variational {
 
     @Override
     public double[] Evaluation2() {
+        analyzeCorpus();
+
+        long start = System.currentTimeMillis();
+        //train
+        m_bipartite.analyzeBipartite(m_trainSet, "train");
+        m_mapByUser = m_bipartite.getMapByUser();
+        m_mapByItem = m_bipartite.getMapByItem();
+        EM();
+
+        //test
+        m_bipartite.analyzeBipartite(m_testSet, "test");
+        m_mapByUser_test = m_bipartite.getMapByUser_test();
+        m_mapByItem_test = m_bipartite.getMapByItem_test();
+
+        double[] results = Evaluation3();
+        System.out.format("[Info]%s Train/Test finished in %.2f seconds...\n", this.toString(), (System.currentTimeMillis()-start)/1000.0);
+
+        double[] result_all = new double[2];
+        result_all[0] = results[8];
+        result_all[1] = results[9];
+
+        return result_all;
+    }
+
+    public double[] Evaluation3() {
         m_collectCorpusStats = false;
         m_likelihood_array = new double[5];
         m_perplexity_array = new double[5];

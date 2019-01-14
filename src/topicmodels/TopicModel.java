@@ -344,6 +344,8 @@ public abstract class TopicModel {
 	}
 
     public double[] Evaluation2() {
+		EM();
+
         m_collectCorpusStats = false;
         double perplexity = 0, loglikelihood, sumLikelihood = 0;
         double totalWords = 0.0;

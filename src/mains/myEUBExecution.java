@@ -35,7 +35,9 @@ public class myEUBExecution {
         String fvFile = String.format("%s/%s/%s_features.txt", param.m_prefix, param.m_source, param.m_source);
         String reviewFolder = String.format("%s/data/", dataset);
         String cvIndexFile = String.format("%s/%sCVIndex.txt", dataset, param.m_source);
-        String outputFolder = String.format("%s/output/%s/%s/", param.m_prefix, param.m_source, param.m_set);
+//        String outputFolder = String.format("%s/output/%s/%s/", param.m_prefix, param.m_source, param.m_set);
+        String outputFolder = String.format("%s/output%s/%s/%s/",
+                param.m_prefix, param.m_flag_coldstart?"Coldstart":"", param.m_source, param.m_set);
 
         MultiThreadedNetworkAnalyzer analyzer = new MultiThreadedNetworkAnalyzer(tokenModel, classNumber, fvFile,
                 Ngram, lengthThreshold, numberOfCores, true);
@@ -106,16 +108,46 @@ public class myEUBExecution {
             System.out.format("[Dataset]%d users are loaded.\n", analyzer.getUsers().size());
             analyzer.loadCVIndex(cvIndexFile);
 
+            if(param.m_flag_coldstart)
+                result_dim=4;
+
             double[][] perf = new double[param.m_crossV][result_dim];
             double[][] like = new double[param.m_crossV][result_dim];
             System.out.println("[Info]Start FIXED cross validation...");
             for(int k = 0; k <param.m_crossV; k++){
-                // label test by cvIndex==k
-                analyzer.maskDocByCVIndex(k);
-                tModel.setCorpus(analyzer.getCorpus());
+                System.out.format("====================\n[Info]%s Fold No. %d: \n",
+                        param.m_flag_coldstart?"COLD start":"", k);
+                double[] results;
 
-                System.out.format("====================\n[Info]Fold No. %d: \n", k);
-                double[] results = tModel.oneFoldValidation();
+                if(!param.m_flag_coldstart) {
+                    analyzer.maskDocByCVIndex(k);
+                    tModel.setCorpus(analyzer.getCorpus());
+                    results = tModel.oneFoldValidation();
+                } else {
+                    result_dim = 4;
+                    results = new double[8];
+                    cvIndexFile = String.format("%s/%s_cold_start_4docs_fold_%d.txt", dataset, param.m_source, k);
+                    analyzer.loadCVIndex(cvIndexFile);
+                    //train
+                    tModel.setTrainSet(analyzer.getDocsByCVIndex(3));//3 indicates training doc
+                    System.out.format("[Info]train size = %d....\n", tModel.getTrainSize());
+
+                    //test
+                    for(int i = 0; i < result_dim; i++) {
+                        if(i < result_dim-1)
+                            tModel.setTestSet(analyzer.getDocsByCVIndex(i));
+                        else {
+                            tModel.setTestSet(analyzer.getDocsByCVIndex(0));
+                            tModel.addTestSet(analyzer.getDocsByCVIndex(1));
+                            tModel.addTestSet(analyzer.getDocsByCVIndex(2));
+                        }
+                        double[] cur_result = tModel.Evaluation2();
+                        results[2*i] = cur_result[0];
+                        results[2*i+1] = cur_result[1];
+                        System.out.format("[Info]Part %d test size = %d...\n", i, tModel.getTestSize());
+                    }
+                }
+
                 for(int i = 0; i < result_dim; i++){
                     perf[k][i] = results[2*i];
                     like[k][i] = results[2*i+1];
@@ -126,10 +158,26 @@ public class myEUBExecution {
                 tModel.printParameterAggregation(param.m_topk, resultFolder, param.m_topicmodel);
                 tModel.printTopWords(param.m_topk);
 
-                if(param.m_flag_tune){
-                    System.out.format("[Info]Tuning mode: only run one fold to save time.\n");
-                    break;
-                }
+                // label test by cvIndex==k
+//                analyzer.maskDocByCVIndex(k);
+//                tModel.setCorpus(analyzer.getCorpus());
+//
+//                System.out.format("====================\n[Info]Fold No. %d: \n", k);
+//                double[] results = tModel.oneFoldValidation();
+//                for(int i = 0; i < result_dim; i++){
+//                    perf[k][i] = results[2*i];
+//                    like[k][i] = results[2*i+1];
+//                }
+//
+//                String resultFolder = outputFolder + k + "/";
+//                new File(resultFolder).mkdirs();
+//                tModel.printParameterAggregation(param.m_topk, resultFolder, param.m_topicmodel);
+//                tModel.printTopWords(param.m_topk);
+//
+//                if(param.m_flag_tune){
+//                    System.out.format("[Info]Tuning mode: only run one fold to save time.\n");
+//                    break;
+//                }
             }
 
             //output the performance statistics
