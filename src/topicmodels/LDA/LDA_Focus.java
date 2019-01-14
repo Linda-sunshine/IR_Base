@@ -485,14 +485,14 @@ public class LDA_Focus extends LDA_Variational {
             PrintWriter alphaWriter = new PrintWriter(file);
             alphaWriter.format("%d\t%d\n", m_mapByUser.size(), number_of_topics);
 
-            for (Integer idx : m_mapByUser.keySet()) {
+            for (int idx = 0; idx < m_alphaList.length; idx++) {
                 alphaWriter.format("%s", m_users.get(idx).getUserID());
                 for (int i = 0; i < m_alphaList[idx].length; i++) {
                    alphaWriter.format("\t%.5f", m_alphaList[idx][i]);
                 }
                 alphaWriter.write("\n");
             }
-
+            alphaWriter.close();
         } catch(FileNotFoundException ex){
             System.err.format("[Error]Failed to open file %s\n", folderName);
         }
