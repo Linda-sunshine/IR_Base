@@ -94,6 +94,7 @@ public class MyEUBExecution {
 
         ((EUB) tModel).setInnerMaxIter(param.m_innerIter);
         ((EUB) tModel).setInferMaxIter(param.m_inferIter);
+        ((EUB) tModel).setParamMaxIter(param.m_paramIter);
         ((EUB) tModel).setStepSize(param.m_stepSize);
 
         if(param.m_multiFlag && param.m_coldStartFlag){

@@ -70,8 +70,8 @@ public class EUB extends LDA_Variational {
     protected boolean m_adaFlag = false;
 
     protected int m_innerMaxIter = 1;
-    protected int m_docInnerMaxIter = 1;
     protected int m_inferMaxIter = 1;
+    protected int m_paramIterMax = 20;
 
     public EUB(int number_of_iteration, double converge, double beta,
                _Corpus c, double lambda, int number_of_topics, double alpha,
@@ -125,6 +125,10 @@ public class EUB extends LDA_Variational {
 
     public void setInferMaxIter(int it){
         m_inferMaxIter = it;
+    }
+
+    public void setParamMaxIter(int it){
+        m_paramIterMax = it;
     }
 
     // Load the data for later user
@@ -578,7 +582,7 @@ public class EUB extends LDA_Variational {
     }
 
     protected double varInference4Doc(_Doc4EUB doc) {
-        int maxIter = (doc.getType() == _Doc.rType.TEST) ? m_inferMaxIter : m_docInnerMaxIter;
+        int maxIter = (doc.getType() == _Doc.rType.TEST) ? m_inferMaxIter : m_innerMaxIter;
         double curLoglikelihood = 0.0, lastLoglikelihood = 1.0, converge = 0.0;
         int iter = 0;
         boolean warning;
@@ -752,7 +756,7 @@ public class EUB extends LDA_Variational {
 //        double[] mu_delta = Arrays.copyOfRange(ui.m_mu_delta, 0, ui.m_mu_delta.length);
         double[] muH = new double[m_users.size()];
 
-        double fValue, lastFValue = 1.0, cvg = 1e-6, diff, iterMax = 30, iter = 0;
+        double fValue, lastFValue = 1.0, cvg = 1e-6, diff, iter = 0;
         do {
             Arrays.fill(muG, 0);
             fValue = 0;
@@ -775,7 +779,7 @@ public class EUB extends LDA_Variational {
             diff = (lastFValue - fValue) / lastFValue;
             lastFValue = fValue;
 
-        } while(iter++ < iterMax && Math.abs(diff) > cvg);
+        } while(iter++ < m_paramIterMax && Math.abs(diff) > cvg);
         if(m_displayLv != 0)
             System.out.println("------------------------");
     }
@@ -799,7 +803,8 @@ public class EUB extends LDA_Variational {
     protected void update_delta_ij_sigma(_User4EUB ui){
         int i = m_usersIndex.get(ui.getUserID());
 
-        double fValue, lastFValue = 1.0, cvg = 1e-6, diff, iterMax = 30, iter = 0;
+        double fValue, lastFValue = 1.0, cvg = 1e-6, diff, iter = 0;
+
         double[] sigmaG = new double[m_users.size()];
         double[] sigmaH = new double[m_users.size()];
 //        double[] sigma_delta = Arrays.copyOfRange(ui.m_sigma_delta, 0, ui.m_sigma_delta.length);
@@ -830,7 +835,7 @@ public class EUB extends LDA_Variational {
             diff = (lastFValue - fValue) / lastFValue;
             lastFValue = fValue;
 
-        } while(iter++ < iterMax && Math.abs(diff) > cvg);
+        } while(iter++ < m_paramIterMax && Math.abs(diff) > cvg);
         if(m_displayLv != 0)
             System.out.println("------------------------");    }
 
@@ -890,7 +895,7 @@ public class EUB extends LDA_Variational {
         int N = doc.getTotalDocLength();
 
         double fValue, dotProd, moment;
-        double lastFValue = 1.0, cvg = 1e-6, diff, iterMax = 30, iter = 0;
+        double lastFValue = 1.0, cvg = 1e-6, diff, iter = 0;
 
         double[] muG = new double[number_of_topics];
         double[] muH = new double[number_of_topics];
@@ -919,7 +924,7 @@ public class EUB extends LDA_Variational {
             diff = (lastFValue - fValue) / lastFValue;
             lastFValue = fValue;
 
-        } while(iter++ < iterMax && Math.abs(diff) > cvg);
+        } while(iter++ < m_paramIterMax && Math.abs(diff) > cvg);
         if(m_displayLv != 0)
             System.out.println("------------------------");
     }
@@ -940,7 +945,7 @@ public class EUB extends LDA_Variational {
     protected void update_theta_id_sigma(_Doc4EUB doc){
         int N = doc.getTotalDocLength();
         double fValue, moment;
-        double lastFValue = 1.0, cvg = 1e-6, diff, iterMax = 30, iter = 0;
+        double lastFValue = 1.0, cvg = 1e-6, diff, iter = 0;
 
         double[] sigmaSqrtG = new double[number_of_topics];
         double[] sigmaSqrtH = new double[number_of_topics];
@@ -972,7 +977,7 @@ public class EUB extends LDA_Variational {
             printFValue(lastFValue, fValue);
             diff = (lastFValue - fValue) / lastFValue;
             lastFValue = fValue;
-        } while(iter++ < iterMax && Math.abs(diff) > cvg);
+        } while(iter++ < m_paramIterMax && Math.abs(diff) > cvg);
         for(int k=0; k<number_of_topics; k++)
             doc.m_sigma_theta[k] = doc.m_sigma_sqrt_theta[k] * doc.m_sigma_sqrt_theta[k];
         if(m_displayLv != 0)

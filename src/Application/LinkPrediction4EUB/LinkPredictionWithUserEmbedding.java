@@ -433,18 +433,17 @@ public class LinkPredictionWithUserEmbedding {
 //    }
 
     public static void main(String[] args){
-        String data = "StackOverflow";
+        String data = "YelpNew";
         int[] times = new int[]{2, 3, 4, 5};
         String[] models = new String[]{"EUB"}; // "LDA", "HFT", "TADW", "EUB", "LDA", "HFT"
-        int[] folds = new int[]{1};
+        for(int fold: new int[]{1, 2, 3, 4}){
         for(int dim: new int[]{10}) {
-            double[][][] perfs = new double[folds.length][times.length][2];
+            double[][][] perfs = new double[models.length][times.length][2];
             String prefix = "";
             for (int t = 0; t < times.length; t++) {
                 int time = times[t];
-                for (int i = 0; i < folds.length; i++) {
-                    int fold = folds[i];
-                    String model = models[0];
+                for (int i = 0; i < models.length; i++) {
+                    String model = models[i];
                     System.out.format("-----current model-%s-time-%d-dim-%d------\n", model, time, dim);
 
                     String idFile = String.format("/Users/lin/DataWWW2019/UserEmbedding/%s_userids.txt", data);
@@ -464,13 +463,13 @@ public class LinkPredictionWithUserEmbedding {
                 System.out.format("\t\t%d\t\t", time);
             }
             System.out.println();
-            for (int i = 0; i < folds.length; i++) {
-                System.out.print(folds[i] + "\t");
+            for (int i = 0; i < models.length; i++) {
+                System.out.print(models[i] + "\t");
                 for (double[] ndcgMap : perfs[i]) {
                     System.out.format("%.4f\t%.4f\t", ndcgMap[0], ndcgMap[1]);
                 }
                 System.out.println();
             }
         }
-    }
+    }}
 }

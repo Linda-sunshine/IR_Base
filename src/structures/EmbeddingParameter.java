@@ -13,6 +13,8 @@ public class EmbeddingParameter {
     public int m_varIter = 10;
     public int m_innerIter = 1;
     public int m_inferIter = 3;
+    public int m_paramIter = 20;
+
     public int m_embeddingDim = 10;
     public int m_kFold = 0;
 
@@ -54,6 +56,8 @@ public class EmbeddingParameter {
                 m_varIter = Integer.valueOf(argv[i]);
             else if (argv[i - 1].equals("-innerIter"))
                 m_innerIter = Integer.valueOf(argv[i]);
+            else if (argv[i - 1].equals("-paramIter"))
+                m_paramIter = Integer.valueOf(argv[i]);
             else if (argv[i - 1].equals("-dim"))
                 m_embeddingDim = Integer.valueOf(argv[i]);
             else if (argv[i - 1].equals("-multi"))
