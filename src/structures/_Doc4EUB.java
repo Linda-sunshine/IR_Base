@@ -40,6 +40,7 @@ public class _Doc4EUB extends _Review {
     }
 
     //create necessary structure for variational inference
+    @Override
     public void setTopics4Variational(int k, double alpha) {
         if (m_topics==null || m_topics.length!=k) {
             m_topics = new double[k];
