@@ -11,7 +11,7 @@ import utils.Utils;
 public class _Topic4EUB {
     public int m_index;
     public double[] m_mu_phi;
-    public double[][] m_sigma_phi;
+    public double[][] m_sigma_phi;//do we only need the diagonal?
 
     public _Topic4EUB(int index){
         m_index = index;
@@ -26,9 +26,8 @@ public class _Topic4EUB {
         m_sigma_phi = new double[k][k];
 
         Utils.randomize(m_mu_phi, mu);
-        for(int i=0; i<k; i++){
+        for(int i=0; i<k; i++)
             Utils.randomize(m_sigma_phi[i], sigma);
-        }
     }
 
 }

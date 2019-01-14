@@ -1,14 +1,13 @@
 package mains;
 
+import java.io.FileNotFoundException;
+import java.io.IOException;
+
 import Analyzer.MultiThreadedNetworkAnalyzer;
 import opennlp.tools.util.InvalidFormatException;
 import structures._Corpus;
-import topicmodels.LDA.LDA_Variational;
 import topicmodels.UserEmbedding.EUB;
 import topicmodels.multithreads.UserEmbedding.EUB_multithreading;
-
-import java.io.FileNotFoundException;
-import java.io.IOException;
 
 /**
  * @author Lin Gong (lg5bt@virginia.edu)
@@ -62,23 +61,23 @@ public class EUBMain {
         boolean multiFlag = true, adaFlag = false;
 
         long start = System.currentTimeMillis();
-        LDA_Variational tModel = null;
+        EUB tModel = null;
 
         if (multiFlag)
             tModel = new EUB_multithreading(emMaxIter, emConverge, beta, corpus, lambda, number_of_topics, alpha, varMaxIter, varConverge, embeddingDim);
         else
             tModel = new EUB(emMaxIter, emConverge, beta, corpus, lambda, number_of_topics, alpha, varMaxIter, varConverge, embeddingDim);
-        ((EUB) tModel).initLookupTables(analyzer.getUsers());
-        ((EUB) tModel).setModelParamsUpdateFlags(alphaFlag, gammaFlag, betaFlag, tauFlag, xiFlag, rhoFlag);
-        ((EUB) tModel).setMode(mode);
+        tModel.initLookupTables(analyzer.getUsers());
+        tModel.setModelParamsUpdateFlags(alphaFlag, gammaFlag, betaFlag, tauFlag, xiFlag, rhoFlag);
+        tModel.setMode(mode);
 
-        ((EUB) tModel).setInnerMaxIter(innerIter);
-        ((EUB) tModel).setStepSize(stepSize);
+        tModel.setInnerMaxIter(innerIter);
+        tModel.setStepSize(stepSize);
 
         long current = System.currentTimeMillis();
         String saveDir = String.format("./data/embeddingExp/eub/%s_emIter_%d_nuTopics_%d_varIter_%d_innerIter_%d_dim_%d_ada_%b/" +
                 "fold_%d_%d", dataset, emMaxIter, number_of_topics, varMaxIter, innerIter, embeddingDim, adaFlag, k, current);
-        ((EUB) tModel).fixedCrossValidation(k, saveDir);
+        tModel.fixedCrossValidation(k, saveDir);
         long end = System.currentTimeMillis();
         System.out.println("\n[Info]Start time: " + start);
         // the total time of training and testing in the unit of hours

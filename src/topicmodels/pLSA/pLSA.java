@@ -48,6 +48,46 @@ public class pLSA extends twoTopic {
 		}
 	}
 	
+    public void loadTopicTermProbability(String betaFilename){
+        try {
+            // load beta for the whole corpus first
+            File betaFile = new File(betaFilename);
+            BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(betaFile), "UTF-8"));
+            String line = reader.readLine();
+            String[] strs = line.split("\t");
+            int nuTopics = Integer.valueOf(strs[0]);
+            int vocabSize = Integer.valueOf(strs[1]);
+            if(nuTopics != number_of_topics || vocabSize != vocabulary_size){
+                System.err.format("[Error]Wrong input model file for this target model (%dX%d)!\n", number_of_topics, vocabulary_size, nuTopics, vocabSize);
+                reader.close();
+                return;
+            }
+            
+            int count = 0;
+            double[][] topic_term_probability = new double[number_of_topics][vocabulary_size];
+            while((line = reader.readLine()) != null) {
+                strs = line.trim().split("\t");
+                if(strs.length != vocabulary_size) {
+                    System.err.format("Wrong vocabulary size (%d) for topic %d!!", strs.length, count);
+                    reader.close();
+                    return;
+                }
+                
+                double[] oneTopic = new double[vocabulary_size];
+                for(int i=0; i<strs.length; i++){
+                    oneTopic[i] = Double.valueOf(strs[i]);
+                }
+                topic_term_probability[count++] = oneTopic;
+            }
+            // assign the topics to the model
+            this.topic_term_probabilty = topic_term_probability;
+            System.out.format("[Info]Finish loading beta from %s\n", betaFilename);
+            reader.close();
+        } catch(IOException e){
+            e.printStackTrace();
+        }
+    }
+	
 	public void LoadPrior(String filename, double eta) {		
 		if (filename == null || filename.isEmpty())
 			return;

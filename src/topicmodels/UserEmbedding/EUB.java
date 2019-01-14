@@ -24,7 +24,7 @@ public class EUB extends LDA_Variational {
     // Default is CV4Doc
     protected modelType m_mType = modelType.CV4DOC;
 
-    protected ArrayList<_Topic4EUB> m_topics;
+    protected _Topic4EUB[] m_topics;
     protected ArrayList<_User4EUB> m_users;
     protected ArrayList<_Doc4EUB> m_docs;
 
@@ -33,7 +33,7 @@ public class EUB extends LDA_Variational {
     protected HashMap<String, Integer> m_usersIndex;
     // key: user index, value: document index array
     protected HashMap<Integer, ArrayList<Integer>> m_userDocMap;
-    // key: user index, value: interaction indexes
+    // key: user index, value: interaction indices (edges)
     protected HashMap<Integer, HashSet<Integer>> m_networkMap;
 
     // key: doc index, value: user index
@@ -45,16 +45,16 @@ public class EUB extends LDA_Variational {
     protected double u_mu = 0.1, u_sigma = 1;
 
     /*****model parameters*****/
-    // this alpha is differnet from alpha in LDA
-    // alpha is precision parameter for topic embedding in EUB
-    // alpha is a vector parameter for dirichlet distribution
+    // this alpha is different from alpha in LDA
+    // alpha_s is the precision parameter for topic embedding in EUB
+    // alpha is a vector parameter for Dirichlet distribution
     protected double m_alpha_s = 5;
     protected double m_tau = 0.15;
     protected double m_gamma = 10;
     protected double m_xi = 2.0;
 
     /*****Sparsity parameter******/
-    protected double m_rho = 0.001;
+    static public double m_rho = 0.001;
 
     protected int m_displayLv = 0;
     protected double m_stepSize = 1e-3;
@@ -66,7 +66,7 @@ public class EUB extends LDA_Variational {
     protected boolean m_xiFlag = false;
     protected boolean m_rhoFlag = false;
 
-    // whehter we use adam grad to optimize or not
+    // whehter we use adaGrad to optimize or not
     protected boolean m_adaFlag = false;
 
     protected int m_innerMaxIter = 1;
@@ -78,20 +78,23 @@ public class EUB extends LDA_Variational {
                int varMaxIter, double varConverge, int m) {
         super(number_of_iteration, converge, beta, c, lambda, number_of_topics, alpha,
                 varMaxIter, varConverge);
+        
         m_embeddingDim = m;
-        m_topics = new ArrayList<_Topic4EUB>();
+        m_topics = new _Topic4EUB[number_of_topics];
         m_users = new ArrayList<_User4EUB>();
         m_docs = new ArrayList<_Doc4EUB>();
         m_networkMap = new HashMap<Integer, HashSet<Integer>>();
 
-        m_trainSet = new ArrayList<>();
-        m_testSet = new ArrayList<>();
+        m_trainSet = new ArrayList<_Doc>();
+        m_testSet = new ArrayList<_Doc>();
     }
 
+    @Override
     public String toString(){
         return String.format("[EUB]Mode: %s, Dim: %d, Topic number: %d, EmIter: %d, VarIter: %d, innIter: %d.\n",
                 m_mType.toString(), m_embeddingDim, number_of_topics, number_of_iteration, m_varMaxIter, m_innerMaxIter);
     }
+    
     public void setModelParamsUpdateFlags(boolean alphaFlag, boolean gammaFlag, boolean betaFlag,
                                           boolean tauFlag, boolean xiFlag, boolean rhoFlag){
         m_alphaFlag = alphaFlag;
@@ -107,6 +110,9 @@ public class EUB extends LDA_Variational {
             m_mType = modelType.CV4EDGE;
         } else if(mode.equals("cv4doc")){
             m_mType = modelType.CV4DOC;
+        } else {
+        	System.err.format("[Error]Unknown testing mode %s! Set to default document perplexity test...\n");
+        	m_mType = modelType.CV4DOC;
         }
     }
 
@@ -115,19 +121,35 @@ public class EUB extends LDA_Variational {
     }
 
     public void setStepSize(double s){
-        m_stepSize = s;
+    	if (s>0)
+    		m_stepSize = s;
+    	else {
+    		System.err.format("[Error]Step size has to be positive! Set to the default value 1e-3...\n");
+    		m_stepSize = 1e-3;
+    	}
+    		
     }
 
     // iteration time of inside variational inference
     public void setInnerMaxIter(int it){
-        m_innerMaxIter = it;
+    	if (it>0)
+    		m_innerMaxIter = it;
+    	else {
+    		System.err.format("[Error]Maximum iteration for inner iteration has to be positive! Set to the default value 1...\n");
+    		m_innerMaxIter = 1;
+    	}
     }
 
     public void setInferMaxIter(int it){
-        m_inferMaxIter = it;
+    	if (it>0)
+    		m_inferMaxIter = it;
+    	else {
+    		System.err.format("[Error]Maximum iteration for inference iteration has to be positive! Set to the default value 1...\n");
+    		m_inferMaxIter = 1;
+    	}
     }
 
-    // Load the data for later user
+    // Load the data for later use
     public void initLookupTables(ArrayList<_User> users){
         m_usersIndex = new HashMap<String, Integer>();
         m_userDocMap = new HashMap<Integer, ArrayList<Integer>>();
@@ -138,59 +160,24 @@ public class EUB extends LDA_Variational {
             _User4EUB user = new _User4EUB(users.get(i));
             m_users.add(user);
             m_usersIndex.put(user.getUserID(), i);
+            
             initUserDocs(i, user, users.get(i).getReviews());
         }
 
-        for(int k=0; k<number_of_topics; k++){
-            m_topics.add(new _Topic4EUB(k));
-        }
+        for(int k=0; k<number_of_topics; k++)
+            m_topics[k] = new _Topic4EUB(k);
     }
 
-    protected void initUserDocs(int i, _User4EUB user, ArrayList<_Review> reviews){
-
+    protected void initUserDocs(int userID, _User4EUB user, ArrayList<_Review> reviews){
         ArrayList<_Doc4EUB> docs = new ArrayList<_Doc4EUB>();
         for(_Review r: reviews){
             int dIndex = m_docs.size();
             _Doc4EUB doc = new _Doc4EUB(r, dIndex);
             docs.add(doc);
             m_docs.add(doc);
-            m_docUserMap.put(dIndex, i);
+            m_docUserMap.put(dIndex, userID);
         }
         user.setReviews(docs);
-    }
-
-    public void loadTopicTermProbability(String betaFilename){
-
-        try {
-            // load beta for the whole corpus first
-            File betaFile = new File(betaFilename);
-            BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(betaFile), "UTF-8"));
-            String line = reader.readLine();
-            String[] strs = line.split("\t");
-            int nuTopics = Integer.valueOf(strs[0]);
-            int vocabSize = Integer.valueOf(strs[1]);
-            if(nuTopics != number_of_topics || vocabSize != vocabulary_size){
-                System.out.println("Wrong input files for EUB!");
-            }
-            int count = 0;
-            double[][] topic_term_probability = new double[number_of_topics][vocabulary_size];
-            while((line = reader.readLine()) != null) {
-                strs = line.trim().split("\t");
-                if(strs.length != vocabulary_size)
-                    System.out.println("Wrong vocabulary size!!");
-                double[] oneTopic = new double[vocabulary_size];
-                for(int i=0; i<strs.length; i++){
-                    oneTopic[i] = Double.valueOf(strs[i]);
-                }
-                topic_term_probability[count++] = oneTopic;
-            }
-            // assign the topics to the model
-            this.topic_term_probabilty = topic_term_probability;
-            System.out.format("[Info]Finish loading beta from %s\n", betaFilename);
-        } catch(IOException e){
-            e.printStackTrace();
-        }
-
     }
 
     public void loadDocsPhi(String phiFilename){
@@ -206,7 +193,8 @@ public class EUB extends LDA_Variational {
                 if(line.equals("-----")){
                     strs = reader.readLine().trim().split("\t");
                     if(strs.length != 4)
-                        System.out.println("[error]Wrong format!!!");
+                        System.err.println("[Error]Wrong format in loading document phi results!!!");
+                    
                     String uid = strs[0];
                     int id = Integer.valueOf(strs[1]);
                     int fvSize = Integer.valueOf(strs[2]);
@@ -216,7 +204,7 @@ public class EUB extends LDA_Variational {
                     for(int i=0; i<fvSize; i++){
                         strs = reader.readLine().trim().split("\t");
                         if(strs.length != number_of_topics){
-                            System.out.println("[error]Wrong dimension for the phi!");
+                            System.err.println("[Error]Wrong dimension for the phi!");
                         }
                         double[] oneFv = new double[number_of_topics];
                         for(int j=0; j<strs.length; j++){
@@ -229,6 +217,7 @@ public class EUB extends LDA_Variational {
                 }
             }
             System.out.format("[Info]Finish loading beta from %s\n", phiFilename);
+            reader.close();
         } catch(IOException e){
             e.printStackTrace();
         }
@@ -266,6 +255,7 @@ public class EUB extends LDA_Variational {
                 m_trainSet.add(r);
             }
         }
+        
         EM();
     }
 
@@ -332,9 +322,8 @@ public class EUB extends LDA_Variational {
         for(_Topic4EUB t: m_topics)
              t.setTopics4Variational(m_embeddingDim, t_mu, t_sigma);
 
-        for(_Doc d: m_trainSet) {
+        for(_Doc d: m_trainSet) 
             ((_Doc4EUB) d).setTopics4Variational(number_of_topics, d_alpha, d_mu, d_sigma);
-        }
 
         for(_User4EUB u: m_users)
             u.setTopics4Variational(m_embeddingDim, m_users.size(), u_mu, u_sigma, m_xi);
@@ -364,39 +353,36 @@ public class EUB extends LDA_Variational {
     // update variational parameters of latent variables
     protected double E_step(){
         int iter = 0;
-        double totalLikelihood, userLikelihood = 0, edgeLikelihood = 0, last = -1.0, converge;
+        double last = -1.0, converge;
 
         init();
         do {
-            totalLikelihood = 0.0;
+            double docLikelihood = 0.0, userLikelihood = 0.0, topicLikelihood = 0.0;
 
             for (_Doc doc: m_trainSet) {
-                totalLikelihood += varInference4Doc((_Doc4EUB) doc);
-                if(Double.isNaN(totalLikelihood) || Double.isInfinite(totalLikelihood))
-                    System.out.println("[error] The likelihood is Nan or Infinity!!");
+            	docLikelihood += varInference4Doc((_Doc4EUB) doc);
+                if(Double.isNaN(docLikelihood) || Double.isInfinite(docLikelihood))
+                    System.out.println("[error] The document likelihood is Nan or Infinity!!");
             }
 
             for (_Topic4EUB topic: m_topics) {
-                totalLikelihood += varInference4Topic(topic);
-                if(Double.isNaN(totalLikelihood) || Double.isInfinite(totalLikelihood))
-                    System.out.println("[error] The likelihood is Nan or Infinity!!");
+            	topicLikelihood += varInference4Topic(topic);
+                if(Double.isNaN(topicLikelihood) || Double.isInfinite(topicLikelihood))
+                    System.out.println("[error] The topic likelihood is Nan or Infinity!!");
             }
 
             for(_User4EUB user: m_users){
-                totalLikelihood += varInference4User(user);
-                if(Double.isNaN(totalLikelihood) || Double.isInfinite(totalLikelihood))
-                    System.out.println("[error] The likelihood is Nan or Infinity!!");
+            	userLikelihood += varInference4User(user);
+                if(Double.isNaN(userLikelihood) || Double.isInfinite(userLikelihood))
+                    System.out.println("[error] The user likelihood is Nan or Infinity!!");
             }
 
-            if(Double.isNaN(totalLikelihood) || Double.isInfinite(totalLikelihood))
-                System.out.println("[error] The likelihood is Nan or Infinity!!");
-
             if(iter > 0)
-                converge = Math.abs((totalLikelihood - last) / last);
+                converge = Math.abs((docLikelihood + topicLikelihood + userLikelihood - last) / last);
             else
                 converge = 1.0;
 
-            last = totalLikelihood;
+            last = docLikelihood + topicLikelihood + userLikelihood;
             System.out.format("[E-Step] %d iteration, likelihood=%.2f, converge to %.8f\n", iter, last, converge);
 
         }while(iter++ < m_varMaxIter && converge > m_varConverge);
@@ -404,7 +390,7 @@ public class EUB extends LDA_Variational {
         for(_Doc doc: m_trainSet)
             updateStats4Doc((_Doc4EUB) doc);
 
-        return totalLikelihood;
+        return last;
     }
 
     @Override
@@ -431,7 +417,7 @@ public class EUB extends LDA_Variational {
         System.out.println("[M-step]Estimate alpha....");
         double denominator = 0;
         for(int k=0; k<number_of_topics; k++){
-            _Topic4EUB topic = m_topics.get(k);
+            _Topic4EUB topic = m_topics[k];
             denominator += sumSigmaDiagAddMuTransposeMu(topic.m_sigma_phi, topic.m_mu_phi);
         }
         m_alpha_s = denominator!=0 ? (number_of_topics * m_embeddingDim / denominator) : 0;
@@ -524,7 +510,7 @@ public class EUB extends LDA_Variational {
         double term1 = 0, term2 = 0, term3 = 0;
 
         for(int k=0; k<number_of_topics; k++){
-            _Topic4EUB topic = m_topics.get(k);
+            _Topic4EUB topic = m_topics[k];
             term1 += doc.m_sigma_theta[k] + doc.m_mu_theta[k] * doc.m_mu_theta[k];
             for(int m=0 ; m<m_embeddingDim; m++){
                 term2 += 2 * doc.m_mu_theta[k] * topic.m_mu_phi[m] * user.m_mu_u[m];
@@ -585,7 +571,7 @@ public class EUB extends LDA_Variational {
 
         do {
             warning = false;
-            // variational parameters for word indicator z_{idn}
+            // variational parameters for topic indicator z_{idn}
             update_eta_id(doc);
 
             // variational parameters for topic distribution \theta_{id}
@@ -640,17 +626,7 @@ public class EUB extends LDA_Variational {
 
         topic.m_sigma_phi = invsMtx.getArray();
 
-        topic.m_mu_phi = matrixMultVector(topic.m_sigma_phi, term2);
-    }
-
-    protected double[] matrixMultVector(double[][] mtx, double[] vct){
-        if(mtx[0].length != vct.length)
-            return null;
-        double[] res = new double[mtx.length];
-        for(int i=0; i<mtx.length; i++){
-            res[i] = Utils.dotProduct(mtx[i], vct);
-        }
-        return res;
+        topic.m_mu_phi = Utils.matrixMultVector(topic.m_sigma_phi, term2);
     }
 
     // \sum_{mm}\simga[m][m] + \mu^T * \mu
@@ -702,7 +678,7 @@ public class EUB extends LDA_Variational {
             int docSize = m_userDocMap.get(i).size();
             for(int k=0; k<number_of_topics; k++){
                 // stat for updating sigma
-                _Topic4EUB topic = m_topics.get(k);
+                _Topic4EUB topic = m_topics[k];
                 Matrix tmp = new Matrix(sigmaAddMuMuTranspose(topic.m_sigma_phi, topic.m_mu_phi));
                 sigma_termT.plusEquals(tmp.timesEquals(docSize));
 
@@ -740,7 +716,7 @@ public class EUB extends LDA_Variational {
         ui.m_sigma_u = invsMtx.getArray();
 
         Utils.add2Array(mu_termT, mu_termU, 1);
-        ui.m_mu_u = matrixMultVector(ui.m_sigma_u, mu_termT);
+        ui.m_mu_u = Utils.matrixMultVector(ui.m_sigma_u, mu_termT);
     }
 
 
@@ -903,8 +879,9 @@ public class EUB extends LDA_Variational {
                 // function value
                 moment = N * Math.exp(doc.m_mu_theta[k] + 0.5 * doc.m_sigma_theta[k] - doc.m_logZeta);
                 fValue += -0.5 * m_tau * doc.m_mu_theta[k] * doc.m_mu_theta[k];
-                dotProd = Utils.dotProduct(m_topics.get(k).m_mu_phi, m_users.get(i).m_mu_u);
+                dotProd = Utils.dotProduct(m_topics[k].m_mu_phi, m_users.get(i).m_mu_u);
                 fValue += m_tau * doc.m_mu_theta[k] * dotProd + doc.m_mu_theta[k] * doc.m_sstat[k] - moment;
+                
                 // gradient
                 muG[k] = -m_tau * doc.m_mu_theta[k] + m_tau * dotProd + doc.m_sstat[k] - moment;
                 if(m_adaFlag)
@@ -925,7 +902,6 @@ public class EUB extends LDA_Variational {
     }
 
     protected void printFValue(double oldFValue, double fValue){
-
         if (m_displayLv==2) {
             System.out.println("Fvalue is " + fValue);
         } else if (m_displayLv==1) {
@@ -933,8 +909,7 @@ public class EUB extends LDA_Variational {
                 System.out.print("o");
             else
                 System.out.print("x");
-        } else if(m_displayLv==0)
-            return;
+        }
     }
 
     protected void update_theta_id_sigma(_Doc4EUB doc){
@@ -973,6 +948,7 @@ public class EUB extends LDA_Variational {
             diff = (lastFValue - fValue) / lastFValue;
             lastFValue = fValue;
         } while(iter++ < iterMax && Math.abs(diff) > cvg);
+        
         for(int k=0; k<number_of_topics; k++)
             doc.m_sigma_theta[k] = doc.m_sigma_sqrt_theta[k] * doc.m_sigma_sqrt_theta[k];
         if(m_displayLv != 0)
@@ -983,9 +959,8 @@ public class EUB extends LDA_Variational {
     protected void update_zeta(_Doc4EUB doc){
         doc.m_logZeta = doc.m_mu_theta[0] + 0.5 * doc.m_sigma_theta[0];
 
-        for(int k=1; k<number_of_topics; k++){
+        for(int k=1; k<number_of_topics; k++)
             doc.m_logZeta = Utils.logSum(doc.m_logZeta, doc.m_mu_theta[k] + 0.5 * doc.m_sigma_theta[k]);
-        }
     }
 
     protected double calc_log_likelihood_per_topic(_Topic4EUB topic){
@@ -1022,7 +997,7 @@ public class EUB extends LDA_Variational {
         double term1 = 0, term2 = 0;
         for(int m=0; m<m_embeddingDim; m++){
             for(int k=0; k<number_of_topics; k++){
-                _Topic4EUB topic = m_topics.get(k);
+                _Topic4EUB topic = m_topics[k];
                 _User4EUB user = m_users.get(m_docUserMap.get(doc.getIndex()));
                 term1 += doc.m_mu_theta[k] * topic.m_mu_phi[m] * user.m_mu_u[m];
                 for(int l=0; l<m_embeddingDim; l++){
@@ -1216,8 +1191,8 @@ public class EUB extends LDA_Variational {
     public void printTopicEmbedding(String filename){
         try{
             PrintWriter writer = new PrintWriter(new File(filename));
-            for(int i=0; i<m_topics.size(); i++){
-                _Topic4EUB topic = m_topics.get(i);
+            for(int i=0; i<m_topics.length; i++){
+                _Topic4EUB topic = m_topics[i];
                 writer.format("Topic %d\nmu_phi:\n", i);
                 for(double mu: topic.m_mu_phi){
                     writer.format("%.3f\t", mu);
