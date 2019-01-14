@@ -8,6 +8,10 @@ import topicmodels.multithreads.LDA.LDA_Focus_multithread;
 import topicmodels.multithreads.TopicModelWorker;
 import utils.Utils;
 
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.PrintWriter;
 import java.util.*;
 
 public class LDA_Focus extends LDA_Variational {
@@ -435,5 +439,35 @@ public class LDA_Focus extends LDA_Variational {
         System.out.format("[Stat]Loglikelihood %.3f+/-%.3f\n", mean, var);
     }
 
+    @Override
+    public void printParameterAggregation(int k, String folderName, String topicmodel) {
+        super.printParameterAggregation(k, folderName, topicmodel);
+
+        String alphaPath = String.format("%s%s_alphaBy%s_%d.txt", folderName, topicmodel, m_mode.equals("User")?"User":"Item", number_of_topics);
+
+
+    }
+
+    @Override
+    public void printParam(String folderName, String topicmodel){
+        //print out prior parameter of dirichlet: alpha
+        File file = new File(folderName);
+        try{
+            file.getParentFile().mkdirs();
+            file.createNewFile();
+        } catch(IOException e){
+            e.printStackTrace();
+        }
+        try{
+            PrintWriter alphaWriter = new PrintWriter(file);
+            alphaWriter.format("%d\t%d\n", docCluster.size(), number_of_topics);
+
+            for (int i = 0; i < number_of_topics; i++)
+                alphaWriter.format("%.5f\t", this.m_alpha[i]);
+            alphaWriter.close();
+        } catch(FileNotFoundException ex){
+            System.err.format("[Error]Failed to open file %s\n", folderName);
+        }
+    }
 
 }
