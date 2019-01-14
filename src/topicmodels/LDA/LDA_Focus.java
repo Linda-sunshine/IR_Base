@@ -469,12 +469,10 @@ public class LDA_Focus extends LDA_Variational {
         super.printParameterAggregation(k, folderName, topicmodel);
 
         String alphaPath = String.format("%s%s_alphaBy%s_%d.txt", folderName, topicmodel, m_mode.equals("User")?"User":"Item", number_of_topics);
-
-
+        printAlpha(alphaPath);
     }
 
-    @Override
-    public void printParam(String folderName, String topicmodel){
+    public void printAlpha(String folderName){
         //print out prior parameter of dirichlet: alpha
         File file = new File(folderName);
         try{
@@ -485,11 +483,16 @@ public class LDA_Focus extends LDA_Variational {
         }
         try{
             PrintWriter alphaWriter = new PrintWriter(file);
-            alphaWriter.format("%d\t%d\n", docCluster.size(), number_of_topics);
+            alphaWriter.format("%d\t%d\n", m_mapByUser.size(), number_of_topics);
 
-            for (int i = 0; i < number_of_topics; i++)
-                alphaWriter.format("%.5f\t", this.m_alpha[i]);
-            alphaWriter.close();
+            for (Integer idx : m_mapByUser.keySet()) {
+                alphaWriter.format("%s", m_users.get(idx).getUserID());
+                for (int i = 0; i < m_alphaList[idx].length; i++) {
+                   alphaWriter.format("\t%.5f", m_alphaList[idx][i]);
+                }
+                alphaWriter.write("\n");
+            }
+
         } catch(FileNotFoundException ex){
             System.err.format("[Error]Failed to open file %s\n", folderName);
         }
