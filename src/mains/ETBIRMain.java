@@ -7,7 +7,7 @@ import java.text.ParseException;
 import Analyzer.MultiThreadedReviewAnalyzer;
 import structures._Corpus;
 import topicmodels.LDA.LDA_Gibbs;
-import topicmodels.embeddingModel.ETBIR;
+import topicmodels.embeddingModel.TUIR;
 import topicmodels.multithreads.LDA.LDA_Variational_multithread;
 import topicmodels.multithreads.pLSA.pLSA_multithread;
 import topicmodels.pLSA.pLSA;
@@ -91,7 +91,7 @@ public class ETBIRMain {
             tModel = new LDA_Variational_multithread(emMaxIter, emConverge, beta, corpus,
                     lambda, number_of_topics, alpha, varMaxIter, varConverge); //set this negative!! or likelihood will not change
         } else if (topicmodel.equals("ETBIR")){
-            tModel = new ETBIR(emMaxIter, emConverge, beta, corpus, lambda,
+            tModel = new TUIR(emMaxIter, emConverge, beta, corpus, lambda,
                     number_of_topics, alpha, varMaxIter, varConverge, sigma, rho);
         }else {
             System.out.println("The selected topic model has not developed yet!");

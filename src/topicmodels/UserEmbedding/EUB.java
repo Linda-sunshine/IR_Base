@@ -24,7 +24,7 @@ public class EUB extends LDA_Variational {
     // Default is CV4Doc
     protected modelType m_mType = modelType.CV4DOC;
 
-    protected ArrayList<_Topic4EUB> m_topics;
+    protected _Topic4EUB[] m_topics;
     protected ArrayList<_User4EUB> m_users;
     protected ArrayList<_Doc4EUB> m_docs;
 
@@ -47,14 +47,14 @@ public class EUB extends LDA_Variational {
     /*****model parameters*****/
     // this alpha is differnet from alpha in LDA
     // alpha is precision parameter for topic embedding in EUB
-    // alpha is a vector parameter for dirichlet distribution
+    // alpha is a vector parameter for Dirichlet distribution
     protected double m_alpha_s = 5;
     protected double m_tau = 0.15;
     protected double m_gamma = 10;
     protected double m_xi = 2.0;
 
     /*****Sparsity parameter******/
-    protected double m_rho = 0.001;
+    static public double m_rho = 0.001;
 
     protected int m_displayLv = 0;
     protected double m_stepSize = 1e-3;
@@ -78,8 +78,9 @@ public class EUB extends LDA_Variational {
                int varMaxIter, double varConverge, int m) {
         super(number_of_iteration, converge, beta, c, lambda, number_of_topics, alpha,
                 varMaxIter, varConverge);
+        
         m_embeddingDim = m;
-        m_topics = new ArrayList<_Topic4EUB>();
+        m_topics = new _Topic4EUB[number_of_topics];
         m_users = new ArrayList<_User4EUB>();
         m_docs = new ArrayList<_Doc4EUB>();
         m_networkMap = new HashMap<Integer, HashSet<Integer>>();
@@ -88,10 +89,12 @@ public class EUB extends LDA_Variational {
         m_testSet = new ArrayList<>();
     }
 
+    @Override
     public String toString(){
         return String.format("[EUB]Mode: %s, Dim: %d, Topic number: %d, EmIter: %d, VarIter: %d, innIter: %d.\n",
                 m_mType.toString(), m_embeddingDim, number_of_topics, number_of_iteration, m_varMaxIter, m_innerMaxIter);
     }
+    
     public void setModelParamsUpdateFlags(boolean alphaFlag, boolean gammaFlag, boolean betaFlag,
                                           boolean tauFlag, boolean xiFlag, boolean rhoFlag){
         m_alphaFlag = alphaFlag;
@@ -138,23 +141,22 @@ public class EUB extends LDA_Variational {
             _User4EUB user = new _User4EUB(users.get(i));
             m_users.add(user);
             m_usersIndex.put(user.getUserID(), i);
+            
             initUserDocs(i, user, users.get(i).getReviews());
         }
 
-        for(int k=0; k<number_of_topics; k++){
-            m_topics.add(new _Topic4EUB(k));
-        }
+        for(int k=0; k<number_of_topics; k++)
+            m_topics[k] = new _Topic4EUB(k);
     }
 
-    protected void initUserDocs(int i, _User4EUB user, ArrayList<_Review> reviews){
-
+    protected void initUserDocs(int userID, _User4EUB user, ArrayList<_Review> reviews){
         ArrayList<_Doc4EUB> docs = new ArrayList<_Doc4EUB>();
         for(_Review r: reviews){
             int dIndex = m_docs.size();
             _Doc4EUB doc = new _Doc4EUB(r, dIndex);
             docs.add(doc);
             m_docs.add(doc);
-            m_docUserMap.put(dIndex, i);
+            m_docUserMap.put(dIndex, userID);
         }
         user.setReviews(docs);
     }
@@ -431,7 +433,7 @@ public class EUB extends LDA_Variational {
         System.out.println("[M-step]Estimate alpha....");
         double denominator = 0;
         for(int k=0; k<number_of_topics; k++){
-            _Topic4EUB topic = m_topics.get(k);
+            _Topic4EUB topic = m_topics[k];
             denominator += sumSigmaDiagAddMuTransposeMu(topic.m_sigma_phi, topic.m_mu_phi);
         }
         m_alpha_s = denominator!=0 ? (number_of_topics * m_embeddingDim / denominator) : 0;
@@ -524,7 +526,7 @@ public class EUB extends LDA_Variational {
         double term1 = 0, term2 = 0, term3 = 0;
 
         for(int k=0; k<number_of_topics; k++){
-            _Topic4EUB topic = m_topics.get(k);
+            _Topic4EUB topic = m_topics[k];
             term1 += doc.m_sigma_theta[k] + doc.m_mu_theta[k] * doc.m_mu_theta[k];
             for(int m=0 ; m<m_embeddingDim; m++){
                 term2 += 2 * doc.m_mu_theta[k] * topic.m_mu_phi[m] * user.m_mu_u[m];
@@ -702,7 +704,7 @@ public class EUB extends LDA_Variational {
             int docSize = m_userDocMap.get(i).size();
             for(int k=0; k<number_of_topics; k++){
                 // stat for updating sigma
-                _Topic4EUB topic = m_topics.get(k);
+                _Topic4EUB topic = m_topics[k];
                 Matrix tmp = new Matrix(sigmaAddMuMuTranspose(topic.m_sigma_phi, topic.m_mu_phi));
                 sigma_termT.plusEquals(tmp.timesEquals(docSize));
 
@@ -903,7 +905,7 @@ public class EUB extends LDA_Variational {
                 // function value
                 moment = N * Math.exp(doc.m_mu_theta[k] + 0.5 * doc.m_sigma_theta[k] - doc.m_logZeta);
                 fValue += -0.5 * m_tau * doc.m_mu_theta[k] * doc.m_mu_theta[k];
-                dotProd = Utils.dotProduct(m_topics.get(k).m_mu_phi, m_users.get(i).m_mu_u);
+                dotProd = Utils.dotProduct(m_topics[k].m_mu_phi, m_users.get(i).m_mu_u);
                 fValue += m_tau * doc.m_mu_theta[k] * dotProd + doc.m_mu_theta[k] * doc.m_sstat[k] - moment;
                 // gradient
                 muG[k] = -m_tau * doc.m_mu_theta[k] + m_tau * dotProd + doc.m_sstat[k] - moment;
@@ -1022,7 +1024,7 @@ public class EUB extends LDA_Variational {
         double term1 = 0, term2 = 0;
         for(int m=0; m<m_embeddingDim; m++){
             for(int k=0; k<number_of_topics; k++){
-                _Topic4EUB topic = m_topics.get(k);
+                _Topic4EUB topic = m_topics[k];
                 _User4EUB user = m_users.get(m_docUserMap.get(doc.getIndex()));
                 term1 += doc.m_mu_theta[k] * topic.m_mu_phi[m] * user.m_mu_u[m];
                 for(int l=0; l<m_embeddingDim; l++){
@@ -1216,8 +1218,8 @@ public class EUB extends LDA_Variational {
     public void printTopicEmbedding(String filename){
         try{
             PrintWriter writer = new PrintWriter(new File(filename));
-            for(int i=0; i<m_topics.size(); i++){
-                _Topic4EUB topic = m_topics.get(i);
+            for(int i=0; i<m_topics.length; i++){
+                _Topic4EUB topic = m_topics[i];
                 writer.format("Topic %d\nmu_phi:\n", i);
                 for(double mu: topic.m_mu_phi){
                     writer.format("%.3f\t", mu);
