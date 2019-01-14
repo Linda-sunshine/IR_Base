@@ -366,7 +366,7 @@ public class EUB extends LDA_Variational {
     // update variational parameters of latent variables
     protected double E_step(){
         int iter = 0;
-        double totalLikelihood, last = -1.0, converge;
+        double totalLikelihood, userLikelihood = 0, edgeLikelihood = 0, last = -1.0, converge;
 
         init();
         do {
