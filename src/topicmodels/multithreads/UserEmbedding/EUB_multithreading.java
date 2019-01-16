@@ -48,7 +48,6 @@ public class EUB_multithreading extends EUB {
         public double calc_term_log_likelihood(_Doc d) {
             int wid;
             double v, logLikelihood = 0;
-            System.out.println("*");
 
             //collect the sufficient statistics
             _SparseFeature[] fv = d.getSparse();
