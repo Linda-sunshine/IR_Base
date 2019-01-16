@@ -95,8 +95,12 @@ public class LDA_Variational_multithread extends LDA_Variational {
 			for(int n=0; n<fv.length; n++) {
 				wid = fv[n].getIndex();
 				v = fv[n].getValue();
-				for(int i=0; i<number_of_topics; i++)
-					logLikelihood += v * d.m_phi[n][i] * topic_term_probabilty[i][wid];
+				double sum = 0;
+				for(int i=0; i<number_of_topics; i++) {
+//					logLikelihood += v * d.m_phi[n][i] * topic_term_probabilty[i][wid];
+					sum += d.m_phi[n][i] * Math.exp(topic_term_probabilty[i][wid]);
+				}
+				logLikelihood += v * Math.log(sum);
 			}
 
 			return logLikelihood;
