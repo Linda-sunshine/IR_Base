@@ -11,8 +11,8 @@ public class EmbeddingParameter {
     public int m_emIter = 50;
     public int m_number_of_topics = 10;
     public int m_varIter = 10;
-    public int m_innerIter = 1;
-    public int m_inferIter = 3;
+    public int m_trainInferIter = 1;
+    public int m_testInferIter = 1000;
     public int m_paramIter = 20;
 
     public int m_embeddingDim = 10;
@@ -29,6 +29,7 @@ public class EmbeddingParameter {
     public boolean m_rhoFlag = true;
     public boolean m_ada = false;
     public boolean m_coldStartFlag = false;
+    public boolean m_wordOnly = true;
 
     public String m_saveDir = "";
     public String m_mode = "cv4doc";
@@ -54,8 +55,6 @@ public class EmbeddingParameter {
                 m_number_of_topics = Integer.valueOf(argv[i]);
             else if (argv[i - 1].equals("-varIter"))
                 m_varIter = Integer.valueOf(argv[i]);
-            else if (argv[i - 1].equals("-innerIter"))
-                m_innerIter = Integer.valueOf(argv[i]);
             else if (argv[i - 1].equals("-paramIter"))
                 m_paramIter = Integer.valueOf(argv[i]);
             else if (argv[i - 1].equals("-dim"))
@@ -84,10 +83,14 @@ public class EmbeddingParameter {
                 m_ada = Boolean.valueOf(argv[i]);
             else if (argv[i - 1].equals("-mode"))
                 m_mode = argv[i];
-            else if(argv[i - 1].equals("-inferIter"))
-                m_inferIter = Integer.valueOf(argv[i]);
+            else if (argv[i - 1].equals("-trainInferIter"))
+                m_trainInferIter = Integer.valueOf(argv[i]);
+            else if(argv[i - 1].equals("-testInferIter"))
+                m_testInferIter = Integer.valueOf(argv[i]);
             else if(argv[i - 1].equals("-coldStart"))
                 m_coldStartFlag = Boolean.valueOf(argv[i]);
+            else if(argv[i - 1].equals("-wordOnly"))
+                m_wordOnly = Boolean.valueOf(argv[i]);
 
         }
         // must specify the save directory for data

@@ -55,11 +55,11 @@ public class EUBMain {
         _Corpus corpus = analyzer.getCorpus();
 
         /***Start running joint modeling of user embedding and topic embedding****/
-        int emMaxIter = 50, number_of_topics = 20, varMaxIter = 10, embeddingDim = 10, innerIter = 1;
+        int emMaxIter = 50, number_of_topics = 30, varMaxIter = 10, embeddingDim = 10, trainIter = 1, testIter = 1000;
         //these two parameters must be larger than 1!!!
         double emConverge = 1e-10, alpha = 1 + 1e-2, beta = 1 + 1e-3, lambda = 1 + 1e-3, varConverge = 1e-6, stepSize = 1e-3;
         boolean alphaFlag = true, gammaFlag = true, betaFlag = true, tauFlag = true, xiFlag = true, rhoFlag = true;
-        boolean multiFlag = true, adaFlag = false;
+        boolean multiFlag = true, adaFlag = false, wordOnly = true;
 
         long start = System.currentTimeMillis();
         LDA_Variational tModel = null;
@@ -72,12 +72,14 @@ public class EUBMain {
         ((EUB) tModel).setModelParamsUpdateFlags(alphaFlag, gammaFlag, betaFlag, tauFlag, xiFlag, rhoFlag);
         ((EUB) tModel).setMode(mode);
 
-        ((EUB) tModel).setInnerMaxIter(innerIter);
+        ((EUB) tModel).setTrainInferMaxIter(trainIter);
+        ((EUB) tModel).setTestInferMaxIter(testIter);
         ((EUB) tModel).setStepSize(stepSize);
+        ((EUB) tModel).setWordOnlyFlag(wordOnly);
 
         long current = System.currentTimeMillis();
-        String saveDir = String.format("./data/embeddingExp/eub/%s_emIter_%d_nuTopics_%d_varIter_%d_innerIter_%d_dim_%d_ada_%b/" +
-                "fold_%d_%d", dataset, emMaxIter, number_of_topics, varMaxIter, innerIter, embeddingDim, adaFlag, k, current);
+        String saveDir = String.format("./data/embeddingExp/eub/%s_emIter_%d_nuTopics_%d_varIter_%d_trainIter_%d_testIter_%d_dim_%d_ada_%b/" +
+                "fold_%d_%d", dataset, emMaxIter, number_of_topics, varMaxIter, trainIter, testIter, embeddingDim, adaFlag, k, current);
         ((EUB) tModel).fixedCrossValidation(k, saveDir);
         long end = System.currentTimeMillis();
         System.out.println("\n[Info]Start time: " + start);

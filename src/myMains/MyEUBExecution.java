@@ -92,10 +92,11 @@ public class MyEUBExecution {
                 param.m_tauFlag, param.m_xiFlag, param.m_rhoFlag);
         ((EUB) tModel).setMode(param.m_mode);
 
-        ((EUB) tModel).setInnerMaxIter(param.m_innerIter);
-        ((EUB) tModel).setInferMaxIter(param.m_inferIter);
+        ((EUB) tModel).setTrainInferMaxIter(param.m_trainInferIter);
+        ((EUB) tModel).setTestInferMaxIter(param.m_testInferIter);
         ((EUB) tModel).setParamMaxIter(param.m_paramIter);
         ((EUB) tModel).setStepSize(param.m_stepSize);
+        ((EUB) tModel).setWordOnlyFlag(param.m_wordOnly);
 
         if(param.m_multiFlag && param.m_coldStartFlag){
             ((EUB4ColdStart_multithreading) tModel).fixedCrossValidation(param.m_kFold, param.m_saveDir);

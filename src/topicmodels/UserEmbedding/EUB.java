@@ -65,13 +65,14 @@ public class EUB extends LDA_Variational {
     protected boolean m_tauFlag = false;
     protected boolean m_xiFlag = false;
     protected boolean m_rhoFlag = false;
+    protected boolean m_wordOnlyFlag = true;
 
     // whehter we use adam grad to optimize or not
     protected boolean m_adaFlag = false;
 
-    protected int m_innerMaxIter = 1;
-    protected int m_inferMaxIter = 1;
-    protected int m_paramIterMax = 20;
+    protected int m_trainInferMaxIter = 1;
+    protected int m_paramMaxIter = 20;
+    protected int m_testInferMaxIter = 1000;
 
     public EUB(int number_of_iteration, double converge, double beta,
                _Corpus c, double lambda, int number_of_topics, double alpha,
@@ -89,8 +90,8 @@ public class EUB extends LDA_Variational {
     }
 
     public String toString(){
-        return String.format("[EUB]Mode: %s, Dim: %d, Topic number: %d, EmIter: %d, VarIter: %d, innIter: %d.\n",
-                m_mType.toString(), m_embeddingDim, number_of_topics, number_of_iteration, m_varMaxIter, m_innerMaxIter);
+        return String.format("[EUB]Mode: %s, Dim: %d, Topic number: %d, EmIter: %d, VarIter: %d, TrainInferIter: %d, TestInferIter: %d, ParamIter: %d.\n",
+                m_mType.toString(), m_embeddingDim, number_of_topics, number_of_iteration, m_varMaxIter, m_trainInferMaxIter, m_testInferMaxIter, m_paramMaxIter);
     }
     public void setModelParamsUpdateFlags(boolean alphaFlag, boolean gammaFlag, boolean betaFlag,
                                           boolean tauFlag, boolean xiFlag, boolean rhoFlag){
@@ -114,21 +115,24 @@ public class EUB extends LDA_Variational {
         m_adaFlag = b;
     }
 
+    public void setWordOnlyFlag(boolean b){
+        m_wordOnlyFlag = b;
+    }
+
+    public void setTrainInferMaxIter(int iter){
+        m_trainInferMaxIter = iter;
+    }
+
+    public void setTestInferMaxIter(int iter){
+        m_testInferMaxIter = iter;
+    }
+
     public void setStepSize(double s){
         m_stepSize = s;
     }
 
-    // iteration time of inside variational inference
-    public void setInnerMaxIter(int it){
-        m_innerMaxIter = it;
-    }
-
-    public void setInferMaxIter(int it){
-        m_inferMaxIter = it;
-    }
-
     public void setParamMaxIter(int it){
-        m_paramIterMax = it;
+        m_paramMaxIter = it;
     }
 
     // Load the data for later user
@@ -577,12 +581,12 @@ public class EUB extends LDA_Variational {
                 converge = 1.0;
 
             lastLoglikelihood = curLoglikelihood;
-        } while (++iter < m_innerMaxIter && Math.abs(converge) > m_varConverge && !warning);
+        } while (++iter < m_trainInferMaxIter && Math.abs(converge) > m_varConverge && !warning);
         return curLoglikelihood;
     }
 
     protected double varInference4Doc(_Doc4EUB doc) {
-        int maxIter = (doc.getType() == _Doc.rType.TEST) ? m_inferMaxIter : m_innerMaxIter;
+        int maxIter = (doc.getType() == _Doc.rType.TEST) ? m_testInferMaxIter : m_trainInferMaxIter;
         double curLoglikelihood = 0.0, lastLoglikelihood = 1.0, converge = 0.0;
         int iter = 0;
         boolean warning;
@@ -779,7 +783,7 @@ public class EUB extends LDA_Variational {
             diff = (lastFValue - fValue) / lastFValue;
             lastFValue = fValue;
 
-        } while(iter++ < m_paramIterMax && Math.abs(diff) > cvg);
+        } while(iter++ < m_paramMaxIter && Math.abs(diff) > cvg);
         if(m_displayLv != 0)
             System.out.println("------------------------");
     }
@@ -835,7 +839,7 @@ public class EUB extends LDA_Variational {
             diff = (lastFValue - fValue) / lastFValue;
             lastFValue = fValue;
 
-        } while(iter++ < m_paramIterMax && Math.abs(diff) > cvg);
+        } while(iter++ < m_paramMaxIter && Math.abs(diff) > cvg);
         if(m_displayLv != 0)
             System.out.println("------------------------");    }
 
@@ -924,7 +928,7 @@ public class EUB extends LDA_Variational {
             diff = (lastFValue - fValue) / lastFValue;
             lastFValue = fValue;
 
-        } while(iter++ < m_paramIterMax && Math.abs(diff) > cvg);
+        } while(iter++ < m_paramMaxIter && Math.abs(diff) > cvg);
         if(m_displayLv != 0)
             System.out.println("------------------------");
     }
@@ -977,7 +981,7 @@ public class EUB extends LDA_Variational {
             printFValue(lastFValue, fValue);
             diff = (lastFValue - fValue) / lastFValue;
             lastFValue = fValue;
-        } while(iter++ < m_paramIterMax && Math.abs(diff) > cvg);
+        } while(iter++ < m_paramMaxIter && Math.abs(diff) > cvg);
         for(int k=0; k<number_of_topics; k++)
             doc.m_sigma_theta[k] = doc.m_sigma_sqrt_theta[k] * doc.m_sigma_sqrt_theta[k];
         if(m_displayLv != 0)
@@ -1006,11 +1010,9 @@ public class EUB extends LDA_Variational {
 
     protected double calc_log_likelihood_per_doc(_Doc4EUB doc){
         // the first part
-//        double debugLikelihoodZ = 0, debugLikelihoodTheta = 0, debugLoglikelihoodW = 0;
+        double loglikelihoodW = 0;
         double logLikelihood = 0.5 * number_of_topics * (Math.log(m_tau) + 1) - doc.getTotalDocLength() *
                 (doc.m_logZeta -1 ) - 0.5 * m_tau * sumSigmaDiagAddMuTransposeMu(doc.m_sigma_theta, doc.m_mu_theta);
-//        debugLikelihoodTheta = 0.5 * number_of_topics * (Math.log(m_tau) + 1) - 0.5 * m_tau * sumSigmaDiagAddMuTransposeMu(doc.m_sigma_theta, doc.m_mu_theta);;
-//        debugLikelihoodZ = -doc.getTotalDocLength() * (doc.m_logZeta - 1);
         if(Double.isNaN(logLikelihood) || Double.isInfinite(logLikelihood))
             System.out.println("[error] Doc: loglikelihood is Nan or Infinity!!");
         double determinant = 1;
@@ -1020,7 +1022,6 @@ public class EUB extends LDA_Variational {
         if(determinant < 0)
             System.out.println("[error]Negative determinant in likelihood for doc!");
         logLikelihood += 0.5 * Math.log(Math.abs(determinant));
-//        debugLikelihoodTheta += 0.5 * Math.log(Math.abs(determinant));
 
         if(Double.isNaN(logLikelihood) || Double.isInfinite(logLikelihood))
             System.out.println("[error] Doc: loglikelihood is Nan or Infinity!!");
@@ -1037,7 +1038,6 @@ public class EUB extends LDA_Variational {
             }
         }
         logLikelihood += m_tau * term1 - 0.5 * m_tau * term2;
-//        debugLikelihoodTheta += m_tau * term1 - 0.5 * m_tau * term2;
         if(Double.isNaN(logLikelihood) || Double.isInfinite(logLikelihood))
             System.out.println("[error] Doc: loglikelihood is Nan or Infinity!!");
         // the second part which involves with words
@@ -1046,17 +1046,17 @@ public class EUB extends LDA_Variational {
             for (int n = 0; n < fv.length; n++) {
                 int wid = fv[n].getIndex();
                 double v = fv[n].getValue() * doc.m_phi[n][k];
+                loglikelihoodW += v * topic_term_probabilty[k][wid];
                 logLikelihood += v * (doc.m_mu_theta[k] - Math.log(doc.m_phi[n][k]) + topic_term_probabilty[k][wid]);
                 if(Double.isNaN(logLikelihood) || Double.isInfinite(logLikelihood))
                     System.out.println("[error] Doc: loglikelihood is Nan or Infinity!!");
             }
             logLikelihood -= doc.getTotalDocLength() * Math.exp(doc.m_mu_theta[k] + 0.5 * doc.m_sigma_theta[k] - doc.m_logZeta);
-//            debugLikelihoodZ -= doc.getTotalDocLength() * Math.exp(doc.m_mu_theta[k] + 0.5 * doc.m_sigma_theta[k] - doc.m_logZeta);
             if(Double.isNaN(logLikelihood) || Double.isInfinite(logLikelihood))
                 System.out.println("[error] Doc: loglikelihood is Nan or Infinity!!");
         }
-//        debugLoglikelihoodW = logLikelihood - debugLikelihoodTheta - debugLikelihoodZ;
-        return logLikelihood + 0.5 * m_tau * term2;
+        // for debugging purpose: if it is test document and we consider word only likelihood
+        return (doc.getType() == _Doc.rType.TEST && m_wordOnlyFlag) ? loglikelihoodW : logLikelihood;
     }
 
     protected double calc_log_likelihood_per_user(_User4EUB ui){
@@ -1141,9 +1141,8 @@ public class EUB extends LDA_Variational {
         System.out.format("In one fold, (train: test)=(%d : %d)\n", m_trainSet.size(), m_testSet.size());
         if(m_mType == modelType.CV4DOC){
             System.out.println("[Info]Current mode is cv for docs, start evaluation....");
-            for(int inferIter : new int[]{500, 1000}) {
-                perplexity = evaluation(inferIter);
-            }
+            perplexity = evaluation();
+
         } else if(m_mType == modelType.CV4EDGE){
             System.out.println("[Info]Current mode is cv for edges, link predication is performed later.");
         } else{
@@ -1176,9 +1175,8 @@ public class EUB extends LDA_Variational {
         }
     }
     // evaluation in single-thread
-    public double evaluation(int inferIter) {
+    public double evaluation() {
 
-        setInferMaxIter(inferIter);
         double allLoglikelihood = 0;
         int totalWords = 0;
         for(_Doc d: m_testSet) {
@@ -1193,7 +1191,7 @@ public class EUB extends LDA_Variational {
 
         System.out.format("[Stat]InferIter=%d, perplexity=%.4f, total words=%d, all_log-likelihood=%.4f, " +
                         "avg_log-likelihood=%.4f\n\n",
-                inferIter, perplexity, totalWords, allLoglikelihood, avgLoglikelihood);
+                m_testInferMaxIter, perplexity, totalWords, allLoglikelihood, avgLoglikelihood);
         return perplexity;
     }
 

@@ -312,9 +312,8 @@ public class EUB_multithreading extends EUB {
 
     @Override
     // evaluation in multi-thread
-    public double evaluation(int inferIter) {
+    public double evaluation() {
 
-        setInferMaxIter(inferIter);
         double allLoglikelihood = 0;
         int totalWords = 0;
         multithread_inference();
@@ -327,9 +326,9 @@ public class EUB_multithreading extends EUB {
         double perplexity = Math.exp(-allLoglikelihood/totalWords);
         double avgLoglikelihood = allLoglikelihood / m_testSet.size();
 
-        System.out.format("[Stat]InferIter=%d, perplexity=%.4f, total words=%d, all_log-likelihood=%.4f, " +
-                        "avg_log-likelihood=%.4f\n\n",
-                inferIter, perplexity, totalWords, allLoglikelihood, avgLoglikelihood);
+        System.out.format("[Stat]wordOnly:%b, TestInferIter=%d, perplexity=%.4f, totalWords=%d, allLogLikelihood=%.4f" +
+                        ", avgLogLikelihood=%.4f\n\n", m_wordOnlyFlag,
+                m_testInferMaxIter, perplexity, totalWords, allLoglikelihood, avgLoglikelihood);
         return perplexity;
     }
 

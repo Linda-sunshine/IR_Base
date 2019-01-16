@@ -68,20 +68,17 @@ public class EUB4ColdStart_multithreading extends EUB_multithreading {
                 m_trainSet.size(), m_testSetLight.size(), m_testSetMedium.size(), m_testSetHeavy.size());
         if(m_mType == modelType.CV4DOC){
             System.out.println("[Info]Current mode is cv for docs, start evaluation....");
-            int[] inferIters = new int[]{500, 1000};
             m_allTestSets.add(m_testSetLight);
             m_allTestSets.add(m_testSetMedium);
             m_allTestSets.add(m_testSetHeavy);
-            double[][] allPerplexity = new double[m_allTestSets.size()][inferIters.length];
+            double[] allPerplexity = new double[m_allTestSets.size()];
             for(int i=0; i<m_allTestSets.size(); i++) {
-                for (int j=0; j < inferIters.length; j++) {
-                    m_testSet = m_allTestSets.get(i);
-                    perplexity = evaluation(inferIters[j]);
-                    allPerplexity[i][j] = perplexity;
-                }
+                m_testSet = m_allTestSets.get(i);
+                perplexity = evaluation();
+                allPerplexity[i] = perplexity;
             }
             System.out.println("================Perplexity===============");
-            printPerplexity(inferIters, allPerplexity);
+            printPerplexity(allPerplexity);
         } else if(m_mType == modelType.CV4EDGE){
             System.out.println("[Info]Current mode is cv for edges, link predication is performed later.");
         } else{
@@ -90,16 +87,15 @@ public class EUB4ColdStart_multithreading extends EUB_multithreading {
         printStat4OneFold(k, saveDir, perplexity);
     }
 
-    public void printPerplexity(int[] inferIters, double[][] performance){
-        System.out.format("Infer iter:\t");
-        for(int iter: inferIters)
-            System.out.format("%d\t", iter);
+    public void printPerplexity(double[] performance){
         String[] groups = new String[]{"light", "medium", "heavy"};
+        System.out.println();
         for(int i=0; i<groups.length; i++) {
-            System.out.format("\n%s:\t", groups[i]);
-            for (double p : performance[i]) {
-                System.out.format("%.4f\t", p);
-            }
+            System.out.format("%s:\t", groups[i]);
+        }
+        System.out.println();
+        for(int i=0; i<groups.length; i++) {
+            System.out.format("%.4f\t", performance[i]);
         }
         System.out.println();
     }
