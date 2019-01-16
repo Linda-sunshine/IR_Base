@@ -457,7 +457,6 @@ public abstract class TopicModel {
         System.out.format("train size = %d, test size = %d....\n", m_trainSet.size(), m_testSet.size());
 
         long start = System.currentTimeMillis();
-        EM();
         double[] results = Evaluation2();
         System.out.format("[Info]%s Train/Test finished in %.2f seconds...\n", this.toString(), (System.currentTimeMillis()-start)/1000.0);
 
