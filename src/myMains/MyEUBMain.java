@@ -135,7 +135,7 @@ public class MyEUBMain {
 
         long start = System.currentTimeMillis();
         LDA_Variational tModel = null;
-        String model = "EUB";
+        String model = "LDA";
 
         if(model.equals("LDA")){
             tModel = new LDA_Variational_multithread(emMaxIter, emConverge, beta, corpus,
@@ -144,8 +144,8 @@ public class MyEUBMain {
             tModel.fixedCrossValidation(analyzer.getUsers(), k);
             tModel.printGamma("./data/embeddingExp/LDA");
             tModel.printTopWords(30);
-            tModel.printPhi("./data/embeddingExp/LDA");
-            tModel.printBeta("./data/embeddingExp/LDA");
+//            tModel.printPhi("./data/embeddingExp/LDA");
+//            tModel.printBeta("./data/embeddingExp/LDA");
 
         } else{
             if(multiFlag && coldStartFlag)

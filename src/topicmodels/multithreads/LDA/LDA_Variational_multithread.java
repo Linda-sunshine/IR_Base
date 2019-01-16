@@ -92,7 +92,7 @@ public class LDA_Variational_multithread extends LDA_Variational {
 			initTestDoc(d);		
 			double likelihood = calculate_E_step(d);
 			estThetaInDoc(d);
-			return likelihood;
+			return calc_term_log_likelihood(d);
 		}
 		
 		@Override
