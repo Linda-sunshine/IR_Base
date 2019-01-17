@@ -432,44 +432,98 @@ public class LinkPredictionWithUserEmbedding {
 //        }
 //    }
 
+    public void addTwoArrays(double[][] a, double[][] b){
+        for(int i=0; i<a.length; i++){
+            for(int j=0; j<a[0].length; j++){
+                a[i][j] += b[i][j];
+            }
+        }
+    }
+
+    public void calcMeanStd(HashMap<String, double[][][]> map){
+        HashMap<String, double[][]> meanMap = new HashMap<>();
+        HashMap<String, double[][]> stdMap = new HashMap<>();
+
+        for(String model: map.keySet()){
+            double[][][] perfs = map.get(model);
+
+            int folds = perfs.length;
+            int times = perfs[0].length;
+            double[][] mean = new double[times][2];
+            double[][] std = new double[times][2];
+
+            for (int i = 0; i < folds; i++) {
+                addTwoArrays(mean, perfs[i]);
+            }
+            // calc mean
+            for (int i = 0; i < times; i++) {
+                for (int j = 0; j < 2; j++) {
+                    mean[i][j] /= folds;
+                }
+            }
+
+            // calc std
+            for (int i = 0; i < folds; i++) {
+                for (int j = 0; j < times; j++) {
+                    for (int m = 0; m < 2; m++) {
+                        std[j][m] += (perfs[i][j][m] - mean[j][m]) * (perfs[i][j][m] - mean[j][m]);
+                    }
+                }
+            }
+            for (int j = 0; j < times; j++) {
+                for (int m = 0; m < 2; m++) {
+                    std[j][m] = Math.sqrt(std[j][m] / folds);
+                }
+            }
+            meanMap.put(model, mean);
+            stdMap.put(model, std);
+        }
+        printMeanStd(meanMap, stdMap);
+    }
+
+    public void printMeanStd(HashMap<String, double[][]> meanMap, HashMap<String, double[][]> stdMap){
+        System.out.print("\t\tNDCG\tMAP\t\tNDCG\tMAP\t\tNDCG\tMAP\t\tNDCG\tMAP\n");
+        for(String model: meanMap.keySet()){
+            System.out.print(model+"\t");
+            double[][] mean = meanMap.get(model);
+            double[][] std = stdMap.get(model);
+            for(int t=0; t<mean.length; t++){
+                System.out.format("%.4f+/-%.4f\t%.4f+/-%.4f\t\t", mean[t][0], std[t][0], mean[t][1], std[t][1]);
+            }
+            System.out.println();
+        }
+    }
     public static void main(String[] args){
         String data = "YelpNew";
+        int dim = 10, folds = 4;
         int[] times = new int[]{2, 3, 4, 5};
-        String[] models = new String[]{"EUB"}; // "LDA", "HFT", "TADW", "EUB", "LDA", "HFT"
-        for(int fold: new int[]{1, 2, 3, 4}){
-        for(int dim: new int[]{10}) {
-            double[][][] perfs = new double[models.length][times.length][2];
-            String prefix = "";
+        String[] models = new String[]{"BOW", "EUB", "RTM", "LDA", "HFT", "DW", "TADW"}; // "LDA", "HFT", "TADW", "EUB", "LDA", "HFT"
+        HashMap<String, double[][][]> allFoldsPerf = new HashMap<String, double[][][]>();
+        String idFile = String.format("/Users/lin/DataWWW2019/UserEmbedding/%s_userids.txt", data);
+
+        LinkPredictionWithUserEmbedding link = new LinkPredictionWithUserEmbedding();
+
+        for(String model: models){
+            if(model.equals("LDA") || model.equals("HFT") || model.equals("BOW"))
+                folds = 0;
+            double[][][] perfs = new double[folds+1][times.length][2];
             for (int t = 0; t < times.length; t++) {
-                int time = times[t];
-                for (int i = 0; i < models.length; i++) {
-                    String model = models[i];
+
+                for(int fold=0; fold<=folds; fold++){
+                    int time = times[t];
                     System.out.format("-----current model-%s-time-%d-dim-%d------\n", model, time, dim);
 
-                    String idFile = String.format("/Users/lin/DataWWW2019/UserEmbedding/%s_userids.txt", data);
                     String embedFile = String.format("/Users/lin/DataWWW2019/UserEmbedding/%s_%s_embedding_dim_%d_fold_%d.txt", data, model, dim, fold);
                     String testInterFile = String.format("./data/DataEUB/CV4Edges/%sCVIndex4Interaction_fold_%d_test.txt", data, fold);
                     String testNonInterFile = String.format("./data/DataEUB/CV4Edges/%sCVIndex4NonInteraction_time_%d_fold_%d.txt", data, time, fold);
 
-                    LinkPredictionWithUserEmbedding link = new LinkPredictionWithUserEmbedding();
-//                        link.saveUserIds(embedFile, idFile);
                     link.ininLinkPred(idFile, embedFile, testInterFile, testNonInterFile);
                     link.calculateAllNDCGMAP();
-                    perfs[i][t] = link.calculateAvgNDCGMAP();
-
+                    perfs[fold][t] = link.calculateAvgNDCGMAP();
                 }
             }
-            for (int time : times) {
-                System.out.format("\t\t%d\t\t", time);
-            }
-            System.out.println();
-            for (int i = 0; i < models.length; i++) {
-                System.out.print(models[i] + "\t");
-                for (double[] ndcgMap : perfs[i]) {
-                    System.out.format("%.4f\t%.4f\t", ndcgMap[0], ndcgMap[1]);
-                }
-                System.out.println();
-            }
+            allFoldsPerf.put(model, perfs);
         }
-    }}
+        link.calcMeanStd(allFoldsPerf);
+    }
 }
