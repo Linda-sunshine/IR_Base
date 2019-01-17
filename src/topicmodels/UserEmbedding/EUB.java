@@ -599,9 +599,12 @@ public class EUB extends LDA_Variational {
     // update the mu and sigma for each topic \phi_k
     protected void update_phi_k(_Topic4EUB topic){
 
-        Matrix term1 = new Matrix(new double[m_embeddingDim][m_embeddingDim]);
+        double[][] CovMat = new double[m_embeddingDim][m_embeddingDim];
         double[] term2 = new double[m_embeddingDim];
 
+        for(int i=0; i<m_embeddingDim; i++)
+        	CovMat[i][i] = m_alpha_s;        
+        
         // \tau * \sum_u|sum_d(\sigma + \mu * \mu^T)
         for(int uIndex: m_userDocMap.keySet()){
             _User4EUB user = m_users.get(uIndex);
@@ -610,19 +613,10 @@ public class EUB extends LDA_Variational {
                 _Doc4EUB doc = m_docs.get(dIndex);
                 Utils.add2Array(term2, user.m_mu_u, m_tau * doc.m_mu_theta[topic.getIndex()]);
             }
-            int docSize = m_userDocMap.get(uIndex).size();
-            Matrix tmp = new Matrix(sigmaAddMuMuTranspose(user.m_sigma_u, user.m_mu_u));
-            term1.plusEquals(tmp.timesEquals(docSize));
+            sigmaAddMuMuTranspose(CovMat, user.m_sigma_u, user.m_mu_u, m_tau * m_userDocMap.get(uIndex).size());
         }
-        // * \tau
-        term1.timesEquals(m_tau);
-        double[][] diag = new double[m_embeddingDim][m_embeddingDim];
-        for(int i=0; i<m_embeddingDim; i++){
-            diag[i][i] = m_alpha_s;
-        }
-        // + \alpha * I
-        term1.plusEquals(new Matrix(diag));
-        Matrix invsMtx = term1.inverse();
+        
+        Matrix invsMtx = (new Matrix(CovMat)).inverse();
 
         topic.m_sigma_phi = invsMtx.getArray();
 
@@ -663,6 +657,15 @@ public class EUB extends LDA_Variational {
             }
         }
         return res;
+    }
+    
+    protected void sigmaAddMuMuTranspose(double[][] res, double[][] sigma, double[] mu, double weight){
+        int dim = mu.length;
+        for(int i=0; i<dim; i++){
+            for(int j=0; j<dim; j++){
+                res[i][j] = weight*(sigma[i][j] + mu[i]*mu[j]);
+            }
+        }
     }
 
     // update the variational parameters for user embedding ui -- Eq(44) and Eq(45)
@@ -867,30 +870,26 @@ public class EUB extends LDA_Variational {
 
         double fValue, dotProd, moment;
         double lastFValue = 1.0, cvg = 1e-6, diff, iterMax = 30, iter = 0;
-
-        double[] muG = new double[number_of_topics];
-        double[] muH = new double[number_of_topics];
-//        double[] mu_theta = Arrays.copyOfRange(doc.m_mu_theta, 0, doc.m_mu_theta.length);
+        double mu_u[] = m_users.get(i).m_mu_u;
+        double muG, muH[] = new double[number_of_topics];
 
         do{
-            Arrays.fill(muG, 0);
             fValue = 0;
             for(int k=0; k<number_of_topics; k++){
                 // function value
                 moment = N * Math.exp(doc.m_mu_theta[k] + 0.5 * doc.m_sigma_theta[k] - doc.m_logZeta);
                 fValue += -0.5 * m_tau * doc.m_mu_theta[k] * doc.m_mu_theta[k];
-                dotProd = Utils.dotProduct(m_topics[k].m_mu_phi, m_users.get(i).m_mu_u);
+                dotProd = Utils.dotProduct(m_topics[k].m_mu_phi, mu_u);
                 fValue += m_tau * doc.m_mu_theta[k] * dotProd + doc.m_mu_theta[k] * doc.m_sstat[k] - moment;
                 
                 // gradient
-                muG[k] = -m_tau * doc.m_mu_theta[k] + m_tau * dotProd + doc.m_sstat[k] - moment;
+                muG = -m_tau * doc.m_mu_theta[k] + m_tau * dotProd + doc.m_sstat[k] - moment;
                 if(m_adaFlag)
-                    doc.m_mu_theta[k] += m_stepSize/Math.sqrt(muH[k]) * muG[k];
+                    doc.m_mu_theta[k] += m_stepSize/Math.sqrt(muH[k]) * muG;
                 else
-                    doc.m_mu_theta[k] += m_stepSize * muG[k];
+                    doc.m_mu_theta[k] += m_stepSize * muG;
 
-                muH[k] += muG[k] * muG[k];
-
+                muH[k] += muG * muG;
             }
             printFValue(lastFValue, fValue);
             diff = (lastFValue - fValue) / lastFValue;
@@ -917,33 +916,30 @@ public class EUB extends LDA_Variational {
         double fValue, moment;
         double lastFValue = 1.0, cvg = 1e-6, diff, iterMax = 30, iter = 0;
 
-        double[] sigmaSqrtG = new double[number_of_topics];
-        double[] sigmaSqrtH = new double[number_of_topics];
-//        double[] sigma_sqrt_theta = Arrays.copyOfRange(doc.m_sigma_sqrt_theta, 0, doc.m_sigma_sqrt_theta.length);
+        double sigmaSqrtG = 0, sigmaSqrtH[] = new double[number_of_topics];
         do{
-            Arrays.fill(sigmaSqrtG, 0);
             fValue = 0;
             for(int k=0; k<number_of_topics; k++){
                 // function value
-                moment = N * Math.exp(doc.m_mu_theta[k] + 0.5 * doc.m_sigma_sqrt_theta[k]
-                        * doc.m_sigma_sqrt_theta[k] - doc.m_logZeta);
+                moment = N * Math.exp(doc.m_mu_theta[k] + 0.5 * doc.m_sigma_sqrt_theta[k] * doc.m_sigma_sqrt_theta[k]
+                		- doc.m_logZeta);
                 fValue += -0.5 * m_tau * doc.m_sigma_sqrt_theta[k] * doc.m_sigma_sqrt_theta[k] - moment
                         + 0.5 * Math.log(doc.m_sigma_sqrt_theta[k] * doc.m_sigma_sqrt_theta[k]);
                 // gradient
-                sigmaSqrtG[k] = -m_tau * doc.m_sigma_sqrt_theta[k] - doc.m_sigma_sqrt_theta[k] * moment
+                sigmaSqrtG = -m_tau * doc.m_sigma_sqrt_theta[k] - doc.m_sigma_sqrt_theta[k] * moment
                         + 1/doc.m_sigma_sqrt_theta[k];
 
                 if(m_adaFlag)
-                    doc.m_sigma_sqrt_theta[k] += m_stepSize/Math.sqrt(sigmaSqrtH[k]) * sigmaSqrtG[k];
+                    doc.m_sigma_sqrt_theta[k] += m_stepSize/Math.sqrt(sigmaSqrtH[k]) * sigmaSqrtG;
                 else
-                    doc.m_sigma_sqrt_theta[k] += m_stepSize * sigmaSqrtG[k];
+                    doc.m_sigma_sqrt_theta[k] += m_stepSize * sigmaSqrtG;
 
-                sigmaSqrtH[k] += sigmaSqrtG[k] * sigmaSqrtG[k];
+                sigmaSqrtH[k] += sigmaSqrtG * sigmaSqrtG;
 
                 if(Double.isNaN(doc.m_sigma_sqrt_theta[k]) || Double.isInfinite(doc.m_sigma_sqrt_theta[k]))
                     System.out.println("Doc: sigma_sqrt_theta[k] is Nan or Infinity!!");
-
             }
+            
             printFValue(lastFValue, fValue);
             diff = (lastFValue - fValue) / lastFValue;
             lastFValue = fValue;
