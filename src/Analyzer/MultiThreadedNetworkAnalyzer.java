@@ -451,44 +451,22 @@ public class MultiThreadedNetworkAnalyzer extends MultiThreadedLinkPredAnalyzer 
         }
     }
 
-    public void writeAggregatedUsers(String filename, int kFold){
+    public void writeAggregatedUsers(String filename){
         try{
             int count = 0;
-            int[] masks = new int[kFold];
-            for(int i=0; i<kFold; i++){
-                masks[i] = i;
-            }
             PrintWriter writer = new PrintWriter(new File(filename));
-            HashMap<Integer, ArrayList<String>> indexContentMap = new HashMap<>();
             for(_User user: m_users){
                 if(user.getUserID().equals("-dF9A2Q3L8C0d2ZyEIgDSQ"))
                     System.out.println("!!!!The user exists in the dataset!!!!");
-                indexContentMap.clear();
-                for(_Review r: user.getReviews()){
-                    if(!indexContentMap.containsKey(r.getMask4CV())){
-                        indexContentMap.put(r.getMask4CV(), new ArrayList<>());
-                    }
-                    indexContentMap.get(r.getMask4CV()).add(r.getSource());
-                }
-                if(indexContentMap.size() == 0) continue;
-                // write the data for the user
-                count++;
                 writer.write(user.getUserID()+"\n");
-                for(int mask: masks){
-                    if(!indexContentMap.containsKey(mask)){
-                        writer.write(mask+"\n");
-                        writer.write(" \n");
-                    } else{
-                        writer.write(mask+"\n");
-                        for(String cont: indexContentMap.get(mask)){
-                            writer.write(cont + " ");
-                        }
-                        writer.write("\n");
-                    }
+                for(_Review r: user.getReviews()){
+                   writer.write(r.getSource()+" ");
                 }
+                writer.write("\n");
+                count++;
             }
             writer.close();
-            System.out.format("%d/%d users' data are writenn in %s.\n", count, m_users.size(), filename);
+            System.out.format("%d/%d users' data are writen in %s.\n", count, m_users.size(), filename);
         } catch(IOException e){
             e.printStackTrace();
         }
