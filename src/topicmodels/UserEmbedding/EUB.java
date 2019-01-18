@@ -617,7 +617,6 @@ public class EUB extends LDA_Variational {
         Matrix invsMtx = (new Matrix(CovMat)).inverse();
 
         topic.m_sigma_phi = invsMtx.getArray();
-
         topic.m_mu_phi = Utils.matrixMultVector(topic.m_sigma_phi, term2);
     }
 
