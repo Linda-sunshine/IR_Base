@@ -567,10 +567,8 @@ public class EUB extends LDA_Variational {
         int maxIter = (doc.getType() == _Doc.rType.TEST) ? m_inferMaxIter : m_docInnerMaxIter;
         double curLoglikelihood = 0.0, lastLoglikelihood = 1.0, converge = 0.0;
         int iter = 0;
-        boolean warning;
 
         do {
-            warning = false;
             // variational parameters for topic indicator z_{idn}
             update_eta_id(doc);
 
@@ -583,7 +581,7 @@ public class EUB extends LDA_Variational {
             curLoglikelihood = calc_log_likelihood_per_doc(doc);
 
             if(Double.isNaN(curLoglikelihood) || Double.isInfinite(curLoglikelihood))
-                warning = true;
+                break;
 
             if (iter > 0)
                 converge = (lastLoglikelihood - curLoglikelihood) / lastLoglikelihood;
@@ -591,7 +589,7 @@ public class EUB extends LDA_Variational {
                 converge = 1.0;
 
             lastLoglikelihood = curLoglikelihood;
-        } while (++iter < maxIter && Math.abs(converge) > m_varConverge && !warning);
+        } while (++iter < maxIter && Math.abs(converge) > m_varConverge);
 
         return curLoglikelihood;
     }
@@ -846,15 +844,16 @@ public class EUB extends LDA_Variational {
         for(int n=0; n<fvs.length; n++){
             int v = fvs[n].getIndex();
             for(int k=0; k<number_of_topics; k++){
-                // Eq(57) update eta of each document
+                // Eq(47) update eta of each document
                 doc.m_phi[n][k] = doc.m_mu_theta[k] + topic_term_probabilty[k][v];
             }
+            
             // normalize
             logSum = Utils.logSum(doc.m_phi[n]);
             for(int k=0; k<number_of_topics; k++){
                 doc.m_phi[n][k] = Math.exp(doc.m_phi[n][k] - logSum);
                 // update \sum_\eta_{vk}, only related with topic index k
-                doc.m_sstat[k] += fvs[n].getValue() * doc.m_phi[n][k];
+                doc.m_sstat[k] += fvs[n].getValue() * doc.m_phi[n][k];//is it too early to collect this sufficient statistics?
             }
         }
     }
@@ -870,7 +869,6 @@ public class EUB extends LDA_Variational {
 
         double[] muG = new double[number_of_topics];
         double[] muH = new double[number_of_topics];
-//        double[] mu_theta = Arrays.copyOfRange(doc.m_mu_theta, 0, doc.m_mu_theta.length);
 
         do{
             Arrays.fill(muG, 0);
