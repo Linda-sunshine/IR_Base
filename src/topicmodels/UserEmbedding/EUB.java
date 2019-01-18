@@ -654,11 +654,12 @@ public class EUB extends LDA_Variational {
         return res;
     }
     
+    //added by Hongning Wang
     protected void sigmaAddMuMuTranspose(double[][] res, double[][] sigma, double[] mu, double weight){
         int dim = mu.length;
         for(int i=0; i<dim; i++){
             for(int j=0; j<dim; j++){
-                res[i][j] = weight*(sigma[i][j] + mu[i]*mu[j]);
+                res[i][j] += weight*(sigma[i][j] + mu[i]*mu[j]);
             }
         }
     }
@@ -713,29 +714,36 @@ public class EUB extends LDA_Variational {
     protected void update_delta_ij_mu(_User4EUB ui){
         int i = m_usersIndex.get(ui.getUserID());
 
-        double[] muG = new double[m_users.size()];
-//        double[] mu_delta = Arrays.copyOfRange(ui.m_mu_delta, 0, ui.m_mu_delta.length);
-        double[] muH = new double[m_users.size()];
+        double muG = 0, muH[] = new double[m_users.size()], xiSqRecp = 1.0/m_xi /m_xi;
 
         double fValue, lastFValue = 1.0, cvg = 1e-6, diff, iterMax = 30, iter = 0;
+        HashSet<Integer> interactions = m_networkMap.containsKey(i) ? m_networkMap.get(i) : null;
+        
         do {
-            Arrays.fill(muG, 0);
             fValue = 0;
 
-            HashSet<Integer> interactions = m_networkMap.containsKey(i) ? m_networkMap.get(i) : null;
+            //this has to be an undirected graph
+            
             for(int j=0; j<m_users.size(); j++){
-                if(i == j) continue;
-                int eij = interactions != null && interactions.contains(j) ? 1 : 0;
-                double[] fgValue = calcFGValueDeltaMu(ui, ui.m_mu_delta, eij, j);
-                fValue += fgValue[0];
-                muG[j] += fgValue[1];
-
+                if(i == j) 
+                	continue;
+                
+                int eij = (interactions != null && interactions.contains(j)) ? 1 : 0;
+                double dotProd = Utils.dotProduct(ui.m_mu_u, m_users.get(j).m_mu_u);
+                double term = ((1-eij)*(1-m_rho)/ui.m_epsilon_prime[j] - 1/ui.m_epsilon[j]) *
+                        Math.exp(ui.m_mu_delta[j] + 0.5 * ui.m_sigma_delta[j] * ui.m_sigma_delta[j]);
+                
+                fValue += eij == 1 ? ui.m_mu_delta[j] : 0 + term 
+                		 -0.5*xiSqRecp * ui.m_mu_delta[j] * (ui.m_mu_delta[j] - 2 * dotProd);
+                muG = eij + term - xiSqRecp * (ui.m_mu_delta[j] - dotProd);
+                
                 if(m_adaFlag)
-                    ui.m_mu_delta[j] += m_stepSize/Math.sqrt(muH[j]) * muG[j];
+                    ui.m_mu_delta[j] += m_stepSize/Math.sqrt(muH[j]) * muG;
                 else
-                    ui.m_mu_delta[j] += m_stepSize * muG[j];
-                muH[j] += muG[j] * muG[j];
+                    ui.m_mu_delta[j] += m_stepSize * muG;
+                muH[j] += muG * muG;
             }
+            
             printFValue(lastFValue, fValue);
             diff = (lastFValue - fValue) / lastFValue;
             lastFValue = fValue;
@@ -745,48 +753,33 @@ public class EUB extends LDA_Variational {
             System.out.println("------------------------");
     }
 
-
-    protected double[] calcFGValueDeltaMu(_User4EUB ui, double[] mu_delta, int eij, int j){
-        double[] sigma_delta = ui.m_sigma_delta;
-        double dotProd = Utils.dotProduct(ui.m_mu_u, m_users.get(j).m_mu_u);
-
-        double fValue = eij == 1 ? mu_delta[j] : 0;
-        double gValue = eij;
-        double term1 = ((1-eij)*(1-m_rho)/ui.m_epsilon_prime[j] -1/ui.m_epsilon[j]) *
-                Math.exp(mu_delta[j] + 0.5 * sigma_delta[j] * sigma_delta[j]);
-
-        fValue += term1 - 0.5/m_xi/m_xi * (mu_delta[j] * mu_delta[j] - 2 * mu_delta[j] * dotProd);
-        gValue += term1 - 1/m_xi/m_xi * (mu_delta[j] - dotProd);
-        return new double[]{fValue, gValue};
-    }
-
     // update variance for pair-wise affinity \mu^{delta_{ij}}, \sigma^{\delta_{ij}} -- Eq(48)
     protected void update_delta_ij_sigma(_User4EUB ui){
         int i = m_usersIndex.get(ui.getUserID());
 
         double fValue, lastFValue = 1.0, cvg = 1e-6, diff, iterMax = 30, iter = 0;
-        double[] sigmaG = new double[m_users.size()];
-        double[] sigmaH = new double[m_users.size()];
-//        double[] sigma_delta = Arrays.copyOfRange(ui.m_sigma_delta, 0, ui.m_sigma_delta.length);
+        double sigmaG, sigmaH[] = new double[m_users.size()], xiSqRecp = 1.0/m_xi /m_xi;
+        HashSet<Integer> interactions = m_networkMap.containsKey(i) ? m_networkMap.get(i) : null;
+        
         do {
-            Arrays.fill(sigmaG, 0);
-            fValue = 0;
-
-            HashSet<Integer> interactions = m_networkMap.containsKey(i) ? m_networkMap.get(i) : null;
+            fValue = 0;            
             for(int j=0; j<m_users.size(); j++){
-                if(i == j) continue;
+                if(i == j) 
+                	continue;
+                
                 int eij = interactions != null && interactions.contains(j) ? 1 : 0;
-                double[] fgValue = calcFGValueDeltaSigma(ui, ui.m_sigma_delta, eij, j);
-                fValue += fgValue[0];
-                sigmaG[j] += fgValue[1];
-                ui.m_sigma_delta[j] += m_stepSize * sigmaG[j];
+                double term = ((1-eij)*(1-m_rho)/ui.m_epsilon_prime[j] - 1/ui.m_epsilon[j]) *
+                        Math.exp(ui.m_mu_delta[j] + 0.5 * ui.m_sigma_delta[j] * ui.m_sigma_delta[j]);
+                
+                fValue += term - 0.5 * xiSqRecp * (ui.m_sigma_delta[j] * ui.m_sigma_delta[j]) + Math.log(Math.abs(ui.m_sigma_delta[j]));
+                sigmaG = ui.m_sigma_delta[j] * (term - xiSqRecp) + 1.0 / ui.m_sigma_delta[j];
 
                 if(m_adaFlag)
-                    ui.m_sigma_delta[j] += m_stepSize/Math.sqrt(sigmaH[j]) * sigmaG[j];
+                    ui.m_sigma_delta[j] += m_stepSize/Math.sqrt(sigmaH[j]) * sigmaG;
                 else
-                    ui.m_sigma_delta[j] += m_stepSize * sigmaG[j];
+                    ui.m_sigma_delta[j] += m_stepSize * sigmaG;
 
-                sigmaH[j] += sigmaG[j] * sigmaG[j];
+                sigmaH[j] += sigmaG * sigmaG;
 
                 if(Double.isNaN(ui.m_sigma_delta[j]) || Double.isInfinite(ui.m_sigma_delta[j]))
                     System.out.println("[error] Sigma_delta is Nan or Infinity!!");
@@ -797,15 +790,7 @@ public class EUB extends LDA_Variational {
 
         } while(iter++ < iterMax && Math.abs(diff) > cvg);
         if(m_displayLv != 0)
-            System.out.println("------------------------");    }
-
-    protected double[] calcFGValueDeltaSigma(_User4EUB ui, double[] sigma, int eij, int j){
-
-        double term1 = ((1-eij)*(1-m_rho)/ui.m_epsilon_prime[j] -1/ui.m_epsilon[j])
-                * Math.exp(ui.m_mu_delta[j] + 0.5 * sigma[j] * sigma[j]);
-        double fValue = term1 - 0.5/m_xi/m_xi * (sigma[j] * sigma[j]) + Math.log(Math.abs(sigma[j]));
-        double gValue = sigma[j] * term1 - sigma[j]/m_xi/m_xi + 1/sigma[j];
-        return new double[]{fValue, gValue};
+            System.out.println("------------------------");    
     }
 
     // update the taylor parameter epsilon

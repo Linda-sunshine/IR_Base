@@ -12,7 +12,7 @@ public class MatrixEfficiencyTest {
 	public static void main(String[] args) {
 		//to test the efficiency of matrix operations in JAMA and colt
 		
-		int n = 11, size = 64, m = 20; //size of the input matrix 2^6 to 2^n, repeat the test m times
+		int n = 14, size = 64, m = 50; //size of the input matrix 2^6 to 2^n, repeat the test m times
 		DenseDoubleAlgebra alg = new DenseDoubleAlgebra(1e-10);
 //		LUDecompositionQuick luSolver = new LUDecompositionQuick(1e-10);
 		
