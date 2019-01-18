@@ -466,7 +466,7 @@ public class MultiThreadedNetworkAnalyzer extends MultiThreadedLinkPredAnalyzer 
                 indexContentMap.clear();
                 for(_Review r: user.getReviews()){
                     if(!indexContentMap.containsKey(r.getMask4CV())){
-                        indexContentMap.put(r.getMask4CV(), new ArrayList<>());
+                        indexContentMap.put(r.getMask4CV(), new ArrayList<String>());
                     }
                     indexContentMap.get(r.getMask4CV()).add(r.getSource());
                 }
