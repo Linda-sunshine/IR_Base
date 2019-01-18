@@ -286,6 +286,15 @@ public class Utils {
 			vct[i] += weight * add[i];
 	}
 	
+	static public void add2Mtx(double[][] mxt, double[][] add, double weight){
+		if (mxt.length != add.length || mxt[0].length != add[0].length)
+			return;
+		
+		for(int i=0; i<mxt.length; i++)
+			for(int j=0; j<mxt[0].length; j++)
+				mxt[i][j] += weight * add[i][j];
+	}
+	
 	//L1 normalization: fsValue/sum(abs(fsValue))
 	static public double sumOfFeaturesL1(_SparseFeature[] fs) {
 		double sum = 0;

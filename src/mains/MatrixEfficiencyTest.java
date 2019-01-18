@@ -1,26 +1,24 @@
 package mains;
 
 import Jama.Matrix;
-import cern.colt.matrix.DoubleMatrix2D;
-import cern.colt.matrix.impl.DenseDoubleMatrix2D;
-import cern.colt.matrix.impl.SparseDoubleMatrix2D;
-import cern.colt.matrix.linalg.Algebra;
-import cern.colt.matrix.linalg.LUDecompositionQuick;
-import cern.jet.random.Normal;
+import cern.colt.matrix.tdouble.DoubleMatrix2D;
+import cern.colt.matrix.tdouble.algo.DenseDoubleAlgebra;
+import cern.colt.matrix.tdouble.impl.DenseDoubleMatrix2D;
+import cern.jet.random.tdouble.Normal;
+
 
 public class MatrixEfficiencyTest {
 
 	public static void main(String[] args) {
 		//to test the efficiency of matrix operations in JAMA and colt
 		
-		int n = 10, size = 64, m = 10; //size of the input matrix 2^6 to 2^n, repeat the test m times
-		Algebra alg = new Algebra(1e-10);
-		LUDecompositionQuick luSolver = new LUDecompositionQuick(1e-10);
+		int n = 11, size = 64, m = 20; //size of the input matrix 2^6 to 2^n, repeat the test m times
+		DenseDoubleAlgebra alg = new DenseDoubleAlgebra(1e-10);
+//		LUDecompositionQuick luSolver = new LUDecompositionQuick(1e-10);
 		
 		for(int t=6; t<=n; t++) {
 			double[][] matrix = new double[size][size];
 			
-			DoubleMatrix2D resMat = new DenseDoubleMatrix2D(size, size);			
 			double timeInv = 0, qualityInv = 0;
 			double timeLU = 0, qualityLU = 0, diff;
 			double timeJAMA = 0, qualityJAMA = 0;
@@ -38,7 +36,7 @@ public class MatrixEfficiencyTest {
 				long start = System.currentTimeMillis();
 				DoubleMatrix2D mat = new DenseDoubleMatrix2D(matrix);
 				DoubleMatrix2D ins = alg.inverse(mat);
-				double[][] res = mat.zMult(ins, resMat).toArray();
+				double[][] res = alg.mult(mat, ins).toArray();
 				timeInv += (System.currentTimeMillis() - start)/1000.0;
 				
 				//quality test				
@@ -55,24 +53,24 @@ public class MatrixEfficiencyTest {
 				
 				
 				//inverse by colt LU decomposition
-				SparseDoubleMatrix2D identity = new SparseDoubleMatrix2D(size,size);				
-				for(int k=0; k<size; k++)
-					identity.setQuick(k, k, 1);
-				
-				start = System.currentTimeMillis();
-				luSolver.decompose(mat);
-				luSolver.solve(identity);
-				timeLU += (System.currentTimeMillis() - start)/1000.0;
-				
-				//quality test
-				norm = 0;
-				for(int i=0; i<size; i++) {
-					for(int j=0; j<size; j++) {
-						diff = ins.getQuick(i, j) - identity.getQuick(i, j);
-						norm += diff * diff;
-					}
-				}
-				qualityLU += norm/size/size;
+//				SparseDoubleMatrix2D identity = new SparseDoubleMatrix2D(size,size);				
+//				for(int k=0; k<size; k++)
+//					identity.setQuick(k, k, 1);
+//				
+//				start = System.currentTimeMillis();
+//				luSolver.decompose(mat);
+//				luSolver.solve(identity);
+//				timeLU += (System.currentTimeMillis() - start)/1000.0;
+//				
+//				//quality test
+//				norm = 0;
+//				for(int i=0; i<size; i++) {
+//					for(int j=0; j<size; j++) {
+//						diff = ins.getQuick(i, j) - identity.getQuick(i, j);
+//						norm += diff * diff;
+//					}
+//				}
+//				qualityLU += norm/size/size;
 				
 				
 				//inverse by JAMA matrix inverse

@@ -533,10 +533,8 @@ public class EUB extends LDA_Variational {
     protected double varInference4User(_User4EUB user){
         double curLoglikelihood = 0.0, lastLoglikelihood = 1.0, converge = 0.0;
         int iter = 0;
-        boolean warning;
 
         do {
-            warning = false;
 
             // update the variational parameters for user embedding ui -- Eq(70) and Eq(72)
             update_u_i(user);
@@ -551,7 +549,7 @@ public class EUB extends LDA_Variational {
             curLoglikelihood = calc_log_likelihood_per_user(user);
 
             if(Double.isNaN(curLoglikelihood) || Double.isInfinite(curLoglikelihood))
-                warning = true;
+                break;
 
             if (iter > 0)
                 converge = (lastLoglikelihood - curLoglikelihood) / lastLoglikelihood;
@@ -559,8 +557,8 @@ public class EUB extends LDA_Variational {
                 converge = 1.0;
 
             lastLoglikelihood = curLoglikelihood;
-        } while (++iter < m_innerMaxIter && Math.abs(converge) > m_varConverge && !warning);
-        return curLoglikelihood;
+        } while (++iter < m_innerMaxIter && Math.abs(converge) > m_varConverge);
+        return lastLoglikelihood;
     }
 
     protected double varInference4Doc(_Doc4EUB doc) {
@@ -668,54 +666,45 @@ public class EUB extends LDA_Variational {
     // update the variational parameters for user embedding ui -- Eq(44) and Eq(45)
     protected void update_u_i(_User4EUB ui){
         // termT: the part related with user's topics
-        Matrix sigma_termT = new Matrix(new double[m_embeddingDim][m_embeddingDim]);
+        double[][] sigma_termT = new double[m_embeddingDim][m_embeddingDim];
         double[] mu_termT = new double[m_embeddingDim];
-        double[] mu_termU = new double[m_embeddingDim];
 
         int i = m_usersIndex.get(ui.getUserID());
+        double xiSqRecp = 1.0/m_xi /m_xi;
 
+        //associated documents
         if(m_userDocMap.containsKey(i)){
-            int docSize = m_userDocMap.get(i).size();
+        	ArrayList<Integer> uDocs = m_userDocMap.get(i); 
+            double tauD = m_tau * uDocs.size();
             for(int k=0; k<number_of_topics; k++){
                 // stat for updating sigma
                 _Topic4EUB topic = m_topics[k];
-                Matrix tmp = new Matrix(sigmaAddMuMuTranspose(topic.m_sigma_phi, topic.m_mu_phi));
-                sigma_termT.plusEquals(tmp.timesEquals(docSize));
+                sigmaAddMuMuTranspose(sigma_termT, topic.m_sigma_phi, topic.m_mu_phi, tauD);
 
                 // stat for updating mu
-                for(int dIndex: m_userDocMap.get(i)){
+                for(int dIndex: uDocs){
                     _Doc4EUB doc = m_docs.get(dIndex);
-                    Utils.add2Array(mu_termT, topic.m_mu_phi, m_tau * doc.m_mu_theta[topic.getIndex()]);
+                    Utils.add2Array(mu_termT, topic.m_mu_phi, m_tau * doc.m_mu_theta[k]);
                 }
             }
-            // * \tau
-            sigma_termT.timesEquals(m_tau);
         }
 
         // \gamma * I
-        double[][] diag = new double[m_embeddingDim][m_embeddingDim];
-        for(int a=0; a<m_embeddingDim; a++){
-            diag[a][a] = m_gamma;
-        }
-        // + \gamma * I
-        sigma_termT.plusEquals(new Matrix(diag));
+        for(int a=0; a<m_embeddingDim; a++)
+        	sigma_termT[a][a] += m_gamma;
 
+        //associated edges
         for(int j=0; j<m_users.size(); j++){
-            if(j == i) continue;
-            Matrix sigma_termJ = new Matrix(new double[m_embeddingDim][m_embeddingDim]);
+            if(j == i) 
+            	continue;
+            
             _User4EUB uj = m_users.get(j);
-            double delta_ij = ui.m_mu_delta[j];
-            sigma_termJ.plusEquals(new Matrix(sigmaAddMuMuTranspose(uj.m_sigma_u, uj.m_mu_u)));
-            Utils.add2Array(mu_termU, uj.m_mu_u, delta_ij/m_xi/m_xi);
-
-            sigma_termJ.timesEquals(1/m_xi /m_xi);
-            sigma_termT.plusEquals(sigma_termJ);
+            sigmaAddMuMuTranspose(sigma_termT, uj.m_sigma_u, uj.m_mu_u, xiSqRecp);
+            Utils.add2Array(mu_termT, uj.m_mu_u, ui.m_mu_delta[j]*xiSqRecp);
         }
 
-        Matrix invsMtx = sigma_termT.inverse();
+        Matrix invsMtx = (new Matrix(sigma_termT)).inverse();
         ui.m_sigma_u = invsMtx.getArray();
-
-        Utils.add2Array(mu_termT, mu_termU, 1);
         ui.m_mu_u = Utils.matrixMultVector(ui.m_sigma_u, mu_termT);
     }
 
