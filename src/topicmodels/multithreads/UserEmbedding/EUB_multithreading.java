@@ -45,31 +45,31 @@ public class EUB_multithreading extends EUB {
             return cur;
         }
 
-        public double calc_term_log_likelihood(_Doc d) {
-            int wid;
-            double v, logLikelihood = 0;
-
-            //collect the sufficient statistics
-            _SparseFeature[] fv = d.getSparse();
-            for(int n=0; n<fv.length; n++) {
-                wid = fv[n].getIndex();
-                v = fv[n].getValue();
-                double sum = 0;
-                for(int i=0; i<number_of_topics; i++) {
-                    sum += Math.exp(d.m_topics[i]) * Math.exp(topic_term_probabilty[i][wid]);
-                }
-                logLikelihood += v * Math.log(sum);
-            }
-
-            return logLikelihood;
-        }
+//        public double calc_term_log_likelihood(_Doc d) {
+//            int wid;
+//            double v, logLikelihood = 0;
+//
+//            //collect the sufficient statistics
+//            _SparseFeature[] fv = d.getSparse();
+//            for(int n=0; n<fv.length; n++) {
+//                wid = fv[n].getIndex();
+//                v = fv[n].getValue();
+//                double sum = 0;
+//                for(int i=0; i<number_of_topics; i++) {
+//                    sum += Math.exp(d.m_topics[i]) * Math.exp(topic_term_probabilty[i][wid]);
+//                }
+//                logLikelihood += v * Math.log(sum);
+//            }
+//
+//            return logLikelihood;
+//        }
 
         @Override
         public double inference(_Doc d){
             initTestDoc(d);
             double likelihood = calculate_E_step(d);
             estThetaInDoc(d);
-            return calc_term_log_likelihood(d);
+            return likelihood;
         }
 
         @Override
@@ -207,18 +207,18 @@ public class EUB_multithreading extends EUB {
         do {
             init();
 
-            // doc
-            docLikelihood = super.multithread_E_step();
-            if(Double.isNaN(docLikelihood) || Double.isInfinite(docLikelihood)){
-                System.err.println("[Error]E_step for documents results in NaN likelihood...");
-                break;
-            }
-
-            // topic
-            topicLikelihood = multithread_general(m_topicWorkers);
-            if(Double.isNaN(topicLikelihood) || Double.isInfinite(topicLikelihood)){
-                System.err.println("[Error]E_step for topics results in NaN likelihood...");
-            }
+//            // doc
+//            docLikelihood = super.multithread_E_step();
+//            if(Double.isNaN(docLikelihood) || Double.isInfinite(docLikelihood)){
+//                System.err.println("[Error]E_step for documents results in NaN likelihood...");
+//                break;
+//            }
+//
+//            // topic
+//            topicLikelihood = multithread_general(m_topicWorkers);
+//            if(Double.isNaN(topicLikelihood) || Double.isInfinite(topicLikelihood)){
+//                System.err.println("[Error]E_step for topics results in NaN likelihood...");
+//            }
 
             // user
             userLikelihood = multithread_general(m_userWorkers);
@@ -227,7 +227,8 @@ public class EUB_multithreading extends EUB {
                 break;
             }
 
-            likelihood = docLikelihood + topicLikelihood + userLikelihood;
+            likelihood = userLikelihood;
+//            likelihood = docLikelihood + topicLikelihood + userLikelihood;
 
             if(iter > 0)
                 converge = Math.abs((likelihood - last) / last);
@@ -238,8 +239,9 @@ public class EUB_multithreading extends EUB {
 
             if(converge < m_varConverge)
                 break;
-            System.out.format("[Multi-E-step] %d iteration, likelihood(d:t:u)=(%.2f, %.2f, %.2f), converge to %.8f\n",
-                    iter, docLikelihood, topicLikelihood, userLikelihood, converge);
+//            System.out.format("[Multi-E-step] %d iteration, likelihood(d:t:u)=(%.2f, %.2f, %.2f), converge to %.8f\n",
+//                    iter, docLikelihood, topicLikelihood, userLikelihood, converge);
+            System.out.format("[Multi-E-step] %d iteration, likelihood-u=%.2f, converge to %.8f\n", iter, userLikelihood, converge);
         }while(iter++ < m_varMaxIter);
 
         return likelihood;
@@ -345,8 +347,8 @@ public class EUB_multithreading extends EUB {
         double perplexity = Math.exp(-allLoglikelihood/totalWords);
         double avgLoglikelihood = allLoglikelihood / m_testSet.size();
 
-        System.out.format("[Stat]wordOnly:%b, TestInferIter=%d, perplexity=%.4f, totalWords=%d, allLogLikelihood=%.4f" +
-                        ", avgLogLikelihood=%.4f\n\n", m_wordOnlyFlag,
+        System.out.format("[Stat]TestInferIter=%d, perplexity=%.4f, totalWords=%d, allLogLikelihood=%.4f" +
+                        ", avgLogLikelihood=%.4f\n\n",
                 m_testInferMaxIter, perplexity, totalWords, allLoglikelihood, avgLoglikelihood);
         return perplexity;
     }

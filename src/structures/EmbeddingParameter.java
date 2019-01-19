@@ -29,7 +29,6 @@ public class EmbeddingParameter {
     public boolean m_rhoFlag = true;
     public boolean m_ada = false;
     public boolean m_coldStartFlag = false;
-    public boolean m_wordOnly = true;
 
     public String m_saveDir = "";
     public String m_mode = "cv4doc";
@@ -89,8 +88,6 @@ public class EmbeddingParameter {
                 m_testInferIter = Integer.valueOf(argv[i]);
             else if(argv[i - 1].equals("-coldStart"))
                 m_coldStartFlag = Boolean.valueOf(argv[i]);
-            else if(argv[i - 1].equals("-wordOnly"))
-                m_wordOnly = Boolean.valueOf(argv[i]);
 
         }
         // must specify the save directory for data

@@ -75,7 +75,6 @@ public class EUBMain {
         ((EUB) tModel).setTrainInferMaxIter(trainIter);
         ((EUB) tModel).setTestInferMaxIter(testIter);
         ((EUB) tModel).setStepSize(stepSize);
-        ((EUB) tModel).setWordOnlyFlag(wordOnly);
 
         long current = System.currentTimeMillis();
         String saveDir = String.format("./data/embeddingExp/eub/%s_emIter_%d_nuTopics_%d_varIter_%d_trainIter_%d_testIter_%d_dim_%d_ada_%b/" +

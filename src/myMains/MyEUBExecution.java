@@ -96,7 +96,6 @@ public class MyEUBExecution {
         ((EUB) tModel).setTestInferMaxIter(param.m_testInferIter);
         ((EUB) tModel).setParamMaxIter(param.m_paramIter);
         ((EUB) tModel).setStepSize(param.m_stepSize);
-        ((EUB) tModel).setWordOnlyFlag(param.m_wordOnly);
 
         if(param.m_multiFlag && param.m_coldStartFlag){
             ((EUB4ColdStart_multithreading) tModel).fixedCrossValidation(param.m_kFold, param.m_saveDir);

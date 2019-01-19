@@ -14,13 +14,13 @@ public class LinkPredictionWithUserEmbedding {
     class _User4Link {
         String m_uid;
         int m_index;
-        double[] m_embedding;
+//        double[] m_embedding;
         ArrayList<_Edge4Link> m_edges;
 
-        public _User4Link(String uid, int idx, double[] embedding){
+        public _User4Link(String uid, int idx){
             m_uid = uid;
             m_index = idx;
-            m_embedding = embedding;
+//            m_embedding = embedding;
             m_edges = new ArrayList<_Edge4Link>();
         }
 
@@ -151,7 +151,7 @@ public class LinkPredictionWithUserEmbedding {
                 String[] strs = line.trim().split("\t");
                 String uid = strs[0];
                 int index = m_idIndexMap.get(uid);
-                _User4Link ui = new _User4Link(strs[0], index, m_embeddings[index]);
+                _User4Link ui = new _User4Link(strs[0], index);
                 m_testUserMap.put(uid, ui);
                 m_testUserIds.add(uid);
                 for(int j=1; j<strs.length; j++){
@@ -208,12 +208,17 @@ public class LinkPredictionWithUserEmbedding {
     }
 
     public void calcSimilarity(){
+
+        System.out.println("Start calculating similarity....");
         m_similarity = new double[m_userSize][m_userSize];
         for(int i=0; i<m_userSize; i++){
             for(int j=i+1; j<m_userSize; j++){
-                m_similarity[i][j] = Utils.cosine(m_embeddings[i], m_embeddings[j]);
+                m_similarity[i][j] = Math.random();
+//                m_similarity[i][j] = Utils.cosine(m_embeddings[i], m_embeddings[j]);
             }
         }
+        System.out.println("Finish calculating similarity.");
+
     }
     public void saveUserIds(String embedFile, String idFile){
         try {
@@ -447,7 +452,7 @@ public class LinkPredictionWithUserEmbedding {
         for(String model: map.keySet()){
             double[][][] perfs = map.get(model);
 
-            int folds = perfs.length;
+            double folds = perfs.length;
             int times = perfs[0].length;
             double[][] mean = new double[times][2];
             double[][] std = new double[times][2];
@@ -488,7 +493,7 @@ public class LinkPredictionWithUserEmbedding {
             double[][] mean = meanMap.get(model);
             double[][] std = stdMap.get(model);
             for(int t=0; t<mean.length; t++){
-                System.out.format("%.4f+/-%.4f\t%.4f+/-%.4f\t\t", mean[t][0], std[t][0], mean[t][1], std[t][1]);
+                System.out.format("%.5f+/-%.5f\t%.5f+/-%.5f\t\t", mean[t][0], std[t][0], mean[t][1], std[t][1]);
             }
             System.out.println();
         }
@@ -496,12 +501,12 @@ public class LinkPredictionWithUserEmbedding {
     public static void main(String[] args){
         String data = "YelpNew";
         int dim = 10, folds = 4;
-        int[] times = new int[]{2, 3, 4, 5};
-        String[] models = new String[]{"BOW", "EUB", "RTM", "LDA", "HFT", "DW", "TADW"}; // "LDA", "HFT", "TADW", "EUB", "LDA", "HFT"
+        int[] times = new int[]{2};
+        String[] models = new String[]{"EUB"};// "RTM", "LDA", "HFT", "DW", "TADW"}; // "LDA", "HFT", "TADW", "EUB", "LDA", "HFT"
         HashMap<String, double[][][]> allFoldsPerf = new HashMap<String, double[][][]>();
         String idFile = String.format("/Users/lin/DataWWW2019/UserEmbedding/%s_userids.txt", data);
 
-        LinkPredictionWithUserEmbedding link = new LinkPredictionWithUserEmbedding();
+        LinkPredictionWithUserEmbedding link = null;
 
         for(String model: models){
             if(model.equals("LDA") || model.equals("HFT") || model.equals("BOW"))
@@ -514,8 +519,14 @@ public class LinkPredictionWithUserEmbedding {
                     System.out.format("-----current model-%s-time-%d-dim-%d------\n", model, time, dim);
 
                     String embedFile = String.format("/Users/lin/DataWWW2019/UserEmbedding/%s_%s_embedding_dim_%d_fold_%d.txt", data, model, dim, fold);
+                    if(model.equals("BOW"))
+                        embedFile = String.format("/Users/lin/DataWWW2019/UserEmbedding/%s_%s.txt", data, model);
                     String testInterFile = String.format("./data/DataEUB/CV4Edges/%sCVIndex4Interaction_fold_%d_test.txt", data, fold);
                     String testNonInterFile = String.format("./data/DataEUB/CV4Edges/%sCVIndex4NonInteraction_time_%d_fold_%d.txt", data, time, fold);
+
+                    if(model.equals("BOW"))
+                        link = new  LinkPredictionWithUserEmbeddingBOW()  ;
+                    else link = new LinkPredictionWithUserEmbedding();
 
                     link.ininLinkPred(idFile, embedFile, testInterFile, testNonInterFile);
                     link.calculateAllNDCGMAP();

@@ -65,14 +65,13 @@ public class EUB extends LDA_Variational {
     protected boolean m_tauFlag = false;
     protected boolean m_xiFlag = false;
     protected boolean m_rhoFlag = false;
-    protected boolean m_wordOnlyFlag = true;
 
     // whehter we use adam grad to optimize or not
     protected boolean m_adaFlag = false;
 
     protected int m_trainInferMaxIter = 1;
     protected int m_paramMaxIter = 20;
-    protected int m_testInferMaxIter = 1000;
+    protected int m_testInferMaxIter = 1500;
 
     public EUB(int number_of_iteration, double converge, double beta,
                _Corpus c, double lambda, int number_of_topics, double alpha,
@@ -113,10 +112,6 @@ public class EUB extends LDA_Variational {
 
     public void setAdaFlag(boolean b){
         m_adaFlag = b;
-    }
-
-    public void setWordOnlyFlag(boolean b){
-        m_wordOnlyFlag = b;
     }
 
     public void setTrainInferMaxIter(int iter){
@@ -823,7 +818,7 @@ public class EUB extends LDA_Variational {
                 double[] fgValue = calcFGValueDeltaSigma(ui, ui.m_sigma_delta, eij, j);
                 fValue += fgValue[0];
                 sigmaG[j] += fgValue[1];
-                ui.m_sigma_delta[j] += m_stepSize * sigmaG[j];
+//                ui.m_sigma_delta[j] += m_stepSize * sigmaG[j];
 
                 if(m_adaFlag)
                     ui.m_sigma_delta[j] += m_stepSize/Math.sqrt(sigmaH[j]) * sigmaG[j];
@@ -1056,7 +1051,7 @@ public class EUB extends LDA_Variational {
                 System.out.println("[error] Doc: loglikelihood is Nan or Infinity!!");
         }
         // for debugging purpose: if it is test document and we consider word only likelihood
-        return (doc.getType() == _Doc.rType.TEST && m_wordOnlyFlag) ? loglikelihoodW : logLikelihood;
+        return logLikelihood;
     }
 
     protected double calc_log_likelihood_per_user(_User4EUB ui){
