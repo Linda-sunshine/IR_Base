@@ -420,7 +420,10 @@ public class EUB extends LDA_Variational {
             _Topic4EUB topic = m_topics[k];
             denominator += sumSigmaDiagAddMuTransposeMu(topic.m_sigma_phi, topic.m_mu_phi);
         }
-        m_alpha_s = denominator!=0 ? (number_of_topics * m_embeddingDim / denominator) : 0;
+        
+        if (denominator>0)        	
+        	m_alpha_s = number_of_topics * m_embeddingDim / denominator;
+        //otherwise keep the current value
     }
 
     protected void est_gamma(){
@@ -430,7 +433,10 @@ public class EUB extends LDA_Variational {
             _User4EUB user = m_users.get(uIndex);
             denominator += sumSigmaDiagAddMuTransposeMu(user.m_sigma_u, user.m_mu_u);
         }
-        m_gamma = denominator!=0 ? (m_users.size() * m_embeddingDim) / denominator : 0;
+        
+        if (denominator>0)
+        	m_gamma = m_users.size() * m_embeddingDim / denominator;
+      //otherwise keep the current value
     }
 
     protected void est_beta(){
@@ -455,7 +461,10 @@ public class EUB extends LDA_Variational {
             _User4EUB user = m_users.get(uIndex);
             denominator += calculateStat4Tau(user, doc);
         }
-        m_tau = denominator != 0 ? D * number_of_topics / denominator : 0;
+        
+        if (denominator>0)
+        	m_tau = D * number_of_topics / denominator;
+        //otherwise keep the current value
     }
 
     protected void est_xi(){
@@ -471,9 +480,12 @@ public class EUB extends LDA_Variational {
                 xiSquare += calculateStat4Xi(ui, m_users.get(j), j);
             }
         }
-        double totalConnection = m_users.size() * (m_users.size() - 1);
-        m_xi = (xiSquare > 0) ? Math.sqrt(xiSquare/totalConnection) : 0;
-
+        
+        if (xiSquare>0) {
+        	double totalConnection = m_users.size() * (m_users.size() - 1);
+        	m_xi = Math.sqrt(xiSquare/totalConnection);
+        }
+        //otherwise keep the current value
     }
 
     protected void est_rho(){
@@ -499,7 +511,7 @@ public class EUB extends LDA_Variational {
         for(int m=0; m<m_embeddingDim; m++){
             val += -2 * ui.m_mu_delta[j] * ui.m_mu_u[m] * uj.m_mu_u[m];
             for(int l=0; l<m_embeddingDim; l++){
-                val += (ui.m_sigma_u[m][l] + ui.m_mu_u[m] * uj.m_mu_u[l]) *
+                val += (ui.m_sigma_u[m][l] + ui.m_mu_u[m] * ui.m_mu_u[l]) *
                         (uj.m_sigma_u[m][l] + uj.m_mu_u[m] * uj.m_mu_u[l]);
             }
         }
@@ -520,7 +532,7 @@ public class EUB extends LDA_Variational {
                 }
             }
         }
-        return term1 + term2 + term3;
+        return term1 - term2 + term3;
     }
 
     protected double varInference4Topic(_Topic4EUB topic){
@@ -624,9 +636,8 @@ public class EUB extends LDA_Variational {
             return 0;
         int dim = mu.length;
         double sum = 0;
-        for(int m=0; m<dim; m++){
+        for(int m=0; m<dim; m++)
             sum += sigma[m][m] + mu[m] * mu[m];
-        }
         return sum;
     }
 
