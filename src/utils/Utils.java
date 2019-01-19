@@ -197,7 +197,18 @@ public class Utils {
 			sum += a[i] * b[i];
 		return sum;
 	}
-	
+
+	public static double[] matrixMultVector(double[][] mtx, double[] vct){
+		if(mtx[0].length != vct.length)
+			return null;
+
+		double[] res = new double[mtx.length];
+		for(int i=0; i<mtx.length; i++)
+			res[i] = Utils.dotProduct(mtx[i], vct);
+
+		return res;
+	}
+
 	public static double L2Norm(double[] a) {
 		return Math.sqrt(dotProduct(a,a));
 	}

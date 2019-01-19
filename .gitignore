@@ -12,3 +12,8 @@ out/*
 *.iml
 *.txt
 .settings/*
+*.dat
+*.json
+*.log
+*.class
+*.out
