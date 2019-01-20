@@ -6,6 +6,7 @@ import topicmodels.multithreads.EmbedModelWorker;
 import topicmodels.multithreads.EmbedModel_worker;
 import topicmodels.multithreads.TopicModelWorker;
 import topicmodels.multithreads.TopicModel_worker;
+import utils.Utils;
 
 import java.util.Collection;
 
@@ -70,6 +71,20 @@ public class EUB_multithreading extends EUB {
             double likelihood = calculate_E_step(d);
             estThetaInDoc(d);
             return likelihood;
+        }
+
+        protected void updateStats4Doc(_Doc d){
+            _Doc4EUB doc = (_Doc4EUB) d;
+            // update m_word_topic_stats for updating beta
+            _SparseFeature[] fv = doc.getSparse();
+            int wid;
+            double v;
+            for(int n=0; n<fv.length; n++) {
+                wid = fv[n].getIndex();
+                v = fv[n].getValue();
+                for(int i=0; i<number_of_topics; i++)
+                    sstat[i][wid] += v*doc.m_phi[n][i];
+            }
         }
 
         @Override
@@ -323,9 +338,9 @@ public class EUB_multithreading extends EUB {
                 converge = 1.0;
 
             last = perplexity;
+            System.out.format("[Inference]Likelihood: %.2f\n", last);
             if(converge < m_varConverge)
                 break;
-            System.out.format("[Inference]Likelihood: %.2f\n", last);
         }while(iter++ < m_varMaxIter);
 
         return perplexity;

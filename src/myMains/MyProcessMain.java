@@ -55,8 +55,8 @@ public class MyProcessMain {
                 PrintWriter trainWriter = new PrintWriter(new File(trainFile));
                 PrintWriter testWriter = new PrintWriter(new File(testFile));
                 for(String uid: userFoldMap.keySet()) {
+                    ArrayList<String> trainIds = new ArrayList<>();
                     for (int l = 0; l < kFold; l++) {
-                        ArrayList<String> trainIds = new ArrayList<>();
                         // test data
                         if (l == k) {
                             if (userFoldMap.get(uid)[k].size() == 0) {
@@ -72,14 +72,14 @@ public class MyProcessMain {
                             // collect train data
                             trainIds.addAll(userFoldMap.get(uid)[l]);
                         }
-                        if (trainIds.size() > 0) {
-                            trainWriter.write(uid + "\t");
-                            for (String uj : trainIds) {
-                                trainWriter.write(uj + "\t");
-                                trainCount++;
-                            }
-                            trainWriter.write("\n");
+                    }
+                    if (trainIds.size() > 0) {
+                        trainWriter.write(uid + "\t");
+                        for (String uj : trainIds) {
+                            trainWriter.write(uj + "\t");
+                            trainCount++;
                         }
+                        trainWriter.write("\n");
                     }
                 }
                 trainWriter.close();
@@ -192,7 +192,7 @@ public class MyProcessMain {
 
     public static void main(String[] args){
         int kFold = 5;
-        String dataset = "StackOverflow";
+        String dataset = "YelpNew";
         String prefix = "./data/CoLinAdapt";
 
         String orgCV = String.format("%s/%s/SelectedVocab.csv", prefix, dataset);
