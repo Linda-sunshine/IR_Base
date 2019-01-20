@@ -142,9 +142,15 @@ public class myDataProcessMain {
             System.out.format("====== %d fold =====\n", k);
             if(param.m_mode.equals("CVdoc")) {
                 System.out.format("Generating for CVdoc %s......\n", param.m_flag_coldstart?"COLD start":"");
-//                if(!param.m_flag_coldstart)
-//                    analyzer.printData4RTM_CVdoc(outputFolder, k, param.co);
-//                else
+                if(!param.m_flag_coldstart)
+                    analyzer.printData4RTM_CVdoc(outputFolder, k, -1, param.m_flag_coldstart);
+                else{
+                    cvIndexFile = String.format("%s/%s_cold_start_4docs_fold_%d.txt", dataset, param.m_source, k);
+                    analyzer.loadCVIndex(cvIndexFile);
+                    for(int group_i = 0; group_i < 3; group_i++){//light; medium; heavy
+                        analyzer.printData4RTM_CVdoc(outputFolder, k, group_i, param.m_flag_coldstart);
+                    }
+                }
 
             } else {
                 System.out.format("Generating for CVlink %s......\n", param.m_flag_coldstart?"COLD start":"");

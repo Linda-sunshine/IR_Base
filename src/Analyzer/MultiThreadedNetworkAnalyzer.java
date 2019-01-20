@@ -358,15 +358,17 @@ public class MultiThreadedNetworkAnalyzer extends MultiThreadedLinkPredAnalyzer 
         }
     }
 
-    public void printData4RTM_CVdoc(String dir, int testFold, boolean flag_cold){
+    public void printData4RTM_CVdoc(String dir, int testFold, int groupIdx, boolean flag_cold){
         (new File(dir)).mkdirs();
         String flagstr = flag_cold?"_coldstart":"";
-        String trtCorpusFile = String.format("%s/CVdoc_corpus_train_%d.txt", dir, testFold);
-        String tstCorpusFile = String.format("%s/CVdoc_corpus_test_%d.txt", dir, testFold);
-        String trtLinkFile = String.format("%s/CVdoc_link_train_%d.txt", dir, testFold);
-        String tstLinkFile = String.format("%s/CVdoc_link_test_train_%d.txt", dir, testFold);
-        String tsttstLinkFile = String.format("%s/CVdoc_link_test_test_%d.txt", dir, testFold);
-        String userIdIdxFile = String.format("%s/CVdoc_userId_train_%d.txt", dir, testFold);
+        String flaggroup = groupIdx<0? "":String.format("_%d", groupIdx);
+        String trtCorpusFile = String.format("%s/CVdoc%s_corpus_train_%d.txt", dir, flagstr, testFold);
+        String tstCorpusFile = String.format("%s/CVdoc%s_corpus_test_%d%s.txt", dir, flagstr, testFold, flaggroup);
+        String trtLinkFile = String.format("%s/CVdoc%s_link_train_%d%s.txt", dir, flagstr, testFold, flaggroup);
+        String tstLinkFile = String.format("%s/CVdoc%s_link_test_train_%d%s.txt", dir, flagstr, testFold, flaggroup);
+        String tsttstLinkFile = String.format("%s/CVdoc%s_link_test_test_%d%s.txt", dir, flagstr, testFold, flaggroup);
+        String userIdIdxFile = String.format("%s/CVdoc%s_userId_train_%d%s.txt", dir, flagstr, testFold, flaggroup);
+
 
         try {
             //write train and test corpus
@@ -382,10 +384,17 @@ public class MultiThreadedNetworkAnalyzer extends MultiThreadedLinkPredAnalyzer 
                 ArrayList<_SparseFeature[]> reviews_train = new ArrayList<_SparseFeature[]>();
                 ArrayList<_SparseFeature[]> reviews_test = new ArrayList<_SparseFeature[]>();
                 for (_Review r : user.getReviews()) {
-                    if (r.getMask4CV() == testFold)
-                        reviews_test.add(r.getSparse());
-                    else
-                        reviews_train.add(r.getSparse());
+                    if(groupIdx<0) {
+                        if (r.getMask4CV() == testFold)
+                            reviews_test.add(r.getSparse());
+                        else
+                            reviews_train.add(r.getSparse());
+                    } else {
+                        if (r.getMask4CV() == groupIdx)
+                            reviews_test.add(r.getSparse());
+                        else if (r.getMask4CV() == 3)
+                            reviews_train.add(r.getSparse());
+                    }
                 }
                 profile_train = Utils.MergeSpVcts(reviews_train);
                 profile_test = Utils.MergeSpVcts(reviews_test);
