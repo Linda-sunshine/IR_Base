@@ -277,14 +277,14 @@ public class EUB extends LDA_Variational {
                 currentAllLikelihood = E_step();
 
             System.out.format("[Info]Finish E-step: loglikelihood is: %.5f.\n", currentAllLikelihood);
-            if (iter >= 0)
+            if (iter > 0)
                 converge = Math.abs((lastAllLikelihood - currentAllLikelihood) / lastAllLikelihood);
             else
                 converge = 1.0;
 
-            calculate_M_step(iter);
+            calculate_M_step(++iter);
 
-            if(++iter % 5 == 0)
+            if(iter % 5 == 0)
                 printTopWords(30);
 
             lastAllLikelihood = currentAllLikelihood;
@@ -946,7 +946,6 @@ public class EUB extends LDA_Variational {
     }
 
     protected double calc_log_likelihood_per_topic(_Topic4EUB topic){
-
         double logLikelihood = 0.5 * m_embeddingDim * (Math.log(m_alpha_s) + 1);
         double determinant = new Matrix(topic.m_sigma_phi).det();
         if(determinant < 0)
@@ -959,28 +958,35 @@ public class EUB extends LDA_Variational {
     protected double calc_log_likelihood_per_doc(_Doc4EUB doc){
         // the first part
 //        double debugLikelihoodZ = 0, debugLikelihoodTheta = 0, debugLoglikelihoodW = 0;
-        double logLikelihood = 0.5 * number_of_topics * (Math.log(m_tau) + 1) - doc.getTotalDocLength() *
-                (doc.m_logZeta -1 ) - 0.5 * m_tau * sumSigmaDiagAddMuTransposeMu(doc.m_sigma_theta, doc.m_mu_theta);
+    	int dLength = doc.getTotalDocLength();
+        double logLikelihood = 0.5 * number_of_topics * (Math.log(m_tau) + 1) 
+        					- dLength * (doc.m_logZeta -1)
+        					- 0.5 * m_tau * sumSigmaDiagAddMuTransposeMu(doc.m_sigma_theta, doc.m_mu_theta);
 //        debugLikelihoodTheta = 0.5 * number_of_topics * (Math.log(m_tau) + 1) - 0.5 * m_tau * sumSigmaDiagAddMuTransposeMu(doc.m_sigma_theta, doc.m_mu_theta);;
 //        debugLikelihoodZ = -doc.getTotalDocLength() * (doc.m_logZeta - 1);
+        
         if(Double.isNaN(logLikelihood) || Double.isInfinite(logLikelihood))
             System.out.println("[error] Doc: loglikelihood is Nan or Infinity!!");
+        
         double determinant = 1;
-        for(int k=0; k<number_of_topics; k++){
+        for(int k=0; k<number_of_topics; k++)
             determinant *= doc.m_sigma_theta[k];
-        }
-        if(determinant < 0)
+        
+        if(determinant <= 0)//this is impossible! 
             System.out.println("[error]Negative determinant in likelihood for doc!");
         logLikelihood += 0.5 * Math.log(Math.abs(determinant));
+        
 //        debugLikelihoodTheta += 0.5 * Math.log(Math.abs(determinant));
 
         if(Double.isNaN(logLikelihood) || Double.isInfinite(logLikelihood))
             System.out.println("[error] Doc: loglikelihood is Nan or Infinity!!");
+        
         double term1 = 0, term2 = 0;
-        for(int m=0; m<m_embeddingDim; m++){
-            for(int k=0; k<number_of_topics; k++){
-                _Topic4EUB topic = m_topics[k];
-                _User4EUB user = m_users.get(m_docUserMap.get(doc.getIndex()));
+        _User4EUB user = m_users.get(m_docUserMap.get(doc.getIndex()));
+        for(int k=0; k<number_of_topics; k++){
+            _Topic4EUB topic = m_topics[k];
+            
+        	for(int m=0; m<m_embeddingDim; m++){
                 term1 += doc.m_mu_theta[k] * topic.m_mu_phi[m] * user.m_mu_u[m];
                 for(int l=0; l<m_embeddingDim; l++){
                     term2 += (user.m_sigma_u[m][l] + user.m_mu_u[m] * user.m_mu_u[l])
@@ -992,6 +998,7 @@ public class EUB extends LDA_Variational {
 //        debugLikelihoodTheta += m_tau * term1 - 0.5 * m_tau * term2;
         if(Double.isNaN(logLikelihood) || Double.isInfinite(logLikelihood))
             System.out.println("[error] Doc: loglikelihood is Nan or Infinity!!");
+        
         // the second part which involves with words
         _SparseFeature[] fv = doc.getSparse();
         for(int k = 0; k < number_of_topics; k++) {
@@ -1002,13 +1009,13 @@ public class EUB extends LDA_Variational {
                 if(Double.isNaN(logLikelihood) || Double.isInfinite(logLikelihood))
                     System.out.println("[error] Doc: loglikelihood is Nan or Infinity!!");
             }
-            logLikelihood -= doc.getTotalDocLength() * Math.exp(doc.m_mu_theta[k] + 0.5 * doc.m_sigma_theta[k] - doc.m_logZeta);
+            logLikelihood -= dLength * Math.exp(doc.m_mu_theta[k] + 0.5 * doc.m_sigma_theta[k] - doc.m_logZeta);
 //            debugLikelihoodZ -= doc.getTotalDocLength() * Math.exp(doc.m_mu_theta[k] + 0.5 * doc.m_sigma_theta[k] - doc.m_logZeta);
             if(Double.isNaN(logLikelihood) || Double.isInfinite(logLikelihood))
                 System.out.println("[error] Doc: loglikelihood is Nan or Infinity!!");
         }
 //        debugLoglikelihoodW = logLikelihood - debugLikelihoodTheta - debugLikelihoodZ;
-        return logLikelihood + 0.5 * m_tau * term2;
+        return logLikelihood;
     }
 
     protected double calc_log_likelihood_per_user(_User4EUB ui){
@@ -1040,26 +1047,30 @@ public class EUB extends LDA_Variational {
     protected double calcLogLikelihoodOneEdge(_User4EUB ui, _User4EUB uj, int i, int j, int eij){
         double muDelta = ui.m_mu_delta[j], sigmaDelta = ui.m_sigma_delta[j];
         double epsilon = ui.m_epsilon[j], epsilon_prime = ui.m_epsilon_prime[j];
+        double xi2 = m_xi * m_xi;
 
-        double logLikelihood = eij * (muDelta - Math.log(m_rho))
+        double logLikelihood = eij * (muDelta + Math.log(m_rho))
                 + ((1-m_rho) * (1 - eij)/epsilon_prime - 1/epsilon) * Math.exp(muDelta + 0.5 * sigmaDelta * sigmaDelta)
-                -(muDelta * muDelta + sigmaDelta * sigmaDelta)/(2 * m_xi * m_xi) + Math.log(Math.abs(sigmaDelta))
-                -1/epsilon - Math.log(epsilon) + eij + (1-eij) * (Math.log(epsilon_prime + 1/epsilon_prime))
+                -(muDelta * muDelta + sigmaDelta * sigmaDelta)/(2 * xi2) + Math.log(Math.abs(sigmaDelta))
+                -1/epsilon - Math.log(epsilon) + eij + (1-eij) * (Math.log(epsilon_prime) + 1/epsilon_prime)
                 - Math.log(m_xi) + 0.5;
 
         if(Double.isNaN(logLikelihood) || Double.isInfinite(logLikelihood))
             System.out.println("[error] Edge: the likelihood is Nan or Infinity!!");
+        
         for(int m=0; m<m_embeddingDim; m++){
-            logLikelihood += muDelta/(m_xi * m_xi) * ui.m_mu_u[m] * uj.m_mu_u[m];
+            logLikelihood += muDelta/xi2 * ui.m_mu_u[m] * uj.m_mu_u[m];
             if(Double.isNaN(logLikelihood) || Double.isInfinite(logLikelihood))
                 System.out.println("[error] Edge: the likelihood is Nan or Infinity!!");
+            
             for(int l=0; l<m_embeddingDim; l++){
-                logLikelihood += -1/(2*m_xi*m_xi)*(ui.m_sigma_u[m][l] + ui.m_mu_u[m] * ui.m_mu_u[l]) *
+                logLikelihood -= 1/(2*xi2)*(ui.m_sigma_u[m][l] + ui.m_mu_u[m] * ui.m_mu_u[l]) *
                         (uj.m_sigma_u[m][l] + uj.m_mu_u[m] * uj.m_mu_u[l]);
                 if(Double.isNaN(logLikelihood) || Double.isInfinite(logLikelihood))
                     System.out.println("[error] Edge: the likelihood is Nan or Infinity!!");
             }
         }
+        
         if(Double.isNaN(logLikelihood) || Double.isInfinite(logLikelihood))
             System.out.println("[error] Edge: the likelihood is Nan or Infinity!!");
         return logLikelihood;
