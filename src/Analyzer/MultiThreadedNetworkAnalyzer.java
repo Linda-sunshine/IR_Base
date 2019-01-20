@@ -363,13 +363,12 @@ public class MultiThreadedNetworkAnalyzer extends MultiThreadedLinkPredAnalyzer 
         String flagstr = flag_cold?"_coldstart":"";
         String flaggroup = groupIdx<0? "":String.format("_%d", groupIdx);
         String trtCorpusFile = String.format("%s/CVdoc%s_corpus_train_%d.txt", dir, flagstr, testFold);
+        String trtLinkFile = String.format("%s/CVdoc%s_link_train_%d.txt", dir, flagstr, testFold);
+        String userIdIdxFile = String.format("%s/CVdoc%s_userId_train_%d.txt", dir, flagstr, testFold);
         String tstCorpusFile = String.format("%s/CVdoc%s_corpus_test_%d%s.txt", dir, flagstr, testFold, flaggroup);
-        String trtLinkFile = String.format("%s/CVdoc%s_link_train_%d%s.txt", dir, flagstr, testFold, flaggroup);
         String tstLinkFile = String.format("%s/CVdoc%s_link_test_train_%d%s.txt", dir, flagstr, testFold, flaggroup);
         String tsttstLinkFile = String.format("%s/CVdoc%s_link_test_test_%d%s.txt", dir, flagstr, testFold, flaggroup);
-        String userIdIdxFile = String.format("%s/CVdoc%s_userId_train_%d%s.txt", dir, flagstr, testFold, flaggroup);
-
-
+        
         try {
             //write train and test corpus
             PrintWriter writer_train = new PrintWriter(new File(trtCorpusFile));
