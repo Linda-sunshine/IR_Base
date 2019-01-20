@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.text.ParseException;
 import java.util.Arrays;
 
+import Analyzer.BipartiteAnalyzer;
 import Analyzer.MultiThreadedNetworkAnalyzer;
 import Analyzer.MultiThreadedUserAnalyzer;
 import structures.*;
@@ -30,16 +31,34 @@ public class ETBIRExecution {
 		boolean setRandomFold = false;
 		int numberOfCores = Runtime.getRuntime().availableProcessors();
 
-		String tokenModel = "./data/Model/en-token.bin";
-		String dataset = String.format("%s/%s/%s", param.m_prefix, param.m_source, param.m_set);
-		String fvFile = String.format("%s/%s/%s_features.txt", param.m_prefix, param.m_source, param.m_source);
-		String reviewFolder = String.format("%s/data/", dataset);
-		String cvIndexFile = String.format("%s/%sCVIndex.txt", dataset, param.m_source);
-		String outputFolder = String.format("%s/output/%s/%s/", param.m_prefix, param.m_source, param.m_set);
+        String tokenModel = "./data/Model/en-token.bin";
+        String dataset = String.format("%s/%s/%s", param.m_prefix, param.m_source, param.m_set);
+        String fvFile = String.format("%s/%s/%s_features.txt", param.m_prefix, param.m_source, param.m_source);
+        String reviewFolder = String.format("%s/%dfoldsCV%s/", dataset, param.m_crossV, param.m_flag_coldstart?"Coldstart":"");
+        String outputFolder = String.format("%s/output/%dfoldsCV%s/", dataset, param.m_crossV, param.m_flag_coldstart?"Coldstart":"");
 
-        MultiThreadedNetworkAnalyzer analyzer = new MultiThreadedNetworkAnalyzer(tokenModel, classNumber, fvFile,
-                Ngram, lengthThreshold, numberOfCores, true);
-		_Corpus corpus = analyzer.getCorpus();
+        MultiThreadedReviewAnalyzer analyzer = new MultiThreadedReviewAnalyzer(tokenModel, classNumber, fvFile,
+                Ngram, lengthThreshold, numberOfCores, true, param.m_source);
+        if(setRandomFold==false)
+            analyzer.setReleaseContent(false);//Remember to set it as false when generating crossfolders!!!
+        analyzer.loadUserDir(reviewFolder);
+        _Corpus corpus = analyzer.getCorpus();
+
+//        if(param.m_crossV>1 && setRandomFold==false){
+//            reviewFolder = String.format("%s/%dfoldsCV%s/", dataset, param.m_crossV, param.m_flag_coldstart?"Coldstart":"");
+//            //if no data, generate
+//            String cvFolder = String.format("%s/0/", reviewFolder);
+//            File testFile = new File(cvFolder);
+//            if(!testFile.exists() && !testFile.isDirectory()){
+//                System.err.format("[Warning]Cross validation dataset %s not exist! Now generating...", cvFolder);
+//                BipartiteAnalyzer cv = new BipartiteAnalyzer(corpus); // split corpus into folds
+//                cv.analyzeCorpus();
+//                if(param.m_flag_coldstart)
+//                    cv.splitCorpusColdStart(param.m_crossV, reviewFolder);
+//                else
+//                    cv.splitCorpus(param.m_crossV, reviewFolder);
+//            }
+//        }
 
         int result_dim = 1;
 		pLSA tModel = null;
@@ -87,7 +106,7 @@ public class ETBIRExecution {
         if (param.m_crossV<=1) {//just train
             analyzer.loadUserDir(reviewFolder);
             tModel.EMonCorpus();
-            tModel.printParameterAggregation(param.m_topk, outputFolder, param.m_topicmodel, "EUB");
+            tModel.printParameterAggregation(param.m_topk, outputFolder, param.m_topicmodel);
             tModel.printTopWords(param.m_topk);
         } else if(setRandomFold == true){//cross validation with random folds
             analyzer.setAllocateReviewFlag(false);
@@ -99,19 +118,24 @@ public class ETBIRExecution {
             tModel.setPerplexityProportion(testProportion);
             tModel.crossValidation(param.m_crossV);
         } else{//cross validation with fixed folds, indexed by CVIndex file
-            analyzer.setAllocateReviewFlag(false);
-            analyzer.loadUserDir(reviewFolder);
-            System.out.format("[Dataset]%d docs are loaded.\n", analyzer.getCorpus().getCollection().size());
-            analyzer.constructUserIDIndex();
-            System.out.format("[Dataset]%d users are loaded.\n", analyzer.getUsers().size());
-            analyzer.loadCVIndex(cvIndexFile);
-
             double[][] perf = new double[param.m_crossV][result_dim];
             double[][] like = new double[param.m_crossV][result_dim];
             System.out.println("[Info]Start FIXED cross validation...");
             for(int k = 0; k <param.m_crossV; k++){
-                // label test by cvIndex==k
-                analyzer.maskDocByCVIndex(k);
+                analyzer.getCorpus().reset();
+                //load test set
+                String testFolder = reviewFolder + k + "/";
+                analyzer.loadUserDir(testFolder);
+                for(_Doc d : analyzer.getCorpus().getCollection()){
+                    d.setType(_Review.rType.TEST);
+                }
+                //load train set
+                for(int i = 0; i < param.m_crossV; i++){
+                    if(i!=k){
+                        String trainFolder = reviewFolder + i + "/";
+                        analyzer.loadUserDir(trainFolder);
+                    }
+                }
                 tModel.setCorpus(analyzer.getCorpus());
 
                 System.out.format("====================\n[Info]Fold No. %d: \n", k);
@@ -123,7 +147,7 @@ public class ETBIRExecution {
 
                 String resultFolder = outputFolder + k + "/";
                 new File(resultFolder).mkdirs();
-                tModel.printParameterAggregation(param.m_topk, resultFolder, param.m_topicmodel, "EUB");
+                tModel.printParameterAggregation(param.m_topk, resultFolder, param.m_topicmodel);
                 tModel.printTopWords(param.m_topk);
 
                 if(param.m_flag_tune){

@@ -85,6 +85,28 @@ public class LDA_Variational_multithread extends LDA_Variational {
 			for(int i=0; i<number_of_topics; i++)
 				alphaStat[i] += Utils.digamma(d.m_sstat[i]) - diGammaSum;
 		}
+
+		public double calc_term_log_likelihood(_Doc d) {
+			int wid;
+			double v, logLikelihood = 0;
+
+			//collect the sufficient statistics
+			_SparseFeature[] fv = d.getSparse();
+			for(int n=0; n<fv.length; n++) {
+				wid = fv[n].getIndex();
+				v = fv[n].getValue();
+				double sum = 0;
+				for(int i=0; i<number_of_topics; i++) {
+//					logLikelihood += v * d.m_phi[n][i] * topic_term_probabilty[i][wid];
+//					logLikelihood += v * Math.exp(d.m_topics[i]) * topic_term_probabilty[i][wid];
+					sum += Math.exp(d.m_topics[i]) * Math.exp(topic_term_probabilty[i][wid]);
+//					sum += d.m_phi[n][i] * Math.exp(topic_term_probabilty[i][wid]);
+				}
+				logLikelihood += v * Math.log(sum);
+			}
+
+			return logLikelihood;
+		}
 		
 		// this is directly copied from LDA_Variational.java
 		@Override

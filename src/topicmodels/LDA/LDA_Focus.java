@@ -8,6 +8,10 @@ import topicmodels.multithreads.LDA.LDA_Focus_multithread;
 import topicmodels.multithreads.TopicModelWorker;
 import utils.Utils;
 
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.PrintWriter;
 import java.util.*;
 
 public class LDA_Focus extends LDA_Variational {
@@ -240,7 +244,7 @@ public class LDA_Focus extends LDA_Variational {
             wid = fv[n].getIndex();
             v = fv[n].getValue();
             for(int i=0; i<number_of_topics; i++)
-                logLikelihood += d.m_phi[n][i] * (diGamma[i] + v*topic_term_probabilty[i][wid] - Math.log(d.m_phi[n][i]));
+                logLikelihood += v * d.m_phi[n][i] * (diGamma[i] + topic_term_probabilty[i][wid] - Math.log(d.m_phi[n][i]));
         }
 
         return logLikelihood;
@@ -288,7 +292,7 @@ public class LDA_Focus extends LDA_Variational {
         m_mapByUser_test = m_bipartite.getMapByUser_test();
         m_mapByItem_test = m_bipartite.getMapByItem_test();
 
-        double[] results = Evaluation2();
+        double[] results = Evaluation3();
         System.out.format("[Info]%s Train/Test finished in %.2f seconds...\n", this.toString(), (System.currentTimeMillis()-start)/1000.0);
 
         return results;
@@ -296,6 +300,31 @@ public class LDA_Focus extends LDA_Variational {
 
     @Override
     public double[] Evaluation2() {
+        analyzeCorpus();
+
+        long start = System.currentTimeMillis();
+        //train
+        m_bipartite.analyzeBipartite(m_trainSet, "train");
+        m_mapByUser = m_bipartite.getMapByUser();
+        m_mapByItem = m_bipartite.getMapByItem();
+        EM();
+
+        //test
+        m_bipartite.analyzeBipartite(m_testSet, "test");
+        m_mapByUser_test = m_bipartite.getMapByUser_test();
+        m_mapByItem_test = m_bipartite.getMapByItem_test();
+
+        double[] results = Evaluation3();
+        System.out.format("[Info]%s Train/Test finished in %.2f seconds...\n", this.toString(), (System.currentTimeMillis()-start)/1000.0);
+
+        double[] result_all = new double[2];
+        result_all[0] = results[8];
+        result_all[1] = results[9];
+
+        return result_all;
+    }
+
+    public double[] Evaluation3() {
         m_collectCorpusStats = false;
         m_likelihood_array = new double[5];
         m_perplexity_array = new double[5];
@@ -435,5 +464,38 @@ public class LDA_Focus extends LDA_Variational {
         System.out.format("[Stat]Loglikelihood %.3f+/-%.3f\n", mean, var);
     }
 
+    @Override
+    public void printParameterAggregation(int k, String folderName, String topicmodel) {
+        super.printParameterAggregation(k, folderName, topicmodel);
+
+        String alphaPath = String.format("%s%s_alphaBy%s_%d.txt", folderName, topicmodel, m_mode.equals("User")?"User":"Item", number_of_topics);
+        printAlpha(alphaPath);
+    }
+
+    public void printAlpha(String folderName){
+        //print out prior parameter of dirichlet: alpha
+        File file = new File(folderName);
+        try{
+            file.getParentFile().mkdirs();
+            file.createNewFile();
+        } catch(IOException e){
+            e.printStackTrace();
+        }
+        try{
+            PrintWriter alphaWriter = new PrintWriter(file);
+            alphaWriter.format("%d\t%d\n", m_mapByUser.size(), number_of_topics);
+
+            for (int idx = 0; idx < m_alphaList.length; idx++) {
+                alphaWriter.format("%s", m_users.get(idx).getUserID());
+                for (int i = 0; i < m_alphaList[idx].length; i++) {
+                   alphaWriter.format("\t%.5f", m_alphaList[idx][i]);
+                }
+                alphaWriter.write("\n");
+            }
+            alphaWriter.close();
+        } catch(FileNotFoundException ex){
+            System.err.format("[Error]Failed to open file %s\n", folderName);
+        }
+    }
 
 }

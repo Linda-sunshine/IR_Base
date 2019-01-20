@@ -224,7 +224,7 @@ public class LDA_Variational extends pLSA {
 			wid = fv[n].getIndex();
 			v = fv[n].getValue();
 			for(int i=0; i<number_of_topics; i++) 
-				logLikelihood += d.m_phi[n][i] * (diGamma[i] + v*topic_term_probabilty[i][wid] - Math.log(d.m_phi[n][i]));
+				logLikelihood += v * d.m_phi[n][i] * (diGamma[i] + topic_term_probabilty[i][wid] - Math.log(d.m_phi[n][i]));
 		}
 
 		return logLikelihood;
@@ -265,12 +265,12 @@ public class LDA_Variational extends pLSA {
 	}
 
 	@Override
-	public void printParameterAggregation(int k, String folderName, String topicmodel, String mode) {
-		super.printParameterAggregation(k, folderName, topicmodel, mode);
+	public void printParameterAggregation(int k, String folderName, String topicmodel) {
+		super.printParameterAggregation(k, folderName, topicmodel);
 
         String gammaPathByUser = String.format("%s%s_postByUser_%d.txt", folderName, topicmodel, number_of_topics);
 //        String gammaPathByItem = String.format("%s%s_postByItem_%d.txt", folderName, topicmodel, number_of_topics);
-        printAggreTopWords(k, gammaPathByUser, getDocByUser(), mode);
+        printAggreTopWords(k, gammaPathByUser, getDocByUser(), topicmodel);
 //        printAggreTopWords(k, gammaPathByItem, getDocByItem());
 
 //		printParam(folderName, topicmodel);

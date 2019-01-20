@@ -286,7 +286,7 @@ public class ItemTagging extends MultiThreadedReviewAnalyzer{
                         double mle_prob = doc.getTotalDocLength() >= 0 && fv_doc.containsKey(entry.getKey()) ? fv_doc.get(entry.getKey()) / doc.getTotalDocLength() : 0;
                         double ref_prob = m_ref.containsKey(entry.getKey()) ? (m_ref.get(entry.getKey())+delta)/(m_avedl+delta*m_featureNames.size()): delta/(m_avedl+delta*m_featureNames.size());
                         double smooth_prob = (1 - lambda) * mle_prob + lambda * ref_prob;
-                        loglikelihood += entry.getValue() * Math.log((1 - lambda) * mle_prob + lambda * ref_prob);
+                        loglikelihood += entry.getValue() * Math.log(smooth_prob);
                     }
                 } else if (m_mode.equals("Embed")) {
                     for (Map.Entry<Integer, Double> entry : fv_doc.entrySet()) {

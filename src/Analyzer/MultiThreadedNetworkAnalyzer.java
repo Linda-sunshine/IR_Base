@@ -213,6 +213,18 @@ public class MultiThreadedNetworkAnalyzer extends MultiThreadedLinkPredAnalyzer 
         }
     }
 
+    public ArrayList<_Doc> getDocsByCVIndex(int k){
+        ArrayList<_Doc> docs = new ArrayList<>();
+        for(_User u : m_users){
+            for(_Review r: u.getReviews()){
+                int cvIdx = r.getMask4CV();
+                if(cvIdx == k)
+                    docs.add(r);
+            }
+        }
+        return docs;
+    }
+
     public void saveCV2Folds(String folder){
         try{
             for(_User u : m_users){
@@ -346,14 +358,17 @@ public class MultiThreadedNetworkAnalyzer extends MultiThreadedLinkPredAnalyzer 
         }
     }
 
-    public void printData4RTM_CVdoc(String dir, int testFold){
-        String trtCorpusFile = String.format("%s/CVdoc_corpus_train_%d.txt", dir, testFold);
-        String tstCorpusFile = String.format("%s/CVdoc_corpus_test_%d.txt", dir, testFold);
-        String trtLinkFile = String.format("%s/CVdoc_link_train_%d.txt", dir, testFold);
-        String tstLinkFile = String.format("%s/CVdoc_link_test_train_%d.txt", dir, testFold);
-        String tsttstLinkFile = String.format("%s/CVdoc_link_test_test_%d.txt", dir, testFold);
-        String userIdIdxFile = String.format("%s/CVdoc_userId_train_%d.txt", dir, testFold);
-
+    public void printData4RTM_CVdoc(String dir, int testFold, int groupIdx, boolean flag_cold){
+        (new File(dir)).mkdirs();
+        String flagstr = flag_cold?"_coldstart":"";
+        String flaggroup = groupIdx<0? "":String.format("_%d", groupIdx);
+        String trtCorpusFile = String.format("%s/CVdoc%s_corpus_train_%d.txt", dir, flagstr, testFold);
+        String trtLinkFile = String.format("%s/CVdoc%s_link_train_%d.txt", dir, flagstr, testFold);
+        String userIdIdxFile = String.format("%s/CVdoc%s_userId_train_%d.txt", dir, flagstr, testFold);
+        String tstCorpusFile = String.format("%s/CVdoc%s_corpus_test_%d%s.txt", dir, flagstr, testFold, flaggroup);
+        String tstLinkFile = String.format("%s/CVdoc%s_link_test_train_%d%s.txt", dir, flagstr, testFold, flaggroup);
+        String tsttstLinkFile = String.format("%s/CVdoc%s_link_test_test_%d%s.txt", dir, flagstr, testFold, flaggroup);
+        
         try {
             //write train and test corpus
             PrintWriter writer_train = new PrintWriter(new File(trtCorpusFile));
@@ -368,10 +383,17 @@ public class MultiThreadedNetworkAnalyzer extends MultiThreadedLinkPredAnalyzer 
                 ArrayList<_SparseFeature[]> reviews_train = new ArrayList<_SparseFeature[]>();
                 ArrayList<_SparseFeature[]> reviews_test = new ArrayList<_SparseFeature[]>();
                 for (_Review r : user.getReviews()) {
-                    if (r.getMask4CV() == testFold)
-                        reviews_test.add(r.getSparse());
-                    else
-                        reviews_train.add(r.getSparse());
+                    if(groupIdx<0) {
+                        if (r.getMask4CV() == testFold)
+                            reviews_test.add(r.getSparse());
+                        else
+                            reviews_train.add(r.getSparse());
+                    } else {
+                        if (r.getMask4CV() == groupIdx)
+                            reviews_test.add(r.getSparse());
+                        else if (r.getMask4CV() == 3)
+                            reviews_train.add(r.getSparse());
+                    }
                 }
                 profile_train = Utils.MergeSpVcts(reviews_train);
                 profile_test = Utils.MergeSpVcts(reviews_test);
@@ -439,13 +461,15 @@ public class MultiThreadedNetworkAnalyzer extends MultiThreadedLinkPredAnalyzer 
         }
     }
 
-    public void printData4RTM_CVlink(String dir, int testFold){
-        String trtCorpusFile = String.format("%s/CVlink_corpus_train_%d.txt", dir, testFold);
-        String tstCorpusFile = String.format("%s/CVlink_corpus_test_%d.txt", dir, testFold);
-        String trtLinkFile = String.format("%s/CVlink_link_train_%d.txt", dir, testFold);
-        String tstLinkFile = String.format("%s/CVlink_link_test_train_%d.txt", dir, testFold);
-        String tsttstLinkFile = String.format("%s/CVlink_link_test_test_%d.txt", dir, testFold);
-        String userIdIdxFile = String.format("%s/CVlink_userId_train_%d.txt", dir, testFold);
+    public void printData4RTM_CVlink(String dir, int testFold, boolean flag_cold){
+        (new File(dir)).mkdirs();
+        String flagstr = flag_cold?"_coldstart":"";
+        String trtCorpusFile = String.format("%s/CVlink%s_corpus_train_%d.txt", dir, flagstr, testFold);
+        String tstCorpusFile = String.format("%s/CVlink%s_corpus_test_%d.txt", dir, flagstr, testFold);
+        String trtLinkFile = String.format("%s/CVlink%s_link_train_%d.txt", dir, flagstr, testFold);
+        String tstLinkFile = String.format("%s/CVlink%s_link_test_train_%d.txt", dir, flagstr, testFold);
+        String tsttstLinkFile = String.format("%s/CVlink%s_link_test_test_%d.txt", dir, flagstr, testFold);
+        String userIdIdxFile = String.format("%s/CVlink%s_userId_train_%d.txt", dir, flagstr, testFold);
 
         try {
             PrintWriter writer_train = new PrintWriter(new File(trtCorpusFile));
@@ -470,7 +494,7 @@ public class MultiThreadedNetworkAnalyzer extends MultiThreadedLinkPredAnalyzer 
             writer_train.close();
             (new File(tstCorpusFile)).createNewFile();
 
-            System.out.format("[Info]CVIndex4Interation_fold_%d contains %d users.\n",
+            System.out.format("[Info]CVIndex4Interation%s_fold_%d contains %d users.\n", flagstr,
                     testFold, idx_train.size());
 
             writer_train = new PrintWriter(new File(userIdIdxFile));
@@ -521,5 +545,54 @@ public class MultiThreadedNetworkAnalyzer extends MultiThreadedLinkPredAnalyzer 
             length += fv.getValue();
         return length;
     }
+
+    public void printData4HFT(String dir, String source, String mode) throws IOException{
+        String outFile = String.format("%s/%s_data.tsv", dir, mode);
+        (new File(outFile)).getParentFile().mkdirs();
+
+        BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(outFile)));
+        //calculate the average upvotes for stackoverflow user
+        if(source.equals("StackOverflow") && mode.equals("CVlink")){
+            for(_User u : m_users){
+                int total_upvotes = 0;
+                for(_Review r : u.getReviews())
+                    total_upvotes += r.getYLabel();
+                float ave_upvotes = u.getReviewSize() > 0?(float)total_upvotes/u.getReviewSize():0;
+                for(_Review r : u.getReviews())
+                    r.setYLabel(r.getYLabel()>=ave_upvotes?1:0);
+            }
+        }
+
+        int writenum = 0;
+        HashSet<String> valid_users = new HashSet<>();
+        for(_Doc doc : m_corpus.getCollection()) {
+            //userID itemID rating time docLength words
+            _Review r = (_Review) doc;
+//            if(mode.equals("CVdoc") && r.getItemID().equals("-1"))
+//                continue;
+            writenum++;
+            valid_users.add(r.getUserID());
+
+            String userID = r.getUserID();
+            String itemID = r.getItemID();
+            int rate = r.getYLabel();
+            writer.write(String.format("%s\t%s\t%d\t0", userID, itemID, rate));
+
+            writer.write(String.format("\t%d", doc.getTotalDocLength()));
+            for(_SparseFeature fv:doc.getSparse()) {
+                int count = (int) fv.getValue();
+                String word = m_corpus.getFeature(fv.getIndex());
+                for(int i = 0; i < count; i++){
+                    writer.write(String.format("\t%s", word));//index starts from 1
+                }
+            }
+            writer.write("\n");
+        }
+        writer.close();
+
+        System.out.format("[Info]%d in %d rates (from %d-%d users) saved to %s\n",
+                writenum, m_corpus.getCollection().size(), valid_users.size(), m_users.size(), outFile);
+    }
+
 
 }
