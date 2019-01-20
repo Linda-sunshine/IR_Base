@@ -6,6 +6,7 @@ import topicmodels.multithreads.EmbedModelWorker;
 import topicmodels.multithreads.EmbedModel_worker;
 import topicmodels.multithreads.TopicModelWorker;
 import topicmodels.multithreads.TopicModel_worker;
+import utils.Utils;
 
 import java.util.Collection;
 
@@ -45,6 +46,25 @@ public class EUB_multithreading extends EUB {
             return cur;
         }
 
+//        public double calc_term_log_likelihood(_Doc d) {
+//            int wid;
+//            double v, logLikelihood = 0;
+//
+//            //collect the sufficient statistics
+//            _SparseFeature[] fv = d.getSparse();
+//            for(int n=0; n<fv.length; n++) {
+//                wid = fv[n].getIndex();
+//                v = fv[n].getValue();
+//                double sum = 0;
+//                for(int i=0; i<number_of_topics; i++) {
+//                    sum += Math.exp(d.m_topics[i]) * Math.exp(topic_term_probabilty[i][wid]);
+//                }
+//                logLikelihood += v * Math.log(sum);
+//            }
+//
+//            return logLikelihood;
+//        }
+
         @Override
         public double inference(_Doc d){
             initTestDoc(d);
@@ -53,8 +73,23 @@ public class EUB_multithreading extends EUB {
             return likelihood;
         }
 
+        protected void updateStats4Doc(_Doc d){
+            _Doc4EUB doc = (_Doc4EUB) d;
+            // update m_word_topic_stats for updating beta
+            _SparseFeature[] fv = doc.getSparse();
+            int wid;
+            double v;
+            for(int n=0; n<fv.length; n++) {
+                wid = fv[n].getIndex();
+                v = fv[n].getValue();
+                for(int i=0; i<number_of_topics; i++)
+                    sstat[i][wid] += v*doc.m_phi[n][i];
+            }
+        }
+
         @Override
         public double accumluateStats(double[][] word_topic_sstat) {
+
             return super.accumluateStats(word_topic_sstat);
         }
 
@@ -138,8 +173,9 @@ public class EUB_multithreading extends EUB {
         m_multithread = true;
     }
 
-    @Override
     protected void initialize_probability(Collection<_Doc> collection) {
+
+
         int cores = Runtime.getRuntime().availableProcessors();
         m_threadpool = new Thread[cores];
         m_workers = new EUB_multithreading.Doc_worker[cores];
@@ -157,13 +193,11 @@ public class EUB_multithreading extends EUB {
             m_workers[workerID%cores].addDoc(d);
             workerID++;
         }
-        
         workerID = 0;
         for(_Topic4EUB t: m_topics){
             m_topicWorkers[workerID%cores].addObject(t);
             workerID++;
         }
-        
         workerID = 0;
         for(_User4EUB u: m_users) {
             m_userWorkers[workerID%cores].addObject(u);
@@ -179,10 +213,11 @@ public class EUB_multithreading extends EUB {
             worker.resetStats();
     }
 
+
     @Override
     public double multithread_E_step() {
         int iter = 0;
-        double likelihood = 0, docLikelihood, topicLikelihood = 0, userLikelihood=0, last = -1.0, converge;
+        double likelihood = 0, docLikelihood, topicLikelihood, userLikelihood, last = -1.0, converge;
 
         do {
             init();
@@ -207,6 +242,7 @@ public class EUB_multithreading extends EUB {
                 break;
             }
 
+//            likelihood = userLikelihood;
             likelihood = docLikelihood + topicLikelihood + userLikelihood;
 
             if(iter > 0)
@@ -220,6 +256,7 @@ public class EUB_multithreading extends EUB {
                 break;
             System.out.format("[Multi-E-step] %d iteration, likelihood(d:t:u)=(%.2f, %.2f, %.2f), converge to %.8f\n",
                     iter, docLikelihood, topicLikelihood, userLikelihood, converge);
+//            System.out.format("[Multi-E-step] %d iteration, likelihood-u=%.2f, converge to %.8f\n", iter, userLikelihood, converge);
         }while(iter++ < m_varMaxIter);
 
         return likelihood;
@@ -301,9 +338,9 @@ public class EUB_multithreading extends EUB {
                 converge = 1.0;
 
             last = perplexity;
+            System.out.format("[Inference]Likelihood: %.2f\n", last);
             if(converge < m_varConverge)
                 break;
-            System.out.format("[Inference]Likelihood: %.2f\n", last);
         }while(iter++ < m_varMaxIter);
 
         return perplexity;
@@ -311,9 +348,8 @@ public class EUB_multithreading extends EUB {
 
     @Override
     // evaluation in multi-thread
-    public double evaluation(int inferIter) {
+    public double evaluation() {
 
-        setInferMaxIter(inferIter);
         double allLoglikelihood = 0;
         int totalWords = 0;
         multithread_inference();
@@ -326,9 +362,9 @@ public class EUB_multithreading extends EUB {
         double perplexity = Math.exp(-allLoglikelihood/totalWords);
         double avgLoglikelihood = allLoglikelihood / m_testSet.size();
 
-        System.out.format("[Stat]InferIter=%d, perplexity=%.4f, total words=%d, all_log-likelihood=%.4f, " +
-                        "avg_log-likelihood=%.4f\n\n",
-                inferIter, perplexity, totalWords, allLoglikelihood, avgLoglikelihood);
+        System.out.format("[Stat]TestInferIter=%d, perplexity=%.4f, totalWords=%d, allLogLikelihood=%.4f" +
+                        ", avgLogLikelihood=%.4f\n\n",
+                m_testInferMaxIter, perplexity, totalWords, allLoglikelihood, avgLoglikelihood);
         return perplexity;
     }
 
