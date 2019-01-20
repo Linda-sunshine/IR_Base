@@ -202,7 +202,7 @@ public class LDA_Focus_multithread extends LDA_Focus {
             initTestDoc(d);
             double likelihood = calculate_E_step(d);
             estThetaInDoc(d);
-            return calc_term_log_likelihood(d);
+            return likelihood;
         }
 
         @Override
