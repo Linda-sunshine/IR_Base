@@ -4,6 +4,8 @@ import utils.Utils;
 
 import java.util.ArrayList;
 
+import topicmodels.UserEmbedding.EUB;
+
 /**
  * @author Lin Gong (lg5bt@virginia.edu)
  * Each user has a set of variational parameters:
@@ -36,7 +38,7 @@ public class _User4EUB extends _User {
         m_reviews = reviews;
     }
 
-    public void setTopics4Variational(int dim, int userSize, double mu, double sigma, double xi){
+    public void setTopics4Variational(int dim, int userSize, double mu, double sigma){
         m_mu_u = new double[dim];
         m_sigma_u = new double[dim][dim];
 
@@ -48,9 +50,9 @@ public class _User4EUB extends _User {
         // init mu_u/sigma_u
         for(int m=0; m<dim; m++){
             m_mu_u[m] = mu + Math.random();
-            for(int l=0; l<dim; l++){
+            for(int l=0; l<dim; l++)
                 m_sigma_u[m][l] = sigma + Math.random();
-            }
+            m_sigma_u[m][m] += 1;
         }
 
         for(int j=0; j<userSize; j++){
@@ -65,8 +67,8 @@ public class _User4EUB extends _User {
 //        Utils.scaleArray(m_sigma_delta, 100);
 
         for(int i=0; i<userSize; i++){
-            m_epsilon[i] = Math.exp(m_mu_delta[i] + 0.5 * xi * xi) + 1;
-            m_epsilon_prime[i] = Math.exp(m_mu_delta[i] + 0.5 * xi * xi) + 1;
+            m_epsilon[i] = Math.exp(m_mu_delta[i] + 0.5 * m_sigma_delta[i] * m_sigma_delta[i]) + 1;
+            m_epsilon_prime[i] = (1-EUB.m_rho) * Math.exp(m_mu_delta[i] + 0.5 * m_sigma_delta[i] * m_sigma_delta[i]) + 1;
         }
     }
 }
