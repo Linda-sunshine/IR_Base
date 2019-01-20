@@ -499,10 +499,13 @@ public class LinkPredictionWithUserEmbedding {
         }
     }
     public static void main(String[] args){
+
+
+
         String data = "YelpNew";
-        int dim = 10, folds = 4;
-        int[] times = new int[]{2};
-        String[] models = new String[]{"EUB"};// "RTM", "LDA", "HFT", "DW", "TADW"}; // "LDA", "HFT", "TADW", "EUB", "LDA", "HFT"
+        int dim = 10, folds = 0;
+        int[] times = new int[]{2, 3, 4};
+        String[] models = new String[]{"EUB_E"};// "RTM", "LDA", "HFT", "DW", "TADW"}; // "LDA", "HFT", "TADW", "EUB", "LDA", "HFT"
         HashMap<String, double[][][]> allFoldsPerf = new HashMap<String, double[][][]>();
         String idFile = String.format("/Users/lin/DataWWW2019/UserEmbedding/%s_userids.txt", data);
 

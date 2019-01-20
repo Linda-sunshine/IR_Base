@@ -57,6 +57,8 @@ public class _User4EUB extends _User {
             m_mu_delta[j] = mu + Math.random();
             m_sigma_delta[j] = sigma + Math.random();
         }
+
+//        Utils.normalize(m_mu_u);
 //        Utils.randomize(m_mu_delta, mu);
 //        Utils.randomize(m_sigma_delta, sigma);
 //

@@ -1017,5 +1017,16 @@ public class Utils {
 			sum += f * f;
 		return Math.sqrt(sum);
 	}
-	
+
+	public static void normalize(double[] a){
+		double sum = 0;
+		for(int i=0; i<a.length; i++){
+			if(a[i] < 0)
+				a[i] = -a[i];
+			sum += a[i];
+		}
+		for(int i=0; i<a.length; i++) {
+			a[i] /= sum;
+		}
+	}
 }

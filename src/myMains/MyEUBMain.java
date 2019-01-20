@@ -33,7 +33,7 @@ public class MyEUBMain {
         int lengthThreshold = 5; // Document length threshold
         int numberOfCores = Runtime.getRuntime().availableProcessors();
 
-        String dataset = "StackOverflow"; // "StackOverflow", "YelpNew"
+        String dataset = "YelpNew"; // "StackOverflow", "YelpNew"
         String tokenModel = "./data/Model/en-token.bin"; // Token model.
 
         String prefix = "./data/CoLinAdapt";
@@ -127,11 +127,11 @@ public class MyEUBMain {
         _Corpus corpus = analyzer.getCorpus();
 
         /***Start running joint modeling of user embedding and topic embedding****/
-        int emMaxIter = 10, number_of_topics = 30, varMaxIter = 10, embeddingDim = 10, trainIter = 1, testIter = 1000;
+        int emMaxIter = 20, number_of_topics = 30, varMaxIter = 10, embeddingDim = 10, trainIter = 1, testIter = 1000;
         //these two parameters must be larger than 1!!!
         double emConverge = 1e-10, alpha = 1 + 1e-2, beta = 1 + 1e-3, lambda = 1 + 1e-3, varConverge = 1e-6, stepSize = 1e-3;
         boolean alphaFlag = true, gammaFlag = true, betaFlag = true, tauFlag = true, xiFlag = true, rhoFlag = true;
-        boolean multiFlag = true, adaFlag = false, wordOnly = true;
+        boolean multiFlag = false, adaFlag = false, wordOnly = true;
 
         long start = System.currentTimeMillis();
         LDA_Variational tModel = null;

@@ -12,7 +12,7 @@ public class EmbeddingParameter {
     public int m_number_of_topics = 10;
     public int m_varIter = 10;
     public int m_trainInferIter = 1;
-    public int m_testInferIter = 1000;
+    public int m_testInferIter = 2000;
     public int m_paramIter = 20;
 
     public int m_embeddingDim = 10;

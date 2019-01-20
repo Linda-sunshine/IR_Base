@@ -294,6 +294,7 @@ public class EUB extends LDA_Variational {
 
         // sample non-interactions first before E-step
         initialize_probability(m_trainSet);
+        printUserEmbedding("./data/User_embedding_init.txt");
 
         int iter = 0;
         double lastAllLikelihood = 1.0;
@@ -317,6 +318,8 @@ public class EUB extends LDA_Variational {
 
             if (++iter % 5 == 0)
                 printTopWords(30);
+
+            printUserEmbedding(String.format("./data/User_embedding_%d.txt", iter));
 
             lastAllLikelihood = currentAllLikelihood;
         } while (iter < number_of_iteration && converge > m_converge);
@@ -1036,6 +1039,7 @@ public class EUB extends LDA_Variational {
             }
         }
         logLikelihood += m_tau * term1 - 0.5 * m_tau * term2;
+        System.out.println(term2);
         if (Double.isNaN(logLikelihood) || Double.isInfinite(logLikelihood))
             System.out.println("[error] Doc: loglikelihood is Nan or Infinity!!");
         // the second part which involves with words
