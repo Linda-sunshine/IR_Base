@@ -25,9 +25,11 @@ public class _Topic4EUB {
         m_mu_phi = new double[k];
         m_sigma_phi = new double[k][k];
 
+
         Utils.randomize(m_mu_phi, mu);
         for(int i=0; i<k; i++){
             Utils.randomize(m_sigma_phi[i], sigma);
+            m_sigma_phi[i][i] += 1;//make it diagonal dominate
         }
     }
 

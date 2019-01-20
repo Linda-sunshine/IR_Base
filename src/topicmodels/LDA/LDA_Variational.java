@@ -238,7 +238,6 @@ public class LDA_Variational extends pLSA {
 
 		_SparseFeature[] fv = doc.getSparse();
 		for (int n = 0; n < fv.length; n++) {
-			int wid = fv[n].getIndex();
 			double v = fv[n].getValue();
 			for(int i=0; i < number_of_topics; i++){
 				doc.m_topics[i] += v*doc.m_phi[n][i];//here should multiply v

@@ -54,7 +54,7 @@ public class EUB extends LDA_Variational {
     protected double m_xi = 2.0;
 
     /*****Sparsity parameter******/
-    protected double m_rho = 0.001;
+    static public double m_rho = 0.001;
 
     protected int m_displayLv = 0;
     protected double m_stepSize = 1e-3;
@@ -277,7 +277,6 @@ public class EUB extends LDA_Variational {
 
     @Override
     public void EMonCorpus() {
-
         constructNetwork();
         m_trainSet = new ArrayList<_Doc>();
         // collect all training reviews
@@ -350,7 +349,6 @@ public class EUB extends LDA_Variational {
 
     @Override
     protected void initialize_probability(Collection<_Doc> docs) {
-
         System.out.println("[Info]Initializing topics, documents and users...");
         for (_Topic4EUB t : m_topics)
             t.setTopics4Variational(m_embeddingDim, t_mu, t_sigma);
@@ -360,10 +358,9 @@ public class EUB extends LDA_Variational {
         }
 
         for (_User4EUB u : m_users)
-            u.setTopics4Variational(m_embeddingDim, m_users.size(), u_mu, u_sigma, m_xi);
+            u.setTopics4Variational(m_embeddingDim, m_users.size(), u_mu, u_sigma);
 
         init();
-
         for (_Doc doc : m_trainSet)
             updateStats4Doc((_Doc4EUB) doc);
 
@@ -372,7 +369,6 @@ public class EUB extends LDA_Variational {
 
     // Update the stats related with doc
     protected void updateStats4Doc(_Doc4EUB doc) {
-
         _SparseFeature[] fv = doc.getSparse();
         int wid;
         double v;
@@ -429,21 +425,24 @@ public class EUB extends LDA_Variational {
 
     @Override
     public void calculate_M_step(int iter) {
-        if (m_alphaFlag)
-            est_alpha();// precision for topic embedding
-        if (m_gammaFlag)
-            est_gamma(); // precision for user embedding
-        if (m_betaFlag)
-            est_beta(); // topic-word distribution
-        if (m_tauFlag)
-            est_tau(); // precision for topic proportion
-        if (m_xiFlag)
-            est_xi(); // sigma for the affinity \delta_{ij}
-        if (m_rhoFlag)
-            est_rho();
+        if (iter>0) {
+            if (m_alphaFlag)
+                est_alpha();// precision for topic embedding
+            if (m_gammaFlag)
+                est_gamma(); // precision for user embedding
+            if (m_betaFlag)
+                est_beta(); // topic-word distribution
+            if (m_tauFlag)
+                est_tau(); // precision for topic proportion
+            if (m_xiFlag)
+                est_xi(); // sigma for the affinity \delta_{ij}
+            if (m_rhoFlag)
+                est_rho();
+        }
 
         System.out.format("[ModelParam]alpha:%.3f, gamma:%.3f,tau:%.3f,xi:%.3f, rho:%.5f\n",
                 m_alpha_s, m_gamma, m_tau, m_xi, m_rho);
+
         finalEst();
     }
 
@@ -524,13 +523,14 @@ public class EUB extends LDA_Variational {
     protected void est_rho() {
         System.out.println("[M-step]Estimate rho....");
         double numerator = 0, denominator = 0;
+        int eij;
 
         for (int i = 0; i < m_users.size(); i++) {
             _User4EUB ui = m_users.get(i);
             HashSet<Integer> interactions = m_networkMap.containsKey(i) ? m_networkMap.get(i) : null;
             for (int j = 0; j < m_users.size(); j++) {
                 if (i == j) continue;
-                int eij = interactions != null && interactions.contains(j) ? 1 : 0;
+                eij = interactions != null && interactions.contains(j) ? 1 : 0;
                 numerator += eij;
                 denominator += (1 - eij) * Math.exp(ui.m_mu_delta[j] + 0.5 * ui.m_sigma_delta[j] *
                         ui.m_sigma_delta[j]) / ui.m_epsilon_prime[j];
@@ -542,7 +542,7 @@ public class EUB extends LDA_Variational {
     protected double calculateStat4Xi(_User4EUB ui, _User4EUB uj, int j) {
         double val = ui.m_mu_delta[j] * ui.m_mu_delta[j] + ui.m_sigma_delta[j] * ui.m_sigma_delta[j];
         for (int m = 0; m < m_embeddingDim; m++) {
-            val += -2 * ui.m_mu_delta[j] * ui.m_mu_u[m] * uj.m_mu_u[m];
+            val -= 2 * ui.m_mu_delta[j] * ui.m_mu_u[m] * uj.m_mu_u[m];
             for (int l = 0; l < m_embeddingDim; l++) {
                 val += (ui.m_sigma_u[m][l] + ui.m_mu_u[m] * uj.m_mu_u[l]) *
                         (uj.m_sigma_u[m][l] + uj.m_mu_u[m] * uj.m_mu_u[l]);
@@ -558,14 +558,14 @@ public class EUB extends LDA_Variational {
             _Topic4EUB topic = m_topics[k];
             term1 += doc.m_sigma_theta[k] + doc.m_mu_theta[k] * doc.m_mu_theta[k];
             for (int m = 0; m < m_embeddingDim; m++) {
-                term2 += 2 * doc.m_mu_theta[k] * topic.m_mu_phi[m] * user.m_mu_u[m];
+                term2 += doc.m_mu_theta[k] * topic.m_mu_phi[m] * user.m_mu_u[m];
                 for (int l = 0; l < m_embeddingDim; l++) {
                     term3 += (user.m_sigma_u[m][l] + user.m_mu_u[m] * user.m_mu_u[l])
                             * (topic.m_sigma_phi[m][l] + topic.m_mu_phi[m] * topic.m_mu_phi[l]);
                 }
             }
         }
-        return term1 + term2 + term3;
+        return term1 - 2*term2 + term3;
     }
 
     protected double varInference4Topic(_Topic4EUB topic) {
@@ -604,7 +604,8 @@ public class EUB extends LDA_Variational {
 
             lastLoglikelihood = curLoglikelihood;
         } while (++iter < m_trainInferMaxIter && Math.abs(converge) > m_varConverge);
-        return curLoglikelihood;
+
+        return lastLoglikelihood;
     }
 
     protected double varInference4Doc(_Doc4EUB doc) {
@@ -644,8 +645,9 @@ public class EUB extends LDA_Variational {
     protected void update_phi_k(_Topic4EUB topic){
 
         double[][] CovMat = new double[m_embeddingDim][m_embeddingDim];
-        double[] term2 = new double[m_embeddingDim];
+        double[] term = new double[m_embeddingDim];
 
+        int tIndex = topic.getIndex();
         for(int i=0; i<m_embeddingDim; i++)
             CovMat[i][i] = m_alpha_s;
 
@@ -655,7 +657,7 @@ public class EUB extends LDA_Variational {
             // \sigma + mu * mu^T
             for(int dIndex: m_userDocMap.get(uIndex)){
                 _Doc4EUB doc = m_docs.get(dIndex);
-                Utils.add2Array(term2, user.m_mu_u, m_tau * doc.m_mu_theta[topic.getIndex()]);
+                Utils.add2Array(term, user.m_mu_u, m_tau * doc.m_mu_theta[tIndex]);
             }
             sigmaAddMuMuTranspose(CovMat, user.m_sigma_u, user.m_mu_u, m_tau * m_userDocMap.get(uIndex).size());
         }
@@ -663,7 +665,7 @@ public class EUB extends LDA_Variational {
         Matrix invsMtx = (new Matrix(CovMat)).inverse();
 
         topic.m_sigma_phi = invsMtx.getArray();
-        topic.m_mu_phi = Utils.matrixMultVector(topic.m_sigma_phi, term2);
+        topic.m_mu_phi = Utils.matrixMultVector(topic.m_sigma_phi, term);
     }
     // \sum_{mm}\simga[m][m] + \mu^T * \mu
     protected double sumSigmaDiagAddMuTransposeMu(double[][] sigma, double[] mu){
@@ -958,7 +960,7 @@ public class EUB extends LDA_Variational {
         double sigmaSqrtG = 0, sigmaSqrtH[] = new double[number_of_topics];
         do{
             fValue = 0;
-            for(int k=0; k<number_of_topics; k++){
+            for(int k=0; k<number_of_topics; k++) {
                 // function value
                 moment = N * Math.exp(doc.m_mu_theta[k] + 0.5 * doc.m_sigma_sqrt_theta[k] * doc.m_sigma_sqrt_theta[k]
                         - doc.m_logZeta);
@@ -966,17 +968,19 @@ public class EUB extends LDA_Variational {
                         + 0.5 * Math.log(doc.m_sigma_sqrt_theta[k] * doc.m_sigma_sqrt_theta[k]);
                 // gradient
                 sigmaSqrtG = -m_tau * doc.m_sigma_sqrt_theta[k] - doc.m_sigma_sqrt_theta[k] * moment
-                        + 1/doc.m_sigma_sqrt_theta[k];
+                        + 1 / doc.m_sigma_sqrt_theta[k];
 
-                if(m_adaFlag)
-                    doc.m_sigma_sqrt_theta[k] += m_stepSize/Math.sqrt(sigmaSqrtH[k]) * sigmaSqrtG;
+                if (m_adaFlag)
+                    doc.m_sigma_sqrt_theta[k] += m_stepSize / Math.sqrt(sigmaSqrtH[k]) * sigmaSqrtG;
                 else
                     doc.m_sigma_sqrt_theta[k] += m_stepSize * sigmaSqrtG;
 
                 sigmaSqrtH[k] += sigmaSqrtG * sigmaSqrtG;
 
-                if(Double.isNaN(doc.m_sigma_sqrt_theta[k]) || Double.isInfinite(doc.m_sigma_sqrt_theta[k]))
+                if (Double.isNaN(doc.m_sigma_sqrt_theta[k]) || Double.isInfinite(doc.m_sigma_sqrt_theta[k])) {
                     System.out.println("Doc: sigma_sqrt_theta[k] is Nan or Infinity!!");
+                    break;
+                }
             }
 
             printFValue(lastFValue, fValue);
