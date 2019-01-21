@@ -32,6 +32,8 @@ public class myDataProcessMain {
             dataprocesser.transfer2HFT(args);
         else if(param.m_topicmodel.equals("RTM"))
             dataprocesser.transfer2RTM(args);
+        else if(param.m_topicmodel.equals("CTR"))
+            dataprocesser.transfer2CTR(args);
     }
 
     public void json2Txt4Data(String[] args) throws IOException {
@@ -167,7 +169,52 @@ public class myDataProcessMain {
         }
     }
 
-    public void transfer2CTR(String[] args) throws IOException, ParseException {
+    public void transfer2CTR(String[] args) throws IOException {
+        TopicModelParameter param = new TopicModelParameter(args);
+
+        int classNumber = 6; //Define the number of classes in this Naive Bayes.
+        int Ngram = 2; //The default value is unigram.
+        int lengthThreshold = 5; //Document length threshold
+        int numberOfCores = Runtime.getRuntime().availableProcessors();
+        int crossV = 5;
+
+        /*****data setting*****/
+        String tokenModel = "./data/Model/en-token.bin";
+        String dataset = String.format("%s/%s/%s", param.m_prefix, param.m_source, param.m_set);
+        String fvFile = String.format("%s/%s/%s_features.txt", param.m_prefix, param.m_source, param.m_source);
+        String reviewFolder = String.format("%s/data/", dataset);
+        String cvIndexFile = String.format("%s/%sCVIndex.txt", dataset, param.m_source);
+
+        String outputFolder = String.format("%s/%s/", dataset, param.m_topicmodel);
+        new File(outputFolder).mkdirs();
+
+        MultiThreadedNetworkAnalyzer analyzer = new MultiThreadedNetworkAnalyzer(tokenModel, classNumber, fvFile,
+                Ngram, lengthThreshold, numberOfCores, true);
+        analyzer.setAllocateReviewFlag(false);
+        analyzer.loadUserDir(reviewFolder);
+        System.out.format("[Info]%d docs are loaded.\n", analyzer.getCorpus().getCollection().size());
+        analyzer.constructUserIDIndex();
+        System.out.format("[Info]%d users are loaded.\n", analyzer.getUsers().size());
+
+        m_bipartite = new BipartiteAnalyzer(analyzer.getCorpus());
+        m_bipartite.analyzeCorpus();
+
+        for (int k = 0; k < crossV; k++) {
+            System.out.format("Generating for Fold %d %s......\n", k, param.m_flag_coldstart?"COLD start":"");
+            if(!param.m_flag_coldstart){
+                analyzer.loadCVIndex(cvIndexFile);
+                analyzer.printData4CTR(m_bipartite, outputFolder, k, -1, param.m_flag_coldstart);
+            } else {
+                cvIndexFile = String.format("%s/%s_cold_start_4docs_fold_%d.txt", dataset, param.m_source, k);
+                analyzer.loadCVIndex(cvIndexFile);
+                for(int group_i = 0; group_i < 3; group_i++){//light; medium; heavy
+                    analyzer.printData4CTR(m_bipartite, outputFolder, k, group_i, param.m_flag_coldstart);
+                }
+            }
+        }
+    }
+
+    public void transfer2CTPE(String[] args) throws IOException, ParseException {
         TopicModelParameter param = new TopicModelParameter(args);
 
         int classNumber = 6; //Define the number of classes in this Naive Bayes.

@@ -349,6 +349,31 @@ public class BipartiteAnalyzer {
         }
     }
 
+    //build query for one item from its' reviews
+    public ArrayList<_Doc> buildItemProfile(ArrayList<_Doc> docs){
+        ArrayList<_Doc> itemProfile = new ArrayList<>();
+
+        ArrayList<_Item> items = new ArrayList<>();
+        for (_Product prd : m_items) {
+            items.add(new _Item(prd.getID()));
+        }
+        //allocate review by item
+        for(_Doc doc : docs){
+            String itemID = doc.getItemID();
+            items.get(m_itemsIndex.get(itemID)).addOneReview((_Review)doc);
+        }
+        //compress sparse feature of reviews into one vector for each item
+        int i = 0;
+        for(_Item item : items){
+            item.buildProfile("");
+            _Doc itemDoc = new _Doc(i++, "", 0);
+            itemDoc.createSpVct(item.getFeature());
+            itemProfile.add(itemDoc);
+        }
+
+        return itemProfile;
+    }
+
     public _Corpus getCorpus(){ return this.m_corpus; }
     public List<_User> getUsers(){ return this.m_users; }
     public List<_Product4ETBIR> getItems(){ return this.m_items; }
