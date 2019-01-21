@@ -12,7 +12,7 @@ public class EmbeddingParameter {
     public int m_number_of_topics = 10;
     public int m_varIter = 10;
     public int m_trainInferIter = 1;
-    public int m_testInferIter = 2000;
+    public int m_testInferIter = 1500;
     public int m_paramIter = 20;
 
     public int m_embeddingDim = 10;
@@ -22,17 +22,16 @@ public class EmbeddingParameter {
     public double m_stepSize = 1e-3;
 
     public boolean m_alphaFlag = true;
-    public boolean m_gammaFlag = true;
+    public boolean m_gammaFlag = false;
     public boolean m_betaFlag = true;
     public boolean m_tauFlag = true;
     public boolean m_xiFlag = true;
-    public boolean m_rhoFlag = true;
+    public boolean m_rhoFlag = false;
     public boolean m_ada = false;
     public boolean m_coldStartFlag = false;
 
     public String m_saveDir = "";
     public String m_mode = "cv4doc";
-
 
     public EmbeddingParameter(String argv[]) {
 

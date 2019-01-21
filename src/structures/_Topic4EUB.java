@@ -32,5 +32,4 @@ public class _Topic4EUB {
             m_sigma_phi[i][i] += 1;//make it diagonal dominate
         }
     }
-
 }

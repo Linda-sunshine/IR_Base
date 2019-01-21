@@ -2,6 +2,7 @@ package structures;
 
 import java.util.ArrayList;
 import topicmodels.UserEmbedding.EUB;
+import utils.Utils;
 
 /**
  * @author Lin Gong (lg5bt@virginia.edu)
@@ -59,12 +60,12 @@ public class _User4EUB extends _User {
         }
 
 //        Utils.normalize(m_mu_u);
-//        Utils.randomize(m_mu_delta, mu);
-//        Utils.randomize(m_sigma_delta, sigma);
-//
-//        // thus we scale the two set of parameters by 100
-//        Utils.scaleArray(m_mu_delta, 100);
-//        Utils.scaleArray(m_sigma_delta, 100);
+//        Utils.normalize(m_mu_delta);
+//        Utils.normalize(m_sigma_delta);
+
+        // thus we scale the two set of parameters by 100
+//        Utils.scaleArray(m_mu_delta, 10);
+//        Utils.scaleArray(m_sigma_delta, 10);
 
         for(int i=0; i<userSize; i++){
             m_epsilon[i] = Math.exp(m_mu_delta[i] + 0.5 * m_sigma_delta[i] * m_sigma_delta[i]) + 1;

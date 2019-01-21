@@ -64,8 +64,8 @@ public class MyEUBMain {
         MultiThreadedNetworkAnalyzer analyzer = new MultiThreadedNetworkAnalyzer(tokenModel, classNumber, providedCV,
                 Ngram, lengthThreshold, numberOfCores, true);
         analyzer.setAllocateReviewFlag(false); // do not allocate reviews
-//
-//        analyzer.setReleaseContent(false);
+        analyzer.setReleaseContent(false);
+
 //        analyzer.loadUserDir(userFolder);
 //        analyzer.constructUserIDIndex();
 //        analyzer.writeAggregatedUsers(tadwUserFile);
@@ -130,8 +130,8 @@ public class MyEUBMain {
         int emMaxIter = 50, number_of_topics = 30, varMaxIter = 10, embeddingDim = 10, trainIter = 1, testIter = 1000;
         //these two parameters must be larger than 1!!!
         double emConverge = 1e-10, alpha = 1 + 1e-2, beta = 1 + 1e-3, lambda = 1 + 1e-3, varConverge = 1e-6, stepSize = 1e-3;
-        boolean alphaFlag = true, gammaFlag = true, betaFlag = true, tauFlag = true, xiFlag = true, rhoFlag = true;
-        boolean multiFlag = false, adaFlag = false, wordOnly = true;
+        boolean alphaFlag = true, gammaFlag = false, betaFlag = true, tauFlag = true, xiFlag = true, rhoFlag = false;
+        boolean multiFlag = true, adaFlag = false, wordOnly = true;
 
         long start = System.currentTimeMillis();
         LDA_Variational tModel = null;

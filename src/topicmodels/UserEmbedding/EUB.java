@@ -48,13 +48,13 @@ public class EUB extends LDA_Variational {
     // this alpha is differnet from alpha in LDA
     // alpha is precision parameter for topic embedding in EUB
     // alpha is a vector parameter for dirichlet distribution
-    protected double m_alpha_s = 5;
-    protected double m_tau = 0.15;
-    protected double m_gamma = 10;
+    protected double m_alpha_s = 0.1;
+    protected double m_tau = 0.1;
+    protected double m_gamma = 5;
     protected double m_xi = 2.0;
 
     /*****Sparsity parameter******/
-    static public double m_rho = 0.001;
+    static public double m_rho = 1;
 
     protected int m_displayLv = 0;
     protected double m_stepSize = 1e-3;
@@ -302,6 +302,10 @@ public class EUB extends LDA_Variational {
         do {
             System.out.format(String.format("\n----------Start EM %d iteraction----------\n", iter));
 
+            oneMeans.clear();
+            zeroMeans.clear();
+            Arrays.fill(counts, 0);
+
             if (m_multithread)
                 currentAllLikelihood = multithread_E_step();
             else
@@ -313,15 +317,33 @@ public class EUB extends LDA_Variational {
             else
                 converge = 1.0;
 
+            // for debugging purpose
+            for(_User4EUB u: m_users)
+                calcMean(u);
+            calcDeltaStat(iter);
+
             calculate_M_step(++iter);
 
             if (iter % 10 == 0) {
                 printTopWords(30);
-                printUserEmbedding(String.format("./data/User_embedding_%d.txt", iter));
             }
+//            printUserEmbedding(String.format("./data/User_embedding_%d.txt", iter));
 
             lastAllLikelihood = currentAllLikelihood;
         } while (iter < number_of_iteration && converge > m_converge);
+        printGlobalStat4Delta();
+    }
+
+    public void printGlobalStat4Delta(){
+        try{
+            PrintWriter writer = new PrintWriter("./data/delta_stat.txt");
+            for(int i=0; i<number_of_iteration; i++){
+                writer.format("%d\t%d\t%.4f\t%.4f\n", globalCounts[i][0], globalCounts[i][1], globalMeans[i][0], globalMeans[i][1]);
+            }
+            writer.close();
+        } catch(IOException e){
+            e.printStackTrace();
+        }
     }
 
     // put the user interaction and non-interaction information in the four hashmaps
@@ -710,7 +732,9 @@ public class EUB extends LDA_Variational {
                 res[i][j] += weight*(sigma[i][j] + mu[i]*mu[j]);
             }
         }
-    }    // update the variational parameters for user embedding ui -- Eq(44) and Eq(45)
+    }
+
+    // update the variational parameters for user embedding ui -- Eq(44) and Eq(45)
     protected void update_u_i(_User4EUB ui) {
         // termT: the part related with user's topics
         double[][] sigma_termT = new double[m_embeddingDim][m_embeddingDim];
@@ -797,6 +821,62 @@ public class EUB extends LDA_Variational {
         } while(iter++ < iterMax && Math.abs(diff) > cvg);
         if(m_displayLv != 0)
             System.out.println("------------------------");
+    }
+
+    ArrayList<Double> oneMeans = new ArrayList<>();
+    ArrayList<Double> zeroMeans = new ArrayList<>();
+    double[][] globalMeans = new double[number_of_iteration][2];
+    int[][] globalCounts = new int[number_of_iteration][2];
+
+    public void calcDeltaStat(int iter){
+        double[] means = new double[2];
+        for(double v: oneMeans)
+            means[0] += v;
+        for(double v: zeroMeans)
+            means[1] += v;
+        means[0] /= oneMeans.size();
+        means[1] /= zeroMeans.size();
+
+        globalMeans[iter][0] = means[0];
+        globalMeans[iter][1] = means[1];
+        globalCounts[iter][0] = counts[0];
+        globalCounts[iter][1] = counts[1];
+        System.out.format("%d users delta_ij for one > delta_ij for zero, %d users delta_ij for one < delta_ij for zero\n", counts[0], counts[1]);
+        System.out.format("%d users have interactions, and mean delta_ij for one over these users is %.4f\n", oneMeans.size(), means[0]);
+        System.out.format("%d users have non-interactions, and mean delta_ij for zero over these users is %.4f\n", oneMeans.size(), means[1]);
+    }
+
+    // the first means the delta_ij for one  > delta_ij for zero.
+    // the second is the delta_ij for one  < delta_ij for one.
+    int[] counts = new int[2];
+    public void calcMean(_User4EUB ui){
+        int i = m_usersIndex.get(ui.getUserID());
+
+        double oneEdgeMean = 0, zeroEdgeMean = 0, oneCount = 0, zeroCount = 0;
+        HashSet<Integer> interactions = m_networkMap.containsKey(i) ? m_networkMap.get(i) : null;
+
+        for(int j=0; j<m_users.size(); j++) {
+            if (i == j)
+                continue;
+
+            int eij = (interactions != null && interactions.contains(j)) ? 1 : 0;
+            if(eij == 1){
+                oneCount++;
+                oneEdgeMean += ui.m_mu_delta[j];
+            } else{
+                zeroCount++;
+                zeroEdgeMean += ui.m_mu_delta[j];
+            }
+        }
+
+        oneEdgeMean = oneCount == 0 ? -1 : oneEdgeMean/oneCount;
+        zeroEdgeMean /= zeroCount;
+        if(oneCount > 0) oneMeans.add(oneEdgeMean);
+        if(zeroCount > 0) zeroMeans.add(zeroEdgeMean);
+        if(oneCount > 0 && oneEdgeMean > zeroEdgeMean){
+            counts[0]++;
+        } else if(oneCount > 0 && oneEdgeMean < zeroEdgeMean)
+            counts[1]++;
     }
 
     protected double[] calcFGValueDeltaMu(_User4EUB ui, double[] mu_delta, int eij, int j) {
