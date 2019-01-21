@@ -1,10 +1,7 @@
 package Analyzer;
 
 import opennlp.tools.util.InvalidFormatException;
-import structures._Doc;
-import structures._Review;
-import structures._SparseFeature;
-import structures._User;
+import structures.*;
 import utils.Utils;
 
 import java.io.*;
@@ -358,6 +355,96 @@ public class MultiThreadedNetworkAnalyzer extends MultiThreadedLinkPredAnalyzer 
         }
     }
 
+    public void printData4CTR(BipartiteAnalyzer biAnalyzer, String dir, int testFold, int groupIdx, boolean flag_cold){
+        (new File(dir)).mkdirs();
+        String flagstr = flag_cold?"_coldstart":"";
+        String flaggroup = groupIdx<0? "":String.format("_%d", groupIdx);
+        String trtFile = String.format("%s/train%s_%d.txt", dir, flagstr, testFold);
+        String tstFile = String.format("%s/test%s_%d%s.txt", dir, flagstr, testFold, flaggroup);
+        String userFile = String.format("%s/user%s_%d.txt", dir, flagstr, testFold);
+        String itemFile = String.format("%s/item%s_%d.txt", dir, flagstr, testFold);
+
+        try {
+            ArrayList<_Doc> trainSet = new ArrayList<_Doc>();
+            ArrayList<_Doc> testSet = new ArrayList<_Doc>();
+            for (_User user : m_users) {
+                for (_Review r : user.getReviews()) {
+                    if(groupIdx<0) {
+                        if (r.getMask4CV() == testFold)
+                            testSet.add(r);
+                        else
+                            trainSet.add(r);
+                    } else {
+                        if (r.getMask4CV() == groupIdx)
+                            testSet.add(r);
+                        else if (r.getMask4CV() == 3)
+                            trainSet.add(r);
+                    }
+                }
+            }
+
+            HashMap<Integer, ArrayList<Integer>> mapByUser = new HashMap<>();
+            HashMap<Integer, ArrayList<Integer>> mapByItem = new HashMap<>();
+            biAnalyzer.analyzeBipartite(m_corpus.getCollection(), "train");
+            mapByUser = biAnalyzer.getMapByUser();
+            mapByItem = biAnalyzer.getMapByItem();
+            //print user -> items file
+            PrintWriter writer = new PrintWriter(new File(userFile));
+            for(int i = 0; i < biAnalyzer.getUsers().size(); i++){
+                int len = mapByUser.get(i).size();
+                writer.write(String.format("%d", len));
+                for(int j = 0; j < len; j++) {
+                    writer.write(String.format(" %d", mapByUser.get(i).get(j)));
+                }
+                writer.write("\n");
+            }
+            writer.close();
+            //print item -> users file
+            writer = new PrintWriter(new File(itemFile));
+            for(int i = 0; i < biAnalyzer.getItems().size(); i++){
+                int len = mapByItem.get(i).size();
+                writer.write(String.format("%d", len));
+                for(int j = 0; j < len; j++) {
+                    writer.write(String.format(" %d", mapByItem.get(i).get(j)));
+                }
+                writer.write("\n");
+            }
+            writer.close();
+
+            //print mult
+            ArrayList<_Doc> itemBasedDocs = biAnalyzer.buildItemProfile(m_corpus.getCollection());
+            saveDoc4LDA(trtFile, itemBasedDocs);
+
+        } catch (IOException e){
+            e.printStackTrace();
+        }
+
+
+    }
+
+    public static void saveDoc4LDA(String filename, ArrayList<_Doc> docs) {
+        if (filename==null || filename.isEmpty()) {
+            System.out.println("Please specify the file name to save the vectors!");
+            return;
+        }
+
+        try {
+            BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(filename)));
+            for(_Doc doc:docs) {
+                writer.write(String.format("%d", doc.getSparse().length));
+                for(_SparseFeature fv:doc.getSparse())
+                    writer.write(String.format(" %d:%d", fv.getIndex(), (int) fv.getValue()));//index starts from 1
+                writer.write("\n");
+            }
+            writer.flush();
+            writer.close();
+
+            System.out.format("[Info]%d feature vectors saved to %s\n", docs.size(), filename);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
     public void printData4RTM_CVdoc(String dir, int testFold, int groupIdx, boolean flag_cold){
         (new File(dir)).mkdirs();
         String flagstr = flag_cold?"_coldstart":"";
@@ -368,7 +455,7 @@ public class MultiThreadedNetworkAnalyzer extends MultiThreadedLinkPredAnalyzer 
         String tstCorpusFile = String.format("%s/CVdoc%s_corpus_test_%d%s.txt", dir, flagstr, testFold, flaggroup);
         String tstLinkFile = String.format("%s/CVdoc%s_link_test_train_%d%s.txt", dir, flagstr, testFold, flaggroup);
         String tsttstLinkFile = String.format("%s/CVdoc%s_link_test_test_%d%s.txt", dir, flagstr, testFold, flaggroup);
-        
+
         try {
             //write train and test corpus
             PrintWriter writer_train = new PrintWriter(new File(trtCorpusFile));
