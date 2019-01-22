@@ -21,6 +21,7 @@ public class EmbeddingParameter {
     public boolean m_multiFlag = true;
     public double m_stepSize = 1e-3;
 
+    public double m_gamma = 5;
     public boolean m_alphaFlag = true;
     public boolean m_gammaFlag = false;
     public boolean m_betaFlag = true;
@@ -61,6 +62,8 @@ public class EmbeddingParameter {
                 m_multiFlag = Boolean.valueOf(argv[i]);
             else if (argv[i - 1].equals("-stepSize"))
                 m_stepSize = Double.valueOf(argv[i]);
+            else if (argv[i - 1].equals("-gamma"))
+                m_gamma = Double.valueOf(argv[i]);
             else if (argv[i - 1].equals("-saveDir"))
                 m_saveDir = argv[i];
             else if (argv[i - 1].equals("-alphaFlag"))

@@ -116,6 +116,9 @@ public class EUB extends LDA_Variational {
         m_adaFlag = b;
     }
 
+    public void setGamma(double g){
+        m_gamma = g;
+    }
     public void setStepSize(double s) {
         if (s > 0)
             m_stepSize = s;
