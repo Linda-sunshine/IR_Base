@@ -411,9 +411,13 @@ public class MultiThreadedNetworkAnalyzer extends MultiThreadedLinkPredAnalyzer 
             }
             writer.close();
 
-            //print mult
-            ArrayList<_Doc> itemBasedDocs = biAnalyzer.buildItemProfile(m_corpus.getCollection());
+            //print train mult
+            ArrayList<_Doc> itemBasedDocs = biAnalyzer.buildItemProfile(trainSet);
             saveDoc4LDA(trtFile, itemBasedDocs);
+
+            //print test mult
+            itemBasedDocs = biAnalyzer.buildItemProfile(testSet);
+            saveDoc4LDA(tstFile, itemBasedDocs);
 
         } catch (IOException e){
             e.printStackTrace();
