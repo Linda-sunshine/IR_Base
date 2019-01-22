@@ -139,26 +139,38 @@ public class LinkPredictionWithUserEmbedding {
     }
 
     // load edges (interactions + non-interactions) for all the users
-    public void loadTestOneEdges(String filename){
-        int label = 1, count = 0;
+    public void loadTestOneZeroEdges(String filename){
+        int labelOne = 1, labelZero = 0, count = 0;
         try {
             m_testUserMap.clear();
             m_testUserIds.clear();
             File file = new File(filename);
             BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(file), "UTF-8"));
             String line;
+            HashSet<Integer> testOneIndexes = new HashSet<>();
             while ((line = reader.readLine()) != null) {
+                testOneIndexes.clear();
                 String[] strs = line.trim().split("\t");
                 String uid = strs[0];
-                int index = m_idIndexMap.get(uid);
-                _User4Link ui = new _User4Link(strs[0], index);
+                int uiIdx = m_idIndexMap.get(uid);
+                _User4Link ui = new _User4Link(strs[0], uiIdx);
                 m_testUserMap.put(uid, ui);
                 m_testUserIds.add(uid);
+                // record testing interactions of ui
                 for(int j=1; j<strs.length; j++){
                     String ujId = strs[j];
                     int ujIdx = m_idIndexMap.get(ujId);
+                    testOneIndexes.add(ujIdx);
+                    if(ui.getIndex() != uiIdx)
+                        System.err.println("Index not aligned!!!");
                     double sim = getSimilarity(ui.getIndex(), ujIdx);
-                    ui.addOneEdge(new _Edge4Link(ujIdx, sim, label));
+                    ui.addOneEdge(new _Edge4Link(ujIdx, sim, labelOne));
+                }
+                // add the test non-interactions of ui
+                for(int j=0; j<m_idIndexMap.size(); j++){
+                    if(j == uiIdx || testOneIndexes.contains(j)) continue;
+                    double sim = getSimilarity(uiIdx, j);
+                    ui.addOneEdge(new _Edge4Link(j, sim, labelZero));
                 }
                 count++;
             }
@@ -169,9 +181,43 @@ public class LinkPredictionWithUserEmbedding {
         }
     }
 
-    // load edges (interactions + non-interactions) for all the users
+    // load interactions for all the users
+    public void loadTestOneEdges(String filename){
+        int labelOne = 1, count = 0;
+        try {
+            m_testUserMap.clear();
+            m_testUserIds.clear();
+            File file = new File(filename);
+            BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(file), "UTF-8"));
+            String line;
+            HashSet<Integer> testOneIndexes = new HashSet<>();
+            while ((line = reader.readLine()) != null) {
+                testOneIndexes.clear();
+                String[] strs = line.trim().split("\t");
+                String uid = strs[0];
+                int index = m_idIndexMap.get(uid);
+                _User4Link ui = new _User4Link(strs[0], index);
+                m_testUserMap.put(uid, ui);
+                m_testUserIds.add(uid);
+                for(int j=1; j<strs.length; j++){
+                    String ujId = strs[j];
+                    int ujIdx = m_idIndexMap.get(ujId);
+                    testOneIndexes.add(ujIdx);
+                    double sim = getSimilarity(ui.getIndex(), ujIdx);
+                    ui.addOneEdge(new _Edge4Link(ujIdx, sim, labelOne));
+                }
+                count++;
+            }
+            reader.close();
+            System.out.format("[Info]%d/%d users' interactions are loaded!!\n", m_testUserMap.size(), count);
+        } catch(IOException e){
+            e.printStackTrace();
+        }
+    }
+
+    // load non-interactions from file for all the users
     public void loadTestZeroEdges(String filename){
-        int label = 0, count = 0;
+        int labelZero = 0, count = 0;
         try {
             File file = new File(filename);
             BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(file), "UTF-8"));
@@ -186,7 +232,7 @@ public class LinkPredictionWithUserEmbedding {
                     String ujId = strs[j];
                     int ujIdx = m_idIndexMap.get(ujId);
                     double sim = getSimilarity(ui.getIndex(), ujIdx);
-                    ui.addOneEdge(new _Edge4Link(ujIdx, sim, label));
+                    ui.addOneEdge(new _Edge4Link(ujIdx, sim, labelZero));
                 }
                 count++;
             }
@@ -258,9 +304,16 @@ public class LinkPredictionWithUserEmbedding {
         loadUserIds(idFile);
         loadUserEmbedding(embedFile);
         calcSimilarity();
-        // load both one-edges ans zero-edges
-        loadTestOneEdges(testInterFile);
-        loadTestZeroEdges(testNonInterFile);
+        // if no non-interactions are specified, we will consider all the other users as non-interactions
+        // thus, non-interactions are know after loading interactions
+        if(testNonInterFile == null){
+            loadTestOneZeroEdges(testInterFile);
+        } else{
+            // otherwise, load one-edges ans zero-edges individually
+            loadTestOneEdges(testInterFile);
+            loadTestZeroEdges(testNonInterFile);
+        }
+
     }
 
 
@@ -500,9 +553,9 @@ public class LinkPredictionWithUserEmbedding {
     }
     public static void main(String[] args){
 
-        String data = "StackOverflow";
+        String data = "YelpNew";
         int dim = 10, folds = 0;
-        int[] times = new int[]{2, 3, 4};
+        int[] times = new int[]{2};
         String[] models = new String[]{"DW"};// "RTM", "LDA", "HFT", "DW", "TADW"}; // "LDA", "HFT", "TADW", "EUB", "LDA", "HFT"
         HashMap<String, double[][][]> allFoldsPerf = new HashMap<String, double[][][]>();
         String idFile = String.format("/Users/lin/DataWWW2019/UserEmbedding/%s_userids.txt", data);
@@ -529,7 +582,7 @@ public class LinkPredictionWithUserEmbedding {
                         link = new  LinkPredictionWithUserEmbeddingBOW()  ;
                     else link = new LinkPredictionWithUserEmbedding();
 
-                    link.ininLinkPred(idFile, embedFile, testInterFile, testNonInterFile);
+                    link.ininLinkPred(idFile, embedFile, testInterFile, null);
                     link.calculateAllNDCGMAP();
                     perfs[fold][t] = link.calculateAvgNDCGMAP();
                 }
