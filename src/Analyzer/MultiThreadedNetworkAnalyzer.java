@@ -357,7 +357,7 @@ public class MultiThreadedNetworkAnalyzer extends MultiThreadedLinkPredAnalyzer 
 
     public void printData4CTR(BipartiteAnalyzer biAnalyzer, String dir, int testFold, int groupIdx, boolean flag_cold){
         (new File(dir)).mkdirs();
-        String flagstr = flag_cold?"_coldstart":"";
+        String flagstr = flag_cold?"_true":"_false";
         String flaggroup = groupIdx<0? "":String.format("_%d", groupIdx);
         String corpusFile = String.format("%s/corpus%s_%d.txt", dir, flagstr, testFold);
         String trtFile = String.format("%s/train%s_%d.txt", dir, flagstr, testFold);
