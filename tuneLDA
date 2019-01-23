@@ -1,0 +1,7 @@
+#!/bin/sh
+read -p "Enter source, model, crossV, cold, minTopic, maxTopic: " dataset model crossV cold min max
+echo
+for (( k = $min; k <= $max; k = k + 10 ))
+do
+    ./run -topicmodel $model -nuOfTopics $k -source $dataset -emIter 50 -set byUser_20k_review -crossV $crossV -flagColdstart $cold > ./output_eub/"$cold"_"$crossV"_"$dataset"_"$model"_"$k".output
+done
