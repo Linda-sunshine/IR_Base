@@ -21,12 +21,12 @@ public class EmbeddingParameter {
     public boolean m_multiFlag = true;
     public double m_stepSize = 1e-3;
 
-    public double m_gamma = 5;
+    public double m_gamma = 0.1;
     public boolean m_alphaFlag = true;
     public boolean m_gammaFlag = false;
     public boolean m_betaFlag = true;
-    public boolean m_tauFlag = true;
-    public boolean m_xiFlag = true;
+    public boolean m_tauFlag = false;
+    public boolean m_xiFlag = false;
     public boolean m_rhoFlag = false;
     public boolean m_ada = false;
     public boolean m_coldStartFlag = false;

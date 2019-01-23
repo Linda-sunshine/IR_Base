@@ -259,8 +259,8 @@ public class LinkPredictionWithUserEmbedding {
         m_similarity = new double[m_userSize][m_userSize];
         for(int i=0; i<m_userSize; i++){
             for(int j=i+1; j<m_userSize; j++){
-                m_similarity[i][j] = Math.random();
-//                m_similarity[i][j] = Utils.cosine(m_embeddings[i], m_embeddings[j]);
+//                m_similarity[i][j] = Math.random();
+                m_similarity[i][j] = Utils.cosine(m_embeddings[i], m_embeddings[j]);
             }
         }
         System.out.println("Finish calculating similarity.");
@@ -540,13 +540,13 @@ public class LinkPredictionWithUserEmbedding {
     }
 
     public void printMeanStd(HashMap<String, double[][]> meanMap, HashMap<String, double[][]> stdMap){
-        System.out.print("\t\tNDCG\tMAP\t\tNDCG\tMAP\t\tNDCG\tMAP\t\tNDCG\tMAP\n");
+        System.out.print("\tNDCG\tMAP\tNDCG\tMAP\tNDCG\tMAP\tNDCG\tMAP\n");
         for(String model: meanMap.keySet()){
             System.out.print(model+"\t");
             double[][] mean = meanMap.get(model);
             double[][] std = stdMap.get(model);
             for(int t=0; t<mean.length; t++){
-                System.out.format("%.5f+/-%.5f\t%.5f+/-%.5f\t\t", mean[t][0], std[t][0], mean[t][1], std[t][1]);
+                System.out.format("%.5f+/-%.5f\t%.5f+/-%.5f\t", mean[t][0], std[t][0], mean[t][1], std[t][1]);
             }
             System.out.println();
         }
@@ -554,11 +554,13 @@ public class LinkPredictionWithUserEmbedding {
     public static void main(String[] args){
 
         String data = "YelpNew";
+        String prefix = "/home/lin"; // "/Users/lin", "/home/lin"
+
         int dim = 10, folds = 0;
-        int[] times = new int[]{2};
-        String[] models = new String[]{"DW"};// "RTM", "LDA", "HFT", "DW", "TADW"}; // "LDA", "HFT", "TADW", "EUB", "LDA", "HFT"
+        int[] times = new int[]{2, 3, 4, 5, 6, 7, 8};
+        String[] models = new String[]{"EUB_t10", "EUB_t20", "EUB_t40-0.1", "EUB_t40-0.5", "EUB_t40-1", "EUB_t40-2"}; //"BOW", "LDA", "HFT", "RTM", "DW", "TADW", "EUB_t10", "EUB_t20", "EUB_t30", "EUB_t40", "EUB_t50"};// "RTM", "LDA", "HFT", "DW", "TADW"}; // "LDA", "HFT", "TADW", "EUB", "LDA", "HFT"
         HashMap<String, double[][][]> allFoldsPerf = new HashMap<String, double[][][]>();
-        String idFile = String.format("/Users/lin/DataWWW2019/UserEmbedding/%s_userids.txt", data);
+        String idFile = String.format("%s/DataWWW2019/UserEmbedding/%s_userids.txt", prefix, data);
 
         LinkPredictionWithUserEmbedding link = null;
 
@@ -572,9 +574,9 @@ public class LinkPredictionWithUserEmbedding {
                     int time = times[t];
                     System.out.format("-----current model-%s-time-%d-dim-%d------\n", model, time, dim);
 
-                    String embedFile = String.format("/Users/lin/DataWWW2019/UserEmbedding/%s_%s_embedding_dim_%d_fold_%d.txt", data, model, dim, fold);
+                    String embedFile = String.format("%s/DataWWW2019/UserEmbedding/%s_%s_embedding_dim_%d_fold_%d.txt", prefix, data, model, dim, fold);
                     if(model.equals("BOW"))
-                        embedFile = String.format("/Users/lin/DataWWW2019/UserEmbedding/%s_%s.txt", data, model);
+                        embedFile = String.format("%s/DataWWW2019/UserEmbedding/%s_%s.txt", prefix, data, model);
                     String testInterFile = String.format("./data/DataEUB/CV4Edges/%sCVIndex4Interaction_fold_%d_test.txt", data, fold);
                     String testNonInterFile = String.format("./data/DataEUB/CV4Edges/%sCVIndex4NonInteraction_time_%d_fold_%d.txt", data, time, fold);
 
@@ -582,7 +584,7 @@ public class LinkPredictionWithUserEmbedding {
                         link = new  LinkPredictionWithUserEmbeddingBOW()  ;
                     else link = new LinkPredictionWithUserEmbedding();
 
-                    link.ininLinkPred(idFile, embedFile, testInterFile, null);
+                    link.ininLinkPred(idFile, embedFile, testInterFile, testNonInterFile);
                     link.calculateAllNDCGMAP();
                     perfs[fold][t] = link.calculateAvgNDCGMAP();
                 }

@@ -38,7 +38,7 @@ public class MyEUBMain {
 
         String prefix = "./data/CoLinAdapt";
         String providedCV = String.format("%s/%s/%sSelectedVocab.txt", prefix, dataset, dataset);
-        String userFolder = String.format("%s/%s/Users", prefix, dataset);
+        String userFolder = String.format("%s/%s/Users_1000", prefix, dataset);
 
         int kFold = 5;
         int time = 2;
@@ -52,8 +52,8 @@ public class MyEUBMain {
 //        analyzer.featureSelection("./data/StackOverflow_DF_10k.txt", "DF", 10000, 100, 5000);
 
         String orgFriendFile = String.format("%s/%s/%sFriends_org.txt", prefix, dataset, dataset);
-        String friendFile = String.format("%s/%s/%sFriends.txt", prefix, dataset, dataset);
-        String cvIndexFile = String.format("%s/%s/%sCVIndex.txt", prefix, dataset, dataset);
+        String friendFile = String.format("%s/%s/%sFriends_1000.txt", prefix, dataset, dataset);
+        String cvIndexFile = String.format("%s/%s/%sCVIndex_1000.txt", prefix, dataset, dataset);
 //        String cvIndexFile4Interaction = String.format("%s/%s/%sCVIndex4Interaction.txt", prefix, dataset, dataset);
         String cvIndexFile4Interaction = String.format("%s/%s/%sCVIndex4Interaction_fold_%d_train.txt", prefix, dataset, dataset, k);
         String cvIndexFile4NonInteraction = String.format("%s/%s/%sCVIndex4NonInteraction_time_%d.txt", prefix, dataset, dataset, time);
@@ -64,7 +64,7 @@ public class MyEUBMain {
         MultiThreadedNetworkAnalyzer analyzer = new MultiThreadedNetworkAnalyzer(tokenModel, classNumber, providedCV,
                 Ngram, lengthThreshold, numberOfCores, true);
         analyzer.setAllocateReviewFlag(false); // do not allocate reviews
-        analyzer.setReleaseContent(false);
+//        analyzer.setReleaseContent(false);
 
 //        analyzer.loadUserDir(userFolder);
 //        analyzer.constructUserIDIndex();
@@ -97,13 +97,11 @@ public class MyEUBMain {
 
 
         /***Our algorithm EUB****/
-        analyzer.setReleaseContent(false);
         analyzer.loadUserDir(userFolder);
         analyzer.constructUserIDIndex();
 //        analyzer.calcDataStat();
 
-
-        String mode = "cv4edge"; // "cv4edge" "cs4doc"--"cold start for doc" "cs4edge"--"cold start for edge"
+        String mode = "cv4doc"; // "cv4edge" "cs4doc"--"cold start for doc" "cs4edge"--"cold start for edge"
         boolean coldStartFlag = false;
 
         //if it is cv for doc, use all the interactions + part of docs
@@ -115,23 +113,22 @@ public class MyEUBMain {
             analyzer.loadInteractions(cvIndexFile4Interaction);
         // cold start for doc, use all edges, test doc perplexity on light/medium/heavy users
         } else if(mode.equals("cv4doc") && coldStartFlag){
-            cvIndexFile = String.format("%s/%s/ColdStart/%s_cold_start_4docs_fold_%d.txt", prefix, dataset, dataset, k);
+            cvIndexFile = String.format("./data/DataEUB/ColdStart4Docs/%s_cold_start_4docs_fold_%d.txt", dataset, k);
             analyzer.loadCVIndex(cvIndexFile, kFold);
             analyzer.loadInteractions(friendFile);
         // cold start for edge, use all edges, learn user embedding for light/medium/heavy users
         } else if(mode.equals("cv4edge") && coldStartFlag){
-            cvIndexFile4Interaction = String.format("%s/%s/ColdStart/%s_cold_start_4edges_fold_%d_interactions.txt", prefix,
-                    dataset, dataset, k);
+            cvIndexFile4Interaction = String.format("./data/DataEUB/ColdStart4Edges/%s_cold_start_4edges_fold_%d_interactions.txt", dataset, k);
             analyzer.loadInteractions(cvIndexFile4Interaction);
         }
         _Corpus corpus = analyzer.getCorpus();
 
         /***Start running joint modeling of user embedding and topic embedding****/
-        int emMaxIter = 50, number_of_topics = 30, varMaxIter = 10, embeddingDim = 10, trainIter = 1, testIter = 1000;
+        int emMaxIter = 50, number_of_topics = 20, varMaxIter = 10, embeddingDim = 10, trainIter = 1, testIter = 1500;
         //these two parameters must be larger than 1!!!
-        double emConverge = 1e-10, alpha = 1 + 1e-2, beta = 1 + 1e-3, lambda = 1 + 1e-3, varConverge = 1e-6, stepSize = 1e-3;
-        boolean alphaFlag = true, gammaFlag = false, betaFlag = true, tauFlag = true, xiFlag = true, rhoFlag = false;
-        boolean multiFlag = true, adaFlag = false, wordOnly = true;
+        double emConverge = 1e-10, alpha = 1 + 1e-2, beta = 1 + 1e-3, lambda = 1 + 1e-3, varConverge = 1e-6, stepSize = 0.001;
+        boolean alphaFlag = true, gammaFlag = false, betaFlag = true, tauFlag = false, xiFlag = false, rhoFlag = false;
+        boolean multiFlag = true, adaFlag = false;
 
         long start = System.currentTimeMillis();
         LDA_Variational tModel = null;
