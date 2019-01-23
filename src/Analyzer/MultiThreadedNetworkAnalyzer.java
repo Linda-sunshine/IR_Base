@@ -359,6 +359,7 @@ public class MultiThreadedNetworkAnalyzer extends MultiThreadedLinkPredAnalyzer 
         (new File(dir)).mkdirs();
         String flagstr = flag_cold?"_coldstart":"";
         String flaggroup = groupIdx<0? "":String.format("_%d", groupIdx);
+        String corpusFile = String.format("%s/corpus%s_%d.txt", dir, flagstr, testFold);
         String trtFile = String.format("%s/train%s_%d.txt", dir, flagstr, testFold);
         String tstFile = String.format("%s/test%s_%d%s.txt", dir, flagstr, testFold, flaggroup);
         String userFile = String.format("%s/user%s_%d.txt", dir, flagstr, testFold);
@@ -418,6 +419,10 @@ public class MultiThreadedNetworkAnalyzer extends MultiThreadedLinkPredAnalyzer 
             //print test mult
             itemBasedDocs = biAnalyzer.buildItemProfile(testSet);
             saveDoc4LDA(tstFile, itemBasedDocs);
+
+            //print all mult
+            itemBasedDocs = biAnalyzer.buildItemProfile(m_corpus.getCollection());
+            saveDoc4LDA(corpusFile, itemBasedDocs);
 
         } catch (IOException e){
             e.printStackTrace();
