@@ -91,12 +91,7 @@ public class EUB4ColdStart_multithreading extends EUB_multithreading {
         String[] groups = new String[]{"light", "medium", "heavy"};
         System.out.println();
         for(int i=0; i<groups.length; i++) {
-            System.out.format("%s:\t", groups[i]);
+            System.out.format("%s:\t%.4f\n", groups[i], performance[i]);
         }
-        System.out.println();
-        for(int i=0; i<groups.length; i++) {
-            System.out.format("%.4f\t", performance[i]);
-        }
-        System.out.println();
     }
 }

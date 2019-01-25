@@ -426,7 +426,6 @@ public class LinkPredictionWithUserEmbedding {
         }
 		if(Double.isNaN(DCG/iDCG))
 			System.out.println("[error] Nan NDCG! Debug here!!");
-//		System.out.format("DCG:%.2f, IDCG:%.2f\n", DCG, iDCG);
         return new double[]{DCG/iDCG, AP/count};
     }
 

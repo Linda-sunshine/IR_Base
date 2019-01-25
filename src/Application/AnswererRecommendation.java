@@ -14,8 +14,20 @@ import java.io.IOException;
 
 /**
  * @author Lin Gong (lg5bt@virginia.edu)
+ * In this task, we would input user embedding and a set of questions' topic distributions.
+ * We want to find out if the learned embedding can help us find the right person to answer the question.
  */
 public class AnswererRecommendation {
+
+    /***
+     *
+     */
+
+    public AnswererRecommendation(){
+
+    }
+
+
 
 
     //In the main function, we want to input the data and do adaptation
