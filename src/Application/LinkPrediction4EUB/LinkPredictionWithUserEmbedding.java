@@ -300,7 +300,7 @@ public class LinkPredictionWithUserEmbedding {
         }
     }
 
-    public void ininLinkPred(String idFile, String embedFile, String testInterFile, String testNonInterFile) {
+    public void initLinkPred(String idFile, String embedFile, String testInterFile, String testNonInterFile) {
         loadUserIds(idFile);
         loadUserEmbedding(embedFile);
         calcSimilarity();
@@ -583,7 +583,7 @@ public class LinkPredictionWithUserEmbedding {
                         link = new  LinkPredictionWithUserEmbeddingBOW()  ;
                     else link = new LinkPredictionWithUserEmbedding();
 
-                    link.ininLinkPred(idFile, embedFile, testInterFile, null);
+                    link.initLinkPred(idFile, embedFile, testInterFile, null);
                     link.calculateAllNDCGMAP();
                     perfs[fold][t] = link.calculateAvgNDCGMAP();
                 }
