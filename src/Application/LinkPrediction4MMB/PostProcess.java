@@ -166,7 +166,10 @@ public class PostProcess {
 				count++;
 			}
 		}
-		return new double[]{DCG/iDCG, AP/count};
+		double[] ndcgMap = new double[2];
+		ndcgMap[0] = iDCG == 0 ? 0 : DCG/iDCG;
+		ndcgMap[1] = count == 0 ? 0 : AP/count;
+ 		return ndcgMap;
 	}
 	
 	// load the true label and predicted label of testing pairs after svd
@@ -213,28 +216,28 @@ public class PostProcess {
 		}
 	}
 	
-	public static void main(String[] args){
-		for(int d: new int[]{5, 10}){
-			for(String dataset: new String[]{"YelpNew"}){
-				for(int t: new int[]{6}){
+	public static void main(String[] args) {
+		String dataset = "YelpNew";
 		String model = "svd";
-		String setting = "all_nei"; // "all_nei"
-		
+
+		int time = 2, dim = 10;
 		PostProcess process = new PostProcess();
-		if(model.equals("fm")){
-			System.out.format("-----------%s, order:%d, d:%d------------\n", dataset, t, d);
-			String predFile = String.format("./data/linkPredData/link_d_%d/%s_link_pred_order_%d_d_%d_fm_ials.txt", d, dataset, t, d);
-			process.loadData(predFile);
-			process.calculateAllNDCGMAP();
-			process.calculateAvgNDCGMAP();
-		} else if(model.equals("svd")){
-			System.out.format("-----------%s, order:%d, d:%d------------\n", dataset, t, d);
-			String testMMFile = String.format("./data/linkPredData/svd/%s_link_pred_order_%d_test.mm", dataset, t);
-			String predFile = String.format("./data/linkPredData/link_d_%d/%s_link_pred_order_%d_test.mm.predict", d, dataset, t);
+//		if(model.equals("fm")){
+//			System.out.format("-----------%s, order:%d, dim:%d------------\n", dataset, time, dim);
+//			String predFile = String.format("./data/linkPredData/link_d_%d/%s_link_pred_order_%d_d_%d_fm_ials.txt", dim, dataset, time, dim);
+//			process.loadData(predFile);
+//			process.calculateAllNDCGMAP();
+//			process.calculateAvgNDCGMAP();
+//		} else
+		if (model.equals("svd")) {
+			System.out.format("-----------%s-time %d-dim %d------------\n", dataset, time, dim);
+			String testMMFile = String.format("./data/linkPredData/%s_link_pred_time_%d_fold_0_test.mm", dataset, time);
+			String predFile = String.format("./data/linkPredData/%s_link_pred_time_%d_fold_0_test.mm.predict", dataset, time);
 			process.loadTruePredFiles(testMMFile, predFile);
 			process.calculateAllNDCGMAP();
 			process.calculateAvgNDCGMAP();
-		}}}}}
+		}
+	}
 //		
 //		// cf post processing
 //		if(setting.equals("topk")){

@@ -107,6 +107,41 @@ public class MultiThreadedStackOverflowAnalyzer  extends MultiThreadedNetworkAna
         avg /= m_questionAnswersMap.keySet().size();
         System.out.format("[stat] Total questions: %d, questions with answers: %d,questions with >5 answers: %d, avg anser: %.2f\n",
                 m_questionMap.size(), m_questionAnswersMap.size(), lgFive, avg);
+
+        double ques = 0, ans = 0;
+        super.constructUserIDIndex();
+        int userCount = 0, userCountWithQues = 0;
+        for(int qId: m_questionAnswersMap.keySet()){
+            ArrayList<_Review> answers = m_questionAnswersMap.get(qId);
+            int nuOfAns = m_questionAnswersMap.get(qId).size();
+            if(nuOfAns > 1 && nuOfAns <= 5){
+                boolean flag = true;
+                for(_Review r: answers){
+                    userCount++;
+                    _User user = m_users.get(m_userIDIndex.get(r.getUserID()));
+                    if(!containsQuestion(user)){
+                        flag = false;
+                    }
+                }
+                if(flag) {
+                    ques++;
+                    ans += nuOfAns;
+                }
+            }
+        }
+
+        System.out.println("Total number of valid questions: " + ques);
+        System.out.println("Total number of answers: " + ans);
+        System.out.println("User count: " + userCount);
+        System.out.println("Users with questions: " + userCountWithQues);
+    }
+
+    public boolean containsQuestion(_User u){
+        for(_Review r: u.getReviews()){
+            if(r.getParentId() == -1)
+                return true;
+        }
+        return false;
     }
 
     public static void main(String[] args) throws InvalidFormatException, FileNotFoundException, IOException {
@@ -138,5 +173,7 @@ public class MultiThreadedStackOverflowAnalyzer  extends MultiThreadedNetworkAna
         analyzer.loadUserDir(userFolder);
         analyzer.constructUserIDIndex();
         analyzer.buildQuestionAnswerMap();
+
+//        analyzer.checkFriends();
     }
 }

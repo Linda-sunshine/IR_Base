@@ -558,7 +558,7 @@ public class LinkPredictionWithUserEmbedding {
 
         int dim = 10, folds = 0;
         int[] times = new int[]{2, 3, 4, 5, 6, 7, 8};
-        String[] models = new String[]{"EUB_t10", "EUB_t20", "EUB_t40-0.1", "EUB_t40-0.5", "EUB_t40-1", "EUB_t40-2"}; //"BOW", "LDA", "HFT", "RTM", "DW", "TADW", "EUB_t10", "EUB_t20", "EUB_t30", "EUB_t40", "EUB_t50"};// "RTM", "LDA", "HFT", "DW", "TADW"}; // "LDA", "HFT", "TADW", "EUB", "LDA", "HFT"
+        String[] models = new String[]{"EUB_1k_tau=1", "EUB_1k_tau=1_rho=1_gamma=0.1", "EUB_tau=1_rho=1"};//, "EUB_t40-0.5", "EUB_t40-1", "EUB_t40-2"}; //"BOW", "LDA", "HFT", "RTM", "DW", "TADW", "EUB_t10", "EUB_t20", "EUB_t30", "EUB_t40", "EUB_t50"};// "RTM", "LDA", "HFT", "DW", "TADW"}; // "LDA", "HFT", "TADW", "EUB", "LDA", "HFT"
         HashMap<String, double[][][]> allFoldsPerf = new HashMap<String, double[][][]>();
         String idFile = String.format("%s/DataWWW2019/UserEmbedding/%s_userids.txt", prefix, data);
 
@@ -584,7 +584,7 @@ public class LinkPredictionWithUserEmbedding {
                         link = new  LinkPredictionWithUserEmbeddingBOW()  ;
                     else link = new LinkPredictionWithUserEmbedding();
 
-                    link.ininLinkPred(idFile, embedFile, testInterFile, testNonInterFile);
+                    link.ininLinkPred(idFile, embedFile, testInterFile, null);
                     link.calculateAllNDCGMAP();
                     perfs[fold][t] = link.calculateAvgNDCGMAP();
                 }

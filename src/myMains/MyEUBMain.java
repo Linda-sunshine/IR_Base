@@ -33,12 +33,12 @@ public class MyEUBMain {
         int lengthThreshold = 5; // Document length threshold
         int numberOfCores = Runtime.getRuntime().availableProcessors();
 
-        String dataset = "YelpNew"; // "StackOverflow", "YelpNew"
+        String dataset = "StackOverflow"; // "StackOverflow", "YelpNew"
         String tokenModel = "./data/Model/en-token.bin"; // Token model.
 
         String prefix = "./data/CoLinAdapt";
         String providedCV = String.format("%s/%s/%sSelectedVocab.txt", prefix, dataset, dataset);
-        String userFolder = String.format("%s/%s/Users_1000", prefix, dataset);
+        String userFolder = String.format("%s/%s/Users", prefix, dataset);
 
         int kFold = 5;
         int time = 2;
@@ -52,8 +52,8 @@ public class MyEUBMain {
 //        analyzer.featureSelection("./data/StackOverflow_DF_10k.txt", "DF", 10000, 100, 5000);
 
         String orgFriendFile = String.format("%s/%s/%sFriends_org.txt", prefix, dataset, dataset);
-        String friendFile = String.format("%s/%s/%sFriends_1000.txt", prefix, dataset, dataset);
-        String cvIndexFile = String.format("%s/%s/%sCVIndex_1000.txt", prefix, dataset, dataset);
+        String friendFile = String.format("%s/%s/%sFriends.txt", prefix, dataset, dataset);
+        String cvIndexFile = String.format("%s/%s/%sCVIndex.txt", prefix, dataset, dataset);
 //        String cvIndexFile4Interaction = String.format("%s/%s/%sCVIndex4Interaction.txt", prefix, dataset, dataset);
         String cvIndexFile4Interaction = String.format("%s/%s/%sCVIndex4Interaction_fold_%d_train.txt", prefix, dataset, dataset, k);
         String cvIndexFile4NonInteraction = String.format("%s/%s/%sCVIndex4NonInteraction_time_%d.txt", prefix, dataset, dataset, time);
@@ -127,7 +127,7 @@ public class MyEUBMain {
         int emMaxIter = 50, number_of_topics = 20, varMaxIter = 10, embeddingDim = 10, trainIter = 1, testIter = 1500;
         //these two parameters must be larger than 1!!!
         double emConverge = 1e-10, alpha = 1 + 1e-2, beta = 1 + 1e-3, lambda = 1 + 1e-3, varConverge = 1e-6, stepSize = 0.001;
-        boolean alphaFlag = true, gammaFlag = false, betaFlag = true, tauFlag = false, xiFlag = false, rhoFlag = false;
+        boolean alphaFlag = true, gammaFlag = false, betaFlag = true, tauFlag = false, xiFlag = true, rhoFlag = false;
         boolean multiFlag = true, adaFlag = false;
 
         long start = System.currentTimeMillis();

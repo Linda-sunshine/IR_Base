@@ -329,8 +329,8 @@ public class EUB extends LDA_Variational {
 
             if (iter % 10 == 0) {
                 printTopWords(30);
+                printUserEmbedding(String.format("./data/User_embedding_%d.txt", iter));
             }
-//            printUserEmbedding(String.format("./data/User_embedding_%d.txt", iter));
 
             lastAllLikelihood = currentAllLikelihood;
         } while (iter < number_of_iteration && converge > m_converge);
