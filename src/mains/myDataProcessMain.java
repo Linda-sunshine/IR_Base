@@ -176,7 +176,7 @@ public class myDataProcessMain {
         int Ngram = 2; //The default value is unigram.
         int lengthThreshold = 5; //Document length threshold
         int numberOfCores = Runtime.getRuntime().availableProcessors();
-        int crossV = 5;
+        int crossV = param.m_crossV;
 
         /*****data setting*****/
         String tokenModel = "./data/Model/en-token.bin";
