@@ -24,53 +24,6 @@ public class MultiThreadedStackOverflowAnalyzer  extends MultiThreadedNetworkAna
         super(tokenModel, classNo, providedCV, Ngram, threshold, numberOfCores, b);
     }
 
-//    // Load one file as a user here.
-//    protected void loadUser(String filename, int core){
-//        try {
-//            File file = new File(filename);
-//            BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(file), "UTF-8"));
-//            String line;
-//            String userID = extractUserID(file.getName()); //UserId is contained in the filename.
-//
-//            // Skip the first line since it is user name.
-//            reader.readLine();
-//
-//            String source;
-//            int postId = -1, parentId = -1, score = -1;
-//            ArrayList<_Review> reviews = new ArrayList<_Review>();
-//            int index = 0;
-//            _Review review;
-//            long timestamp;
-//            while((line = reader.readLine()) != null){
-//                postId = Integer.valueOf(line.trim());
-//                source = reader.readLine(); // review content
-//                parentId = Integer.valueOf(reader.readLine().trim()); // parentId
-//                score = Integer.valueOf(reader.readLine()); // ylabel
-//                timestamp = Long.valueOf(reader.readLine());
-//
-//                review = new _Review(-1, postId, source, 0, parentId, userID, timestamp);
-//                if(AnalyzeDoc(review,core)){ //Create the sparse vector for the review.
-//                    reviews.add(review);
-//                    review.setID(index++);
-//                }
-//            }
-//            if(reviews.size() > 1){//at least one for adaptation and one for testing
-//                synchronized (m_allocReviewLock) {
-//                    m_users.add(new _User(userID, m_classNo, reviews)); //create new user from the file.
-//                    m_corpus.addDocs(reviews);
-//                }
-//            } else if(reviews.size() == 1){// added by Lin, for those users with fewer than 2 reviews, ignore them.
-//                review = reviews.get(0);
-//                synchronized (m_rollbackLock) {
-//                    rollBack(Utils.revertSpVct(review.getSparse()), review.getYLabel());
-//                }
-//            }
-//            reader.close();
-//        } catch(IOException e){
-//            e.printStackTrace();
-//        }
-//    }
-
     // one map for indexing all questions
     HashMap<Integer, _Review> m_questionMap = new HashMap<>();
     HashMap<Integer, _Review> m_answerMap = new HashMap<>();
@@ -93,31 +46,11 @@ public class MultiThreadedStackOverflowAnalyzer  extends MultiThreadedNetworkAna
         System.out.format("Total number of users %d.\n", m_users.size());
         System.out.format("Network map size is %d. \n", m_networkMap.size());
 
-        int missBoth = 0, missOne = 0;
-        for(_User ui: m_users){
-            if(!m_networkMap.containsKey(ui.getUserID())){
-                System.out.println("The user ui does not exit in the network map!");
-                continue;
-            }
-            for(_Review r: ui.getReviews()){
-                if(r.getParentId() != -1 && m_questionMap.containsKey(r.getParentId())){
-                    String uj = m_questionMap.get(r.getParentId()).getUserID();
-                    if(!m_networkMap.containsKey(uj)){
-                        System.out.println("The user uj does not exit in the network map!");
-                        continue;
-                    }
-                    if(!m_networkMap.get(ui.getUserID()).contains(uj) && !m_networkMap.get(uj).contains(ui.getUserID()))
-                        missBoth++;
-                    else if(!m_networkMap.get(ui.getUserID()).contains(uj) || m_networkMap.get(uj).contains(ui.getUserID()))
-                        missOne++;
-                }
-            }
-        }
-
-        System.out.format("%d both missing, %d missing one!", missBoth, missOne);
-
         // step 2: find all the answers to the corresponding questions
+        HashSet<String> users = new HashSet<>();
+        HashMap<String, HashSet<String>> net = new HashMap<>();
         for (_User u : m_users) {
+            String ui = u.getUserID();
             // find all the questions in the data first
             for (_Review r : u.getReviews()) {
                 int questionId = r.getParentId();
@@ -138,7 +71,7 @@ public class MultiThreadedStackOverflowAnalyzer  extends MultiThreadedNetworkAna
                 lgFive++;
         }
         avg /= m_questionAnswersMap.keySet().size();
-        System.out.format("[stat] Total questions: %d, questions with answers: %d,questions with >5 answers: %d, avg anser: %.2f\n",
+        System.out.format("[stat] Total questions: %d, questions with answers: %d,questions with > 5 answers: %d, avg anser: %.2f\n",
                 m_questionMap.size(), m_questionAnswersMap.size(), lgFive, avg);
     }
 
@@ -149,23 +82,51 @@ public class MultiThreadedStackOverflowAnalyzer  extends MultiThreadedNetworkAna
     public void selectQuestions4Recommendation(){
         super.constructUserIDIndex();
         for(int qId: m_questionAnswersMap.keySet()){
+            String uiId = m_questionMap.get(qId).getUserID();
+            if(!m_networkMap.containsKey(uiId)) continue;
+
             ArrayList<Integer> answers = m_questionAnswersMap.get(qId);
             int nuOfAns = m_questionAnswersMap.get(qId).size();
             if(nuOfAns > 1 && nuOfAns <= 5){
                 boolean flag = true;
                 for(int aId: answers){
-                    _User user = m_users.get(m_userIDIndex.get(m_answerMap.get(aId).getUserID()));
-                    if(!containsQuestion(user)){
+                    _User uj = m_users.get(m_userIDIndex.get(m_answerMap.get(aId).getUserID()));
+                    // the user will not be trained in the training
+                    if(!containsQuestion(uj)){
                         flag = false;
                     }
                 }
                 if(flag) {
                     m_selectedQuestions.add(qId);
-                    m_selectedAnswers.addAll(answers);
                 }
             }
         }
 
+        // further filter the selected question based on network
+        for(int qId: m_selectedQuestions){
+            String uiId = m_questionMap.get(qId).getUserID();
+            HashSet<String> uiFrds = m_networkMap.get(uiId);
+            if(uiFrds == null){
+                System.out.println("The user does not have any friends!");
+                continue;
+            }
+            // access answers of one question
+            for(int aId: m_questionAnswersMap.get(qId)){
+                String ujId = m_answerMap.get(aId).getUserID();
+                HashSet<String> ujFrds = m_networkMap.get(ujId);
+                if(uiFrds != null && ujFrds != null && uiFrds.contains(ujId) && ujFrds.contains(uiId)){
+                    if(!m_testInteractions.containsKey(qId))
+                        m_testInteractions.put(qId, new HashSet<>());
+                    m_testInteractions.get(qId).add(ujId);
+                    m_selectedAnswers.add(aId);
+                }
+            }
+        }
+
+        // assign the selected questions to the array list
+        m_selectedQuestions.clear();
+        for(int qId: m_testInteractions.keySet())
+            m_selectedQuestions.add(qId);
         System.out.println("Total number of valid questions: " + m_selectedQuestions.size());
         System.out.println("Total number of answers: " + m_selectedAnswers.size());
     }
@@ -177,43 +138,9 @@ public class MultiThreadedStackOverflowAnalyzer  extends MultiThreadedNetworkAna
     HashMap<Integer, HashSet<Integer>> m_testNonInteractions = new HashMap<>();
 
     public void refineNetwork4Recommendation(int time, String prefix){
-        int remove = 0, count = 0;
-        // collect the testing interactions
-        HashSet<Integer> removeQs = new HashSet<Integer>();
-        for(int qId: m_selectedQuestions){
-            String uiId = m_questionMap.get(qId).getUserID();
-            HashSet<String> uiFrds = m_networkMap.get(uiId);
-            if(uiFrds == null){
-                System.out.println("The user does not have any friends!");
-                removeQs.add(qId);
-                continue;
-            }
-            for(int aId: m_questionAnswersMap.get(qId)){
-                String ujId = m_answerMap.get(aId).getUserID();
-                HashSet<String> ujFrds = m_networkMap.get(ujId);
-                if(uiFrds != null && ujFrds != null && uiFrds.contains(ujId) && ujFrds.contains(uiId)){
-                    if(!m_testInteractions.containsKey(qId))
-                        m_testInteractions.put(qId, new HashSet<>());
-                    m_testInteractions.get(qId).add(ujId);
-                } else{
-                    count++;
-                }
-            }
-        }
-        System.out.format("%d questions of users don't have any friends!\n", removeQs.size());
-        System.out.format("%d questions are not valid!\n", count);
-        System.out.format("%d questions' interactions are collected!\n", m_testInteractions.size());
 
+        int remove = 0;
 
-        count = 0;
-        int[] indexes = new int[removeQs.size()];
-        for(int q: removeQs){
-            indexes[count++] = m_selectedQuestions.indexOf(q);
-        }
-        Arrays.sort(indexes);
-        for(int i=indexes.length-1; i>=0; i--){
-            m_selectedQuestions.remove(indexes[i]);
-        }
         // sample the testing non-interactions
         sampleNonInteractions(time);
         saveNonInteractions(prefix, time);
@@ -355,33 +282,30 @@ public class MultiThreadedStackOverflowAnalyzer  extends MultiThreadedNetworkAna
 //        String cvIndexFile4Interaction = String.format("%s/%s/%sCVIndex4Interaction_fold_%d_train.txt", prefix, dataset, dataset, k);
 //        String cvIndexFile4NonInteraction = String.format("%s/%s/%sCVIndex4NonInteraction_time_%d.txt", prefix, dataset, dataset, time);
 
-        MultiThreadedStackOverflowAnalyzer analyzer = new MultiThreadedStackOverflowAnalyzer(tokenModel, classNumber, providedCV,
-                Ngram, lengthThreshold, numberOfCores, true);
-        analyzer.setAllocateReviewFlag(false); // do not allocate reviews
-        analyzer.loadUserDir(userFolder);
-        analyzer.constructUserIDIndex();
-//        analyzer.loadInteractions(friendFile);
-//        analyzer.buildQuestionAnswerMap();
-//        analyzer.selectQuestions4Recommendation();
-
-//        // assign cv index for training and testing documents
-//        String cvIndexFile = String.format("%s/%s/%sCVIndex4Recommendation.txt", prefix, dataset, dataset);
-//        analyzer.assignCVIndex4AnswerRecommendation();
-//        analyzer.saveCVIndex(cvIndexFile);
-
         int time = 10;
         // load the interaction, remove the connections built based on the selected answers
         String friendFile = String.format("%s/%s/%sFriends.txt", prefix, dataset, dataset);
         String friendFile4Recommendation = String.format("%s/%s/%sFriends4Recommendation.txt", prefix, dataset, dataset);
         String questionFile = String.format("%s/%s/%sSelectedQuestions.txt", prefix, dataset, dataset);
         String prefix4Rec = String.format("%s/%s/%s", prefix, dataset, dataset);
-        analyzer.loadInteractions(friendFile);
 
+        MultiThreadedStackOverflowAnalyzer analyzer = new MultiThreadedStackOverflowAnalyzer(tokenModel, classNumber, providedCV,
+                Ngram, lengthThreshold, numberOfCores, true);
+
+        analyzer.setAllocateReviewFlag(false); // do not allocate reviews
+        analyzer.loadUserDir(userFolder);
+        analyzer.constructUserIDIndex();
         analyzer.buildQuestionAnswerMap();
+        analyzer.loadInteractions(friendFile);
         analyzer.selectQuestions4Recommendation();
 
-//        analyzer.refineNetwork4Recommendation(time, prefix4Rec);
-//        analyzer.saveNetwork(friendFile4Recommendation);
-//        analyzer.printSelectedQuestionIds(questionFile);
+        // assign cv index for training and testing documents
+        String cvIndexFile = String.format("%s/%s/%sCVIndex4Recommendation.txt", prefix, dataset, dataset);
+        analyzer.assignCVIndex4AnswerRecommendation();
+        analyzer.saveCVIndex(cvIndexFile);
+
+        analyzer.refineNetwork4Recommendation(time, prefix4Rec);
+        analyzer.saveNetwork(friendFile4Recommendation);
+        analyzer.printSelectedQuestionIds(questionFile);
     }
 }
