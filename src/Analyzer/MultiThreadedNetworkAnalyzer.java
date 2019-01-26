@@ -355,15 +355,18 @@ public class MultiThreadedNetworkAnalyzer extends MultiThreadedLinkPredAnalyzer 
         }
     }
 
-    public void printData4CTR(BipartiteAnalyzer biAnalyzer, String dir, int testFold, int groupIdx, boolean flag_cold){
+    public void printData4CTR(BipartiteAnalyzer biAnalyzer, String dir, int testFold, int crossV, int groupIdx, boolean flag_cold){
         (new File(dir)).mkdirs();
         String flagstr = flag_cold?"_true":"_false";
         String flaggroup = groupIdx<0? "":String.format("_%d", groupIdx);
-        String corpusFile = String.format("%s/corpus%s_%d.txt", dir, flagstr, testFold);
-        String trtFile = String.format("%s/train%s_%d.txt", dir, flagstr, testFold);
-        String tstFile = String.format("%s/test%s_%d%s.txt", dir, flagstr, testFold, flaggroup);
-        String userFile = String.format("%s/user%s_%d.txt", dir, flagstr, testFold);
-        String itemFile = String.format("%s/item%s_%d.txt", dir, flagstr, testFold);
+        String foldstr = crossV == 1? "":String.format("_%d", testFold);
+        String corpusFile = String.format("%s/corpus%s%s.txt", dir, flagstr, foldstr);
+        String trtFile = String.format("%s/train%s%s.txt", dir, flagstr, foldstr);
+        String tstFile = String.format("%s/test%s%s%s.txt", dir, flagstr, foldstr, flaggroup);
+        String userFile = String.format("%s/user%s%s.txt", dir, flagstr, foldstr);
+        String userIdFile = String.format("%s/userID%s%s.txt", dir, flagstr, foldstr);
+        String itemFile = String.format("%s/item%s%s.txt", dir, flagstr, foldstr);
+        String itemIdFile = String.format("%s/itemID%s%s.txt", dir, flagstr, foldstr);
 
         try {
             ArrayList<_Doc> trainSet = new ArrayList<_Doc>();
@@ -400,6 +403,14 @@ public class MultiThreadedNetworkAnalyzer extends MultiThreadedLinkPredAnalyzer 
                 writer.write("\n");
             }
             writer.close();
+
+            writer = new PrintWriter(new File(userIdFile));
+            List<_User> users = biAnalyzer.getUsers();
+            for(int i = 0; i < users.size(); i++) {
+                writer.write(String.format("%d\t%s\n", i, users.get(i).getUserID()));
+            }
+            writer.close();
+
             //print item -> users file
             writer = new PrintWriter(new File(itemFile));
             for(int i = 0; i < biAnalyzer.getItems().size(); i++){
@@ -409,6 +420,13 @@ public class MultiThreadedNetworkAnalyzer extends MultiThreadedLinkPredAnalyzer 
                     writer.write(String.format(" %d", mapByItem.get(i).get(j)));
                 }
                 writer.write("\n");
+            }
+            writer.close();
+
+            writer = new PrintWriter(new File(itemIdFile));
+            List<_Product> items = biAnalyzer.getItems();
+            for(int i = 0; i < items.size(); i++) {
+                writer.write(String.format("%d\t%s\n", i, items.get(i).getID()));
             }
             writer.close();
 

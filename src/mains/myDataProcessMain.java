@@ -203,12 +203,12 @@ public class myDataProcessMain {
             System.out.format("Generating for Fold %d %s......\n", k, param.m_flag_coldstart?"COLD start":"");
             if(!param.m_flag_coldstart){
                 analyzer.loadCVIndex(cvIndexFile);
-                analyzer.printData4CTR(m_bipartite, outputFolder, k, -1, param.m_flag_coldstart);
+                analyzer.printData4CTR(m_bipartite, outputFolder, k, crossV,-1, param.m_flag_coldstart);
             } else {
                 cvIndexFile = String.format("%s/%s_cold_start_4docs_fold_%d.txt", dataset, param.m_source, k);
                 analyzer.loadCVIndex(cvIndexFile);
                 for(int group_i = 0; group_i < 3; group_i++){//light; medium; heavy
-                    analyzer.printData4CTR(m_bipartite, outputFolder, k, group_i, param.m_flag_coldstart);
+                    analyzer.printData4CTR(m_bipartite, outputFolder, k, crossV, group_i, param.m_flag_coldstart);
                 }
             }
         }

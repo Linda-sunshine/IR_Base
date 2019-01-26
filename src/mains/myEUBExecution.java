@@ -87,8 +87,21 @@ public class myEUBExecution {
         new File(outputFolder).mkdirs();
 
         if (param.m_crossV<=1) {//just train
-            analyzer.loadUserDir(reviewFolder);
-            tModel.EMonCorpus();
+            if(param.m_source.equals("StackOverflow2")){
+                cvIndexFile = String.format("%s/%sCVIndex4Recommendation.txt", dataset, param.m_source);
+                String selectedItemFile = String.format("%s/%sSelectedQuestions.txt", dataset, param.m_source);
+                analyzer.setAllocateReviewFlag(false);
+                analyzer.loadUserDir(reviewFolder);
+                analyzer.constructUserIDIndex();
+                analyzer.loadCVIndex(cvIndexFile);
+                tModel.setTrainSet(analyzer.getDocsByCVIndex(1));//1 indicates training doc
+                System.out.format("[Info]train size = %d....\n", tModel.getTrainSize());
+
+                tModel.EM();
+                tModel.printSelectedDocTheta(param.m_topk, outputFolder, param.m_topicmodel, selectedItemFile);
+            } else {
+                tModel.EMonCorpus();
+            }
             tModel.printParameterAggregation(param.m_topk, outputFolder, param.m_topicmodel);
             tModel.printTopWords(param.m_topk);
         } else if(setRandomFold == true){//cross validation with random folds
