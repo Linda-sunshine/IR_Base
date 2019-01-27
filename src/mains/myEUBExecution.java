@@ -94,7 +94,8 @@ public class myEUBExecution {
                 analyzer.loadUserDir(reviewFolder);
                 analyzer.constructUserIDIndex();
                 analyzer.loadCVIndex(cvIndexFile);
-                tModel.setTrainSet(analyzer.getDocsByCVIndex(1));//1 indicates training doc
+                analyzer.maskDocByCVIndex(0);
+                tModel.setCorpus(analyzer.getCorpus());
                 System.out.format("[Info]train size = %d....\n", tModel.getTrainSize());
 
                 tModel.EM();

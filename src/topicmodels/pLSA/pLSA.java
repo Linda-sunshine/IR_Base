@@ -353,7 +353,7 @@ public class pLSA extends twoTopic {
 				BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(file), "UTF-8"));
 				String line;
 				while ((line = reader.readLine()) != null) {
-					selectedDoc.add(line.trim());
+					selectedDoc.add(line.split("\\s+")[1]);
 				}
 				reader.close();
 			}
