@@ -26,7 +26,7 @@ public class myEUBExecution {
 
         int classNumber = 6; //Define the number of classes in this Naive Bayes.
         int Ngram = 2; //The default value is unigram.
-        int lengthThreshold = 0; //Document length threshold
+        int lengthThreshold = 5; //Document length threshold
         boolean setRandomFold = false;
         int numberOfCores = Runtime.getRuntime().availableProcessors();
 
