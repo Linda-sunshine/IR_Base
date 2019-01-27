@@ -16,7 +16,7 @@ import java.util.*;
 
 public class LDA_Focus extends LDA_Variational {
     protected List<_User> m_users;
-    protected List<_Product4ETBIR> m_items;
+    protected List<_Product> m_items;
 
     protected HashMap<String, Integer> m_usersIndex; //(userID, index in m_users)
     protected HashMap<String, Integer> m_itemsIndex; //(itemID, index in m_items)
