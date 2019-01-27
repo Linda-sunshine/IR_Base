@@ -183,9 +183,11 @@ public class myDataProcessMain {
         String dataset = String.format("%s/%s/%s", param.m_prefix, param.m_source, param.m_set);
         String fvFile = String.format("%s/%s/%s_features.txt", param.m_prefix, param.m_source, param.m_source);
         String reviewFolder = String.format("%s/data/", dataset);
-        String cvIndexFile = String.format("%s/%sCVIndex.txt", dataset, param.m_source);
+        String cvIndexFile;
         if(param.m_source.equals("StackOverflow2")) {
             cvIndexFile = String.format("%s/%sCVIndex4Recommendation.txt", dataset, param.m_source);
+        } else {
+            cvIndexFile = String.format("%s/%sCVIndex.txt", dataset, param.m_source);
         }
 
         String outputFolder = String.format("%s/%s/", dataset, param.m_topicmodel);
