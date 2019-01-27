@@ -97,8 +97,10 @@ public class myEUBExecution {
                 System.out.format("[Dataset]%d users are loaded.\n", analyzer.getUsers().size());
                 analyzer.loadCVIndex(cvIndexFile);
                 tModel.setTrainSet(analyzer.getDocsByCVIndex(1));//3 indicates training doc
+                tModel.setTestSet(analyzer.getDocsByCVIndex(0));
 //                tModel.setCorpus(analyzer.getCorpus());
                 System.out.format("[Info]train size = %d....\n", tModel.getTrainSize());
+                System.out.format("[Info]test size = %d....\n", tModel.getTestSize());
 
                 tModel.EM();
                 tModel.printSelectedDocTheta(param.m_topk, outputFolder, param.m_topicmodel, selectedItemFile);
