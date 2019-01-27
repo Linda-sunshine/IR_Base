@@ -92,7 +92,9 @@ public class myEUBExecution {
                 String selectedItemFile = String.format("%s/%sSelectedQuestions.txt", dataset, param.m_source);
                 analyzer.setAllocateReviewFlag(false);
                 analyzer.loadUserDir(reviewFolder);
+                System.out.format("[Dataset]%d docs are loaded.\n", analyzer.getCorpus().getCollection().size());
                 analyzer.constructUserIDIndex();
+                System.out.format("[Dataset]%d users are loaded.\n", analyzer.getUsers().size());
                 analyzer.loadCVIndex(cvIndexFile);
                 analyzer.maskDocByCVIndex(0);
                 tModel.setCorpus(analyzer.getCorpus());
