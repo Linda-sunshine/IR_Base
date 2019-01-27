@@ -26,7 +26,7 @@ import javax.rmi.CORBA.Util;
 public class ETBIR extends LDA_Variational {
     /*****data structures*****/
     protected List<_User> m_users; //all the users in training and test set
-    protected List<_Product4ETBIR> m_items; //all the items in training and test set
+    protected List<_Product> m_items; //all the items in training and test set
 
     //index structure for all users, items and reviews
     protected HashMap<String, Integer> m_usersIndex; //(key: userID, value: index in m_users)
