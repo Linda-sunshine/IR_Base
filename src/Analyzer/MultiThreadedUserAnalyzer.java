@@ -145,6 +145,7 @@ public class MultiThreadedUserAnalyzer extends UserAnalyzer {
 			String source;
 			ArrayList<_Review> reviews = new ArrayList<_Review>();
 
+			String category = "", productID = "";
 			_Review review;
 			int ylabel, index = 0;
 			long timestamp;
@@ -152,13 +153,17 @@ public class MultiThreadedUserAnalyzer extends UserAnalyzer {
 				postId = Integer.valueOf(line.trim());
 				source = reader.readLine(); // review content
 				parentId = Integer.valueOf(reader.readLine().trim()); // parentId
-				score = Integer.valueOf(reader.readLine()); // ylabel
+				ylabel = Integer.valueOf(reader.readLine()); // ylabel
 				timestamp = Long.valueOf(reader.readLine());
 
-				review = new _Review(-1, postId, source, 0, parentId, userID, timestamp);
-				if(AnalyzeDoc(review,core)){ //Create the sparse vector for the review.
-					reviews.add(review);
-					review.setID(index++);
+				// Construct the new review.
+				if(ylabel != 3){
+					ylabel = (ylabel >= 4) ? 1:0;
+						review = new _Review(-1, postId, source, ylabel, parentId, userID, timestamp);
+					if(AnalyzeDoc(review, core)) { //Create the sparse vector for the review.
+						reviews.add(review);
+						review.setID(index++);
+					}
 				}
 			}
 			if(reviews.size() > 1){//at least one for adaptation and one for testing

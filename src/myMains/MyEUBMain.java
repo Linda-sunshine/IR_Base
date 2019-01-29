@@ -33,7 +33,7 @@ public class MyEUBMain {
         int lengthThreshold = 5; // Document length threshold
         int numberOfCores = Runtime.getRuntime().availableProcessors();
 
-        String dataset = "StackOverflow"; // "StackOverflow", "YelpNew"
+        String dataset = "YelpNew"; // "StackOverflow", "YelpNew"
         String tokenModel = "./data/Model/en-token.bin"; // Token model.
 
         String prefix = "./data/CoLinAdapt";

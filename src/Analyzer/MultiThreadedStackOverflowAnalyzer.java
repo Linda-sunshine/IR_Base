@@ -1,14 +1,17 @@
 package Analyzer;
 
 import opennlp.tools.util.InvalidFormatException;
+import structures._Corpus;
 import structures._Doc;
 import structures._Review;
 import structures._User;
-import utils.Utils;
+import topicmodels.multithreads.UserEmbedding.EUB_multithreading;
 
-import java.io.*;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.PrintWriter;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 
@@ -272,16 +275,6 @@ public class MultiThreadedStackOverflowAnalyzer  extends MultiThreadedNetworkAna
         String providedCV = String.format("%s/%s/%sSelectedVocab.txt", prefix, dataset, dataset);
         String userFolder = String.format("%s/%s/Users", prefix, dataset);
 
-//        int kFold = 5, k = -1;
-//        int time = 2;
-//
-//        String orgFriendFile = String.format("%s/%s/%sFriends_org.txt", prefix, dataset, dataset);
-//        String friendFile = String.format("%s/%s/%sFriends.txt", prefix, dataset, dataset);
-//        String cvIndexFile = String.format("%s/%s/%sCVIndex.txt", prefix, dataset, dataset);
-////        String cvIndexFile4Interaction = String.format("%s/%s/%sCVIndex4Interaction.txt", prefix, dataset, dataset);
-//        String cvIndexFile4Interaction = String.format("%s/%s/%sCVIndex4Interaction_fold_%d_train.txt", prefix, dataset, dataset, k);
-//        String cvIndexFile4NonInteraction = String.format("%s/%s/%sCVIndex4NonInteraction_time_%d.txt", prefix, dataset, dataset, time);
-
         int time = 10;
         // load the interaction, remove the connections built based on the selected answers
         String friendFile = String.format("%s/%s/%sFriends.txt", prefix, dataset, dataset);
@@ -289,23 +282,70 @@ public class MultiThreadedStackOverflowAnalyzer  extends MultiThreadedNetworkAna
         String questionFile = String.format("%s/%s/%sSelectedQuestions.txt", prefix, dataset, dataset);
         String prefix4Rec = String.format("%s/%s/%s", prefix, dataset, dataset);
 
-        MultiThreadedStackOverflowAnalyzer analyzer = new MultiThreadedStackOverflowAnalyzer(tokenModel, classNumber, providedCV,
-                Ngram, lengthThreshold, numberOfCores, true);
+//        MultiThreadedStackOverflowAnalyzer analyzer = new MultiThreadedStackOverflowAnalyzer(tokenModel, classNumber, providedCV,
+//                Ngram, lengthThreshold, numberOfCores, true);
+//
+//        analyzer.setAllocateReviewFlag(false); // do not allocate reviews
+//        analyzer.loadUserDir(userFolder);
+//        analyzer.constructUserIDIndex();
+//        analyzer.buildQuestionAnswerMap();
+//        analyzer.loadInteractions(friendFile);
+//        analyzer.selectQuestions4Recommendation();
+//
+//        // assign cv index for training and testing documents
+        String cvIndexFile = String.format("%s/%s/%sCVIndex4Recommendation.txt", prefix, dataset, dataset);
+//        analyzer.assignCVIndex4AnswerRecommendation();
+//        analyzer.saveCVIndex(cvIndexFile);
+//
+//        analyzer.refineNetwork4Recommendation(time, prefix4Rec);
+//        analyzer.saveNetwork(friendFile4Recommendation);
+//        analyzer.printSelectedQuestionIds(questionFile);
 
+        MultiThreadedNetworkAnalyzer analyzer = new MultiThreadedNetworkAnalyzer(tokenModel, classNumber, providedCV,
+                Ngram, lengthThreshold, numberOfCores, true);
         analyzer.setAllocateReviewFlag(false); // do not allocate reviews
         analyzer.loadUserDir(userFolder);
         analyzer.constructUserIDIndex();
-        analyzer.buildQuestionAnswerMap();
-        analyzer.loadInteractions(friendFile);
-        analyzer.selectQuestions4Recommendation();
+        String mode = "cv4doc"; // "cv4edge" "cs4doc"--"cold start for doc" "cs4edge"--"cold start for edge"
 
-        // assign cv index for training and testing documents
-        String cvIndexFile = String.format("%s/%s/%sCVIndex4Recommendation.txt", prefix, dataset, dataset);
-        analyzer.assignCVIndex4AnswerRecommendation();
-        analyzer.saveCVIndex(cvIndexFile);
+        int kFold = 5, k = 0;
 
-        analyzer.refineNetwork4Recommendation(time, prefix4Rec);
-        analyzer.saveNetwork(friendFile4Recommendation);
-        analyzer.printSelectedQuestionIds(questionFile);
+        //if it is cv for doc, use all the interactions + part of docs
+        analyzer.loadCVIndex(cvIndexFile, kFold);
+        analyzer.loadInteractions(friendFile4Recommendation);
+
+        _Corpus corpus = analyzer.getCorpus();
+
+        /***Start running joint modeling of user embedding and topic embedding****/
+        int emMaxIter = 50, number_of_topics = 20, varMaxIter = 10, embeddingDim = 10, trainIter = 1, testIter = 1500;
+        //these two parameters must be larger than 1!!!
+        double emConverge = 1e-10, alpha = 1 + 1e-2, beta = 1 + 1e-3, lambda = 1 + 1e-3, varConverge = 1e-6, stepSize = 0.001;
+        boolean alphaFlag = true, gammaFlag = false, betaFlag = true, tauFlag = false, xiFlag = true, rhoFlag = false;
+        boolean multiFlag = true, adaFlag = false;
+
+        long start = System.currentTimeMillis();
+
+        EUB_multithreading tModel = new EUB_multithreading(emMaxIter, emConverge, beta, corpus, lambda, number_of_topics, alpha, varMaxIter, varConverge, embeddingDim);
+
+        tModel.initLookupTables(analyzer.getUsers());
+        tModel.setModelParamsUpdateFlags(alphaFlag, gammaFlag, betaFlag, tauFlag, xiFlag, rhoFlag);
+        tModel.setMode(mode);
+
+        tModel.setTrainInferMaxIter(trainIter);
+        tModel.setTestInferMaxIter(testIter);
+        tModel.setStepSize(stepSize);
+
+        long current = System.currentTimeMillis();
+        String saveDir = String.format("./data/embeddingExp/eub/%s_emIter_%d_nuTopics_%d_varIter_%d_trainIter_%d_testIter_%d_dim_%d_ada_%b/" +
+                    "fold_%d_%d", dataset, emMaxIter, number_of_topics, varMaxIter, trainIter, testIter, embeddingDim, adaFlag, k, current);
+
+        tModel.fixedCrossValidation(k, saveDir);
+//        tModel.printGamma("./data/embeddingExp/EUB");
+//        tModel.printBeta("./data/embeddingExp/EUB");
+        long end = System.currentTimeMillis();
+        System.out.println("\n[Info]Start time: " + start);
+        // the total time of training and testing in the unit of hours
+        double hours = (end - start)/((1000*60*60) * 1.0);
+        System.out.print(String.format("[Time]This training+testing process took %.4f hours.\n", hours));
     }
 }
