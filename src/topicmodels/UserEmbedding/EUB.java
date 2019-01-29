@@ -50,7 +50,7 @@ public class EUB extends LDA_Variational {
     // alpha is a vector parameter for dirichlet distribution
     protected double m_alpha_s = 1;
     protected double m_tau = 1;
-    protected double m_gamma = 0.1;
+    protected double m_gamma = 1;
     protected double m_xi = 2.0;
 
     /*****Sparsity parameter******/
@@ -119,7 +119,6 @@ public class EUB extends LDA_Variational {
     public void setGamma(double g){
         m_gamma = g;
     }
-
     public void setStepSize(double s) {
         if (s > 0)
             m_stepSize = s;
@@ -306,7 +305,8 @@ public class EUB extends LDA_Variational {
         do {
             System.out.format(String.format("\n----------Start EM %d iteraction----------\n", iter));
 
-
+            oneMeans.clear();
+            zeroMeans.clear();
             Arrays.fill(counts, 0);
 
             if (m_multithread)
@@ -329,8 +329,8 @@ public class EUB extends LDA_Variational {
 
             if (iter % 10 == 0) {
                 printTopWords(30);
-                printUserEmbedding(String.format("./data/User_embedding_%d.txt", iter));
             }
+//            printUserEmbedding(String.format("./data/User_embedding_%d.txt", iter));
 
             lastAllLikelihood = currentAllLikelihood;
         } while (iter < number_of_iteration && converge > m_converge);

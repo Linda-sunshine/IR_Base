@@ -121,17 +121,14 @@ public class MultiThreadedNetworkAnalyzer extends MultiThreadedLinkPredAnalyzer 
         return arr;
     }
 
-    // assign cv index for documents in the collection
-    public void assignCVIndex4Docs(int k){
+    // shuffle the document index based on each user
+    public void saveCVIndex(int k, String filename){
         m_corpus.setMasks();
 
         for(_User u: m_users){
             setMasks4Reviews(u.getReviews(), k);
         }
-    }
 
-    // shuffle the document index based on each user
-    public void saveCVIndex(String filename){
         ArrayList<_Doc> docs = m_corpus.getCollection();
         int[] stat = new int[5];
         try{

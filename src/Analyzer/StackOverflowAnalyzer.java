@@ -536,8 +536,8 @@ public class StackOverflowAnalyzer {
     }
 
     public static void main(String[] args) {
-        String questionFile = "/Users/lin/Documents/Lin'sWorkSpace/Notebook/data/Questions_Network.csv";
-        String answerFile = "/Users/lin/Documents/Lin'sWorkSpace/Notebook/data/Answers_Network.csv";
+        String questionFile = "/Users/lin/Documents/Lin'sWorkSpace/Notebook/Questions_Network.csv";
+        String answerFile = "/Users/lin/Documents/Lin'sWorkSpace/Notebook/Answers_Network.csv";
 
         StackOverflowAnalyzer analyzer = new StackOverflowAnalyzer();
         analyzer.loadQuestionsWithoutText(questionFile);
