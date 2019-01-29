@@ -19,6 +19,7 @@ public class LinkPredictionWithUserEmbedding {
         // this is for question ranking
         public _Object4Link(String id){
             m_id = id;
+            m_edges = new ArrayList<>();
         }
         // this is for user ranking
         public _Object4Link(String id, int idx){

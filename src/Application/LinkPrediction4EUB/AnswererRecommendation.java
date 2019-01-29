@@ -55,7 +55,7 @@ public class AnswererRecommendation extends LinkPredictionWithUserEmbedding {
         try {
             File file = new File(filename);
             BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(file), "UTF-8"));
-            String line = reader.readLine();
+            String line;
 //            // the first line is question size * dim
 //            int size = Integer.valueOf(line.split("\\s+")[0]);
 
@@ -63,6 +63,9 @@ public class AnswererRecommendation extends LinkPredictionWithUserEmbedding {
                 // the first is uid, the second is qid
                 String[] strs = line.trim().split("\\s+");
                 String uId = strs[0], qId = strs[1];
+                if(!m_idIndexMap.containsKey(uId)){
+                    System.out.println("The user does not exist in the user set!");
+                }
                 // put the question in the map first
                 m_questionMap.put(qId, new _Question(qId, uId));
             }
@@ -136,6 +139,7 @@ public class AnswererRecommendation extends LinkPredictionWithUserEmbedding {
         int labelOne = 1, count = 0;
         try {
             m_testMap.clear();
+            m_testIds.clear();
             File file = new File(filename);
             BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(file), "UTF-8"));
             String line;
@@ -145,12 +149,13 @@ public class AnswererRecommendation extends LinkPredictionWithUserEmbedding {
                 _Question q = m_questionMap.get(qId);
                 _Object4Link qi = new _Object4Link(qId);
                 m_testMap.put(qId, qi);
+                m_testIds.add(qId);
                 // record testing interactions of ui or qi
                 for(int j=1; j<strs.length; j++){
                     String ujId = strs[j];
                     int ujIdx = m_idIndexMap.get(ujId);
                     // the question belongs to user_i.
-                    int uiIdx = m_idIndexMap.get(m_idIndexMap.get(q.getUserId()));
+                    int uiIdx = m_idIndexMap.get(q.getUserId());
                     double sim = getSimilarity(qId, uiIdx, ujIdx);
                     qi.addOneEdge(new _Edge4Link(ujIdx, sim, labelOne));
 
@@ -181,7 +186,7 @@ public class AnswererRecommendation extends LinkPredictionWithUserEmbedding {
                 _Object4Link qi = m_testMap.get(qId);
                 for(int j=1; j<strs.length; j++){
                     String ujId = strs[j];
-                    int uiIdx = m_idIndexMap.get(m_idIndexMap.get(q.getUserId()));
+                    int uiIdx = m_idIndexMap.get(q.getUserId());
                     int ujIdx = m_idIndexMap.get(ujId);
                     double sim = getSimilarity(qId, uiIdx, ujIdx);
                     qi.addOneEdge(new _Edge4Link(ujIdx, sim, labelZero));
@@ -215,7 +220,8 @@ public class AnswererRecommendation extends LinkPredictionWithUserEmbedding {
     }
 
     // init recommendation
-    public void initRecommendation(String idFile, String embedFile, String qIdFile, String questionFile, String testInterFile, String testNonInterFile) {
+    public void initRecommendation(String idFile, String qIdFile, String embedFile, String questionFile, String testInterFile, String testNonInterFile) {
+
         super.loadUserIds(idFile);
         super.loadUserEmbedding(embedFile);
         loadQuestionIds(qIdFile);
@@ -236,22 +242,36 @@ public class AnswererRecommendation extends LinkPredictionWithUserEmbedding {
     //In the main function, we want to input the data and do adaptation
     public static void main(String[] args) {
         // the application is only performed on stackoverflow dataset
-        int dim = 10;
-        String model = "CTR";
+        int dim = 40;
+//        String model = "CTR";
         String prefix = "./data/CoLinAdapt/StackOverflow/AnswerRecommendation";
 
-        String idFile = String.format("/home/lin/DataWWW2019/UserEmbedding/StackOverflow_userids.txt", prefix);
-        String questionIdFile = String.format("%s/StackOverflowSelectedQuestions.txt", prefix);
+        String[] models = new String[]{"CTR", "HFT", "LDA_Variational"};
+        double[][] perfs = new double[models.length][2];
 
-        String questionFile = String.format("%s/models/%s_theta_dim_%d.txt", prefix, model, dim);
-        String embedFile = String.format("%s/models/%s_embedding_dim_%d.txt", prefix, model, dim);
-        String interFile = String.format("%s/StackOverflowInteractions4Recommendations_test.txt", prefix);
-        String nonInterFile = String.format("%s/StackOverflowNonInteractions_time_10_Recommendations.txt", prefix);
-        String phiFile = String.format("%s/StackOverflowPhi.txt", prefix);
-        AnswererRecommendation rec = new AnswererRecommendation(model);
-        if(model.equals("EUB"))
-            rec.loadPhi(phiFile);
-        rec.initRecommendation(idFile, questionIdFile, embedFile, questionFile, interFile, nonInterFile);
+        for(int i=0; i<models.length; i++) {
+            String model = models[i];
 
+            System.out.format("-----------------model %s-dim %d-------------------\n", model, dim);
+            String idFile = String.format("/home/lin/DataWWW2019/UserEmbedding/StackOverflow_userids.txt", prefix);
+            String questionIdFile = String.format("%s/StackOverflowSelectedQuestions.txt", prefix);
+
+            String questionFile = String.format("%s/models/%s_theta_dim_%d.txt", prefix, model, dim);
+            String embedFile = String.format("%s/models/%s_embedding_dim_%d.txt", prefix, model, dim);
+            String interFile = String.format("%s/StackOverflowInteractions4Recommendations_test.txt", prefix);
+            String nonInterFile = String.format("%s/StackOverflowNonInteractions_time_10_Recommendations.txt", prefix);
+            String phiFile = String.format("%s/StackOverflowPhi.txt", prefix);
+            AnswererRecommendation rec = new AnswererRecommendation(model);
+            if (model.equals("EUB"))
+                rec.loadPhi(phiFile);
+            rec.initRecommendation(idFile, questionIdFile, embedFile, questionFile, interFile, nonInterFile);
+            rec.calculateAllNDCGMAP();
+            perfs[i] = rec.calculateAvgNDCGMAP();
+
+        }
+        for(int i=0; i<models.length; i++){
+            System.out.format("%s\t", models[i]);
+            System.out.format("%.4f\t%.4f\n", perfs[i][0], perfs[i][1]);
+        }
     }
 }
