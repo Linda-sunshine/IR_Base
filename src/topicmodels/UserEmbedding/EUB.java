@@ -119,6 +119,7 @@ public class EUB extends LDA_Variational {
     public void setGamma(double g){
         m_gamma = g;
     }
+
     public void setStepSize(double s) {
         if (s > 0)
             m_stepSize = s;
@@ -305,8 +306,7 @@ public class EUB extends LDA_Variational {
         do {
             System.out.format(String.format("\n----------Start EM %d iteraction----------\n", iter));
 
-            oneMeans.clear();
-            zeroMeans.clear();
+
             Arrays.fill(counts, 0);
 
             if (m_multithread)
