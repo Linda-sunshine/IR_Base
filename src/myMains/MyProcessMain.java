@@ -212,7 +212,7 @@ public class MyProcessMain {
         String dir = String.format("%s/%s/%s", prefix, dataset, dataset);
         printTrainTestData(loadFoldData(cvIndexFile4Interaction, kFold), dir, kFold);
 
-        for(int time: new int[]{2, 3, 4}) {
+        for(int time: new int[]{2, 3, 4, 5, 6, 7, 8}) {
             String cvIndexFile4NonInteraction = String.format("%s/%s/%sCVIndex4NonInteraction_time_%d.txt", prefix, dataset, dataset, time);
             printTestData(loadFoldData(cvIndexFile4NonInteraction, kFold), dir, kFold, time);
         }

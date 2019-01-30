@@ -11,16 +11,20 @@ import java.util.*;
  */
 public class LinkPredictionWithUserEmbedding {
 
-    class _User4Link {
-        String m_uid;
+    protected class _Object4Link {
+        String m_id;
         int m_index;
-//        double[] m_embedding;
         ArrayList<_Edge4Link> m_edges;
 
-        public _User4Link(String uid, int idx){
-            m_uid = uid;
+        // this is for question ranking
+        public _Object4Link(String id){
+            m_id = id;
+            m_edges = new ArrayList<>();
+        }
+        // this is for user ranking
+        public _Object4Link(String id, int idx){
+            m_id = id;
             m_index = idx;
-//            m_embedding = embedding;
             m_edges = new ArrayList<_Edge4Link>();
         }
 
@@ -56,19 +60,19 @@ public class LinkPredictionWithUserEmbedding {
     int m_userSize, m_dim;
     double[] m_NDCGs, m_MAPs;
 
-    double[][] m_similarity;
-    double[][] m_embeddings;
-    ArrayList<String> m_userIds;
-    ArrayList<String> m_testUserIds;
-    HashMap<String, Integer> m_idIndexMap;
-    HashMap<String, _User4Link> m_testUserMap;
+    protected double[][] m_similarity;
+    protected double[][] m_embeddings;
+    protected ArrayList<String> m_userIds;
+    protected ArrayList<String> m_testIds;
+    protected HashMap<String, Integer> m_idIndexMap;
+    protected HashMap<String, _Object4Link> m_testMap;
     protected Object m_NDCGMAPLock = null;
 
     public LinkPredictionWithUserEmbedding(){
         m_idIndexMap = new HashMap<>();
-        m_testUserMap = new HashMap<>();
+        m_testMap = new HashMap<>();
         m_NDCGMAPLock = new Object();
-        m_testUserIds = new ArrayList<>();
+        m_testIds = new ArrayList<>();
     }
 
     // load user ids for later use
@@ -98,7 +102,7 @@ public class LinkPredictionWithUserEmbedding {
             String line;
 
             String firstLine = reader.readLine();
-            String[] strs = firstLine.trim().split("\t");
+            String[] strs = firstLine.trim().split("\\s+");
             if(strs.length != 2){
                 System.out.println("[error]The file is not correct!! Double check user embedding file!");
                 return;
@@ -117,7 +121,7 @@ public class LinkPredictionWithUserEmbedding {
                     System.out.println("[error]The line number exceeds the user size!!");
                     break;
                 }
-                String[] valStrs = line.trim().split("\t");
+                String[] valStrs = line.trim().split("\\s+");
                 if(valStrs.length != m_dim + 1){
                     System.out.println("[error]The user's dimension is not correct!!");
                     continue;
@@ -142,8 +146,8 @@ public class LinkPredictionWithUserEmbedding {
     public void loadTestOneZeroEdges(String filename){
         int labelOne = 1, labelZero = 0, count = 0;
         try {
-            m_testUserMap.clear();
-            m_testUserIds.clear();
+            m_testMap.clear();
+            m_testIds.clear();
             File file = new File(filename);
             BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(file), "UTF-8"));
             String line;
@@ -151,12 +155,12 @@ public class LinkPredictionWithUserEmbedding {
             while ((line = reader.readLine()) != null) {
                 testOneIndexes.clear();
                 String[] strs = line.trim().split("\t");
-                String uid = strs[0];
-                int uiIdx = m_idIndexMap.get(uid);
-                _User4Link ui = new _User4Link(strs[0], uiIdx);
-                m_testUserMap.put(uid, ui);
-                m_testUserIds.add(uid);
-                // record testing interactions of ui
+                String id = strs[0];
+                int uiIdx = m_idIndexMap.get(id);
+                _Object4Link ui = new _Object4Link(strs[0], uiIdx);
+                m_testMap.put(id, ui);
+                m_testIds.add(id);
+                // record testing interactions of ui or qi
                 for(int j=1; j<strs.length; j++){
                     String ujId = strs[j];
                     int ujIdx = m_idIndexMap.get(ujId);
@@ -175,7 +179,7 @@ public class LinkPredictionWithUserEmbedding {
                 count++;
             }
             reader.close();
-            System.out.format("[Info]%d/%d users' interactions are loaded!!\n", m_testUserMap.size(), count);
+            System.out.format("[Info]%d/%d users' interactions are loaded!!\n", m_testMap.size(), count);
         } catch(IOException e){
             e.printStackTrace();
         }
@@ -185,31 +189,28 @@ public class LinkPredictionWithUserEmbedding {
     public void loadTestOneEdges(String filename){
         int labelOne = 1, count = 0;
         try {
-            m_testUserMap.clear();
-            m_testUserIds.clear();
+            m_testMap.clear();
+            m_testIds.clear();
             File file = new File(filename);
             BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(file), "UTF-8"));
             String line;
-            HashSet<Integer> testOneIndexes = new HashSet<>();
             while ((line = reader.readLine()) != null) {
-                testOneIndexes.clear();
                 String[] strs = line.trim().split("\t");
                 String uid = strs[0];
                 int index = m_idIndexMap.get(uid);
-                _User4Link ui = new _User4Link(strs[0], index);
-                m_testUserMap.put(uid, ui);
-                m_testUserIds.add(uid);
+                _Object4Link ui = new _Object4Link(strs[0], index);
+                m_testMap.put(uid, ui);
+                m_testIds.add(uid);
                 for(int j=1; j<strs.length; j++){
                     String ujId = strs[j];
                     int ujIdx = m_idIndexMap.get(ujId);
-                    testOneIndexes.add(ujIdx);
                     double sim = getSimilarity(ui.getIndex(), ujIdx);
                     ui.addOneEdge(new _Edge4Link(ujIdx, sim, labelOne));
                 }
                 count++;
             }
             reader.close();
-            System.out.format("[Info]%d/%d users' interactions are loaded!!\n", m_testUserMap.size(), count);
+            System.out.format("[Info]%d/%d users' interactions are loaded!!\n", m_testMap.size(), count);
         } catch(IOException e){
             e.printStackTrace();
         }
@@ -225,9 +226,9 @@ public class LinkPredictionWithUserEmbedding {
             while ((line = reader.readLine()) != null) {
                 String[] strs = line.trim().split("\t");
                 String uid = strs[0];
-                if(!m_testUserMap.containsKey(uid))
+                if(!m_testMap.containsKey(uid))
                     continue;
-                _User4Link ui = m_testUserMap.get(uid);
+                _Object4Link ui = m_testMap.get(uid);
                 for(int j=1; j<strs.length; j++){
                     String ujId = strs[j];
                     int ujIdx = m_idIndexMap.get(ujId);
@@ -237,7 +238,7 @@ public class LinkPredictionWithUserEmbedding {
                 count++;
             }
             reader.close();
-            System.out.format("[Info]%d/%d users' non-interactions are loaded!!\n", m_testUserMap.size(), count);
+            System.out.format("[Info]%d/%d users' non-interactions are loaded!!\n", m_testMap.size(), count);
         } catch(IOException e){
             e.printStackTrace();
         }
@@ -319,8 +320,8 @@ public class LinkPredictionWithUserEmbedding {
 
     // The function for calculating all NDCGs and MAPs.
     public void calculateAllNDCGMAP(){
-        m_NDCGs = new double[m_testUserIds.size()];
-        m_MAPs = new double[m_testUserIds.size()];
+        m_NDCGs = new double[m_testIds.size()];
+        m_MAPs = new double[m_testIds.size()];
         Arrays.fill(m_NDCGs, -1);
         Arrays.fill(m_MAPs, -1);
 
@@ -335,10 +336,10 @@ public class LinkPredictionWithUserEmbedding {
                 public void run() {
                     try {
 
-                        for (int i = 0; i + core <m_testUserIds.size(); i += numOfCores) {
+                        for (int i = 0; i + core <m_testIds.size(); i += numOfCores) {
                             if(i%500==0) System.out.print(".");
-                            String uid = m_testUserIds.get(i + core);
-                            _User4Link user = m_testUserMap.get(uid);
+                            String uid = m_testIds.get(i + core);
+                            _Object4Link user = m_testMap.get(uid);
                             double[] vals = calculateNDCGMAP(user);
                             // put the calculated nDCG into the array for average calculation
                             synchronized(m_NDCGMAPLock){
@@ -389,7 +390,7 @@ public class LinkPredictionWithUserEmbedding {
 //    }
 
     // calculate NDCG and MAP for one user
-    public double[] calculateNDCGMAP(_User4Link user){
+    public double[] calculateNDCGMAP(_Object4Link user){
 
         // As we load the one edges first, then zero edges
         double iDCG = 0, DCG = 0, PatK = 0, AP = 0, count = 0;
@@ -555,11 +556,12 @@ public class LinkPredictionWithUserEmbedding {
         String data = "YelpNew";
         String prefix = "/home/lin"; // "/Users/lin", "/home/lin"
 
-        int dim = 10, folds = 0;
-        int[] times = new int[]{2, 3, 4, 5, 6, 7, 8};
-        String[] models = new String[]{"EUB_1k_tau=1", "EUB_1k_tau=1_rho=1_gamma=0.1", "EUB_tau=1_rho=1"};//, "EUB_t40-0.5", "EUB_t40-1", "EUB_t40-2"}; //"BOW", "LDA", "HFT", "RTM", "DW", "TADW", "EUB_t10", "EUB_t20", "EUB_t30", "EUB_t40", "EUB_t50"};// "RTM", "LDA", "HFT", "DW", "TADW"}; // "LDA", "HFT", "TADW", "EUB", "LDA", "HFT"
-        HashMap<String, double[][][]> allFoldsPerf = new HashMap<String, double[][][]>();
+        int dim = 10, folds = 4;
         String idFile = String.format("%s/DataWWW2019/UserEmbedding/%s_userids.txt", prefix, data);
+
+        int[] times = new int[]{2, 3, 4, 5, 6, 7, 8};
+        String[] models = new String[]{"DW"};//, "EUB_t40-0.5", "EUB_t40-1", "EUB_t40-2"}; //"BOW", "LDA", "HFT", "RTM", "DW", "TADW", "EUB_t10", "EUB_t20", "EUB_t30", "EUB_t40", "EUB_t50"};// "RTM", "LDA", "HFT", "DW", "TADW"}; // "LDA", "HFT", "TADW", "EUB", "LDA", "HFT"
+        HashMap<String, double[][][]> allFoldsPerf = new HashMap<String, double[][][]>();
 
         LinkPredictionWithUserEmbedding link = null;
 
@@ -583,7 +585,7 @@ public class LinkPredictionWithUserEmbedding {
                         link = new  LinkPredictionWithUserEmbeddingBOW()  ;
                     else link = new LinkPredictionWithUserEmbedding();
 
-                    link.initLinkPred(idFile, embedFile, testInterFile, null);
+                    link.initLinkPred(idFile, embedFile, testInterFile, testNonInterFile);
                     link.calculateAllNDCGMAP();
                     perfs[fold][t] = link.calculateAvgNDCGMAP();
                 }

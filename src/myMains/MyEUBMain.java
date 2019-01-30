@@ -1,6 +1,7 @@
 package myMains;
 
 import Analyzer.MultiThreadedNetworkAnalyzer;
+import Analyzer.MultiThreadedStackOverflowAnalyzer;
 import Analyzer.MultiThreadedTADWAnalyzer;
 import Analyzer.UserAnalyzer;
 import opennlp.tools.util.InvalidFormatException;
@@ -61,10 +62,13 @@ public class MyEUBMain {
         /***print data for TADW***/
         String tadwUserFile = String.format("./data/CoLinAdapt/%s/%sUsers4TADW.txt", dataset, dataset);
 
-        MultiThreadedNetworkAnalyzer analyzer = new MultiThreadedNetworkAnalyzer(tokenModel, classNumber, providedCV,
-                Ngram, lengthThreshold, numberOfCores, true);
+        MultiThreadedNetworkAnalyzer analyzer = null;
+
+        if(dataset.equals("StackOverflow")){
+            analyzer = new MultiThreadedStackOverflowAnalyzer(tokenModel, classNumber, providedCV, Ngram, lengthThreshold, numberOfCores, true);
+        } else
+            analyzer = new MultiThreadedNetworkAnalyzer(tokenModel, classNumber, providedCV, Ngram, lengthThreshold, numberOfCores, true);
         analyzer.setAllocateReviewFlag(false); // do not allocate reviews
-//        analyzer.setReleaseContent(false);
 
 //        analyzer.loadUserDir(userFolder);
 //        analyzer.constructUserIDIndex();
@@ -99,9 +103,8 @@ public class MyEUBMain {
         /***Our algorithm EUB****/
         analyzer.loadUserDir(userFolder);
         analyzer.constructUserIDIndex();
-//        analyzer.calcDataStat();
 
-        String mode = "cv4doc"; // "cv4edge" "cs4doc"--"cold start for doc" "cs4edge"--"cold start for edge"
+        String mode = "ansrec"; // "cv4edge" "cs4doc"--"cold start for doc" "cs4edge"--"cold start for edge"
         boolean coldStartFlag = false;
 
         //if it is cv for doc, use all the interactions + part of docs
@@ -120,6 +123,11 @@ public class MyEUBMain {
         } else if(mode.equals("cv4edge") && coldStartFlag){
             cvIndexFile4Interaction = String.format("./data/DataEUB/ColdStart4Edges/%s_cold_start_4edges_fold_%d_interactions.txt", dataset, k);
             analyzer.loadInteractions(cvIndexFile4Interaction);
+        } else if(mode.equals("ansrec")){
+            cvIndexFile = String.format("%s/%s/AnswerRecommendation/StackOverflowCVIndex4Recommendation.txt", prefix, dataset);
+            friendFile = String.format("%s/%s/AnswerRecommendation/StackOverflowFriends4Recommendation.txt", prefix, dataset);
+            analyzer.loadCVIndex(cvIndexFile, kFold);
+            analyzer.loadInteractions(friendFile);
         }
         _Corpus corpus = analyzer.getCorpus();
 
@@ -127,7 +135,7 @@ public class MyEUBMain {
         int emMaxIter = 50, number_of_topics = 20, varMaxIter = 10, embeddingDim = 10, trainIter = 1, testIter = 1500;
         //these two parameters must be larger than 1!!!
         double emConverge = 1e-10, alpha = 1 + 1e-2, beta = 1 + 1e-3, lambda = 1 + 1e-3, varConverge = 1e-6, stepSize = 0.001;
-        boolean alphaFlag = true, gammaFlag = false, betaFlag = true, tauFlag = false, xiFlag = true, rhoFlag = false;
+        boolean alphaFlag = true, gammaFlag = true, betaFlag = true, tauFlag = false, xiFlag = false, rhoFlag = false;
         boolean multiFlag = true, adaFlag = false;
 
         long start = System.currentTimeMillis();
@@ -151,6 +159,7 @@ public class MyEUBMain {
                 tModel = new EUB_multithreading(emMaxIter, emConverge, beta, corpus, lambda, number_of_topics, alpha, varMaxIter, varConverge, embeddingDim);
             else
                 tModel = new EUB(emMaxIter, emConverge, beta, corpus, lambda, number_of_topics, alpha, varMaxIter, varConverge, embeddingDim);
+
             ((EUB) tModel).initLookupTables(analyzer.getUsers());
             ((EUB) tModel).setModelParamsUpdateFlags(alphaFlag, gammaFlag, betaFlag, tauFlag, xiFlag, rhoFlag);
             ((EUB) tModel).setMode(mode);
@@ -158,6 +167,12 @@ public class MyEUBMain {
             ((EUB) tModel).setTrainInferMaxIter(trainIter);
             ((EUB) tModel).setTestInferMaxIter(testIter);
             ((EUB) tModel).setStepSize(stepSize);
+
+            if(mode.equals("ansrec")){
+                String questionIds = String.format("%s/%s/AnswerRecommendation/StackOverflowSelectedQuestions.txt",
+                        prefix, dataset);
+                ((EUB) tModel).loadQuestionIds(questionIds);
+            }
 
             long current = System.currentTimeMillis();
             String saveDir = String.format("./data/embeddingExp/eub/%s_emIter_%d_nuTopics_%d_varIter_%d_trainIter_%d_testIter_%d_dim_%d_ada_%b/" +
