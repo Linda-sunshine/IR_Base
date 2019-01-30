@@ -553,14 +553,14 @@ public class LinkPredictionWithUserEmbedding {
     }
     public static void main(String[] args){
 
-        String data = "StackOverflow";
+        String data = "YelpNew";
         String prefix = "/home/lin"; // "/Users/lin", "/home/lin"
 
         int dim = 10, folds = 4;
         String idFile = String.format("%s/DataWWW2019/UserEmbedding/%s_userids.txt", prefix, data);
 
         int[] times = new int[]{2, 3, 4, 5, 6, 7, 8};
-        String[] models = new String[]{"DW"};//"EUB_t10", "EUB_t30", "EUB_t50"};//, "EUB_t40-0.5", "EUB_t40-1", "EUB_t40-2"}; //"BOW", "LDA", "HFT", "RTM", "DW", "TADW", "EUB_t10", "EUB_t20", "EUB_t30", "EUB_t40", "EUB_t50"};// "RTM", "LDA", "HFT", "DW", "TADW"}; // "LDA", "HFT", "TADW", "EUB", "LDA", "HFT"
+        String[] models = new String[]{"DW"};//, "EUB_t40-0.5", "EUB_t40-1", "EUB_t40-2"}; //"BOW", "LDA", "HFT", "RTM", "DW", "TADW", "EUB_t10", "EUB_t20", "EUB_t30", "EUB_t40", "EUB_t50"};// "RTM", "LDA", "HFT", "DW", "TADW"}; // "LDA", "HFT", "TADW", "EUB", "LDA", "HFT"
         HashMap<String, double[][][]> allFoldsPerf = new HashMap<String, double[][][]>();
 
         LinkPredictionWithUserEmbedding link = null;

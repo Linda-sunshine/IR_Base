@@ -144,7 +144,7 @@ public class PreProcess {
 
 
         int dim = 10;
-        String dataset = "StackOverflow"; // "StackOverflow", "YelpNew"
+        String dataset = "YelpNew"; // "StackOverflow", "YelpNew"
         String prefix = "./data/CoLinAdapt";
 
         // write out the data for deepwalk

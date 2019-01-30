@@ -1,6 +1,7 @@
 package myMains;
 
 import Analyzer.MultiThreadedNetworkAnalyzer;
+import Analyzer.MultiThreadedStackOverflowAnalyzer;
 import opennlp.tools.util.InvalidFormatException;
 import structures.EmbeddingParameter;
 import structures._Corpus;
@@ -37,9 +38,13 @@ public class MyEUBExecution {
         String cvIndexFile = String.format("%s/%s/%sCVIndex.txt", param.m_prefix, param.m_data, param.m_data);
         String cvIndexFile4Interaction = String.format("%s/%s/%sCVIndex4Interaction_fold_%d_train.txt", param.m_prefix, param.m_data, param.m_data, param.m_kFold);
 
+        MultiThreadedNetworkAnalyzer analyzer = null;
         int kFold = 5;
-        MultiThreadedNetworkAnalyzer analyzer = new MultiThreadedNetworkAnalyzer(tokenModel, classNumber, providedCV,
-                Ngram, lengthThreshold, numberOfCores, true);
+
+        if(param.m_data.equals("StackOverflow")){
+            analyzer = new MultiThreadedStackOverflowAnalyzer(tokenModel, classNumber, providedCV, Ngram, lengthThreshold, numberOfCores, true);
+        } else
+            analyzer = new MultiThreadedNetworkAnalyzer(tokenModel, classNumber, providedCV, Ngram, lengthThreshold, numberOfCores, true);
         analyzer.setAllocateReviewFlag(false); // do not allocate reviews
 
         // we store the interaction information before-hand, load them directly
@@ -68,7 +73,15 @@ public class MyEUBExecution {
                     param.m_prefix, param.m_data, param.m_data, param.m_kFold);
             analyzer.loadInteractions(cvIndexFile4Interaction);
         }
-
+        // answerer recommendation for stackoverflow data only
+        else if(param.m_mode.equals("ansrec")){
+            cvIndexFile = String.format("%s/%s/AnswerRecommendation/StackOverflowCVIndex4Recommendation.txt",
+                    param.m_prefix, param.m_data);
+            friendFile = String.format("%s/%s/AnswerRecommendation/StackOverflowFriends4Recommendation.txt",
+                    param.m_prefix, param.m_data);
+            analyzer.loadCVIndex(cvIndexFile, kFold);
+            analyzer.loadInteractions(friendFile);
+        }
         /***Start running joint modeling of user embedding and topic embedding****/
         double emConverge = 1e-10, alpha = 1 + 1e-2, beta = 1 + 1e-3, lambda = 1 + 1e-3, varConverge = 1e-6;//these two parameters must be larger than 1!!!
         _Corpus corpus = analyzer.getCorpus();
@@ -98,12 +111,22 @@ public class MyEUBExecution {
         ((EUB) tModel).setStepSize(param.m_stepSize);
         ((EUB) tModel).setGamma(param.m_gamma);
 
+        if(param.m_mode.equals("ansrec")){
+            String questionIds = String.format("%s/%s/AnswerRecommendation/StackOverflowSelectedQuestions.txt",
+                    param.m_prefix, param.m_data);
+            ((EUB) tModel).loadQuestionIds(questionIds);
+        }
+
         if(param.m_multiFlag && param.m_coldStartFlag){
             ((EUB4ColdStart_multithreading) tModel).fixedCrossValidation(param.m_kFold, param.m_saveDir);
         } else{
             ((EUB) tModel).fixedCrossValidation(param.m_kFold, param.m_saveDir);
         }
         tModel.printBeta(param.m_saveDir);
+        if(param.m_mode.equals("ansrec")){
+            ((EUB) tModel).printTopicEmbeddingAsMtx(param.m_saveDir);
+            ((EUB) tModel).printTheta(param.m_saveDir);
+        }
         long end = System.currentTimeMillis();
 
         // the total time of training and testing in the unit of hours

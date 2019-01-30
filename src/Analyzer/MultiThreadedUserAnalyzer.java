@@ -140,26 +140,27 @@ public class MultiThreadedUserAnalyzer extends UserAnalyzer {
 			String userID = extractUserID(file.getName()); //UserId is contained in the filename.				
 			
 			// Skip the first line since it is user name.
-			reader.readLine(); 
-
-			String productID, source, category="";
+			reader.readLine();
+			int postId, parentId, score;
+			String source;
 			ArrayList<_Review> reviews = new ArrayList<_Review>();
 
+			String category = "", productID = "";
 			_Review review;
 			int ylabel, index = 0;
 			long timestamp;
 			while((line = reader.readLine()) != null){
-				productID = line;
+				productID = line.trim();
 				source = reader.readLine(); // review content
-				category = reader.readLine(); // review category
-				ylabel = Integer.valueOf(reader.readLine());
+				category = reader.readLine().trim();
+				ylabel = Integer.valueOf(reader.readLine()); // ylabel
 				timestamp = Long.valueOf(reader.readLine());
-							
+
 				// Construct the new review.
 				if(ylabel != 3){
 					ylabel = (ylabel >= 4) ? 1:0;
-					review = new _Review(-1, source, ylabel, userID, productID, category, timestamp);
-					if(AnalyzeDoc(review,core)){ //Create the sparse vector for the review.
+						review = new _Review(-1, source, ylabel, userID, productID, category, timestamp);
+					if(AnalyzeDoc(review, core)) { //Create the sparse vector for the review.
 						reviews.add(review);
 						review.setID(index++);
 					}
@@ -173,7 +174,6 @@ public class MultiThreadedUserAnalyzer extends UserAnalyzer {
 					m_corpus.addDocs(reviews);
 				}
 			} else if(reviews.size() == 1){// added by Lin, for those users with fewer than 2 reviews, ignore them.
-//				System.out.format("[Info]User: %s does not have enough docs.\n", userID);
 				review = reviews.get(0);
 				synchronized (m_rollbackLock) {
 					rollBack(Utils.revertSpVct(review.getSparse()), review.getYLabel());

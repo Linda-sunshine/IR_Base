@@ -26,6 +26,8 @@ public class _Doc4EUB extends _Review {
         m_gloIndex = idx;
         m_x_sparse = r.getSparse();
         m_totalLength = r.getTotalDocLength();
+        if(r.getPostId() != -1)
+            m_postId = r.getPostId();
     }
 
     public void setIndex(int idx){

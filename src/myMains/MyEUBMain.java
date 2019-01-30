@@ -1,6 +1,7 @@
 package myMains;
 
 import Analyzer.MultiThreadedNetworkAnalyzer;
+import Analyzer.MultiThreadedStackOverflowAnalyzer;
 import Analyzer.MultiThreadedTADWAnalyzer;
 import Analyzer.UserAnalyzer;
 import opennlp.tools.util.InvalidFormatException;
@@ -33,12 +34,12 @@ public class MyEUBMain {
         int lengthThreshold = 5; // Document length threshold
         int numberOfCores = Runtime.getRuntime().availableProcessors();
 
-        String dataset = "YelpNew"; // "StackOverflow", "YelpNew"
+        String dataset = "StackOverflow"; // "StackOverflow", "YelpNew"
         String tokenModel = "./data/Model/en-token.bin"; // Token model.
 
         String prefix = "./data/CoLinAdapt";
         String providedCV = String.format("%s/%s/%sSelectedVocab.txt", prefix, dataset, dataset);
-        String userFolder = String.format("%s/%s/Users_1000", prefix, dataset);
+        String userFolder = String.format("%s/%s/Users", prefix, dataset);
 
         int kFold = 5;
         int time = 2;
@@ -52,8 +53,8 @@ public class MyEUBMain {
 //        analyzer.featureSelection("./data/StackOverflow_DF_10k.txt", "DF", 10000, 100, 5000);
 
         String orgFriendFile = String.format("%s/%s/%sFriends_org.txt", prefix, dataset, dataset);
-        String friendFile = String.format("%s/%s/%sFriends_1000.txt", prefix, dataset, dataset);
-        String cvIndexFile = String.format("%s/%s/%sCVIndex_1000.txt", prefix, dataset, dataset);
+        String friendFile = String.format("%s/%s/%sFriends.txt", prefix, dataset, dataset);
+        String cvIndexFile = String.format("%s/%s/%sCVIndex.txt", prefix, dataset, dataset);
 //        String cvIndexFile4Interaction = String.format("%s/%s/%sCVIndex4Interaction.txt", prefix, dataset, dataset);
         String cvIndexFile4Interaction = String.format("%s/%s/%sCVIndex4Interaction_fold_%d_train.txt", prefix, dataset, dataset, k);
         String cvIndexFile4NonInteraction = String.format("%s/%s/%sCVIndex4NonInteraction_time_%d.txt", prefix, dataset, dataset, time);
@@ -61,10 +62,13 @@ public class MyEUBMain {
         /***print data for TADW***/
         String tadwUserFile = String.format("./data/CoLinAdapt/%s/%sUsers4TADW.txt", dataset, dataset);
 
-        MultiThreadedNetworkAnalyzer analyzer = new MultiThreadedNetworkAnalyzer(tokenModel, classNumber, providedCV,
-                Ngram, lengthThreshold, numberOfCores, true);
+        MultiThreadedNetworkAnalyzer analyzer = null;
+
+        if(dataset.equals("StackOverflow")){
+            analyzer = new MultiThreadedStackOverflowAnalyzer(tokenModel, classNumber, providedCV, Ngram, lengthThreshold, numberOfCores, true);
+        } else
+            analyzer = new MultiThreadedNetworkAnalyzer(tokenModel, classNumber, providedCV, Ngram, lengthThreshold, numberOfCores, true);
         analyzer.setAllocateReviewFlag(false); // do not allocate reviews
-//        analyzer.setReleaseContent(false);
 
 //        analyzer.loadUserDir(userFolder);
 //        analyzer.constructUserIDIndex();
@@ -99,9 +103,8 @@ public class MyEUBMain {
         /***Our algorithm EUB****/
         analyzer.loadUserDir(userFolder);
         analyzer.constructUserIDIndex();
-//        analyzer.calcDataStat();
 
-        String mode = "cv4doc"; // "cv4edge" "cs4doc"--"cold start for doc" "cs4edge"--"cold start for edge"
+        String mode = "ansrec"; // "cv4edge" "cs4doc"--"cold start for doc" "cs4edge"--"cold start for edge"
         boolean coldStartFlag = false;
 
         //if it is cv for doc, use all the interactions + part of docs
@@ -120,6 +123,11 @@ public class MyEUBMain {
         } else if(mode.equals("cv4edge") && coldStartFlag){
             cvIndexFile4Interaction = String.format("./data/DataEUB/ColdStart4Edges/%s_cold_start_4edges_fold_%d_interactions.txt", dataset, k);
             analyzer.loadInteractions(cvIndexFile4Interaction);
+        } else if(mode.equals("ansrec")){
+            cvIndexFile = String.format("%s/%s/AnswerRecommendation/StackOverflowCVIndex4Recommendation.txt", prefix, dataset);
+            friendFile = String.format("%s/%s/AnswerRecommendation/StackOverflowFriends4Recommendation.txt", prefix, dataset);
+            analyzer.loadCVIndex(cvIndexFile, kFold);
+            analyzer.loadInteractions(friendFile);
         }
         _Corpus corpus = analyzer.getCorpus();
 
@@ -151,6 +159,7 @@ public class MyEUBMain {
                 tModel = new EUB_multithreading(emMaxIter, emConverge, beta, corpus, lambda, number_of_topics, alpha, varMaxIter, varConverge, embeddingDim);
             else
                 tModel = new EUB(emMaxIter, emConverge, beta, corpus, lambda, number_of_topics, alpha, varMaxIter, varConverge, embeddingDim);
+
             ((EUB) tModel).initLookupTables(analyzer.getUsers());
             ((EUB) tModel).setModelParamsUpdateFlags(alphaFlag, gammaFlag, betaFlag, tauFlag, xiFlag, rhoFlag);
             ((EUB) tModel).setMode(mode);
@@ -158,6 +167,12 @@ public class MyEUBMain {
             ((EUB) tModel).setTrainInferMaxIter(trainIter);
             ((EUB) tModel).setTestInferMaxIter(testIter);
             ((EUB) tModel).setStepSize(stepSize);
+
+            if(mode.equals("ansrec")){
+                String questionIds = String.format("%s/%s/AnswerRecommendation/StackOverflowSelectedQuestions.txt",
+                        prefix, dataset);
+                ((EUB) tModel).loadQuestionIds(questionIds);
+            }
 
             long current = System.currentTimeMillis();
             String saveDir = String.format("./data/embeddingExp/eub/%s_emIter_%d_nuTopics_%d_varIter_%d_trainIter_%d_testIter_%d_dim_%d_ada_%b/" +

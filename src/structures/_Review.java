@@ -25,7 +25,9 @@ public class _Review extends _Doc {
 	protected int m_mask = -1;
 
 	// this is designed for stackoverflow post
+	// post id is its own id, while id is the index of the current review in the user.
 	// if parent_id is -1, it is question, other wise it is answer (the corresponding question id)
+	protected int m_postId = -1;
 	protected int m_parentId = -1;
 
 	//Constructor for route project.
@@ -33,8 +35,12 @@ public class _Review extends _Doc {
 		super(ID, source, ylabel);
 	}
 
-	public _Review(int ID, String source, int ylabel, int parentId, String userID, long timestamp){
+	// the originial ID is the global index of the document.
+	// later, the meaning of ID is changed based on need.
+	// in EUB, the ID is the local index of the document in the current user.
+	public _Review(int ID, int postId, String source, int ylabel, int parentId, String userID, long timestamp){
 		super(ID, source, ylabel);
+		m_postId = postId;
 		m_userID = userID;
 		m_parentId = parentId;
 		m_timeStamp = timestamp;
@@ -46,6 +52,9 @@ public class _Review extends _Doc {
 		m_itemID = productID;
 		m_category = category;
 		m_timeStamp = timeStamp;
+	}
+	public int getPostId(){
+		return m_postId;
 	}
 
 	public int getParentId(){

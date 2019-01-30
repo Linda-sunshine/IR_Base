@@ -382,7 +382,7 @@ public class LDA_Variational extends pLSA {
 	// save each document's phi and the beta learned from all the documents
 	public void printPhi(String dir){
 		try{
-			String phiFileName = String.format("%s_Phi.txt", dir);
+			String phiFileName = String.format("%s/Phi.txt", dir);
 			PrintWriter writer = new PrintWriter(new File(phiFileName));
 			for(_Doc d: m_trainSet){
 				_Review r = (_Review) d;
@@ -405,7 +405,7 @@ public class LDA_Variational extends pLSA {
 	// save each document's phi and the beta learned from all the documents
 	public void printBeta(String dir){
 		try{
-			String betaFileName = String.format("%s_Beta.txt", dir);
+			String betaFileName = String.format("%s/Beta.txt", dir);
 			PrintWriter writer = new PrintWriter(new File(betaFileName));
 			writer = new PrintWriter(new File(betaFileName));
 			writer.format("%d\t%d\n", number_of_topics, vocabulary_size);

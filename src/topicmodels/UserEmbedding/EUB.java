@@ -1,5 +1,6 @@
 package topicmodels.UserEmbedding;
 
+import Application.LinkPrediction4EUB.AnswererRecommendation;
 import Jama.Matrix;
 import structures.*;
 import topicmodels.LDA.LDA_Variational;
@@ -255,9 +256,9 @@ public class EUB extends LDA_Variational {
         } catch (IOException e) {
             e.printStackTrace();
         }
-
     }
 
+    // key: user index, value: the
     protected void buildUserDocMap() {
         m_userDocMap.clear();
 
@@ -1368,6 +1369,73 @@ public class EUB extends LDA_Variational {
                 for (double mu : user.m_mu_u) {
                     writer.format("%.4f\t", mu);
                 }
+                writer.write("\n");
+            }
+            writer.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    /*****The following codes are used in answerer recommendation********/
+    HashMap<Integer, _Doc4EUB> m_questionMap = new HashMap<>();
+    public void loadQuestionIds(String filename){
+        try {
+            File file = new File(filename);
+            BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(file), "UTF-8"));
+            String line;
+
+            while ((line = reader.readLine()) != null) {
+                // the first is uid, the second is qid
+                String[] strs = line.trim().split("\\s+");
+                String uId = strs[0];
+                int qId = Integer.valueOf(strs[1]);
+                // find the user first
+                _User4EUB user = m_users.get(m_usersIndex.get(uId));
+                // find the ref of the review document
+                for(_Review r: user.getReviews()){
+                    _Doc4EUB d = (_Doc4EUB) r;
+                    if(d.getPostId() == qId){
+                        m_questionMap.put(qId, d);
+                        break;
+                    }
+                }
+            }
+            reader.close();
+            System.out.format("Finish loading %d question ids from %s.\n", m_questionMap.size(), filename);
+
+        }catch(IOException e){
+            e.printStackTrace();
+        }
+    }
+    // print out the mu of topic embedding as K*M matrix
+    public void printTopicEmbeddingAsMtx(String dir){
+        try {
+            String filename = String.format("%s/EUB_Phi_dim_%d.txt", dir, m_embeddingDim);
+            PrintWriter writer = new PrintWriter(new File(filename+""));
+            writer.format("%d\t%d", m_topics.length, m_embeddingDim);
+            for (int i = 0; i < m_topics.length; i++) {
+                _Topic4EUB topic = m_topics[i];
+                for (double mu : topic.m_mu_phi) {
+                    writer.format("%.4f\t", mu);
+                }
+                writer.write("\n");
+            }
+            writer.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void printTheta(String dir){
+        try {
+            String filename = String.format("%s/EUB_theta_dim_%d.txt", dir, m_embeddingDim);
+            PrintWriter writer = new PrintWriter(new File(filename+""));
+            writer.format("%d\t%d", m_questionMap.size(), m_embeddingDim);
+            for(int qId: m_questionMap.keySet()){
+                writer.write(qId + "\t");
+                for(double v: m_questionMap.get(qId).m_mu_theta)
+                    writer.format("%.4f\t", v);
                 writer.write("\n");
             }
             writer.close();
