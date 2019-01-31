@@ -2,23 +2,16 @@ package myMains;
 
 import Analyzer.MultiThreadedNetworkAnalyzer;
 import Analyzer.MultiThreadedStackOverflowAnalyzer;
-import Analyzer.MultiThreadedTADWAnalyzer;
-import Analyzer.UserAnalyzer;
 import opennlp.tools.util.InvalidFormatException;
 import structures._Corpus;
-import structures._User;
-import topicmodels.LDA.LDA_Gibbs;
 import topicmodels.LDA.LDA_Variational;
 import topicmodels.UserEmbedding.EUB;
 import topicmodels.multithreads.LDA.LDA_Variational_multithread;
 import topicmodels.multithreads.UserEmbedding.EUB4ColdStart_multithreading;
 import topicmodels.multithreads.UserEmbedding.EUB_multithreading;
-import topicmodels.multithreads.pLSA.pLSA_multithread;
-import topicmodels.pLSA.pLSA;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.util.HashSet;
 
 /**
  * @author Lin Gong (lg5bt@virginia.edu)
@@ -60,7 +53,7 @@ public class MyEUBMain {
         String cvIndexFile4NonInteraction = String.format("%s/%s/%sCVIndex4NonInteraction_time_%d.txt", prefix, dataset, dataset, time);
 
         /***print data for TADW***/
-        String tadwUserFile = String.format("./data/CoLinAdapt/%s/%sUsers4TADW.txt", dataset, dataset);
+        String tadwUserFile = String.format("./data/CoLinAdapt/%s/%sUsers4TADW_coldStart.txt", dataset, dataset);
 
         MultiThreadedNetworkAnalyzer analyzer = null;
 

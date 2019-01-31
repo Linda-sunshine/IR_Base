@@ -12,6 +12,8 @@ import java.util.HashMap;
  */
 public class AnswererRecommendation extends LinkPredictionWithUserEmbedding {
 
+    double m_alpha = 0.1;
+
     class _Question{
         String m_postId;
         String m_uId;
@@ -41,7 +43,7 @@ public class AnswererRecommendation extends LinkPredictionWithUserEmbedding {
     }
 
     // the topic distribution for selected questions
-    String m_model = "baseline";
+    String m_model;
     double[][] m_Phi;
     protected HashMap<String, _Question> m_questionMap;
     protected HashMap<Integer, double[]> m_userEmbeddings;
@@ -49,8 +51,12 @@ public class AnswererRecommendation extends LinkPredictionWithUserEmbedding {
     public AnswererRecommendation(String model){
         m_questionMap = new HashMap<>();
         m_userEmbeddings = new HashMap<>();
+        m_model = model;
     }
 
+    public void setAlpha(double v){
+        m_alpha = v;
+    }
     public void loadQuestionIds(String filename){
         try {
             File file = new File(filename);
@@ -205,16 +211,16 @@ public class AnswererRecommendation extends LinkPredictionWithUserEmbedding {
     public double getSimilarity(String qId, int uiIdx, int ujIdx){
         double[] theta = m_questionMap.get(qId).getTheta();
         double sim;
-        if(m_model.equals("baseline")){
-            sim = Utils.cosine(theta, m_embeddings[ujIdx]) +
-                    Utils.cosine(m_embeddings[uiIdx], m_embeddings[ujIdx]);
-        } else{
+        if(m_model.equals("EUB")){
             // we need to incorporate |Phi in order to compute it.
             double[] uPhi = new double[theta.length];
             for(int i=0; i<theta.length; i++){
-                uPhi[i] = Utils.dotProduct(m_Phi[i], m_embeddings[uiIdx]);
+                uPhi[i] = Utils.dotProduct(m_Phi[i], m_embeddings[ujIdx]);
             }
-            sim = Utils.cosine(theta, uPhi) + Utils.cosine(m_embeddings[uiIdx], m_embeddings[ujIdx]);
+            sim = m_alpha * Utils.dotProduct(theta, uPhi) + (1- m_alpha) * super.getSimilarity(uiIdx, ujIdx);
+//            System.out.println(sim);
+        } else{
+            sim = m_alpha * Utils.cosine(theta, m_embeddings[ujIdx]) + (1-m_alpha) * super.getSimilarity(uiIdx, ujIdx);
         }
         return sim;
     }
@@ -242,36 +248,53 @@ public class AnswererRecommendation extends LinkPredictionWithUserEmbedding {
     //In the main function, we want to input the data and do adaptation
     public static void main(String[] args) {
         // the application is only performed on stackoverflow dataset
-        int dim = 40;
+        int dim = 10;
 //        String model = "CTR";
         String prefix = "./data/CoLinAdapt/StackOverflow/AnswerRecommendation";
 
-        String[] models = new String[]{"CTR", "HFT", "LDA_Variational"};
-        double[][] perfs = new double[models.length][2];
+        String[] models = new String[]{"EUB", "HFT", "LDA_Variational", "CTR"};
 
-        for(int i=0; i<models.length; i++) {
-            String model = models[i];
-
-            System.out.format("-----------------model %s-dim %d-------------------\n", model, dim);
-            String idFile = String.format("/home/lin/DataWWW2019/UserEmbedding/StackOverflow_userids.txt", prefix);
-            String questionIdFile = String.format("%s/StackOverflowSelectedQuestions.txt", prefix);
-
-            String questionFile = String.format("%s/models/%s_theta_dim_%d.txt", prefix, model, dim);
-            String embedFile = String.format("%s/models/%s_embedding_dim_%d.txt", prefix, model, dim);
-            String interFile = String.format("%s/StackOverflowInteractions4Recommendations_test.txt", prefix);
-            String nonInterFile = String.format("%s/StackOverflowNonInteractions_time_10_Recommendations.txt", prefix);
-            String phiFile = String.format("%s/StackOverflowPhi.txt", prefix);
-            AnswererRecommendation rec = new AnswererRecommendation(model);
-            if (model.equals("EUB"))
-                rec.loadPhi(phiFile);
-            rec.initRecommendation(idFile, questionIdFile, embedFile, questionFile, interFile, nonInterFile);
-            rec.calculateAllNDCGMAP();
-            perfs[i] = rec.calculateAvgNDCGMAP();
-
+        double[] alphas = new double[11];
+        for(int i=0; i<=10; i++){
+            alphas[i] = i * 0.1;
         }
-        for(int i=0; i<models.length; i++){
-            System.out.format("%s\t", models[i]);
-            System.out.format("%.4f\t%.4f\n", perfs[i][0], perfs[i][1]);
+        double[][][] perfs = new double[alphas.length][models.length][2];
+        for(int a=0; a<alphas.length; a++) {
+//            System.out.format("-----------------current alpha=%.1f-------------------\n", alpha);
+
+            for (int i = 0; i < models.length; i++) {
+                String model = models[i];
+
+                System.out.format("-----------------model %s-dim %d-------------------\n", model, dim);
+                String idFile = String.format("/home/lin/DataWWW2019/UserEmbedding/StackOverflow_userids.txt", prefix);
+                String questionIdFile = String.format("%s/StackOverflowSelectedQuestions.txt", prefix);
+
+                String questionFile = String.format("%s/models/%s_theta_dim_%d.txt", prefix, model, dim);
+                String embedFile = String.format("%s/models/%s_embedding_dim_%d.txt", prefix, model, dim);
+                String interFile = String.format("%s/StackOverflowInteractions4Recommendations_test.txt", prefix);
+                String nonInterFile = String.format("%s/StackOverflowNonInteractions_time_10_Recommendations.txt", prefix);
+                String phiFile = String.format("%s/models/EUB_Phi_dim_%d.txt", prefix, dim);
+                AnswererRecommendation rec = new AnswererRecommendation(model);
+                if (model.equals("EUB"))
+                    rec.loadPhi(phiFile);
+                rec.setAlpha(alphas[a]);
+                rec.initRecommendation(idFile, questionIdFile, embedFile, questionFile, interFile, nonInterFile);
+                rec.calculateAllNDCGMAP();
+                perfs[a][i] = rec.calculateAvgNDCGMAP();
+
+            }
+        }
+
+        for(int i=0; i<alphas.length; i++){
+            System.out.format("\talpha=%.1f\t", alphas[i]);
+        }
+        System.out.println();
+        for (int i = 0; i < models.length; i++) {
+            System.out.print(models[i]+"\t");
+            for(int j=0; j<alphas.length; j++){
+                System.out.format("%.4f\t%.4f\t", perfs[j][i][0], perfs[j][i][1]);
+            }
+            System.out.println();
         }
     }
 }
