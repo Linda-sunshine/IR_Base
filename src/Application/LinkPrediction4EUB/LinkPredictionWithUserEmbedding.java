@@ -551,18 +551,65 @@ public class LinkPredictionWithUserEmbedding {
             System.out.println();
         }
     }
+    // the main function for general link pred
+//    public static void main(String[] args){
+//
+//        String data = "StackOverflow";
+//        String prefix = "/home/lin"; // "/Users/lin", "/home/lin"
+//
+//        int dim = 10, folds = 0;
+//        String idFile = String.format("%s/DataWWW2019/UserEmbedding/%s_userids.txt", prefix, data);
+//
+//        int[] times = new int[]{2, 3, 4, 5, 6, 7, 8};
+//        String[] models = new String[]{"LDA", "RTM", "HFT", "TADW", "EUB_t40"};//, "EUB_t30", "EUB_t50"}; //"BOW", "LDA", "HFT", "RTM", "DW", "TADW", "EUB_t10", "EUB_t20", "EUB_t30", "EUB_t40", "EUB_t50"};// "RTM", "LDA", "HFT", "DW", "TADW"}; // "LDA", "HFT", "TADW", "EUB", "LDA", "HFT"
+//        HashMap<String, double[][][]> allFoldsPerf = new HashMap<String, double[][][]>();
+//
+//        LinkPredictionWithUserEmbedding link = null;
+//
+//        for(String model: models){
+//            if(model.equals("LDA") || model.equals("HFT") || model.equals("BOW"))
+//                folds = 0;
+//            double[][][] perfs = new double[folds+1][times.length][2];
+//            for (int t = 0; t < times.length; t++) {
+//
+//                for(int fold=0; fold<=folds; fold++){
+//                    int time = times[t];
+//                    System.out.format("-----current model-%s-time-%d-dim-%d------\n", model, time, dim);
+//
+//                    String embedFile = String.format("%s/DataWWW2019/UserEmbedding/%s_%s_embedding_dim_%d_fold_%d.txt", prefix, data, model, dim, fold);
+//                    if(model.equals("BOW"))
+//                        embedFile = String.format("%s/DataWWW2019/UserEmbedding/%s_%s.txt", prefix, data, model);
+//                    String testInterFile = String.format("./data/DataEUB/CV4Edges/%sCVIndex4Interaction_fold_%d_test.txt", data, fold);
+//                    String testNonInterFile = String.format("./data/DataEUB/CV4Edges/%sCVIndex4NonInteraction_time_%d_fold_%d.txt", data, time, fold);
+//
+//                    if(model.equals("BOW"))
+//                        link = new  LinkPredictionWithUserEmbeddingBOW()  ;
+//                    else link = new LinkPredictionWithUserEmbedding();
+//
+//                    link.initLinkPred(idFile, embedFile, testInterFile, testNonInterFile);
+//                    link.calculateAllNDCGMAP();
+//                    perfs[fold][t] = link.calculateAvgNDCGMAP();
+//                }
+//            }
+//            allFoldsPerf.put(model, perfs);
+//        }
+//        link.calcMeanStd(allFoldsPerf);
+//    }
+
+    // the main for link pred in cold start setting
     public static void main(String[] args){
 
-        String data = "StackOverflow";
+        String data = "YelpNew";
         String prefix = "/home/lin"; // "/Users/lin", "/home/lin"
 
-        int dim = 10, folds = 4;
+        int dim = 10, folds = 0;
         String idFile = String.format("%s/DataWWW2019/UserEmbedding/%s_userids.txt", prefix, data);
 
-        int[] times = new int[]{2, 3, 4, 5, 6, 7, 8};
-        String[] models = new String[]{"DW"};//, "EUB_t30", "EUB_t50"}; //"BOW", "LDA", "HFT", "RTM", "DW", "TADW", "EUB_t10", "EUB_t20", "EUB_t30", "EUB_t40", "EUB_t50"};// "RTM", "LDA", "HFT", "DW", "TADW"}; // "LDA", "HFT", "TADW", "EUB", "LDA", "HFT"
+        int[] times = new int[]{2};
+        String[] models = new String[]{"LDA", "HFT", "TADW", "RTM", "EUB_t40", "EUB_t50"};//, "EUB_t30", "EUB_t50"}; //"BOW", "LDA", "HFT", "RTM", "DW", "TADW", "EUB_t10", "EUB_t20", "EUB_t30", "EUB_t40", "EUB_t50"};// "RTM", "LDA", "HFT", "DW", "TADW"}; // "LDA", "HFT", "TADW", "EUB", "LDA", "HFT"
         HashMap<String, double[][][]> allFoldsPerf = new HashMap<String, double[][][]>();
-
+        String[] groups = new String[]{"light", "medium", "heavy"};
+        for(String group: groups){
         LinkPredictionWithUserEmbedding link = null;
 
         for(String model: models){
@@ -573,18 +620,17 @@ public class LinkPredictionWithUserEmbedding {
 
                 for(int fold=0; fold<=folds; fold++){
                     int time = times[t];
-                    System.out.format("-----current model-%s-time-%d-dim-%d------\n", model, time, dim);
+                    System.out.format("-----current model-%s-time-%d-dim-%d-group-%s------\n", model, time, dim, group);
 
-                    String embedFile = String.format("%s/DataWWW2019/UserEmbedding/%s_%s_embedding_dim_%d_fold_%d.txt", prefix, data, model, dim, fold);
-                    if(model.equals("BOW"))
-                        embedFile = String.format("%s/DataWWW2019/UserEmbedding/%s_%s.txt", prefix, data, model);
-                    String testInterFile = String.format("./data/DataEUB/CV4Edges/%sCVIndex4Interaction_fold_%d_test.txt", data, fold);
-                    String testNonInterFile = String.format("./data/DataEUB/CV4Edges/%sCVIndex4NonInteraction_time_%d_fold_%d.txt", data, time, fold);
+                    String embedFile = String.format("%s/DataWWW2019/UserEmbeddingColdStart/%s_%s_embedding_dim_%d_fold_%d.txt", prefix, data, model, dim, fold);
+//                    if(model.equals("BOW"))
+//                        embedFile = String.format("%s/DataWWW2019/UserEmbedding/%s_%s.txt", prefix, data, model);
+                    String testInterFile = String.format("./data/DataEUB/ColdStart4Edges/%s_cold_start_4edges_fold_%d_interactions_%s.txt", data, fold, group);
+                    String testNonInterFile = String.format("./data/DataEUB/ColdStart4Edges/%s_cold_start_4edges_fold_%d_noninteractions_time_%d_%s.txt", data, fold, time, group);
 
-                    if(model.equals("BOW"))
-                        link = new  LinkPredictionWithUserEmbeddingBOW()  ;
-                    else link = new LinkPredictionWithUserEmbedding();
-
+//                    if(model.equals("BOW"))
+//                        link = new  LinkPredictionWithUserEmbeddingBOW()  ;
+                    link = new LinkPredictionWithUserEmbedding();
                     link.initLinkPred(idFile, embedFile, testInterFile, testNonInterFile);
                     link.calculateAllNDCGMAP();
                     perfs[fold][t] = link.calculateAvgNDCGMAP();
@@ -593,5 +639,5 @@ public class LinkPredictionWithUserEmbedding {
             allFoldsPerf.put(model, perfs);
         }
         link.calcMeanStd(allFoldsPerf);
-    }
+    }}
 }

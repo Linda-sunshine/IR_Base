@@ -1,5 +1,6 @@
 package Analyzer;
 
+import Application.LinkPrediction4EUB.LinkPredictionWithUserEmbedding;
 import opennlp.tools.util.InvalidFormatException;
 import org.netlib.util.StringW;
 import structures._Doc;
@@ -138,6 +139,9 @@ public class MultiThreadedNetworkAnalyzer extends MultiThreadedLinkPredAnalyzer 
             PrintWriter writer = new PrintWriter(new File(filename));
             for(int i=0; i<docs.size(); i++){
                 _Review r = (_Review) docs.get(i);
+                if(r.getMask4CV() == -1){
+                    r.setMask4CV(1);
+                }
                 writer.write(String.format("%s,%d,%d\n", r.getUserID(), r.getID(), r.getMask4CV()));
                 stat[r.getMask4CV()]++;
             }
@@ -406,6 +410,15 @@ public class MultiThreadedNetworkAnalyzer extends MultiThreadedLinkPredAnalyzer 
 
     public HashSet<Integer> sampleNonInteractions(ArrayList<Integer> nonInteractions, int nu){
         HashSet<Integer> sampledNonInteractions = new HashSet<Integer>();
+        for(int i=0; i<nu; i++){
+            int idx = m_rand.nextInt(nonInteractions.size());
+            sampledNonInteractions.add(nonInteractions.get(idx));
+        }
+        return sampledNonInteractions;
+    }
+
+    public HashSet<String> sampleNonInteractionsWithUserIds(ArrayList<String> nonInteractions, int nu){
+        HashSet<String> sampledNonInteractions = new HashSet<String>();
         for(int i=0; i<nu; i++){
             int idx = m_rand.nextInt(nonInteractions.size());
             sampledNonInteractions.add(nonInteractions.get(idx));
@@ -716,4 +729,214 @@ public class MultiThreadedNetworkAnalyzer extends MultiThreadedLinkPredAnalyzer 
         System.out.format("[Info]Avg doc length: %.2f\n", avgDocLen);
     }
 
+    HashMap<String, HashSet<String>> m_groups = new HashMap<>();
+
+    public void initGroups(){
+        m_groups.put("light", new HashSet<>());
+        m_groups.put("medium", new HashSet<>());
+        m_groups.put("heavy", new HashSet<>());
+    }
+
+    /******The codes are used in cold start setting*****/
+    public void loadTestUsers(String prefix){
+
+        initGroups();
+        for(String group: m_groups.keySet()){
+            try {
+                HashSet<String> curGroup = m_groups.get(group);
+                curGroup.clear();
+                String filename = String.format("%s_%s.txt", prefix, group);
+                File file = new File(filename);
+                BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(file), "UTF-8"));
+                String line;
+                while ((line = reader.readLine()) != null) {
+                    String[] strs = line.trim().split("\t");
+                    String uid = strs[0];
+                    curGroup.add(uid);
+                }
+                reader.close();
+                System.out.format("[Info]%d user ids from group-%s are loaded !!\n", curGroup.size(), filename);
+            } catch(IOException e){
+                e.printStackTrace();
+            }
+        }
+    }
+
+    // print out the connections for each group of users
+    public void printTestInteractions(String prefix) {
+        for(String group: m_groups.keySet()){
+            try{
+                String filename = String.format("%s_%s.txt", prefix, group);
+                PrintWriter writer = new PrintWriter(new File(filename));
+                for(String uid: m_groups.get(group)){
+                    writer.write(uid + "\t");
+                    for(String frd: m_networkMap.get(uid)){
+                        writer.write(frd+"\t");
+                    }
+                    writer.write("\n");
+                }
+                writer.close();
+                System.out.format("[Info]Finish writing %d users' friends from group-%s!!\n", m_groups.get(group).size(), filename);
+            } catch(IOException e){
+                e.printStackTrace();
+            }
+        }
+    }
+
+    // analyze the restaurant information for recommendation
+    ArrayList<_Review> m_selectedReviews = new ArrayList<>();
+    HashMap<String, HashSet<String>> m_testInteractions = new HashMap<>();
+    HashMap<String, HashSet<String>> m_testNonInteractions = new HashMap<>();
+
+    public void selectReviews4Recommendation(){
+        HashMap<String, ArrayList<_Review>> itemMap = new HashMap<>();
+        for(_User u: m_users){
+            for(_Review r: u.getReviews()){
+                String itemId = r.getItemID();
+                if(!itemMap.containsKey(itemId)) {
+                    itemMap.put(itemId, new ArrayList<_Review>());
+                }
+                itemMap.get(itemId).add(r);
+            }
+        }
+        for(String itemId: itemMap.keySet()){
+            ArrayList<_Review> reviews = itemMap.get(itemId);
+            if(reviews.size() > 5 && reviews.size() <= 10){
+                Collections.sort(reviews, new Comparator<_Review>() {
+                    @Override
+                    public int compare(_Review o1, _Review o2) {
+                        return (int)(o1.getTimeStamp() - o2.getTimeStamp());
+                    }
+                });
+                String ui = reviews.get(0).getUserID();
+                if(m_testInteractions.containsKey(ui))
+                    continue;
+                m_selectedReviews.add(reviews.get(0));
+                m_testInteractions.put(ui, new HashSet<>());
+                for(int i=0; i<reviews.size(); i++){
+                    if(i != 0) {
+                        // assign the rest as the testing data
+                        reviews.get(i).setMask4CV(0);
+                        m_testInteractions.get(ui).add(reviews.get(i).getUserID());
+                    }
+                }
+            } else{
+                for(_Review r: reviews){
+                    r.setMask4CV(1);
+                }
+            }
+        }
+        System.out.format("Total item: %d\n", itemMap.size());
+        System.out.format("%d reviews are selected for recommendation!", m_selectedReviews.size());
+    }
+
+    public void sampleNonInteractions(int time) {
+        m_testNonInteractions.clear();
+        HashSet<String> interactions = new HashSet<>();
+        ArrayList<String> nonInteractions = new ArrayList<>();
+
+        for (String ui : m_testInteractions.keySet()) {
+
+            interactions = m_testInteractions.get(ui);
+            nonInteractions.clear();
+
+            for (int j = 0; j < m_users.size(); j++) {
+                String uj = m_users.get(j).getUserID();
+                if (uj.equals(ui)) continue;
+                if (interactions.contains(uj)) continue;
+                nonInteractions.add(uj);
+            }
+
+            int number = time * m_testInteractions.get(ui).size();
+            m_testNonInteractions.put(ui, sampleNonInteractionsWithUserIds(nonInteractions, number));
+        }
+    }
+
+    public void saveInteractions(String prefix){
+        try{
+            String filename = prefix + "Interactions4Recommendations_test.txt";
+            PrintWriter writer = new PrintWriter(new File(filename));
+            for(String uid: m_testInteractions.keySet()){
+                writer.write(uid + "\t");
+                for(String uj: m_testInteractions.get(uid)){
+                    writer.write(uj + "\t");
+                }
+                writer.write("\n");
+            }
+            writer.close();
+            System.out.format("[Stat]%d users' interactions are written in %s.\n", m_testInteractions.size(), filename);
+        } catch(IOException e){
+            e.printStackTrace();
+        }
+    }
+
+    public void saveNonInteractions(String prefix, int time){
+        try{
+            String filename = String.format("%sNonInteractions_time_%d_Recommendations.txt", prefix, time);
+            PrintWriter writer = new PrintWriter(new File(filename));
+            for(String uid: m_testNonInteractions.keySet()){
+                writer.write(uid + "\t");
+                for(String uj: m_testNonInteractions.get(uid)){
+                    writer.write(uj + "\t");
+                }
+                writer.write("\n");
+            }
+            writer.close();
+            System.out.format("[Stat]%d users' non-interactions are written in %s.\n", m_testNonInteractions.size(), filename);
+        } catch(IOException e){
+            e.printStackTrace();
+        }
+    }
+
+    public void printSelectedQuestionIds(String filename){
+        try{
+            PrintWriter writer = new PrintWriter(new File(filename));
+            for(_Review r: m_selectedReviews){
+
+                String uId = r.getUserID();
+                writer.format("%s\t%d\n", uId, r.getID());
+            }
+            writer.close();
+            System.out.format("Finish writing %d selected questions!\n", m_selectedReviews.size());
+        } catch(IOException e){
+            e.printStackTrace();
+        }
+    }
+
+    //In the main function, we generate the data for recommendation for yelp
+    public static void main(String[] args) throws InvalidFormatException, FileNotFoundException, IOException {
+
+
+        int classNumber = 2;
+        int Ngram = 2; // The default value is unigram.
+        int lengthThreshold = 5; // Document length threshold
+        int numberOfCores = Runtime.getRuntime().availableProcessors();
+
+        String dataset = "YelpNew"; // "StackOverflow", "YelpNew"
+        String tokenModel = "./data/Model/en-token.bin"; // Token model.
+
+        String prefix = "./data/CoLinAdapt";
+        String providedCV = String.format("%s/%s/%sSelectedVocab.txt", prefix, dataset, dataset);
+        String userFolder = String.format("%s/%s/Users", prefix, dataset);
+
+        MultiThreadedNetworkAnalyzer analyzer = new MultiThreadedNetworkAnalyzer(tokenModel, classNumber, providedCV, Ngram, lengthThreshold, numberOfCores, true);
+        analyzer.setAllocateReviewFlag(false); // do not allocate reviews
+
+        analyzer.loadUserDir(userFolder);
+        analyzer.constructUserIDIndex();
+        analyzer.selectReviews4Recommendation();
+
+        String questionFile = String.format("%s/%s/AnswerRecommendation/%SelectedQuestions.txt", prefix, dataset, dataset);
+        String cvIndexFile4Rec = String.format("%s/%s/AnswerRecommendation/%sCVIndex4Recommendation.txt", prefix, dataset, dataset);
+        analyzer.saveCVIndex(cvIndexFile4Rec);
+
+        String prefix4Rec = String.format("%s/%s/AnswerRecommendation/%s", prefix, dataset, dataset);
+        analyzer.saveInteractions(prefix4Rec);
+        analyzer.printSelectedQuestionIds(questionFile);
+
+        for(int time: new int[]{5, 10}) {
+            analyzer.sampleNonInteractions(time);
+            analyzer.saveNonInteractions(prefix4Rec, time);
+        }
+    }
 }

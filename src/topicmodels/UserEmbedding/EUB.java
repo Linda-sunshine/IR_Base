@@ -74,6 +74,8 @@ public class EUB extends LDA_Variational {
     protected int m_paramMaxIter = 20;
     protected int m_testInferMaxIter = 1500;
 
+    protected String m_data = "YelpNew";
+
     public EUB(int number_of_iteration, double converge, double beta,
                _Corpus c, double lambda, int number_of_topics, double alpha,
                int varMaxIter, double varConverge, int m) {
@@ -115,6 +117,9 @@ public class EUB extends LDA_Variational {
 
     public void setAdaFlag(boolean b) {
         m_adaFlag = b;
+    }
+    public void setData(String data){
+        m_data = data;
     }
 
     public void setGamma(double g){
@@ -1377,9 +1382,16 @@ public class EUB extends LDA_Variational {
         }
     }
 
+    public void loadQuestionIds(String filename){
+        if(m_data.equals("YelpNew"))
+            loadQuestionIds4Yelp(filename);
+        else if(m_data.equals("StackOverflow"));
+            loadQuestionIds4Stack(filename);
+    }
+
     /*****The following codes are used in answerer recommendation********/
     HashMap<Integer, _Doc4EUB> m_questionMap = new HashMap<>();
-    public void loadQuestionIds(String filename){
+    public void loadQuestionIds4Yelp(String filename){
         try {
             File file = new File(filename);
             BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(file), "UTF-8"));
@@ -1408,6 +1420,39 @@ public class EUB extends LDA_Variational {
             e.printStackTrace();
         }
     }
+
+    /*****The following codes are used in answerer recommendation********/
+    HashMap<String, _Doc4EUB> m_reviewMap = new HashMap<>();
+    public void loadQuestionIds4Stack(String filename){
+        try {
+            File file = new File(filename);
+            BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(file), "UTF-8"));
+            String line;
+
+            while ((line = reader.readLine()) != null) {
+                // the first is uid, the second is qid
+                String[] strs = line.trim().split("\\s+");
+                String uId = strs[0];
+                int qId = Integer.valueOf(strs[1]);
+                // find the user first
+                _User4EUB user = m_users.get(m_usersIndex.get(uId));
+                // find the ref of the review document
+                for(_Review r: user.getReviews()){
+                    _Doc4EUB d = (_Doc4EUB) r;
+                    if(d.getID() == qId){
+                        String rId = String.format("%s#%d", uId, qId);
+                        m_reviewMap.put(rId, d);
+                        break;
+                    }
+                }
+            }
+            reader.close();
+            System.out.format("Finish loading %d question ids from %s.\n", m_reviewMap.size(), filename);
+
+        }catch(IOException e){
+            e.printStackTrace();
+        }
+    }
     // print out the mu of topic embedding as K*M matrix
     public void printTopicEmbeddingAsMtx(String dir){
         try {
@@ -1428,6 +1473,29 @@ public class EUB extends LDA_Variational {
     }
 
     public void printTheta(String dir){
+        if(m_data.equals("YelpNew"))
+            printTheta4Yelp(dir);
+        else if(m_data.equals("StackOverflow"))
+            printTheta4Stack(dir);
+    }
+
+    public void printTheta4Yelp(String dir){
+        try {
+            String filename = String.format("%s/EUB_theta_dim_%d.txt", dir, m_embeddingDim);
+            PrintWriter writer = new PrintWriter(new File(filename+""));
+            writer.format("%d\t%d", m_reviewMap.size(), m_embeddingDim);
+            for(String rId: m_reviewMap.keySet()){
+                writer.write( rId + "\t");
+                for(double v: m_reviewMap.get(rId).m_mu_theta)
+                    writer.format("%.4f\t", v);
+                writer.write("\n");
+            }
+            writer.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+    public void printTheta4Stack(String dir){
         try {
             String filename = String.format("%s/EUB_theta_dim_%d.txt", dir, m_embeddingDim);
             PrintWriter writer = new PrintWriter(new File(filename+""));

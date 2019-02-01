@@ -75,10 +75,10 @@ public class MyEUBExecution {
         }
         // answerer recommendation for stackoverflow data only
         else if(param.m_mode.equals("ansrec")){
-            cvIndexFile = String.format("%s/%s/AnswerRecommendation/StackOverflowCVIndex4Recommendation.txt",
-                    param.m_prefix, param.m_data);
-            friendFile = String.format("%s/%s/AnswerRecommendation/StackOverflowFriends4Recommendation.txt",
-                    param.m_prefix, param.m_data);
+            cvIndexFile = String.format("%s/%s/AnswerRecommendation/%sCVIndex4Recommendation.txt",
+                    param.m_prefix, param.m_data, param.m_data);
+            friendFile = String.format("%s/%s/AnswerRecommendation/%sFriends4Recommendation.txt",
+                    param.m_prefix, param.m_data, param.m_data);
             analyzer.loadCVIndex(cvIndexFile, kFold);
             analyzer.loadInteractions(friendFile);
         }
@@ -110,10 +110,11 @@ public class MyEUBExecution {
         ((EUB) tModel).setParamMaxIter(param.m_paramIter);
         ((EUB) tModel).setStepSize(param.m_stepSize);
         ((EUB) tModel).setGamma(param.m_gamma);
+        ((EUB) tModel).setData(param.m_data);
 
         if(param.m_mode.equals("ansrec")){
-            String questionIds = String.format("%s/%s/AnswerRecommendation/StackOverflowSelectedQuestions.txt",
-                    param.m_prefix, param.m_data);
+            String questionIds = String.format("%s/%s/AnswerRecommendation/%sSelectedQuestions.txt",
+                    param.m_prefix, param.m_data, param.m_data);
             ((EUB) tModel).loadQuestionIds(questionIds);
         }
 
