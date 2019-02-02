@@ -522,17 +522,21 @@ public class pLSA extends twoTopic {
 			PrintWriter topWordWriter = new PrintWriter(file);
 
             ArrayList<_User> users = analyzer.getUsers();
+            System.out.format("[embed=info]%d users.\n", users.size());
 			topWordWriter.format("%d\t%d\n", users.size(), number_of_topics);
 
 			for (_User user : users) {
 			    String userId = user.getUserID();
-                List<_Doc> docs = docCluster.get(userId);
 				double[] gamma = new double[number_of_topics];
 				Arrays.fill(gamma, 0);
-				for (_Doc d : docs) {
-					for (int i = 0; i < number_of_topics; i++)
-						gamma[i] += m_logSpace ? Math.exp(d.m_topics[i]) : d.m_topics[i];
-				}
+
+				if (docCluster.containsKey(userId)) {
+                    List<_Doc> docs = docCluster.get(userId);
+                    for (_Doc d : docs) {
+                        for (int i = 0; i < number_of_topics; i++)
+                            gamma[i] += m_logSpace ? Math.exp(d.m_topics[i]) : d.m_topics[i];
+                    }
+                }
 				Utils.L1Normalization(gamma);
 
 
