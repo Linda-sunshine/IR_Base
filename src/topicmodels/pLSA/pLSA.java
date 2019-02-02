@@ -345,32 +345,24 @@ public class pLSA extends twoTopic {
 	}
 
 	public void printSelectedDocTheta(int k, String folderName, String topicmodel,
-									  String selectFile, String source, MultiThreadedNetworkAnalyzer analyzer){
+									  String selectFile, MultiThreadedNetworkAnalyzer analyzer){
 		String thetaFile = String.format("%s%s_theta_dim_%d.txt", folderName, topicmodel, number_of_topics);
 
 		try {
-			ArrayList<String> selectedDoc = new ArrayList<>();
-			HashMap<String, String> selectedDocIndex = new HashMap<>();
+			HashMap<String, _Doc> docs = new HashMap<>();
 			File file = new File(selectFile);
 			if (file.exists()) {
 				BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(file), "UTF-8"));
 				String line;
 				while ((line = reader.readLine()) != null) {
-					String itemID;
-					if (source.equals("YelpNew")) {
-						String uid = line.split("\\s+")[0];
-						int index = Integer.valueOf(line.split("\\s+")[1]);
-						itemID = analyzer.getDocByUid(uid, index).getItemID();
-						selectedDocIndex.put(itemID, uid + "#" + index);
-					} else {
-						itemID = line.split("\\s+")[1];
-						selectedDocIndex.put(itemID, itemID);
-					}
+					String uid = line.split("\\s+")[0];
+					int index = Integer.valueOf(line.split("\\s+")[1]);
+					docs.put(uid+"#"+String.valueOf(index), analyzer.getDocByUid(uid, index));
 				}
 				reader.close();
 			}
 
-			printTopWords(k, thetaFile, getDocByItem(selectedDoc), selectedDocIndex);
+			printTopWords(k, thetaFile, docs);
 		} catch (IOException e){
 			e.printStackTrace();
 		}
@@ -443,6 +435,7 @@ public class pLSA extends twoTopic {
 			}
 			docByUser.get(userName).add(d);
 		}
+		System.out.format("[embed-info]%d users\n", docByUser.size());
 		return docByUser;
 	}
 
@@ -475,8 +468,7 @@ public class pLSA extends twoTopic {
 		return docByItem;
 	}
 
-	public void printTopWords(int k, String topWordPath,
-							  HashMap<String, List<_Doc>> docCluster, HashMap<String, String> docIndex) {
+	public void printTopWords(int k, String topWordPath, HashMap<String, _Doc> docIndex) {
 		File file = new File(topWordPath);
 		try {
 			file.getParentFile().mkdirs();
@@ -488,19 +480,18 @@ public class pLSA extends twoTopic {
 		try {
 			PrintWriter topWordWriter = new PrintWriter(file);
 
-			topWordWriter.format("%d\t%d\n", docCluster.size(), number_of_topics);
+			topWordWriter.format("%d\t%d\n", docIndex.size(), number_of_topics);
 
-			for (Map.Entry<String, List<_Doc>> entryU : docCluster.entrySet()) {
+			for (Map.Entry<String, _Doc> entryU : docIndex.entrySet()) {
 				double[] gamma = new double[number_of_topics];
 				Arrays.fill(gamma, 0);
-				for (_Doc d : entryU.getValue()) {
-					for (int i = 0; i < number_of_topics; i++)
-						gamma[i] += m_logSpace ? Math.exp(d.m_topics[i]) : d.m_topics[i];
-				}
+				_Doc d = entryU.getValue();
+				for (int i = 0; i < number_of_topics; i++)
+					gamma[i] = m_logSpace ? Math.exp(d.m_topics[i]) : d.m_topics[i];
 				Utils.L1Normalization(gamma);
 
 
-				topWordWriter.format("%s", docIndex.get(entryU.getKey()));
+				topWordWriter.format("%s", entryU.getKey());
 				for (int i = 0; i < topic_term_probabilty.length; i++) {
 					MyPriorityQueue<_RankItem> fVector = new MyPriorityQueue<_RankItem>(k);
 					for (int j = 0; j < vocabulary_size; j++)

@@ -104,7 +104,7 @@ public class myEUBExecution {
 
                 tModel.EM();
                 tModel.printSelectedDocTheta(param.m_topk, outputFolder, param.m_topicmodel,
-                        selectedItemFile, param.m_source, analyzer);
+                        selectedItemFile, analyzer);
             } else {
                 tModel.EMonCorpus();
             }
