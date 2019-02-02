@@ -52,6 +52,8 @@ public class _Review extends _Doc {
 	public String getUserID(){
 		return m_userID;
 	}
+
+	public String getItemID() { return m_itemID; }
 	
 	@Override
 	public String toString(){

@@ -198,6 +198,40 @@ public class MultiThreadedNetworkAnalyzer extends MultiThreadedLinkPredAnalyzer 
         }
     }
 
+    public HashMap<String, String> transformLocalIndex(String filename) {
+        try {
+            HashMap<String, String> index = new HashMap<>();
+            File file = new File(filename);
+            BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(file), "UTF-8"));
+            String line;
+            while((line = reader.readLine()) != null) {
+                String[] strs = line.split("\\s+");
+                String uId = strs[0];
+                int id = Integer.valueOf(strs[1]);
+
+                if(!m_userIDIndex.containsKey(uId))
+                    System.out.format("[error]No such user %s!\n", uId);
+                else {
+                    int uIndex = m_userIDIndex.get(uId);
+                    if (uIndex > m_users.size())
+                        System.out.println("Exceeds the array size!");
+                    else {
+                        if(m_users.get(m_userIDIndex.get(uId)).getReviewByID(id) != null) {
+                            _Review review = m_users.get(m_userIDIndex.get(uId)).getReviewByID(id);
+                            index.put(uId + "#" + String.valueOf(id), review.getItemID());
+                        }
+                    }
+                }
+            }
+            reader.close();
+            return index;
+
+        } catch(IOException e){
+            e.printStackTrace();
+        }
+        return null;
+    }
+
     public _Doc getDocByUid(String uid, int index) {
         return m_users.get(m_userIDIndex.get(uid)).getReviewByID(index);
     }
@@ -359,7 +393,8 @@ public class MultiThreadedNetworkAnalyzer extends MultiThreadedLinkPredAnalyzer 
         }
     }
 
-    public void printData4CTR(BipartiteAnalyzer biAnalyzer, String dir, int testFold, int crossV, int groupIdx, boolean flag_cold){
+    public void printData4CTR(BipartiteAnalyzer biAnalyzer, String dir, int testFold,
+                              int crossV, int groupIdx, boolean flag_cold, HashMap<String, String> indexMap){
         (new File(dir)).mkdirs();
         String flagstr = flag_cold?"_true":"_false";
         String flaggroup = groupIdx<0? "":String.format("_%d", groupIdx);
@@ -371,8 +406,16 @@ public class MultiThreadedNetworkAnalyzer extends MultiThreadedLinkPredAnalyzer 
         String userIdFile = String.format("%s/userID%s%s.txt", dir, flagstr, foldstr);
         String itemFile = String.format("%s/item%s%s.txt", dir, flagstr, foldstr);
         String itemIdFile = String.format("%s/itemID%s%s.txt", dir, flagstr, foldstr);
+        String indexFile = String.format("%s/localIndex%s%s.txt", dir, flagstr, foldstr);
 
         try {
+            PrintWriter writer = new PrintWriter(new File(indexFile));
+            for(Map.Entry<String, String> index : indexMap.entrySet()) {
+                writer.write(String.format("%s\t%s\n", index.getKey(), index.getValue()));
+            }
+            writer.close();
+
+
             ArrayList<_Doc> trainSet = new ArrayList<_Doc>();
             ArrayList<_Doc> testSet = new ArrayList<_Doc>();
             for (_User user : m_users) {
@@ -397,7 +440,7 @@ public class MultiThreadedNetworkAnalyzer extends MultiThreadedLinkPredAnalyzer 
             mapByUser = biAnalyzer.getMapByUser();
             mapByItem = biAnalyzer.getMapByItem();
             //print user -> items file
-            PrintWriter writer = new PrintWriter(new File(userFile));
+            writer = new PrintWriter(new File(userFile));
             for(int i = 0; i < biAnalyzer.getUsers().size(); i++){
                 int len = mapByUser.get(i).size();
                 writer.write(String.format("%d", len));
