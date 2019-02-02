@@ -1,6 +1,7 @@
 package topicmodels.LDA;
 
 import Analyzer.BipartiteAnalyzer;
+import Analyzer.MultiThreadedNetworkAnalyzer;
 import structures.*;
 import topicmodels.LDA.LDA_Variational;
 import topicmodels.markovmodel.HTSM;
@@ -465,8 +466,9 @@ public class LDA_Focus extends LDA_Variational {
     }
 
     @Override
-    public void printParameterAggregation(int k, String folderName, String topicmodel) {
-        super.printParameterAggregation(k, folderName, topicmodel);
+    public void printParameterAggregation(int k, String folderName, String topicmodel,
+                                          MultiThreadedNetworkAnalyzer analyzer) {
+        super.printParameterAggregation(k, folderName, topicmodel, analyzer);
 
         String alphaPath = String.format("%s%s_alphaBy%s_%d.txt", folderName, topicmodel, m_mode.equals("User")?"User":"Item", number_of_topics);
         printAlpha(alphaPath);
