@@ -9,6 +9,7 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.*;
 
+import Analyzer.MultiThreadedNetworkAnalyzer;
 import structures.*;
 import topicmodels.pLSA.pLSA;
 import utils.Utils;
@@ -265,8 +266,9 @@ public class LDA_Variational extends pLSA {
 	}
 
 	@Override
-	public void printParameterAggregation(int k, String folderName, String topicmodel) {
-		super.printParameterAggregation(k, folderName, topicmodel);
+	public void printParameterAggregation(int k, String folderName, String topicmodel,
+										  MultiThreadedNetworkAnalyzer analyzer) {
+		super.printParameterAggregation(k, folderName, topicmodel, analyzer);
 
         String gammaPathByUser = String.format("%s%s_postByUser_%d.txt", folderName, topicmodel, number_of_topics);
 //        String gammaPathByItem = String.format("%s%s_postByItem_%d.txt", folderName, topicmodel, number_of_topics);
