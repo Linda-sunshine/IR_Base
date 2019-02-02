@@ -198,6 +198,10 @@ public class MultiThreadedNetworkAnalyzer extends MultiThreadedLinkPredAnalyzer 
         }
     }
 
+    public _Doc getDocByUid(String uid, int index) {
+        return m_users.get(m_userIDIndex.get(uid)).getReviewByID(index);
+    }
+
     public void maskDocByCVIndex(int k){
         for(_User u : m_users){
             for(_Review r : u.getReviews()){

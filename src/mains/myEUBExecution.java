@@ -87,7 +87,7 @@ public class myEUBExecution {
         new File(outputFolder).mkdirs();
 
         if (param.m_crossV<=1) {//just train
-            if(param.m_source.equals("StackOverflow2")){
+            if(param.m_mode.equals("embed")){
                 cvIndexFile = String.format("%s/%sCVIndex4Recommendation.txt", dataset, param.m_source);
                 String selectedItemFile = String.format("%s/%sSelectedQuestions.txt", dataset, param.m_source);
                 analyzer.setAllocateReviewFlag(false);
@@ -103,7 +103,8 @@ public class myEUBExecution {
                 System.out.format("[Info]test size = %d....\n", tModel.getTestSize());
 
                 tModel.EM();
-                tModel.printSelectedDocTheta(param.m_topk, outputFolder, param.m_topicmodel, selectedItemFile);
+                tModel.printSelectedDocTheta(param.m_topk, outputFolder, param.m_topicmodel,
+                        selectedItemFile, param.m_source, analyzer);
             } else {
                 tModel.EMonCorpus();
             }
