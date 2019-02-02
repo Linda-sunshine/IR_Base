@@ -300,7 +300,11 @@ public class Utils {
 			for(int i=0; i<v.length; i++){
 				v[i] /= sum;
 			}
-		}//what if the sum is negative?
+		} else {
+			for(int i=0; i<v.length; i++){
+				v[i] = 1.0 / v.length;
+			}
+		}
 	}
 	
 	//L2 normalization: fsValue/sqrt(sum of fsValue*fsValue)

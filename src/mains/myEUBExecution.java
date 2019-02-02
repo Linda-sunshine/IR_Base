@@ -108,7 +108,7 @@ public class myEUBExecution {
             } else {
                 tModel.EMonCorpus();
             }
-            tModel.printParameterAggregation(param.m_topk, outputFolder, param.m_topicmodel);
+            tModel.printParameterAggregation(param.m_topk, outputFolder, param.m_topicmodel, analyzer);
             tModel.printTopWords(param.m_topk);
         } else if(setRandomFold == true){//cross validation with random folds
             analyzer.setAllocateReviewFlag(false);
@@ -174,7 +174,7 @@ public class myEUBExecution {
 
                 String resultFolder = outputFolder + k + "/";
                 new File(resultFolder).mkdirs();
-                tModel.printParameterAggregation(param.m_topk, resultFolder, param.m_topicmodel);
+                tModel.printParameterAggregation(param.m_topk, resultFolder, param.m_topicmodel, analyzer);
                 tModel.printTopWords(param.m_topk);
 
                 // label test by cvIndex==k

@@ -326,7 +326,7 @@ public class pLSA extends twoTopic {
 		}
 	}
 
-	public void printParameterAggregation(int k, String folderName, String topicmodel){
+	public void printParameterAggregation(int k, String folderName, String topicmodel, MultiThreadedNetworkAnalyzer analyzer){
 		String phiPathByUser = String.format("%s%s_userEmbed_%d.txt", folderName, topicmodel, number_of_topics);
 //		String phiPathByItem = String.format("%s%s_phiByItem_%d.txt", folderName, topicmodel, number_of_topics);
 //		String phiPath = String.format("%s%s_phi_%d.txt", folderName, topicmodel, number_of_topics);
@@ -337,7 +337,7 @@ public class pLSA extends twoTopic {
 //		printBeta(betaPath);
 
 		//aggregate parameter \gamma by user/item
-		printTopWords(k, phiPathByUser, getDocByUser(), "EUB");
+		printUserEmbed(k, phiPathByUser, getDocByUser(), analyzer);
 //		printTopWords(k, phiPathByItem, getDocByItem(), "EUB");
 
 		//overall topic words
@@ -505,6 +505,50 @@ public class pLSA extends twoTopic {
 
 		} catch (FileNotFoundException ex) {
 			System.err.println("File Not Found: " + topWordPath);
+		}
+	}
+
+	public void printUserEmbed(int k, String userEmbedPath, HashMap<String, List<_Doc>> docCluster,
+							   MultiThreadedNetworkAnalyzer analyzer) {
+		File file = new File(userEmbedPath);
+		try {
+			file.getParentFile().mkdirs();
+			file.createNewFile();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+
+		try {
+			PrintWriter topWordWriter = new PrintWriter(file);
+
+            ArrayList<_User> users = analyzer.getUsers();
+			topWordWriter.format("%d\t%d\n", users.size(), number_of_topics);
+
+			for (_User user : users) {
+			    String userId = user.getUserID();
+                List<_Doc> docs = docCluster.get(userId);
+				double[] gamma = new double[number_of_topics];
+				Arrays.fill(gamma, 0);
+				for (_Doc d : docs) {
+					for (int i = 0; i < number_of_topics; i++)
+						gamma[i] += m_logSpace ? Math.exp(d.m_topics[i]) : d.m_topics[i];
+				}
+				Utils.L1Normalization(gamma);
+
+
+				topWordWriter.format("%s", userId);
+				for (int i = 0; i < topic_term_probabilty.length; i++) {
+					MyPriorityQueue<_RankItem> fVector = new MyPriorityQueue<_RankItem>(k);
+					for (int j = 0; j < vocabulary_size; j++)
+						fVector.add(new _RankItem(m_corpus.getFeature(j), topic_term_probabilty[i][j]));
+
+					topWordWriter.format("\t%.5f", gamma[i]);
+				}
+				topWordWriter.write("\n");
+			}
+			topWordWriter.close();
+		} catch (FileNotFoundException ex) {
+			System.err.println("File Not Found: " + userEmbedPath);
 		}
 	}
 
