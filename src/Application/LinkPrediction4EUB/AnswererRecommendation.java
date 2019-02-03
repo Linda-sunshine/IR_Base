@@ -62,8 +62,6 @@ public class AnswererRecommendation extends LinkPredictionWithUserEmbedding {
             File file = new File(filename);
             BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(file), "UTF-8"));
             String line;
-//            // the first line is question size * dim
-//            int size = Integer.valueOf(line.split("\\s+")[0]);
 
             while ((line = reader.readLine()) != null) {
                 // the first is uid, the second is qid
@@ -151,7 +149,10 @@ public class AnswererRecommendation extends LinkPredictionWithUserEmbedding {
             String line;
             while ((line = reader.readLine()) != null) {
                 String[] strs = line.trim().split("\\s+");
-                String qId = strs[0];
+                String uId = strs[0], qId = strs[1];
+
+                if(!m_questionMap.containsKey(qId))
+                    System.out.println("The question does not exist !!!");
                 _Question q = m_questionMap.get(qId);
                 _Object4Link qi = new _Object4Link(qId);
                 m_testMap.put(qId, qi);
@@ -211,7 +212,7 @@ public class AnswererRecommendation extends LinkPredictionWithUserEmbedding {
     public double getSimilarity(String qId, int uiIdx, int ujIdx){
         double[] theta = m_questionMap.get(qId).getTheta();
         double sim;
-        if(m_model.equals("EUB")){
+        if(m_model.startsWith("EUB")){
             // we need to incorporate |Phi in order to compute it.
             double[] uPhi = new double[theta.length];
             for(int i=0; i<theta.length; i++){
@@ -237,6 +238,7 @@ public class AnswererRecommendation extends LinkPredictionWithUserEmbedding {
         // if no non-interactions are specified, we will consider all the other users as non-interactions
         // thus, non-interactions are know after loading interactions
         if(testNonInterFile == null){
+            System.out.println("Non interation file is null!!");
             loadTestOneZeroEdges(testInterFile);
         } else{
             // otherwise, load one-edges ans zero-edges individually
@@ -248,11 +250,12 @@ public class AnswererRecommendation extends LinkPredictionWithUserEmbedding {
     //In the main function, we want to input the data and do adaptation
     public static void main(String[] args) {
         // the application is only performed on stackoverflow dataset
+        String data = "YelpNew";
         int dim = 10;
 //        String model = "CTR";
-        String prefix = "./data/CoLinAdapt/StackOverflow/AnswerRecommendation";
+        String prefix = String.format("./data/CoLinAdapt/%s/AnswerRecommendation", data);
 
-        String[] models = new String[]{"EUB", "HFT", "LDA_Variational", "CTR"};
+        String[] models = new String[]{"EUB_t10", "HFT", "LDA_Variational", "CTR"};
 
         double[] alphas = new double[11];
         for(int i=0; i<=10; i++){
@@ -266,14 +269,14 @@ public class AnswererRecommendation extends LinkPredictionWithUserEmbedding {
                 String model = models[i];
 
                 System.out.format("-----------------model %s-dim %d-------------------\n", model, dim);
-                String idFile = String.format("/home/lin/DataWWW2019/UserEmbedding/StackOverflow_userids.txt", prefix);
+                String idFile = String.format("/home/lin/DataWWW2019/UserEmbedding/%s_userids.txt", data);
                 String questionIdFile = String.format("%s/StackOverflowSelectedQuestions.txt", prefix);
 
                 String questionFile = String.format("%s/models/%s_theta_dim_%d.txt", prefix, model, dim);
                 String embedFile = String.format("%s/models/%s_embedding_dim_%d.txt", prefix, model, dim);
-                String interFile = String.format("%s/StackOverflowInteractions4Recommendations_test.txt", prefix);
-                String nonInterFile = String.format("%s/StackOverflowNonInteractions_time_10_Recommendations.txt", prefix);
-                String phiFile = String.format("%s/models/EUB_Phi_dim_%d.txt", prefix, dim);
+                String interFile = String.format("%s/%sInteractions4Recommendations_test.txt", prefix, data);
+                String nonInterFile = String.format("%s/%sNonInteractions_time_10_Recommendations.txt", prefix, data);
+                String phiFile = String.format("%s/models/EUB_t10_Phi_dim_%d.txt", prefix, dim);
                 AnswererRecommendation rec = new AnswererRecommendation(model);
                 if (model.equals("EUB"))
                     rec.loadPhi(phiFile);

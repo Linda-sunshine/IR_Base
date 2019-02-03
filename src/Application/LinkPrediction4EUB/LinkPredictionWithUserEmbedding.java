@@ -395,6 +395,7 @@ public class LinkPredictionWithUserEmbedding {
         // As we load the one edges first, then zero edges
         double iDCG = 0, DCG = 0, PatK = 0, AP = 0, count = 0;
         ArrayList<_Edge4Link> candidates = user.getEdges();
+        if(candidates.size() == 0) System.out.println("no candidates!");
 
         //Calculate iDCG
         for(int i=0; i<candidates.size(); i++) {
@@ -425,8 +426,13 @@ public class LinkPredictionWithUserEmbedding {
                 count++;
             }
         }
-		if(Double.isNaN(DCG/iDCG))
-			System.out.println("[error] Nan NDCG! Debug here!!");
+		if(Double.isNaN(DCG/iDCG)){
+            System.out.println("[error] Nan NDCG! skip the user!");
+//            System.out.println(iDCG);
+//            for(_Edge4Link l: candidates){
+//                System.out.println(l.m_label);
+//            }
+        }
         return new double[]{DCG/iDCG, AP/count};
     }
 
@@ -551,17 +557,18 @@ public class LinkPredictionWithUserEmbedding {
             System.out.println();
         }
     }
-    // the main function for general link pred
+
+//    //The main function for general link pred
 //    public static void main(String[] args){
 //
 //        String data = "StackOverflow";
 //        String prefix = "/home/lin"; // "/Users/lin", "/home/lin"
 //
-//        int dim = 10, folds = 0;
+//        int dim = 10, folds = 4;
 //        String idFile = String.format("%s/DataWWW2019/UserEmbedding/%s_userids.txt", prefix, data);
 //
 //        int[] times = new int[]{2, 3, 4, 5, 6, 7, 8};
-//        String[] models = new String[]{"LDA", "RTM", "HFT", "TADW", "EUB_t40"};//, "EUB_t30", "EUB_t50"}; //"BOW", "LDA", "HFT", "RTM", "DW", "TADW", "EUB_t10", "EUB_t20", "EUB_t30", "EUB_t40", "EUB_t50"};// "RTM", "LDA", "HFT", "DW", "TADW"}; // "LDA", "HFT", "TADW", "EUB", "LDA", "HFT"
+//        String[] models = new String[]{"RTM"};//, "EUB_t30", "EUB_t50"}; //"BOW", "LDA", "HFT", "RTM", "DW", "TADW", "EUB_t10", "EUB_t20", "EUB_t30", "EUB_t40", "EUB_t50"};// "RTM", "LDA", "HFT", "DW", "TADW"}; // "LDA", "HFT", "TADW", "EUB", "LDA", "HFT"
 //        HashMap<String, double[][][]> allFoldsPerf = new HashMap<String, double[][][]>();
 //
 //        LinkPredictionWithUserEmbedding link = null;
@@ -599,14 +606,14 @@ public class LinkPredictionWithUserEmbedding {
     // the main for link pred in cold start setting
     public static void main(String[] args){
 
-        String data = "YelpNew";
+        String data = "StackOverflow";
         String prefix = "/home/lin"; // "/Users/lin", "/home/lin"
 
-        int dim = 10, folds = 0;
+        int dim = 10, kFolds = 4, folds = 0;
         String idFile = String.format("%s/DataWWW2019/UserEmbedding/%s_userids.txt", prefix, data);
 
-        int[] times = new int[]{2};
-        String[] models = new String[]{"LDA", "HFT", "TADW", "RTM", "EUB_t40", "EUB_t50"};//, "EUB_t30", "EUB_t50"}; //"BOW", "LDA", "HFT", "RTM", "DW", "TADW", "EUB_t10", "EUB_t20", "EUB_t30", "EUB_t40", "EUB_t50"};// "RTM", "LDA", "HFT", "DW", "TADW"}; // "LDA", "HFT", "TADW", "EUB", "LDA", "HFT"
+        int[] times = new int[]{2, 3, 4, 5, 6, 7, 8};
+        String[] models = new String[]{"EUB_t50"};// "LDA", "HFT", "TADW", "RTM"};//, "EUB_t30", "EUB_t50"}; //"BOW", "LDA", "HFT", "RTM", "DW", "TADW", "EUB_t10", "EUB_t20", "EUB_t30", "EUB_t40", "EUB_t50"};// "RTM", "LDA", "HFT", "DW", "TADW"}; // "LDA", "HFT", "TADW", "EUB", "LDA", "HFT"
         HashMap<String, double[][][]> allFoldsPerf = new HashMap<String, double[][][]>();
         String[] groups = new String[]{"light", "medium", "heavy"};
         for(String group: groups){
@@ -615,6 +622,8 @@ public class LinkPredictionWithUserEmbedding {
         for(String model: models){
             if(model.equals("LDA") || model.equals("HFT") || model.equals("BOW"))
                 folds = 0;
+            else
+                folds = kFolds;
             double[][][] perfs = new double[folds+1][times.length][2];
             for (int t = 0; t < times.length; t++) {
 
