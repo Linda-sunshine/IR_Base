@@ -235,7 +235,7 @@ public abstract class TopicModel {
 		}
 		
 		//wait till all finished
-		for(Thread thread:m_threadpool){
+		for(Thread thread: m_threadpool){
 			try {
 				thread.join();
 			} catch (InterruptedException e) {
