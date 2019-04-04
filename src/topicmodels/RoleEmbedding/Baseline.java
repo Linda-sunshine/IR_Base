@@ -21,8 +21,8 @@ public class Baseline {
     private double[][] m_roles; // L*M, i.e., B in the derivation
     private ArrayList<String> m_uIds;
     private HashMap<String, Integer> m_uId2IndexMap;
-    private HashMap<Integer, ArrayList<Integer>> m_oneEdges;
-    private HashMap<Integer, ArrayList<Integer>> m_zeroEdges;
+    private HashMap<Integer, HashSet<Integer>> m_oneEdges;
+    private HashMap<Integer, HashSet<Integer>> m_zeroEdges;
 
     public Baseline(int m, int L, int nuIter, double converge, double alpha, double beta, double stepSize){
         m_dim = m;
@@ -34,6 +34,7 @@ public class Baseline {
         m_beta = beta;
         m_stepSize = stepSize;
 
+        m_uIds = new ArrayList<>();
         m_uId2IndexMap = new HashMap<>();
         m_oneEdges = new HashMap<>();
         m_zeroEdges = new HashMap<>();
@@ -54,7 +55,7 @@ public class Baseline {
                 m_uIds.add(uid);
                 m_uId2IndexMap.put(uid, count++);
             }
-            System.out.format("[Info]Finish loading user ids from %s\n", filename);
+            System.out.format("[Info]Finish loading %d user ids from %s\n", m_uIds.size(), filename);
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -85,20 +86,52 @@ public class Baseline {
                     System.out.println("The user does not exist in the user set!");
                     continue;
                 }
-                if(!m_oneEdges.containsKey(uiId)){
-                    m_oneEdges.put(uiIdx, new ArrayList<>());
+                if(!m_oneEdges.containsKey(uiIdx)){
+                    m_oneEdges.put(uiIdx, new HashSet<>());
                 }
                 m_oneEdges.get(uiIdx).add(ujIdx);
                 count++;
             }
-            System.out.format("[Info]Finish loading one edges of %d users' %d links from %s\n", m_oneEdges.size(), count);
+            System.out.format("[Info]Finish loading one edges of %d users' %d links from %s\n", m_oneEdges.size(),
+                    count, filename);
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
 
-    public void sampleZeroEdges(){
+    public void sampleSaveZeroEdges(String filename){
+        for(String uid: m_uIds){
+            int uIdx = m_uId2IndexMap.get(uid);
+            m_zeroEdges.put(uIdx, sampleZeroEdges4OneUser(uIdx));
+        }
+        try{
+            int count = 0;
+            PrintWriter writer = new PrintWriter(new File(filename));
+            for(String uid: m_uIds){
+                HashSet<Integer> zeroEdges = m_zeroEdges.get(m_uId2IndexMap.get(uid));
+                for(int ujIdx: zeroEdges){
+                    writer.format("%s\t%s\n", uid, m_uId2IndexMap.get(ujIdx));
+                    count++;
+                }
+            }
+            writer.close();
+            System.out.format("Finish writing %d zero edges.\n", count);
+        } catch(IOException e){
+            e.printStackTrace();
+        }
+    }
 
+    public HashSet<Integer> sampleZeroEdges4OneUser(int i){
+        HashSet<Integer> oneEdges = m_oneEdges.containsKey(i) ? m_oneEdges.get(i) : null;
+        HashSet<Integer> zeroEdges = new HashSet<>();
+        int number = m_oneEdges.containsKey(i) ? m_oneEdges.get(i).size() * 2 : 2;
+        while(zeroEdges.size() < number){
+            String tmpId = m_uIds.get((int) Math.random() * m_uIds.size());
+            int tmpIdx = m_uId2IndexMap.get(tmpId);
+            if(!oneEdges.contains(tmpIdx))
+                zeroEdges.add(tmpIdx);
+        }
+        return zeroEdges;
     }
 
     public void init(){
@@ -349,6 +382,16 @@ public class Baseline {
 
     //The main function for general link pred
     public static void main(String[] args){
+        String userFile = "./data/RoleEmbedding/release-youtube-users.txt";
+        String oneEdgeFile = "./data/RoleEmbedding/release-youtube-links.txt";
+        String zeroEdgeFile = "./data/RoleEmbedding/release-youtube-nonlinks.txt";
+
+        int m = 10, L = 5, nuIter = 10;
+        double converge = 1e-5, alpha = 0.1, beta = 0.1, stepSize = 1e-4;
+        Baseline base = new Baseline(m, L, nuIter, converge, alpha, beta, stepSize);
+        base.loadUsers(userFile);
+        base.loadOneEdges(oneEdgeFile);
+        base.sampleSaveZeroEdges(zeroEdgeFile);
 
     }
 }
