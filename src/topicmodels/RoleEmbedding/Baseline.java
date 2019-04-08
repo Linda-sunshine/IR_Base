@@ -62,8 +62,8 @@ public class Baseline {
     }
 
     // load connections/nonconnections from files
-    public void loadOneEdges(String filename){
-//        HashMap<Integer, ArrayList<Integer>> edgeMap = eij == 1 ? m_oneEdges : m_zeroEdges;
+    public void loadEdges(String filename, int eij){
+        HashMap<Integer, HashSet<Integer>> edgeMap = eij == 1 ? m_oneEdges : m_zeroEdges;
         try {
             // load beta for the whole corpus first
             File linkFile = new File(filename);
@@ -86,31 +86,61 @@ public class Baseline {
                     System.out.println("The user does not exist in the user set!");
                     continue;
                 }
-                if(!m_oneEdges.containsKey(uiIdx)){
-                    m_oneEdges.put(uiIdx, new HashSet<>());
+                if(!edgeMap.containsKey(uiIdx)){
+                    edgeMap.put(uiIdx, new HashSet<>());
                 }
-                m_oneEdges.get(uiIdx).add(ujIdx);
+                edgeMap.get(uiIdx).add(ujIdx);
                 count++;
+                if(count % 10000 == 0)
+                    System.out.print(".");
+                if(count % 1000000 == 0)
+                    System.out.println();
             }
-            System.out.format("[Info]Finish loading one edges of %d users' %d links from %s\n", m_oneEdges.size(),
+            System.out.format("\n[Info]Finish loading %d edges of %d users' %d links from %s\n", eij, edgeMap.size(),
                     count, filename);
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
 
-    public void sampleSaveZeroEdges(String filename){
-        for(String uid: m_uIds){
-            int uIdx = m_uId2IndexMap.get(uid);
-            m_zeroEdges.put(uIdx, sampleZeroEdges4OneUser(uIdx));
+    public void sampleZeroEdges() {
+        for(int i=0; i<m_uIds.size(); i++){
+            if(i % 10000 == 0)
+                System.out.print(".");
+            if(i % 1000000 == 0)
+                System.out.println();
+            String uiId = m_uIds.get(i);
+            int uiIdx = m_uId2IndexMap.get(uiId);
+            if(!m_zeroEdges.containsKey(uiIdx)){
+                m_zeroEdges.put(uiIdx, new HashSet<>());
+            }
+            HashSet<Integer> zeroEdges = m_zeroEdges.get(uiIdx);
+            HashSet<Integer> oneEdges = m_oneEdges.containsKey(uiIdx) ? m_oneEdges.get(uiIdx) : null;
+            int number = m_oneEdges.containsKey(uiIdx) ? m_oneEdges.get(uiIdx).size() : 1;
+
+            while(zeroEdges.size() < number) {
+                String ujId = m_uIds.get((int) (Math.random() * m_uIds.size()));
+                int ujIdx = m_uId2IndexMap.get(ujId);
+                if (oneEdges == null || !oneEdges.contains(ujIdx)) {
+                    zeroEdges.add(ujIdx);
+                    if(!m_zeroEdges.containsKey(ujIdx))
+                        m_zeroEdges.put(ujIdx, new HashSet<>());
+                    m_zeroEdges.get(ujIdx).add(uiIdx);
+                }
+            }
+
         }
+    }
+    public void saveZeroEdges(String filename){
+
         try{
             int count = 0;
             PrintWriter writer = new PrintWriter(new File(filename));
-            for(String uid: m_uIds){
-                HashSet<Integer> zeroEdges = m_zeroEdges.get(m_uId2IndexMap.get(uid));
+            for(int uiIdx: m_zeroEdges.keySet()){
+                String uiId = m_uIds.get(uiIdx);
+                HashSet<Integer> zeroEdges = m_zeroEdges.get(uiIdx);
                 for(int ujIdx: zeroEdges){
-                    writer.format("%s\t%s\n", uid, m_uId2IndexMap.get(ujIdx));
+                    writer.format("%s\t%s\n", uiId, m_uIds.get(ujIdx));
                     count++;
                 }
             }
@@ -121,20 +151,10 @@ public class Baseline {
         }
     }
 
-    public HashSet<Integer> sampleZeroEdges4OneUser(int i){
-        HashSet<Integer> oneEdges = m_oneEdges.containsKey(i) ? m_oneEdges.get(i) : null;
-        HashSet<Integer> zeroEdges = new HashSet<>();
-        int number = m_oneEdges.containsKey(i) ? m_oneEdges.get(i).size() * 2 : 2;
-        while(zeroEdges.size() < number){
-            String tmpId = m_uIds.get((int) Math.random() * m_uIds.size());
-            int tmpIdx = m_uId2IndexMap.get(tmpId);
-            if(!oneEdges.contains(tmpIdx))
-                zeroEdges.add(tmpIdx);
-        }
-        return zeroEdges;
-    }
-
     public void init(){
+        m_users = new double[m_uIds.size()][m_dim];
+        m_roles = new double[m_nuOfRoles][m_dim];
+
         for(double[] user: m_users){
             initOneVector(user);
         }
@@ -148,10 +168,12 @@ public class Baseline {
         for(int i=0; i<vct.length; i++){
             vct[i] = Math.random();
         }
+//        Utils.normalize(vct);
     }
 
     public void train(){
 
+        init();
         int iter = 0;
         double lastFunctionValue = -1.0;
         double currentFunctionValue;
@@ -179,8 +201,9 @@ public class Baseline {
     // update user vectors;
     public double updateUserVectors(){
 
+        System.out.println("Start optimizing user vectors...");
         double affinity, gTermOne, fValue;
-        double lastFValue = 1.0, converge = 1e-6, diff, iterMax = 10, iter = 0;
+        double lastFValue = 1.0, converge = 1e-6, diff, iterMax = 3, iter = 0;
         double[][] userG = new double[m_users.length][m_dim];
 
         do{
@@ -194,7 +217,7 @@ public class Baseline {
                     if(ujIdx <= uiIdx) continue;
                     // for each edge
                     affinity = calcAffinity(uiIdx, ujIdx);
-                    fValue += sigmod(affinity);
+                    fValue += Math.log(sigmod(affinity));
                     gTermOne = sigmod(-affinity);
                     // each dimension of user vectors ui and uj
                     for(int g=0; g<m_dim; g++){
@@ -209,7 +232,7 @@ public class Baseline {
                     if(ujIdx <= uiIdx) continue;
                     // for each edge
                     affinity = calcAffinity(uiIdx, ujIdx);
-                    fValue += sigmod(-affinity);
+                    fValue += Math.log(sigmod(-affinity));
                     gTermOne = sigmod(affinity);
                     // each dimension of user vectors ui and uj
                     for(int g=0; g<m_dim; g++){
@@ -233,6 +256,7 @@ public class Baseline {
             }
             diff = (lastFValue - fValue) / lastFValue;
             lastFValue = fValue;
+            System.out.format("Function value: %.1f\n", fValue);
         } while(iter++ < iterMax && Math.abs(diff) > converge);
         return fValue;
     }
@@ -248,47 +272,139 @@ public class Baseline {
         return val;
     }
 
+//    // update role vectors;
+//    public double updateRoleVectors(){
+//
+//        System.out.println("Start optimizing role vectors...");
+//        double fValue, fValueOne, fValueZero, lastFValue = 1.0, converge = 1e-6, diff, iterMax = 5, iter = 0;
+//        double[][] gTermTwo = new double[m_dim][m_dim];
+//        double[][] roleG = new double[m_roles.length][m_dim];
+//
+//        do {
+//            fValueOne = 0; fValueZero = 0;
+//            for (double[] g : gTermTwo) {
+//                Arrays.fill(g, 0);
+//            }
+//            // updates of gradient from one edges
+//            for (int uiIdx : m_oneEdges.keySet()) {
+//                for(int ujIdx: m_oneEdges.get(uiIdx)){
+//                    if(ujIdx <= uiIdx) continue;
+//                    fValueOne += calcRoleGradientWithOneEdge(gTermTwo, uiIdx, ujIdx, m_users[uiIdx], m_users[ujIdx]);
+//                }
+//            }
+//            // updates of gradient from zero edges
+//            for (int uiIdx : m_zeroEdges.keySet()) {
+//                for(int ujIdx: m_zeroEdges.get(uiIdx)){
+//                    if(ujIdx <= uiIdx) continue;
+//                    fValueZero += calcRoleGradientWithZeroEdge(gTermTwo, uiIdx, ujIdx, m_users[uiIdx], m_users[ujIdx]);
+//                }
+//            }
+//            // multiply: B * roleG - 2*beta*B_{gh}
+//            System.out.format("function value from one edges: %.1f, from zero edges: %.1f\n", fValueOne, fValueZero);
+//            fValue = fValueOne + fValueZero;
+//
+//            for(int l=0; l<m_nuOfRoles; l++){
+//                for(int m=0; m<m_dim; m++){
+//                    roleG[l][m] = Utils.dotProduct(m_roles[l], getOneColumn(gTermTwo, m)) - 2 * m_beta * m_roles[l][m];
+//                    fValue -= m_beta * m_roles[l][m] * m_roles[l][m];
+//                }
+//            }
+////            for(int i=0; i<roleG.length; i++){
+////                for(int j=0; j<roleG[0].length; j++){
+////                    System.out.print(roleG[i][j]+"\t");
+////                }
+////                System.out.println();
+////            }
+//            // update the role vectors based on the gradients
+//            for(int l=0; l<m_roles.length; l++){
+//                for(int m=0; m<m_dim; m++){
+//                    m_roles[l][m] -= m_stepSize * 0.01 * roleG[l][m];
+//                }
+//            }
+//            diff = fValue - lastFValue;
+//            lastFValue = fValue;
+////            System.out.format("Function value: %.1f\n", fValue);
+//        } while(iter++ < iterMax && Math.abs(diff) > converge);
+//        return fValue;
+//    }
+
     // update role vectors;
     public double updateRoleVectors(){
 
-        double fValue, lastFValue = 1.0, converge = 1e-6, diff, iterMax = 10, iter = 0;
-        double[][] gTermTwo = new double[m_roles.length][m_dim];
+        System.out.println("Start optimizing role vectors...");
+        double fValue, fValueOne, fValueZero, affinity, gTermOne, lastFValue = 1.0, converge = 1e-6, diff, iterMax = 5, iter = 0;
         double[][] roleG = new double[m_roles.length][m_dim];
 
         do {
-            fValue = 0;
-            for (double[] g : gTermTwo) {
+            fValueOne = 0; fValueZero = 0;
+            for (double[] g : roleG) {
                 Arrays.fill(g, 0);
             }
             // updates of gradient from one edges
             for (int uiIdx : m_oneEdges.keySet()) {
                 for(int ujIdx: m_oneEdges.get(uiIdx)){
-                    fValue += calcRoleGradientWithOneEdge(gTermTwo, uiIdx, ujIdx, m_users[uiIdx], m_users[ujIdx]);
+                    if(ujIdx <= uiIdx) continue;
+
+                    affinity = calcAffinity(uiIdx, ujIdx);
+                    fValueOne += Math.log(sigmod(affinity));
+                    gTermOne = sigmod(-affinity);
+                    // each element of role embedding B_{gh}
+                    for(int g=0; g<m_nuOfRoles; g++){
+                        for(int h=0; h<m_dim; h++){
+                            roleG[g][h] += gTermOne * calcRoleGradientTermTwo(g, h, m_users[uiIdx], m_users[ujIdx]);
+                        }
+                    }
                 }
             }
             // updates of gradient from zero edges
             for (int uiIdx : m_zeroEdges.keySet()) {
                 for(int ujIdx: m_zeroEdges.get(uiIdx)){
-                    fValue += calcRoleGradientWithZeroEdge(gTermTwo, uiIdx, ujIdx, m_users[uiIdx], m_users[ujIdx]);
+                    if(ujIdx <= uiIdx) continue;
+                    affinity = calcAffinity(uiIdx, ujIdx);
+                    fValueZero += Math.log(sigmod(-affinity));
+                    gTermOne = sigmod(affinity);
+                    // each element of role embedding B_{gh}
+                    for(int g=0; g<m_nuOfRoles; g++){
+                        for(int h=0; h<m_dim; h++){
+                            roleG[g][h] += gTermOne * calcRoleGradientTermTwo(g, h, m_users[uiIdx], m_users[ujIdx]);
+                        }
+                    }
                 }
             }
             // multiply: B * roleG - 2*beta*B_{gh}
+//            System.out.format("function value from one edges: %.1f, from zero edges: %.1f\n", fValueOne, fValueZero);
+            fValue = fValueOne + fValueZero;
+
             for(int l=0; l<m_nuOfRoles; l++){
                 for(int m=0; m<m_dim; m++){
-                    roleG[l][m] = Utils.dotProduct(m_roles[l], getOneColumn(gTermTwo, m)) - 2 * m_beta * m_roles[l][m];
+                    roleG[l][m] -= 2 * m_beta * m_roles[l][m];
                     fValue -= m_beta * m_roles[l][m] * m_roles[l][m];
                 }
             }
+
             // update the role vectors based on the gradients
             for(int l=0; l<m_roles.length; l++){
                 for(int m=0; m<m_dim; m++){
-                    m_roles[l][m] -= m_stepSize * roleG[l][m];
+                    m_roles[l][m] -= m_stepSize * 0.01 * roleG[l][m];
                 }
             }
             diff = fValue - lastFValue;
             lastFValue = fValue;
+            System.out.format("Function value: %.1f\n", fValue);
         } while(iter++ < iterMax && Math.abs(diff) > converge);
         return fValue;
+    }
+
+    // calculate the second part of the gradient for user vector
+    public double calcRoleGradientTermTwo(int g, int h, double[] ui, double[] uj){
+        double val = 0;
+        for(int p=0; p<m_dim; p++){
+            for(int m=0; m<m_dim; m++){
+                val += ui[h] * m_roles[g][p] * uj[p];
+                val += ui[m] * m_roles[g][m] * uj[h];
+            }
+        }
+        return val;
     }
 
     public double[] getOneColumn(double[][] mtx, int j){
@@ -302,10 +418,10 @@ public class Baseline {
     // directly add the update to the gradient of role
     public double calcRoleGradientWithOneEdge(double[][] g, int i, int j, double[] ui, double[] uj){
         double affinity = calcAffinity(i, j);
-        double coef = 2/sigmod(-affinity); // 2/(1+exp(u_i^T B^T B u_j))
+        double coef = sigmod(-affinity); // 1/(1+exp(u_i^T B^T B u_j))
         for(int m=0; m<ui.length; m++){
             for(int n=0; n<uj.length; n++){
-                g[m][n] += coef * ui[m] * uj[n];
+                g[m][n] += coef * (ui[m] * uj[n] + uj[m] * ui[n]);
             }
         }
         return Math.log(sigmod(affinity));
@@ -314,10 +430,10 @@ public class Baseline {
     // directly add the update to the gradient of role
     public double calcRoleGradientWithZeroEdge(double[][] g, int i, int j, double[] ui, double[] uj){
         double affinity = calcAffinity(i, j);
-        double coef = 2/sigmod(affinity); // 2/(1+exp(u_i^T B^T B u_j))
+        double coef = sigmod(affinity); // 2/(1+exp(u_i^T B^T B u_j))
         for(int m=0; m<ui.length; m++){
             for(int n=0; n<uj.length; n++){
-                g[m][n] -= coef * ui[m] * uj[n];
+                g[m][n] -= coef * (ui[m] * uj[n] + uj[m] * ui[n]);
             }
         }
         return Math.log(sigmod(-affinity));
@@ -330,7 +446,7 @@ public class Baseline {
         double[] uj = m_users[j];
         for(int p=0; p<m_dim; p++){
             for(int l=0; l<m_nuOfRoles; l++){
-                for(int m=1; m<m_dim; m++){
+                for(int m=0; m<m_dim; m++){
                     res += ui[m] * m_roles[l][m] * m_roles[l][p] * uj[p];
                 }
             }
@@ -380,18 +496,72 @@ public class Baseline {
         }
     }
 
+    public void preprocessYelpData(String filename, String uidFilename, String linkFilename){
+        HashSet<String> uids = new HashSet<>();
+        HashSet<String> ujds = new HashSet<>();
+        int nuOfLinks = 0;
+        try {
+            // load beta for the whole corpus first
+            File linkFile = new File(filename);
+
+            BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(linkFile),
+                    "UTF-8"));
+            PrintWriter idWriter = new PrintWriter(new File(uidFilename));
+            PrintWriter linkWriter = new PrintWriter(new File(linkFilename));
+            String line, strs[];
+            while ((line = reader.readLine()) != null) {
+                // start reading one user's id
+                strs = line.trim().split("\\s+");
+                String uid = strs[0];
+                idWriter.write(uid + "\n");
+                for (int i = 1; i < strs.length; i++) {
+                    nuOfLinks++;
+                    linkWriter.format("%s\t%s\n", uid, strs[i]);
+                }
+            }
+            idWriter.close();
+            linkWriter.close();
+            System.out.format("\n[Info]Number of links: %d\n", nuOfLinks);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void printUids(String filename, HashSet<String> uids){
+        try{
+            PrintWriter writer = new PrintWriter(new File(filename));
+            for(String uid: uids){
+                writer.write(uid+"\n");
+            }
+            writer.close();
+        } catch(IOException e){
+            e.printStackTrace();
+        }
+    }
     //The main function for general link pred
     public static void main(String[] args){
-        String userFile = "./data/RoleEmbedding/release-youtube-users.txt";
-        String oneEdgeFile = "./data/RoleEmbedding/release-youtube-links.txt";
-        String zeroEdgeFile = "./data/RoleEmbedding/release-youtube-nonlinks.txt";
 
-        int m = 10, L = 5, nuIter = 10;
-        double converge = 1e-5, alpha = 0.1, beta = 0.1, stepSize = 1e-4;
+        String dataset = "yelp"; // "release-youtube"
+
+        String userFile = String.format("./data/RoleEmbedding/%s-users.txt", dataset);
+        String oneEdgeFile = String.format("./data/RoleEmbedding/%s-links.txt", dataset);
+        String zeroEdgeFile = String.format("./data/RoleEmbedding/%s-nonlinks.txt", dataset);
+        String userEmbeddingFile = String.format("/home/lin/DataWWW2019/UserEmbedding/YelpNew_Role_embedding_dim_10_fold_0.txt", dataset);
+        String roleEmbeddingFile = String.format("/home/lin/DataWWW2019/UserEmbedding/YelpNew_role_embedding.txt", dataset);
+
+        int m = 10, L = 10, nuIter = 50;
+        double converge = 1e-6, alpha = 0.1, beta = 0.1, stepSize = 1e-5;
         Baseline base = new Baseline(m, L, nuIter, converge, alpha, beta, stepSize);
-        base.loadUsers(userFile);
-        base.loadOneEdges(oneEdgeFile);
-        base.sampleSaveZeroEdges(zeroEdgeFile);
 
+        base.loadUsers(userFile);
+        base.loadEdges(oneEdgeFile, 1); // load one edges
+
+//        base.sampleZeroEdges();
+//        base.saveZeroEdges(zeroEdgeFile);
+
+        base.loadEdges(zeroEdgeFile, 0); // load zero edges
+        base.train();
+        base.printUserEmbedding(userEmbeddingFile);
+        base.printRoleEmbedding(roleEmbeddingFile);
     }
 }

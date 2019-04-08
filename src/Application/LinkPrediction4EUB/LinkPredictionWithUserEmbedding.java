@@ -142,6 +142,42 @@ public class LinkPredictionWithUserEmbedding {
         }
     }
 
+    double[][] m_roles;
+    public void loadRoleEmbedding(String filename){
+        try {
+            File file = new File(filename);
+            BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(file), "UTF-8"));
+            String firstLine = reader.readLine(), line;
+
+            String[] strs = firstLine.trim().split("\\s+");
+            if(strs.length != 2){
+                System.out.println("[error]The dimension is not correct!! Double check the role embedding file!");
+                return;
+            }
+            int nuOfRoles = Integer.valueOf(strs[0]);
+            m_dim = Integer.valueOf(strs[1]);
+            m_roles = new double[nuOfRoles][m_dim];
+            // read each role's embedding one by one
+            int count = 0;
+            while ((line = reader.readLine()) != null) {
+                String[] valStrs = line.trim().split("\\s+");
+                if(valStrs.length != m_dim + 1){
+                    System.out.println("[error]The role's dimension is not correct!!");
+                    continue;
+                }
+                double[] embedding = new double[m_dim];
+                for(int i=1; i<valStrs.length; i++){
+                    embedding[i-1] = Double.valueOf(valStrs[i]);
+                }
+                m_roles[count++] = embedding;
+            }
+            reader.close();
+            System.out.format("Finish loading %d role embeddings.\n", count);
+        } catch(IOException e){
+            e.printStackTrace();
+        }
+    }
+
     // load edges (interactions + non-interactions) for all the users
     public void loadTestOneZeroEdges(String filename){
         int labelOne = 1, labelZero = 0, count = 0;
@@ -260,12 +296,24 @@ public class LinkPredictionWithUserEmbedding {
         m_similarity = new double[m_userSize][m_userSize];
         for(int i=0; i<m_userSize; i++){
             for(int j=i+1; j<m_userSize; j++){
-//                m_similarity[i][j] = Math.random();
-                m_similarity[i][j] = Utils.cosine(m_embeddings[i], m_embeddings[j]);
+//                m_similarity[i][j] = 0;
+                if(m_roles != null){
+                    m_similarity[i][j] = -Utils.euclideanDistance(projection2Roles(m_embeddings[i]),
+                            projection2Roles(m_embeddings[j]));
+                }
+                m_similarity[i][j] = -Utils.euclideanDistance(m_embeddings[i], m_embeddings[j]);
             }
         }
         System.out.println("Finish calculating similarity.");
 
+    }
+
+    public double[] projection2Roles(double[] user){
+        double[] mixture = new double[m_roles.length];
+        for(int l=0; l<m_roles.length; l++){
+            mixture[l] = Utils.dotProduct(m_roles[l], user);
+        }
+        return mixture;
     }
     public void saveUserIds(String embedFile, String idFile){
         try {
@@ -372,16 +420,16 @@ public class LinkPredictionWithUserEmbedding {
 
 //    // The function for calculating all NDCGs and MAPs.
 //    public void calculateAllNDCGMAP(){
-//        m_NDCGs = new double[m_testUserIds.size()];
-//        m_MAPs = new double[m_testUserIds.size()];
+//        m_NDCGs = new double[m_testIds.size()];
+//        m_MAPs = new double[m_testIds.size()];
 //        Arrays.fill(m_NDCGs, -1);
 //        Arrays.fill(m_MAPs, -1);
 //
 //        System.out.print("[Info]Start calculating NDCG and MAP...\n");
 //
-//        for (int i = 0; i <m_testUserIds.size(); i++) {
-//            String uid = m_testUserIds.get(i);
-//            _User4Link user = m_testUserMap.get(uid);
+//        for (int i = 0; i <m_testIds.size(); i++) {
+//            String uid = m_testIds.get(i);
+//            _Object4Link user = m_testMap.get(uid);
 //            double[] vals = calculateNDCGMAP(user);
 //            // put the calculated nDCG into the array for average calculation
 //            m_NDCGs[i] = vals[0];
@@ -561,14 +609,14 @@ public class LinkPredictionWithUserEmbedding {
     //The main function for general link pred
     public static void main(String[] args){
 
-        String data = "YelpNew  ";
-        String prefix = "/Users/lin"; // "/Users/lin", "/home/lin"
+        String data = "YelpNew";
+        String prefix = "/home/lin"; // "/Users/lin", "/home/lin"
 
         int dim = 10, folds = 0;
         String idFile = String.format("%s/DataWWW2019/UserEmbedding/%s_userids.txt", prefix, data);
 
-        int[] times = new int[]{2, 3, 4, 5, 6, 7, 8};
-        String[] models = new String[]{"CTR"};//, "EUB_t30", "EUB_t50"}; //"BOW", "LDA", "HFT", "RTM", "DW", "TADW", "EUB_t10", "EUB_t20", "EUB_t30", "EUB_t40", "EUB_t50"};// "RTM", "LDA", "HFT", "DW", "TADW"}; // "LDA", "HFT", "TADW", "EUB", "LDA", "HFT"
+        int[] times = new int[]{2};
+        String[] models = new String[]{"Role", "DW", "EUB_t30"};//, "EUB_t50"}; //"BOW", "LDA", "HFT", "RTM", "DW", "TADW", "EUB_t10", "EUB_t20", "EUB_t30", "EUB_t40", "EUB_t50"};// "RTM", "LDA", "HFT", "DW", "TADW"}; // "LDA", "HFT", "TADW", "EUB", "LDA", "HFT"
         HashMap<String, double[][][]> allFoldsPerf = new HashMap<String, double[][][]>();
 
         LinkPredictionWithUserEmbedding link = null;
@@ -593,6 +641,10 @@ public class LinkPredictionWithUserEmbedding {
                         link = new  LinkPredictionWithUserEmbeddingBOW()  ;
                     else link = new LinkPredictionWithUserEmbedding();
 
+                    if(model.equals("Role")){
+                        String roleFile = String.format("%s/DataWWW2019/UserEmbedding/%s_role_embedding.txt", prefix, data);
+                        link.loadRoleEmbedding(roleFile);
+                    }
                     link.initLinkPred(idFile, embedFile, testInterFile, testNonInterFile);
                     link.calculateAllNDCGMAP();
                     perfs[fold][t] = link.calculateAvgNDCGMAP();
@@ -602,51 +654,4 @@ public class LinkPredictionWithUserEmbedding {
         }
         link.calcMeanStd(allFoldsPerf);
     }
-
-//    // the main for link pred in cold start setting
-//    public static void main(String[] args){
-//
-//        String data = "StackOverflow";
-//        String prefix = "/home/lin"; // "/Users/lin", "/home/lin"
-//
-//        int dim = 10, kFolds = 4, folds = 0;
-//        String idFile = String.format("%s/DataWWW2019/UserEmbedding/%s_userids.txt", prefix, data);
-//
-//        int[] times = new int[]{2, 3, 4, 5, 6, 7, 8};
-//        String[] models = new String[]{"EUB_t50"};// "LDA", "HFT", "TADW", "RTM"};//, "EUB_t30", "EUB_t50"}; //"BOW", "LDA", "HFT", "RTM", "DW", "TADW", "EUB_t10", "EUB_t20", "EUB_t30", "EUB_t40", "EUB_t50"};// "RTM", "LDA", "HFT", "DW", "TADW"}; // "LDA", "HFT", "TADW", "EUB", "LDA", "HFT"
-//        HashMap<String, double[][][]> allFoldsPerf = new HashMap<String, double[][][]>();
-//        String[] groups = new String[]{"light", "medium", "heavy"};
-//        for(String group: groups){
-//        LinkPredictionWithUserEmbedding link = null;
-//
-//        for(String model: models){
-//            if(model.equals("LDA") || model.equals("HFT") || model.equals("BOW"))
-//                folds = 0;
-//            else
-//                folds = kFolds;
-//            double[][][] perfs = new double[folds+1][times.length][2];
-//            for (int t = 0; t < times.length; t++) {
-//
-//                for(int fold=0; fold<=folds; fold++){
-//                    int time = times[t];
-//                    System.out.format("-----current model-%s-time-%d-dim-%d-group-%s------\n", model, time, dim, group);
-//
-//                    String embedFile = String.format("%s/DataWWW2019/UserEmbeddingColdStart/%s_%s_embedding_dim_%d_fold_%d.txt", prefix, data, model, dim, fold);
-////                    if(model.equals("BOW"))
-////                        embedFile = String.format("%s/DataWWW2019/UserEmbedding/%s_%s.txt", prefix, data, model);
-//                    String testInterFile = String.format("./data/DataEUB/ColdStart4Edges/%s_cold_start_4edges_fold_%d_interactions_%s.txt", data, fold, group);
-//                    String testNonInterFile = String.format("./data/DataEUB/ColdStart4Edges/%s_cold_start_4edges_fold_%d_noninteractions_time_%d_%s.txt", data, fold, time, group);
-//
-////                    if(model.equals("BOW"))
-////                        link = new  LinkPredictionWithUserEmbeddingBOW()  ;
-//                    link = new LinkPredictionWithUserEmbedding();
-//                    link.initLinkPred(idFile, embedFile, testInterFile, testNonInterFile);
-//                    link.calculateAllNDCGMAP();
-//                    perfs[fold][t] = link.calculateAvgNDCGMAP();
-//                }
-//            }
-//            allFoldsPerf.put(model, perfs);
-//        }
-//        link.calcMeanStd(allFoldsPerf);
-//    }}
 }
