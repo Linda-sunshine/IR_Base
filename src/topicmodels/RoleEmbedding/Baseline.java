@@ -549,8 +549,8 @@ public class Baseline {
         String userEmbeddingFile = String.format("/home/lin/DataWWW2019/UserEmbedding/YelpNew_Role_embedding_dim_10_fold_0.txt", dataset);
         String roleEmbeddingFile = String.format("/home/lin/DataWWW2019/UserEmbedding/YelpNew_role_embedding.txt", dataset);
 
-        int m = 10, L = 10, nuIter = 50;
-        double converge = 1e-6, alpha = 0.1, beta = 0.1, stepSize = 1e-5;
+        int m = 10, L = 30, nuIter = 100;
+        double converge = 1e-6, alpha = 0.5, beta = 0.5, stepSize = 1e-5;
         Baseline base = new Baseline(m, L, nuIter, converge, alpha, beta, stepSize);
 
         base.loadUsers(userFile);
