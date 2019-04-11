@@ -144,16 +144,17 @@ public class PreProcess {
 
 
         int dim = 10;
-        String dataset = "StackOverflow"; // "StackOverflow", "YelpNew"
+        String dataset = "YelpNew"; // "StackOverflow", "YelpNew"
         String prefix = "./data/CoLinAdapt";
 
         // write out the data for deepwalk
-        for(int k: new int[]{0, 1, 2, 3, 4}) {
-            String idPrefix = "/home/lin"; // "/Users/lin", "/home/lin"
+        for(int k: new int[]{0}) {//, 1, 2, 3, 4}) {
+            String idPrefix = "/Users/lin"; // "/Users/lin", "/home/lin"
 
             String idFile = String.format("%s/DataWWW2019/UserEmbedding/%s_userids.txt", idPrefix, dataset);
-            String cvIndexFile4Interaction = String.format("%s/%s/%sCVIndex4Interaction_fold_%d_train.txt", prefix, dataset, dataset, k);
-            String dwTrainFile = String.format("./data/deepwalk/%s_DW_fold_%d.txt", dataset, k);
+            String cvIndexFile4Interaction = String.format("%s/%s/%sCVIndex4Interaction_fold_%d_train.txt", prefix,
+                    dataset, dataset, k);
+            String dwTrainFile = String.format("./data/deepwalk-master/%s_DW_fold_%d.txt", dataset, k);
 
             PreProcess p = new PreProcess();
             p.loadUserIds(idFile);
@@ -161,8 +162,8 @@ public class PreProcess {
 //            p.writeInteractions4DeepWalk(dwTrainFile);
 
             // transfer the output of deepwalk for embedding
-            String input = String.format("/home/lin/Lin\'sWorkSpace/deepwalk/output/%s_DW_embedding_dim_%d_fold_%d.txt",
-                    dataset, dim, k);
+            String input = String.format("%s/Documents/Lin\'sWorkSpace/deepwalk-master/output/%s_DW_embedding_dim_%d_fold_%d.txt",
+                    idPrefix, dataset, dim, k);
             String output = String.format("%s/DataWWW2019/UserEmbedding/%s_DW_embedding_dim_%d_fold_%d.txt", idPrefix,
                     dataset, dim, k);
             p.transferDWEmbedding(input, output, dim);
