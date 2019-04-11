@@ -236,8 +236,8 @@ public class Baseline {
                     gTermOne = sigmod(affinity);
                     // each dimension of user vectors ui and uj
                     for(int g=0; g<m_dim; g++){
-                        userG[uiIdx][g] += gTermOne * calcUserGradientTermTwo(g, m_users[ujIdx]);
-                        userG[ujIdx][g] += gTermOne * calcUserGradientTermTwo(g, m_users[uiIdx]);
+                        userG[uiIdx][g] -= gTermOne * calcUserGradientTermTwo(g, m_users[ujIdx]);
+                        userG[ujIdx][g] -= gTermOne * calcUserGradientTermTwo(g, m_users[uiIdx]);
                     }
                 }
             }
@@ -251,9 +251,15 @@ public class Baseline {
             for(int i=0; i<m_users.length; i++){
                 for(int j=0; j<m_dim; j++){
                     fValue -= m_alpha * m_users[i][j] * m_users[i][j];
-                    m_users[i][j] -= m_stepSize * userG[i][j];
+                    m_users[i][j] += m_stepSize * userG[i][j];
                 }
             }
+//            for(int i=0; i<userG.length; i++){
+//                for(int j=0; j<userG[0].length; j++){
+//                    System.out.print(userG[i][j]+"\t");
+//                }
+//                System.out.println();
+//            }
             diff = (lastFValue - fValue) / lastFValue;
             lastFValue = fValue;
             System.out.format("Function value: %.1f\n", fValue);
@@ -366,12 +372,11 @@ public class Baseline {
                     // each element of role embedding B_{gh}
                     for(int g=0; g<m_nuOfRoles; g++){
                         for(int h=0; h<m_dim; h++){
-                            roleG[g][h] += gTermOne * calcRoleGradientTermTwo(g, h, m_users[uiIdx], m_users[ujIdx]);
+                            roleG[g][h] -= gTermOne * calcRoleGradientTermTwo(g, h, m_users[uiIdx], m_users[ujIdx]);
                         }
                     }
                 }
             }
-            // multiply: B * roleG - 2*beta*B_{gh}
 //            System.out.format("function value from one edges: %.1f, from zero edges: %.1f\n", fValueOne, fValueZero);
             fValue = fValueOne + fValueZero;
 
@@ -385,7 +390,7 @@ public class Baseline {
             // update the role vectors based on the gradients
             for(int l=0; l<m_roles.length; l++){
                 for(int m=0; m<m_dim; m++){
-                    m_roles[l][m] -= m_stepSize * 0.01 * roleG[l][m];
+                    m_roles[l][m] += m_stepSize * 0.01 * roleG[l][m];
                 }
             }
             diff = fValue - lastFValue;
@@ -399,10 +404,10 @@ public class Baseline {
     public double calcRoleGradientTermTwo(int g, int h, double[] ui, double[] uj){
         double val = 0;
         for(int p=0; p<m_dim; p++){
-            for(int m=0; m<m_dim; m++){
+//            for(int m=0; m<m_dim; m++){
                 val += ui[h] * m_roles[g][p] * uj[p];
-                val += ui[m] * m_roles[g][m] * uj[h];
-            }
+                val += ui[p] * m_roles[g][p] * uj[h];
+
         }
         return val;
     }
@@ -546,11 +551,11 @@ public class Baseline {
         String userFile = String.format("./data/RoleEmbedding/%s-users.txt", dataset);
         String oneEdgeFile = String.format("./data/RoleEmbedding/%s-links.txt", dataset);
         String zeroEdgeFile = String.format("./data/RoleEmbedding/%s-nonlinks.txt", dataset);
-        String userEmbeddingFile = String.format("/home/lin/DataWWW2019/UserEmbedding/YelpNew_Role_embedding_dim_10_fold_0.txt", dataset);
+        String userEmbeddingFile = String.format("/Users/lin/DataWWW2019/UserEmbedding/YelpNew_Role_embedding_dim_10_fold_0.txt", dataset);
         String roleEmbeddingFile = String.format("/home/lin/DataWWW2019/UserEmbedding/YelpNew_role_embedding.txt", dataset);
 
         int m = 10, L = 30, nuIter = 100;
-        double converge = 1e-6, alpha = 0.5, beta = 0.5, stepSize = 1e-5;
+        double converge = 1e-6, alpha = 0.5, beta = 0.5, stepSize = 1e-6;
         Baseline base = new Baseline(m, L, nuIter, converge, alpha, beta, stepSize);
 
         base.loadUsers(userFile);
