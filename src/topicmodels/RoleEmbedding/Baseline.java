@@ -15,6 +15,7 @@ import java.util.HashMap;
 
 public class Baseline {
 
+    boolean m_updateRoleByMatrix = false;
     private double m_converge, m_alpha, m_beta, m_stepSize; //parameter for regularization
     private int m_dim, m_nuOfRoles, m_numberOfIteration;
     private double[][] m_users; // U*M
@@ -168,7 +169,7 @@ public class Baseline {
         for(int i=0; i<vct.length; i++){
             vct[i] = Math.random();
         }
-//        Utils.normalize(vct);
+        Utils.normalize(vct);
     }
 
     public void train(){
@@ -254,12 +255,6 @@ public class Baseline {
                     m_users[i][j] += m_stepSize * userG[i][j];
                 }
             }
-//            for(int i=0; i<userG.length; i++){
-//                for(int j=0; j<userG[0].length; j++){
-//                    System.out.print(userG[i][j]+"\t");
-//                }
-//                System.out.println();
-//            }
             diff = (lastFValue - fValue) / lastFValue;
             lastFValue = fValue;
             System.out.format("Function value: %.1f\n", fValue);
@@ -278,64 +273,62 @@ public class Baseline {
         return val;
     }
 
-//    // update role vectors;
-//    public double updateRoleVectors(){
-//
-//        System.out.println("Start optimizing role vectors...");
-//        double fValue, fValueOne, fValueZero, lastFValue = 1.0, converge = 1e-6, diff, iterMax = 5, iter = 0;
-//        double[][] gTermTwo = new double[m_dim][m_dim];
-//        double[][] roleG = new double[m_roles.length][m_dim];
-//
-//        do {
-//            fValueOne = 0; fValueZero = 0;
-//            for (double[] g : gTermTwo) {
-//                Arrays.fill(g, 0);
-//            }
-//            // updates of gradient from one edges
-//            for (int uiIdx : m_oneEdges.keySet()) {
-//                for(int ujIdx: m_oneEdges.get(uiIdx)){
-//                    if(ujIdx <= uiIdx) continue;
-//                    fValueOne += calcRoleGradientWithOneEdge(gTermTwo, uiIdx, ujIdx, m_users[uiIdx], m_users[ujIdx]);
-//                }
-//            }
-//            // updates of gradient from zero edges
-//            for (int uiIdx : m_zeroEdges.keySet()) {
-//                for(int ujIdx: m_zeroEdges.get(uiIdx)){
-//                    if(ujIdx <= uiIdx) continue;
-//                    fValueZero += calcRoleGradientWithZeroEdge(gTermTwo, uiIdx, ujIdx, m_users[uiIdx], m_users[ujIdx]);
-//                }
-//            }
-//            // multiply: B * roleG - 2*beta*B_{gh}
-//            System.out.format("function value from one edges: %.1f, from zero edges: %.1f\n", fValueOne, fValueZero);
-//            fValue = fValueOne + fValueZero;
-//
-//            for(int l=0; l<m_nuOfRoles; l++){
-//                for(int m=0; m<m_dim; m++){
-//                    roleG[l][m] = Utils.dotProduct(m_roles[l], getOneColumn(gTermTwo, m)) - 2 * m_beta * m_roles[l][m];
-//                    fValue -= m_beta * m_roles[l][m] * m_roles[l][m];
-//                }
-//            }
-////            for(int i=0; i<roleG.length; i++){
-////                for(int j=0; j<roleG[0].length; j++){
-////                    System.out.print(roleG[i][j]+"\t");
-////                }
-////                System.out.println();
-////            }
-//            // update the role vectors based on the gradients
-//            for(int l=0; l<m_roles.length; l++){
-//                for(int m=0; m<m_dim; m++){
-//                    m_roles[l][m] -= m_stepSize * 0.01 * roleG[l][m];
-//                }
-//            }
-//            diff = fValue - lastFValue;
-//            lastFValue = fValue;
-////            System.out.format("Function value: %.1f\n", fValue);
-//        } while(iter++ < iterMax && Math.abs(diff) > converge);
-//        return fValue;
-//    }
+    public double updateRoleVectors(){
+        if(m_updateRoleByMatrix)
+            return updateRoleVectorsByMatrix();
+        else
+            return updateRoleVectorsByElement();
+    }
 
     // update role vectors;
-    public double updateRoleVectors(){
+    public double updateRoleVectorsByMatrix(){
+
+        System.out.println("Start optimizing role vectors...");
+        double fValue, lastFValue = 1.0, converge = 1e-6, diff, iterMax = 5, iter = 0;
+        double[][] gTermTwo = new double[m_dim][m_dim];
+        double[][] roleG = new double[m_roles.length][m_dim];
+
+        do {
+            fValue = 0;
+            for (double[] g : gTermTwo) {
+                Arrays.fill(g, 0);
+            }
+            // updates of gradient from one edges
+            for (int uiIdx : m_oneEdges.keySet()) {
+                for(int ujIdx: m_oneEdges.get(uiIdx)){
+                    if(ujIdx <= uiIdx) continue;
+                    fValue += calcRoleGradientWithOneEdge(gTermTwo, uiIdx, ujIdx, m_users[uiIdx], m_users[ujIdx]);
+                }
+            }
+            // updates of gradient from zero edges
+            for (int uiIdx : m_zeroEdges.keySet()) {
+                for(int ujIdx: m_zeroEdges.get(uiIdx)){
+                    if(ujIdx <= uiIdx) continue;
+                    fValue += calcRoleGradientWithZeroEdge(gTermTwo, uiIdx, ujIdx, m_users[uiIdx], m_users[ujIdx]);
+                }
+            }
+            // multiply: B * roleG - 2*beta*B_{gh}
+            for(int l=0; l<m_nuOfRoles; l++){
+                for(int m=0; m<m_dim; m++){
+                    roleG[l][m] = Utils.dotProduct(m_roles[l], getOneColumn(gTermTwo, m)) - 2 * m_beta * m_roles[l][m];
+                    fValue -= m_beta * m_roles[l][m] * m_roles[l][m];
+                }
+            }
+            System.out.format("Function value: %.1f\n", fValue);
+            // update the role vectors based on the gradients
+            for(int l=0; l<m_roles.length; l++){
+                for(int m=0; m<m_dim; m++){
+                    m_roles[l][m] += m_stepSize * 0.01 * roleG[l][m];
+                }
+            }
+            diff = fValue - lastFValue;
+            lastFValue = fValue;
+        } while(iter++ < iterMax && Math.abs(diff) > converge);
+        return fValue;
+    }
+
+    // update role vectors;
+    public double updateRoleVectorsByElement(){
 
         System.out.println("Start optimizing role vectors...");
         double fValue, fValueOne, fValueZero, affinity, gTermOne, lastFValue = 1.0, converge = 1e-6, diff, iterMax = 5, iter = 0;
@@ -377,9 +370,7 @@ public class Baseline {
                     }
                 }
             }
-//            System.out.format("function value from one edges: %.1f, from zero edges: %.1f\n", fValueOne, fValueZero);
             fValue = fValueOne + fValueZero;
-
             for(int l=0; l<m_nuOfRoles; l++){
                 for(int m=0; m<m_dim; m++){
                     roleG[l][m] -= 2 * m_beta * m_roles[l][m];
@@ -404,10 +395,8 @@ public class Baseline {
     public double calcRoleGradientTermTwo(int g, int h, double[] ui, double[] uj){
         double val = 0;
         for(int p=0; p<m_dim; p++){
-//            for(int m=0; m<m_dim; m++){
-                val += ui[h] * m_roles[g][p] * uj[p];
-                val += ui[p] * m_roles[g][p] * uj[h];
-
+            val += ui[h] * m_roles[g][p] * uj[p];
+            val += ui[p] * m_roles[g][p] * uj[h];
         }
         return val;
     }
@@ -551,11 +540,11 @@ public class Baseline {
         String userFile = String.format("./data/RoleEmbedding/%s-users.txt", dataset);
         String oneEdgeFile = String.format("./data/RoleEmbedding/%s-links.txt", dataset);
         String zeroEdgeFile = String.format("./data/RoleEmbedding/%s-nonlinks.txt", dataset);
-        String userEmbeddingFile = String.format("/Users/lin/DataWWW2019/UserEmbedding/YelpNew_Role_embedding_dim_10_fold_0.txt", dataset);
+        String userEmbeddingFile = String.format("/home/lin/DataWWW2019/UserEmbedding/YelpNew_Role_embedding_dim_10_fold_0.txt", dataset);
         String roleEmbeddingFile = String.format("/home/lin/DataWWW2019/UserEmbedding/YelpNew_role_embedding.txt", dataset);
 
-        int m = 10, L = 30, nuIter = 100;
-        double converge = 1e-6, alpha = 0.5, beta = 0.5, stepSize = 1e-6;
+        int m = 20, L = 30, nuIter = 100;
+        double converge = 1e-6, alpha = 0.5, beta = 0.5, stepSize = 0.01;
         Baseline base = new Baseline(m, L, nuIter, converge, alpha, beta, stepSize);
 
         base.loadUsers(userFile);
