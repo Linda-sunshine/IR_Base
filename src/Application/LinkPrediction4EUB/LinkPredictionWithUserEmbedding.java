@@ -574,11 +574,11 @@ public class LinkPredictionWithUserEmbedding {
         String data = "YelpNew";
         String prefix = "/Users/lin";// "/home/lin"
 
-        int dim = 5, folds = 0;
+        int dim = 10, folds = 0, nuOfRoles = 30;
         String idFile = String.format("%s/DataWWW2019/UserEmbedding/%s_userids.txt", prefix, data);
 
         int[] times = new int[]{2};
-        String[] models = new String[]{"User"};//, "EUB_t30"};//, "EUB_t50"}; //"BOW", "LDA", "HFT", "RTM", "DW", "TADW", "EUB_t10", "EUB_t20", "EUB_t30", "EUB_t40", "EUB_t50"};// "RTM", "LDA", "HFT", "DW", "TADW"}; // "LDA", "HFT", "TADW", "EUB", "LDA", "HFT"
+        String[] models = new String[]{"MultiRole_User"};//"User_skipGram_input", "User_skipGram_output"};//, "EUB_t30"};//, "EUB_t50"}; //"BOW", "LDA", "HFT", "RTM", "DW", "TADW", "EUB_t10", "EUB_t20", "EUB_t30", "EUB_t40", "EUB_t50"};// "RTM", "LDA", "HFT", "DW", "TADW"}; // "LDA", "HFT", "TADW", "EUB", "LDA", "HFT"
         HashMap<String, double[][][]> allFoldsPerf = new HashMap<String, double[][][]>();
 
         LinkPredictionWithUserEmbedding link = null;
@@ -603,8 +603,8 @@ public class LinkPredictionWithUserEmbedding {
                         link = new LinkPredictionWithUserEmbeddingBOW();
                     else link = new LinkPredictionWithUserEmbedding();
 
-                    if (model.equals("Role")) {
-                        String roleFile = String.format("%s/DataWWW2019/UserEmbedding/%s_role_embedding.txt", prefix, data);
+                    if (model.equals("MultiRole_User")) {
+                        String roleFile = String.format("%s/DataWWW2019/UserEmbedding/%s_Role_embedding_nu_%d_dim_%d_fold_%d.txt", prefix, data, nuOfRoles, dim, fold);
                         link.loadRoleEmbedding(roleFile);
                     }
                     link.initLinkPred(idFile, embedFile, testInterFile, testNonInterFile);
