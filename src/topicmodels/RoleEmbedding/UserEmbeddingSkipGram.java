@@ -18,10 +18,16 @@ import java.util.Arrays;
 public class UserEmbeddingSkipGram extends UserEmbeddingBaseline {
     protected double[][] m_usersOutput; // two sets of representations of users u_i
     protected double[][] m_outputG; // the gradient for the outputs of users
+    protected double m_eta; // //parameter for regularization of output user vectors
 
-    public UserEmbeddingSkipGram(int m, int nuIter, double converge, double alpha, double stepSize){
+    public UserEmbeddingSkipGram(int m, int nuIter, double converge, double alpha, double eta, double stepSize){
         super(m, nuIter, converge, alpha, stepSize);
+        m_eta = eta;
+    }
 
+    @Override
+    public String toString() {
+        return String.format("UserEmbedding_SkipGram[dim:%d, alpha:%.4f, #Iter:%d]", m_dim, m_alpha, m_numberOfIteration);
     }
 
     @Override
@@ -42,14 +48,14 @@ public class UserEmbeddingSkipGram extends UserEmbeddingBaseline {
         double affinity, gTermOne, fValue;
         double lastFValue = 1.0, converge = 1e-6, diff, iterMax = 3, iter = 0;
         double[] vi, vj, ui, uj;
-        double[][] userInputG = new double[m_usersInput.length][m_dim];
-        double[][] userOutputG = new double[m_usersInput.length][m_dim];
+//        double[][] userInputG = new double[m_usersInput.length][m_dim];
+//        double[][] userOutputG = new double[m_usersInput.length][m_dim];
 
         do{
             fValue = 0;
-            for(int i=0; i<userInputG.length; i++){
-                Arrays.fill(userInputG[i], 0);
-                Arrays.fill(userOutputG[i], 0);
+            for(int i=0; i<m_inputG.length; i++){
+                Arrays.fill(m_inputG[i], 0);
+                Arrays.fill(m_outputG[i], 0);
             }
             // updates based on one edges
             for(int uiIdx: m_oneEdges.keySet()){
@@ -65,35 +71,32 @@ public class UserEmbeddingSkipGram extends UserEmbeddingBaseline {
                     gTermOne = sigmod(-affinity);
                     // each dimension of user vectors ui and uj
                     for(int g=0; g<m_dim; g++){
-                        userInputG[uiIdx][g] += gTermOne * uj[g];
-                        userInputG[ujIdx][g] += gTermOne * ui[g];
-                        userOutputG[uiIdx][g] += gTermOne * vj[g];
-                        userOutputG[ujIdx][g] += gTermOne * vi[g];
+                        m_inputG[uiIdx][g] += gTermOne * uj[g];
+                        m_inputG[ujIdx][g] += gTermOne * ui[g];
+                        m_outputG[uiIdx][g] += gTermOne * vj[g];
+                        m_outputG[ujIdx][g] += gTermOne * vi[g];
                     }
                 }
             }
             // updates based on zero edges
-            if(m_zeroEdges == null){
-                fValue += updateUserVectorsWithAllZeroEdges();
-
-            } else{
+            if(m_zeroEdges.size() != 0){
                 fValue += updateUserVectorsWithSampledZeroEdges();
             }
 
             // add the gradient from regularization
             for(int i=0; i<m_usersInput.length; i++){
                 for(int m=0; m<m_dim; m++){
-                    userInputG[i][m] -= m_alpha * 2 * m_usersInput[i][m];
-                    userOutputG[i][m] -= m_alpha * 2 * m_usersOutput[i][m];
+                    m_inputG[i][m] -= m_alpha * 2 * m_usersInput[i][m];
+                    m_outputG[i][m] -= m_eta * 2 * m_usersOutput[i][m];
                 }
             }
             // update the user vectors based on the gradients
             for(int i=0; i<m_usersInput.length; i++){
                 for(int j=0; j<m_dim; j++){
                     fValue -= m_alpha * m_usersInput[i][j] * m_usersInput[i][j];
-                    fValue -= m_alpha * m_usersOutput[i][j] * m_usersOutput[i][j];
-                    m_usersInput[i][j] += m_stepSize * userInputG[i][j];
-                    m_usersOutput[i][j] += m_stepSize * userOutputG[i][j];
+                    fValue -= m_eta * m_usersOutput[i][j] * m_usersOutput[i][j];
+                    m_usersInput[i][j] += m_stepSize * m_inputG[i][j];
+                    m_usersOutput[i][j] += m_stepSize * m_outputG[i][j];
                 }
             }
             diff = (lastFValue - fValue) / lastFValue;
@@ -103,28 +106,28 @@ public class UserEmbeddingSkipGram extends UserEmbeddingBaseline {
         return fValue;
     }
 
-    @Override
-    // if no zero edges are loaded, user all zero edges for udpate
-    public double updateUserVectorsWithAllZeroEdges(){
-        double fValue = 0, gTermOne, affinity, vi[], vj[], ui[], uj[];
-        for(int i=0; i<m_uIds.size(); i++){
-            vi = m_usersInput[i];
-            ui = m_usersOutput[i];
-            // collect zero edges first
-            for(int j=i+1; j<m_uIds.size(); j++){
-                if(m_oneEdges.containsKey(i) && m_oneEdges.get(i).contains(j)) continue;
-                vj = m_usersInput[j];
-                uj = m_usersOutput[j];
-                affinity = Utils.dotProduct(vi, uj);
-                fValue += Math.log(sigmod(-affinity));
-                gTermOne = sigmod(affinity);
-                // each dimension of user vectors ui and uj
-                updateGradients(i, j, gTermOne, ui, uj, vi, vj);
-
-            }
-        }
-        return fValue;
-    }
+//    @Override
+//    // if no zero edges are loaded, user all zero edges for udpate
+//    public double updateUserVectorsWithAllZeroEdges(){
+//        double fValue = 0, gTermOne, affinity, vi[], vj[], ui[], uj[];
+//        for(int i=0; i<m_uIds.size(); i++){
+//            vi = m_usersInput[i];
+//            ui = m_usersOutput[i];
+//            // collect zero edges first
+//            for(int j=i+1; j<m_uIds.size(); j++){
+//                if(m_oneEdges.containsKey(i) && m_oneEdges.get(i).contains(j)) continue;
+//                vj = m_usersInput[j];
+//                uj = m_usersOutput[j];
+//                affinity = Utils.dotProduct(vi, uj);
+//                fValue += Math.log(sigmod(-affinity));
+//                gTermOne = sigmod(affinity);
+//                // each dimension of user vectors ui and uj
+//                updateGradients(i, j, gTermOne, ui, uj, vi, vj);
+//
+//            }
+//        }
+//        return fValue;
+//    }
 
     @Override
     // if sampled zero edges are load, user sampled zero edges for update
@@ -138,7 +141,7 @@ public class UserEmbeddingSkipGram extends UserEmbeddingBaseline {
                 vj = m_usersInput[j];
                 ui = m_usersOutput[i];
                 uj = m_usersOutput[j];
-                affinity = Utils.dotProduct(vi, uj);
+                affinity = calcAffinity(i, j); // uj^T * vi
                 fValue += Math.log(sigmod(-affinity));
                 gTermOne = sigmod(affinity);
                 // each dimension of user vectors ui and uj
@@ -147,6 +150,12 @@ public class UserEmbeddingSkipGram extends UserEmbeddingBaseline {
         }
         return fValue;
     }
+
+    // uj^T * vi
+    public double calcAffinity(int i, int j){
+        return Utils.dotProduct(m_usersInput[i], m_usersOutput[j]);
+    }
+
     public void updateGradients(int i, int j, double gTermOne, double[] ui, double[] uj, double[] vi, double[] vj){
         for(int g=0; g<m_dim; g++){
             m_inputG[i][g] -= gTermOne * calcUserGradientTermTwo(g, uj);
@@ -179,9 +188,9 @@ public class UserEmbeddingSkipGram extends UserEmbeddingBaseline {
     public static void main(String[] args){
 
         String dataset = "YelpNew"; // "release-youtube"
-        String model = "User_skipGram";
+        String model = "user_skipgram";
 
-        int fold = 0, m = 20, nuIter = 500;
+        int fold = 0, m = 50, nuIter = 200;
         String userFile = String.format("./data/RoleEmbedding/%sUserIds.txt", dataset);
         String oneEdgeFile = String.format("./data/RoleEmbedding/%sCVIndex4Interaction_fold_%d_train.txt", dataset, fold);
         String zeroEdgeFile = String.format("./data/RoleEmbedding/%sCVIndex4NonInteractions_fold_%d_train.txt", dataset, fold);
@@ -189,16 +198,15 @@ public class UserEmbeddingSkipGram extends UserEmbeddingBaseline {
         String userEmbeddingOutputFile = String.format("/Users/lin/DataWWW2019/UserEmbedding/%s_%s_output_embedding_dim_%d_fold_%d.txt", dataset, model, m, fold);
 
 
-        double converge = 1e-6, alpha = 1, stepSize = 0.0002;
-        UserEmbeddingSkipGram skipGram = new UserEmbeddingSkipGram(m, nuIter, converge, alpha, stepSize);
+        double converge = 1e-6, alpha = 0.5, eta = 0.5, stepSize = 0.001;
+        UserEmbeddingSkipGram skipGram = new UserEmbeddingSkipGram(m, nuIter, converge, alpha, eta, stepSize);
 
         skipGram.loadUsers(userFile);
         skipGram.loadEdges(oneEdgeFile, 1); // load one edges
+        skipGram.loadEdges(zeroEdgeFile, 0); // load zero edges
 
         skipGram.train();
         skipGram.printUserEmbedding(userEmbeddingInputFile);
         skipGram.printUserEmbeddingOutput(userEmbeddingOutputFile);
     }
-
-
 }

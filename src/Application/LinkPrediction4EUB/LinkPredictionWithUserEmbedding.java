@@ -146,8 +146,16 @@ public class LinkPredictionWithUserEmbedding {
     }
 
     double[][] m_roles;
+    double[][] m_rolesContext;
 
-    public void loadRoleEmbedding(String filename) {
+    public double[][] getRoles(){
+        return m_roles;
+    }
+    public double[][] getRolesContext(){
+        return m_rolesContext;
+    }
+
+    public void loadRoleEmbedding(String filename, double[][] roles) {
         try {
             File file = new File(filename);
             BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(file), "UTF-8"));
@@ -160,7 +168,7 @@ public class LinkPredictionWithUserEmbedding {
             }
             int nuOfRoles = Integer.valueOf(strs[0]);
             m_dim = Integer.valueOf(strs[1]);
-            m_roles = new double[nuOfRoles][m_dim];
+            roles = new double[nuOfRoles][m_dim];
             // read each role's embedding one by one
             int count = 0;
             while ((line = reader.readLine()) != null) {
@@ -173,10 +181,10 @@ public class LinkPredictionWithUserEmbedding {
                 for (int i = 1; i < valStrs.length; i++) {
                     embedding[i - 1] = Double.valueOf(valStrs[i]);
                 }
-                m_roles[count++] = embedding;
+                roles[count++] = embedding;
             }
             reader.close();
-            System.out.format("Finish loading %d role embeddings.\n", count);
+            System.out.format("Finish loading %d role embeddings from %s.\n", count, filename);
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -301,21 +309,23 @@ public class LinkPredictionWithUserEmbedding {
         for (int i = 0; i < m_userSize; i++) {
             for (int j = i + 1; j < m_userSize; j++) {
                 m_similarity[i][j] = 0;
-                if (m_roles != null) {
-                    m_similarity[i][j] = -Utils.euclideanDistance(projection2Roles(m_embeddings[i]),
-                            projection2Roles(m_embeddings[j]));
+                if(m_roles != null && m_rolesContext != null){
+                    m_similarity[i][j] = -Utils.euclideanDistance(projection2Roles(m_embeddings[i], m_roles), projection2Roles(m_embeddings[j], m_rolesContext));
+                } else if (m_roles != null) {
+                    m_similarity[i][j] = -Utils.euclideanDistance(projection2Roles(m_embeddings[i], m_roles), projection2Roles(m_embeddings[j], m_roles));
+                } else{
+                    m_similarity[i][j] = -Utils.euclideanDistance(m_embeddings[i], m_embeddings[j]);
                 }
-                m_similarity[i][j] = -Utils.euclideanDistance(m_embeddings[i], m_embeddings[j]);
             }
         }
         System.out.println("Finish calculating similarity.");
 
     }
 
-    public double[] projection2Roles(double[] user) {
-        double[] mixture = new double[m_roles.length];
-        for (int l = 0; l < m_roles.length; l++) {
-            mixture[l] = Utils.dotProduct(m_roles[l], user);
+    public double[] projection2Roles(double[] user, double[][] roles) {
+        double[] mixture = new double[roles.length];
+        for (int l = 0; l < roles.length; l++) {
+            mixture[l] = Utils.dotProduct(roles[l], user);
         }
         return mixture;
     }
@@ -574,11 +584,12 @@ public class LinkPredictionWithUserEmbedding {
         String data = "YelpNew";
         String prefix = "/Users/lin";// "/home/lin"
 
-        int dim = 10, folds = 0, nuOfRoles = 30;
+        int dim = 10, folds = 0, nuOfRoles = 10;
         String idFile = String.format("%s/DataWWW2019/UserEmbedding/%s_userids.txt", prefix, data);
 
         int[] times = new int[]{2};
-        String[] models = new String[]{"MultiRole_User"};//"User_skipGram_input", "User_skipGram_output"};//, "EUB_t30"};//, "EUB_t50"}; //"BOW", "LDA", "HFT", "RTM", "DW", "TADW", "EUB_t10", "EUB_t20", "EUB_t30", "EUB_t40", "EUB_t50"};// "RTM", "LDA", "HFT", "DW", "TADW"}; // "LDA", "HFT", "TADW", "EUB", "LDA", "HFT"
+        // "multirole", "multirole_skipgram"
+        String[] models = new String[]{"multirole_skipgram"};//"user_skipgram_input", "user_skipgram_output"};//"user_skipgram_input", "user_skipgram_output"};//, "EUB_t30"};//, "EUB_t50"}; //"BOW", "LDA", "HFT", "RTM", "DW", "TADW", "EUB_t10", "EUB_t20", "EUB_t30", "EUB_t40", "EUB_t50"};// "RTM", "LDA", "HFT", "DW", "TADW"}; // "LDA", "HFT", "TADW", "EUB", "LDA", "HFT"
         HashMap<String, double[][][]> allFoldsPerf = new HashMap<String, double[][][]>();
 
         LinkPredictionWithUserEmbedding link = null;
@@ -591,21 +602,30 @@ public class LinkPredictionWithUserEmbedding {
 
                 for (int fold = 0; fold <= folds; fold++) {
                     int time = times[t];
-                    System.out.format("-----current model-%s-time-%d-dim-%d------\n", model, time, dim);
-
-                    String embedFile = String.format("%s/DataWWW2019/UserEmbedding/%s_%s_embedding_dim_%d_fold_%d.txt", prefix, data, model, dim, fold);
-                    if (model.equals("BOW"))
-                        embedFile = String.format("%s/DataWWW2019/UserEmbedding/%s_%s.txt", prefix, data, model);
                     String testInterFile = String.format("./data/DataEUB/CV4Edges/%sCVIndex4Interaction_fold_%d_test.txt", data, fold);
                     String testNonInterFile = String.format("./data/DataEUB/CV4Edges/%sCVIndex4NonInteraction_time_%d_fold_%d.txt", data, time, fold);
+
+                    System.out.format("-----current model-%s-time-%d-dim-%d------\n", model, time, dim);
 
                     if (model.equals("BOW"))
                         link = new LinkPredictionWithUserEmbeddingBOW();
                     else link = new LinkPredictionWithUserEmbedding();
 
-                    if (model.equals("MultiRole_User")) {
-                        String roleFile = String.format("%s/DataWWW2019/UserEmbedding/%s_Role_embedding_nu_%d_dim_%d_fold_%d.txt", prefix, data, nuOfRoles, dim, fold);
-                        link.loadRoleEmbedding(roleFile);
+                    String embedFile = String.format("%s/DataWWW2019/UserEmbedding/%s_%s_embedding_dim_%d_fold_%d.txt", prefix, data, model, dim, fold);
+                    if (model.equals("BOW")) {
+                        embedFile = String.format("%s/DataWWW2019/UserEmbedding/%s_%s.txt", prefix, data, model);
+
+                    } else if(model.equals("multirole")){
+                        embedFile = String.format("%s/DataWWW2019/UserEmbedding/%s_%s_embedding_#roles_%d_dim_%d_fold_%d.txt", prefix, data, model, nuOfRoles, dim, fold);
+                        String roleFile = String.format("%s/DataWWW2019/UserEmbedding/%s_role_embedding_#roles_%d_dim_%d_fold_%d.txt", prefix, data, nuOfRoles, dim, fold);
+                        link.loadRoleEmbedding(roleFile, link.getRoles());
+
+                    } else if(model.equals("multirole_skipgram")){
+                        embedFile = String.format("%s/DataWWW2019/UserEmbedding/%s_%s_embedding_#roles_%d_dim_%d_fold_%d.txt", prefix, data, model, nuOfRoles, dim, fold);
+                        String roleFile = String.format("%s/DataWWW2019/UserEmbedding/%s_role_source_embedding_#roles_%d_dim_%d_fold_%d.txt", prefix, data, nuOfRoles, dim, fold);
+                        String roleContextFile = String.format("%s/DataWWW2019/UserEmbedding/%s_role_target_embedding_#roles_%d_dim_%d_fold_%d.txt", prefix, data, nuOfRoles, dim, fold);
+                        link.loadRoleEmbedding(roleFile, link.getRoles());
+                        link.loadRoleEmbedding(roleContextFile, link.getRolesContext());
                     }
                     link.initLinkPred(idFile, embedFile, testInterFile, testNonInterFile);
                     link.calculateAllNDCGMAP();

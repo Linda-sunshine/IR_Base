@@ -41,6 +41,11 @@ public class UserEmbeddingBaseline {
         m_zeroEdges = new HashMap<>();
     }
 
+    @Override
+    public String toString() {
+        return String.format("UserEmbedding_Baseline[dim:%d, alpha:%.4f, #Iter:%d]", m_dim, m_alpha, m_numberOfIteration);
+    }
+
     // load user ids from file
     public void loadUsers(String filename){
         try {
@@ -121,7 +126,7 @@ public class UserEmbeddingBaseline {
             }
             HashSet<Integer> zeroEdges = m_zeroEdges.get(uiIdx);
             HashSet<Integer> oneEdges = m_oneEdges.containsKey(uiIdx) ? m_oneEdges.get(uiIdx) : null;
-            int number = m_oneEdges.containsKey(uiIdx) ? m_oneEdges.get(uiIdx).size() : 1;
+            int number = m_oneEdges.containsKey(uiIdx) ? m_oneEdges.get(uiIdx).size() : 0;
 
             while(zeroEdges.size() < number) {
                 String ujId = m_uIds.get((int) (Math.random() * m_uIds.size()));
@@ -193,21 +198,18 @@ public class UserEmbeddingBaseline {
                     // for each edge
                     ui = m_usersInput[uiIdx];
                     uj = m_usersInput[ujIdx];
-                    affinity = Utils.dotProduct(ui, uj);
+                    affinity = calcAffinity(uiIdx, ujIdx);
                     fValue += Math.log(sigmod(affinity));
                     gTermOne = sigmod(-affinity);
                     // each dimension of user vectors ui and uj
                     for(int g=0; g<m_dim; g++){
-                        m_inputG[uiIdx][g] += gTermOne * uj[g];
-                        m_inputG[ujIdx][g] += gTermOne * ui[g];
+                        m_inputG[uiIdx][g] += gTermOne * calcUserGradientTermTwo(g, uj);
+                        m_inputG[ujIdx][g] += gTermOne * calcUserGradientTermTwo(g, ui);
                     }
                 }
             }
             // updates based on zero edges
-            if(m_zeroEdges == null){
-                fValue += updateUserVectorsWithAllZeroEdges();
-
-            } else{
+            if(m_zeroEdges.size() != 0){
                 fValue += updateUserVectorsWithSampledZeroEdges();
             }
 
@@ -231,27 +233,31 @@ public class UserEmbeddingBaseline {
         return fValue;
     }
 
-    // if no zero edges are loaded, user all zero edges for udpate
-    public double updateUserVectorsWithAllZeroEdges(){
-        double fValue = 0, gTermOne, affinity, ui[], uj[];
-        for(int i=0; i<m_uIds.size(); i++){
-            ui = m_usersInput[i];
-            // collect zero edges first
-            for(int j=i+1; j<m_uIds.size(); j++){
-                if(m_oneEdges.containsKey(i) && m_oneEdges.get(i).contains(j)) continue;
-                uj = m_usersInput[j];
-                affinity = Utils.dotProduct(ui, uj);
-                fValue += Math.log(sigmod(-affinity));
-                gTermOne = sigmod(affinity);
-                // each dimension of user vectors ui and uj
-                for(int g=0; g<m_dim; g++){
-                    m_inputG[i][g] -= gTermOne * calcUserGradientTermTwo(g, uj);
-                    m_inputG[j][g] -= gTermOne * calcUserGradientTermTwo(g, ui);
-                }
-            }
-        }
-        return fValue;
+    public double calcAffinity(int i, int j){
+        return Utils.dotProduct(m_usersInput[i], m_usersInput[j]);
     }
+
+//    // if no zero edges are loaded, user all zero edges for udpate
+//    public double updateUserVectorsWithAllZeroEdges(){
+//        double fValue = 0, gTermOne, affinity, ui[], uj[];
+//        for(int i=0; i<m_uIds.size(); i++){
+//            ui = m_usersInput[i];
+//            // collect zero edges first
+//            for(int j=i+1; j<m_uIds.size(); j++){
+//                if(m_oneEdges.containsKey(i) && m_oneEdges.get(i).contains(j)) continue;
+//                uj = m_usersInput[j];
+//                affinity = calcAffinity(i, j);
+//                fValue += Math.log(sigmod(-affinity));
+//                gTermOne = sigmod(affinity);
+//                // each dimension of user vectors ui and uj
+//                for(int g=0; g<m_dim; g++){
+//                    m_inputG[i][g] -= gTermOne * calcUserGradientTermTwo(g, uj);
+//                    m_inputG[j][g] -= gTermOne * calcUserGradientTermTwo(g, ui);
+//                }
+//            }
+//        }
+//        return fValue;
+//    }
 
     // if sampled zero edges are load, user sampled zero edges for update
     public double updateUserVectorsWithSampledZeroEdges(){
@@ -262,7 +268,7 @@ public class UserEmbeddingBaseline {
                 // for each edge
                 ui = m_usersInput[uiIdx];
                 uj = m_usersInput[ujIdx];
-                affinity = Utils.dotProduct(ui, uj);
+                affinity = calcAffinity(uiIdx, ujIdx);
                 fValue += Math.log(sigmod(-affinity));
                 gTermOne = sigmod(affinity);
                 // each dimension of user vectors ui and uj
@@ -280,6 +286,8 @@ public class UserEmbeddingBaseline {
     }
 
     public void train(){
+
+        System.out.println(toString());
 
         init();
         int iter = 0;
@@ -367,35 +375,23 @@ public class UserEmbeddingBaseline {
         }
     }
 
-//    public void printUids(String filename, HashSet<String> uids){
-//        try{
-//            PrintWriter writer = new PrintWriter(new File(filename));
-//            for(String uid: uids){
-//                writer.write(uid+"\n");
-//            }
-//            writer.close();
-//        } catch(IOException e){
-//            e.printStackTrace();
-//        }
-//    }
-
     //The main function for general link pred
     public static void main(String[] args){
 
         String dataset = "YelpNew"; // "release-youtube"
 
-        int fold = 0, m = 30, nuIter = 200;
+        int fold = 0, m = 30, nuIter = 100;
         String userFile = String.format("./data/RoleEmbedding/%sUserIds.txt", dataset);
         String oneEdgeFile = String.format("./data/RoleEmbedding/%sCVIndex4Interaction_fold_%d_train.txt", dataset, fold);
         String zeroEdgeFile = String.format("./data/RoleEmbedding/%sCVIndex4NonInteractions_fold_%d_train.txt", dataset, fold);
-        String userEmbeddingFile = String.format("/Users/lin/DataWWW2019/UserEmbedding/%s_User_embedding_dim_%d_fold_%d.txt", dataset, m, fold);
+        String userEmbeddingFile = String.format("/Users/lin/DataWWW2019/UserEmbedding/%s_user_embedding_dim_%d_fold_%d.txt", dataset, m, fold);
 
-        double converge = 1e-6, alpha = 1, stepSize = 0.005;
+        double converge = 1e-6, alpha = 0.5, stepSize = 0.001;
         UserEmbeddingBaseline base = new UserEmbeddingBaseline(m, nuIter, converge, alpha, stepSize);
 
         base.loadUsers(userFile);
         base.loadEdges(oneEdgeFile, 1); // load one edges
-//        base.loadEdges(zeroEdgeFile, 0); // load zero edges
+        base.loadEdges(zeroEdgeFile, 0); // load zero edges
 
 //        base.sampleZeroEdges();
 //        base.saveZeroEdges(zeroEdgeFile);
