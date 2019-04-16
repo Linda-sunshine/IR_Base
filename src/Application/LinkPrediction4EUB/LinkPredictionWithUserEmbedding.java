@@ -155,7 +155,15 @@ public class LinkPredictionWithUserEmbedding {
         return m_rolesContext;
     }
 
-    public void loadRoleEmbedding(String filename, double[][] roles) {
+    public void setRoles(double[][] roles){
+        m_roles = roles;
+    }
+
+    public void setRolesContext(double[][] rolesContext){
+        m_rolesContext = rolesContext;
+    }
+
+    public double[][] loadRoleEmbedding(String filename) {
         try {
             File file = new File(filename);
             BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(file), "UTF-8"));
@@ -164,11 +172,11 @@ public class LinkPredictionWithUserEmbedding {
             String[] strs = firstLine.trim().split("\\s+");
             if (strs.length != 2) {
                 System.out.println("[error]The dimension is not correct!! Double check the role embedding file!");
-                return;
+                return null;
             }
             int nuOfRoles = Integer.valueOf(strs[0]);
             m_dim = Integer.valueOf(strs[1]);
-            roles = new double[nuOfRoles][m_dim];
+            double[][] roles = new double[nuOfRoles][m_dim];
             // read each role's embedding one by one
             int count = 0;
             while ((line = reader.readLine()) != null) {
@@ -185,9 +193,12 @@ public class LinkPredictionWithUserEmbedding {
             }
             reader.close();
             System.out.format("Finish loading %d role embeddings from %s.\n", count, filename);
+            return roles;
+
         } catch (IOException e) {
             e.printStackTrace();
         }
+        return null;
     }
 
     // load edges (interactions + non-interactions) for all the users
@@ -618,14 +629,14 @@ public class LinkPredictionWithUserEmbedding {
                     } else if(model.equals("multirole")){
                         embedFile = String.format("%s/DataWWW2019/UserEmbedding/%s_%s_embedding_#roles_%d_dim_%d_fold_%d.txt", prefix, data, model, nuOfRoles, dim, fold);
                         String roleFile = String.format("%s/DataWWW2019/UserEmbedding/%s_role_embedding_#roles_%d_dim_%d_fold_%d.txt", prefix, data, nuOfRoles, dim, fold);
-                        link.loadRoleEmbedding(roleFile, link.getRoles());
+                        link.setRoles(link.loadRoleEmbedding(roleFile));
 
                     } else if(model.equals("multirole_skipgram")){
                         embedFile = String.format("%s/DataWWW2019/UserEmbedding/%s_%s_embedding_#roles_%d_dim_%d_fold_%d.txt", prefix, data, model, nuOfRoles, dim, fold);
                         String roleFile = String.format("%s/DataWWW2019/UserEmbedding/%s_role_source_embedding_#roles_%d_dim_%d_fold_%d.txt", prefix, data, nuOfRoles, dim, fold);
                         String roleContextFile = String.format("%s/DataWWW2019/UserEmbedding/%s_role_target_embedding_#roles_%d_dim_%d_fold_%d.txt", prefix, data, nuOfRoles, dim, fold);
-                        link.loadRoleEmbedding(roleFile, link.getRoles());
-                        link.loadRoleEmbedding(roleContextFile, link.getRolesContext());
+                        link.setRoles(link.loadRoleEmbedding(roleFile));
+                        link.setRolesContext(link.loadRoleEmbedding(roleContextFile));
                     }
                     link.initLinkPred(idFile, embedFile, testInterFile, testNonInterFile);
                     link.calculateAllNDCGMAP();

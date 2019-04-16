@@ -352,7 +352,7 @@ public class RoleEmbeddingBaseline extends UserEmbeddingBaseline{
     public static void main(String[] args){
 
         String dataset = "YelpNew"; // "release-youtube"
-        int fold = 0, dim = 50, nuOfRoles = 10, nuIter = 100;
+        int fold = 0, dim = 10, nuOfRoles = 10, nuIter = 100;
 
         String userFile = String.format("./data/RoleEmbedding/%sUserIds.txt", dataset);
         String oneEdgeFile = String.format("./data/RoleEmbedding/%sCVIndex4Interaction_fold_%d_train.txt", dataset, fold);

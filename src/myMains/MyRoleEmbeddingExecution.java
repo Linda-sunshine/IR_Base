@@ -23,6 +23,8 @@ public class MyRoleEmbeddingExecution {
         String userEmbeddingInputFile = String.format("%s/UserEmbedding/%s_%s_input_embedding_dim_%d_fold_%d.txt", param.m_prefix, param.m_data, param.m_model, param.m_dim, param.m_fold);
         String userEmbeddingOutputFile = String.format("%s/UserEmbedding/%s_%s_output_embedding_dim_%d_fold_%d.txt", param.m_prefix, param.m_data, param.m_model, param.m_dim, param.m_fold);
         String roleEmbeddingFile = String.format("%s/UserEmbedding/%s_role_embedding_#roles_%d_dim_%d_fold_%d.txt", param.m_prefix, param.m_data, param.m_nuOfRoles, param.m_dim, param.m_fold);
+        String roleTargetEmbeddingFile = String.format("%s/UserEmbedding/%s_role_target_embedding_#roles_%d_dim_%d_fold_%d.txt", param.m_prefix, param.m_data, param.m_nuOfRoles, param.m_dim, param.m_fold);
+        String roleSourceEmbeddingFile = String.format("%s/UserEmbedding/%s_role_source_embedding_#roles_%d_dim_%d_fold_%d.txt", param.m_prefix, param.m_data, param.m_nuOfRoles, param.m_dim, param.m_fold);
 
         UserEmbeddingBaseline model = null;
 
@@ -49,6 +51,10 @@ public class MyRoleEmbeddingExecution {
         } else if (param.m_model.equals("multirole")) {
             model.printUserEmbedding(userEmbeddingFile);
             ((RoleEmbeddingBaseline) model).printRoleEmbedding(roleEmbeddingFile, ((RoleEmbeddingBaseline) model).getRoleEmbeddings());
+        } else if (param.m_model.equals("multirole_skipgram")){
+            model.printUserEmbedding(userEmbeddingFile);
+            ((RoleEmbeddingSkipGram) model).printRoleEmbedding(roleSourceEmbeddingFile, ((RoleEmbeddingSkipGram) model).getRoleEmbeddings());
+            ((RoleEmbeddingSkipGram) model).printRoleEmbedding(roleTargetEmbeddingFile, ((RoleEmbeddingSkipGram) model).getContextRoleEmbeddings());
         }
     }
 }
