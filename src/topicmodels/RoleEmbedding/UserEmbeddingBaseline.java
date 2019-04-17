@@ -96,7 +96,7 @@ public class UserEmbeddingBaseline {
                         continue;
                     }
                     if (!edgeMap.containsKey(uiIdx)) {
-                        edgeMap.put(uiIdx, new HashSet<>());
+                        edgeMap.put(uiIdx, new HashSet<Integer>());
                     }
                     edgeMap.get(uiIdx).add(ujIdx);
                     count++;
@@ -106,13 +106,47 @@ public class UserEmbeddingBaseline {
                         System.out.println();
                 }
             }
-            System.out.format("\n[Info]Finish loading %d edges of %d users' %d links from %s\n", eij, edgeMap.size(),
-                    count, filename);
+            double avg = 0;
+            for(int ui: m_oneEdges.keySet()){
+                avg += m_oneEdges.get(ui).size();
+            }
+            avg /= m_oneEdges.size();
+            System.out.format("\n[Info]Finish loading %d edges of %d users' %d links (avg: %.4f), from %s\n", eij, edgeMap.size(),
+                    count, avg, filename);
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
 
+    HashMap<Integer, HashSet<Integer>> m_oneEdge2ndOrder = new HashMap<>();
+    public void generate2ndConnections(){
+        // for one user
+        for(int uiId: m_oneEdges.keySet()){
+            // add friends' friends
+            if(!m_oneEdge2ndOrder.containsKey(uiId))
+                m_oneEdge2ndOrder.put(uiId, new HashSet<Integer>());
+            for(int ujId: m_oneEdges.get(uiId)){
+                m_oneEdge2ndOrder.get(uiId).add(ujId);
+                if(!m_oneEdge2ndOrder.containsKey(ujId))
+                    m_oneEdge2ndOrder.put(ujId, new HashSet<Integer>());
+                m_oneEdge2ndOrder.get(ujId).add(uiId);
+                for(int ujFrdId: m_oneEdges.get(ujId)){
+                    m_oneEdge2ndOrder.get(uiId).add(ujFrdId);
+                    if(!m_oneEdge2ndOrder.containsKey(ujFrdId))
+                        m_oneEdge2ndOrder.put(ujFrdId, new HashSet<Integer>());
+                    m_oneEdge2ndOrder.get(ujFrdId).add(uiId);
+
+                }
+            }
+        }
+        m_oneEdges = m_oneEdge2ndOrder;
+        double avg = 0;
+        for(int ui: m_oneEdges.keySet()){
+            avg += m_oneEdges.get(ui).size();
+        }
+        avg /= m_oneEdges.size();
+        System.out.format("Finish generating 2nd order connections, ave connection: %.4f.\n", avg);
+    }
     public void sampleZeroEdges() {
         for(int i=0; i<m_uIds.size(); i++){
             if(i % 10000 == 0)
@@ -122,7 +156,7 @@ public class UserEmbeddingBaseline {
             String uiId = m_uIds.get(i);
             int uiIdx = m_uId2IndexMap.get(uiId);
             if(!m_zeroEdges.containsKey(uiIdx)){
-                m_zeroEdges.put(uiIdx, new HashSet<>());
+                m_zeroEdges.put(uiIdx, new HashSet<Integer>());
             }
             HashSet<Integer> zeroEdges = m_zeroEdges.get(uiIdx);
             HashSet<Integer> oneEdges = m_oneEdges.containsKey(uiIdx) ? m_oneEdges.get(uiIdx) : null;
@@ -134,7 +168,7 @@ public class UserEmbeddingBaseline {
                 if (oneEdges == null || !oneEdges.contains(ujIdx)) {
                     zeroEdges.add(ujIdx);
                     if(!m_zeroEdges.containsKey(ujIdx))
-                        m_zeroEdges.put(ujIdx, new HashSet<>());
+                        m_zeroEdges.put(ujIdx, new HashSet<Integer>());
                     m_zeroEdges.get(ujIdx).add(uiIdx);
                 }
             }
@@ -380,7 +414,7 @@ public class UserEmbeddingBaseline {
 
         String dataset = "YelpNew"; // "release-youtube"
 
-        int fold = 0, m = 30, nuIter = 100;
+        int fold = 0, m = 50, nuIter = 100;
         String userFile = String.format("./data/RoleEmbedding/%sUserIds.txt", dataset);
         String oneEdgeFile = String.format("./data/RoleEmbedding/%sCVIndex4Interaction_fold_%d_train.txt", dataset, fold);
         String zeroEdgeFile = String.format("./data/RoleEmbedding/%sCVIndex4NonInteractions_fold_%d_train.txt", dataset, fold);
@@ -391,7 +425,8 @@ public class UserEmbeddingBaseline {
 
         base.loadUsers(userFile);
         base.loadEdges(oneEdgeFile, 1); // load one edges
-        base.loadEdges(zeroEdgeFile, 0); // load zero edges
+        base.generate2ndConnections();
+//        base.loadEdges(zeroEdgeFile, 0); // load zero edges
 
 //        base.sampleZeroEdges();
 //        base.saveZeroEdges(zeroEdgeFile);

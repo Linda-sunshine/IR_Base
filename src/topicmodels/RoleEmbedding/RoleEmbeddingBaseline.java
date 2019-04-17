@@ -364,6 +364,7 @@ public class RoleEmbeddingBaseline extends UserEmbeddingBaseline{
 
         roleBase.loadUsers(userFile);
         roleBase.loadEdges(oneEdgeFile, 1); // load one edges
+        roleBase.generate2ndConnections();
 
 //        roleBase.sampleZeroEdges();
 //        roleBase.saveZeroEdges(zeroEdgeFile);

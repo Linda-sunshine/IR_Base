@@ -595,12 +595,14 @@ public class LinkPredictionWithUserEmbedding {
         String data = "YelpNew";
         String prefix = "/Users/lin";// "/home/lin"
 
-        int dim = 10, folds = 0, nuOfRoles = 10;
+        int dim = 50, folds = 0;
+//        int nuOfRoles = 10;
         String idFile = String.format("%s/DataWWW2019/UserEmbedding/%s_userids.txt", prefix, data);
 
+        for(int nuOfRoles: new int[]{10}){//, 50, 100, 500}){
         int[] times = new int[]{2};
         // "multirole", "multirole_skipgram"
-        String[] models = new String[]{"multirole_skipgram"};//"user_skipgram_input", "user_skipgram_output"};//"user_skipgram_input", "user_skipgram_output"};//, "EUB_t30"};//, "EUB_t50"}; //"BOW", "LDA", "HFT", "RTM", "DW", "TADW", "EUB_t10", "EUB_t20", "EUB_t30", "EUB_t40", "EUB_t50"};// "RTM", "LDA", "HFT", "DW", "TADW"}; // "LDA", "HFT", "TADW", "EUB", "LDA", "HFT"
+        String[] models = new String[]{"user"};//"user_skipgram_input", "user_skipgram_output"};//"user_skipgram_input", "user_skipgram_output"};//, "EUB_t30"};//, "EUB_t50"}; //"BOW", "LDA", "HFT", "RTM", "DW", "TADW", "EUB_t10", "EUB_t20", "EUB_t30", "EUB_t40", "EUB_t50"};// "RTM", "LDA", "HFT", "DW", "TADW"}; // "LDA", "HFT", "TADW", "EUB", "LDA", "HFT"
         HashMap<String, double[][][]> allFoldsPerf = new HashMap<String, double[][][]>();
 
         LinkPredictionWithUserEmbedding link = null;
@@ -646,5 +648,5 @@ public class LinkPredictionWithUserEmbedding {
             allFoldsPerf.put(model, perfs);
         }
         link.calcMeanStd(allFoldsPerf);
-    }
+    }}
 }

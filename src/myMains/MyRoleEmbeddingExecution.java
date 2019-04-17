@@ -41,6 +41,9 @@ public class MyRoleEmbeddingExecution {
         }
         model.loadUsers(userFile);
         model.loadEdges(oneEdgeFile, 1); // load one edges
+        model.generate2ndConnections();
+
+//        model.loadEdges(zeroEdgeFile, 0); // load zero edges
 
         model.train();
         if (model.equals("user")) {
