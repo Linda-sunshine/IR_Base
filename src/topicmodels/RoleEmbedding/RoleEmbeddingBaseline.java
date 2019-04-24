@@ -351,15 +351,16 @@ public class RoleEmbeddingBaseline extends UserEmbeddingBaseline{
     //The main function for general link pred
     public static void main(String[] args){
 
-        String dataset = "YelpNew"; // "release-youtube"
+        String dataset = "FB"; // "release-youtube"
         int fold = 0, dim = 10, nuOfRoles = 10, nuIter = 100;
 
         String userFile = String.format("./data/RoleEmbedding/%sUserIds.txt", dataset);
         String oneEdgeFile = String.format("./data/RoleEmbedding/%sCVIndex4Interaction_fold_%d_train.txt", dataset, fold);
+        String zeroEdgeFile = String.format("./data/RoleEmbedding/%sCVIndex4NonInteractions_fold_%d_train_2.txt", dataset, fold);
         String userEmbeddingFile = String.format("/Users/lin/DataWWW2019/UserEmbedding/%s_multirole_embedding_#roles_%d_dim_%d_fold_%d.txt", dataset, nuOfRoles, dim, fold);
         String roleEmbeddingFile = String.format("/Users/lin/DataWWW2019/UserEmbedding/%s_role_embedding_#roles_%d_dim_%d_fold_%d.txt", dataset, nuOfRoles, dim, fold);
 
-        double converge = 1e-6, alpha = 0.5, beta = 0.5, stepSize = 0.001;
+        double converge = 1e-6, alpha = 1, beta = 1, stepSize = 0.001;
         RoleEmbeddingBaseline roleBase = new RoleEmbeddingBaseline(dim, nuOfRoles, nuIter, converge, alpha, beta, stepSize);
 
         roleBase.loadUsers(userFile);
@@ -369,7 +370,7 @@ public class RoleEmbeddingBaseline extends UserEmbeddingBaseline{
 //        roleBase.sampleZeroEdges();
 //        roleBase.saveZeroEdges(zeroEdgeFile);
 
-//        roleBase.loadEdges(zeroEdgeFile, 0); // load zero edges
+        roleBase.loadEdges(zeroEdgeFile, 0); // load zero edges
         roleBase.train();
         roleBase.printUserEmbedding(userEmbeddingFile);
         roleBase.printRoleEmbedding(roleEmbeddingFile, roleBase.getRoleEmbeddings());

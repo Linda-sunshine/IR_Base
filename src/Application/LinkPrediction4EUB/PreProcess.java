@@ -80,7 +80,7 @@ public class PreProcess {
             }
             if (missing > 0)
                 System.out.println("[error]Some edges are not in the set: " + missing);
-
+            System.out.println(m_networkMap.size());
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -161,10 +161,17 @@ public class PreProcess {
 //            p.loadInteractions(cvIndexFile4Interaction);
 //            p.writeInteractions4DeepWalk(dwTrainFile);
 
-            // transfer the output of deepwalk for embedding
-            String input = String.format("%s/Documents/Lin\'sWorkSpace/deepwalk-master/output/%s_DW_embedding_dim_%d_fold_%d.txt",
+//            // transfer the output of deepwalk for embedding
+//            String input = String.format("%s/Documents/Lin\'sWorkSpace/deepwalk-master/output/%s_DW_embedding_dim_%d_fold_%d.txt",
+//                    idPrefix, dataset, dim, k);
+//            String output = String.format("%s/DataWWW2019/UserEmbedding/%s_DW_embedding_dim_%d_fold_%d.txt", idPrefix,
+//                    dataset, dim, k);
+//            p.transferDWEmbedding(input, output, dim);
+
+             // transfer the output of deepwalk for embedding
+            String input = String.format("%s/Documents/Lin\'sWorkSpace/IR_Base/data/%s_LINE_embedding_dim_%d_fold_%d.txt",
                     idPrefix, dataset, dim, k);
-            String output = String.format("%s/DataWWW2019/UserEmbedding/%s_DW_embedding_dim_%d_fold_%d.txt", idPrefix,
+            String output = String.format("%s/DataWWW2019/UserEmbedding/%s_LINE_embedding_dim_%d_fold_%d.txt", idPrefix,
                     dataset, dim, k);
             p.transferDWEmbedding(input, output, dim);
 

@@ -18,7 +18,7 @@ public class MyRoleEmbeddingExecution {
 
         String userFile = String.format("%s/RoleEmbedding/%sUserIds.txt", param.m_prefix, param.m_data);
         String oneEdgeFile = String.format("%s/RoleEmbedding/%sCVIndex4Interaction_fold_%d_train.txt", param.m_prefix, param.m_data, param.m_fold);
-        String zeroEdgeFile = String.format("%s/RoleEmbedding/%sCVIndex4NonInteractions_fold_%d_train.txt", param.m_prefix, param.m_data, param.m_fold);
+        String zeroEdgeFile = String.format("%s/RoleEmbedding/%sCVIndex4NonInteractions_fold_%d_train_2.txt", param.m_prefix, param.m_data, param.m_fold);
         String userEmbeddingFile = String.format("%s/UserEmbedding/%s_%s_embedding_#roles_%d_dim_%d_fold_%d.txt", param.m_prefix, param.m_data, param.m_model, param.m_nuOfRoles, param.m_dim, param.m_fold);
         String userEmbeddingInputFile = String.format("%s/UserEmbedding/%s_%s_input_embedding_dim_%d_fold_%d.txt", param.m_prefix, param.m_data, param.m_model, param.m_dim, param.m_fold);
         String userEmbeddingOutputFile = String.format("%s/UserEmbedding/%s_%s_output_embedding_dim_%d_fold_%d.txt", param.m_prefix, param.m_data, param.m_model, param.m_dim, param.m_fold);
@@ -42,11 +42,12 @@ public class MyRoleEmbeddingExecution {
         model.loadUsers(userFile);
         model.loadEdges(oneEdgeFile, 1); // load one edges
         model.generate2ndConnections();
+        model.generate3rdConnections();
 
-//        model.loadEdges(zeroEdgeFile, 0); // load zero edges
+        model.loadEdges(zeroEdgeFile, 0); // load zero edges
 
         model.train();
-        if (model.equals("user")) {
+        if (param.m_model.equals("user")) {
             model.printUserEmbedding(userEmbeddingFile);
         } else if (param.m_model.equals("user_skipgram")) {
             model.printUserEmbedding(userEmbeddingInputFile);
