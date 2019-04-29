@@ -227,7 +227,7 @@ public class UserEmbeddingBaseline {
             }
             HashSet<Integer> zeroEdges = m_zeroEdges.get(uiIdx);
             HashSet<Integer> oneEdges = m_oneEdges.containsKey(uiIdx) ? m_oneEdges.get(uiIdx) : null;
-            int number = m_oneEdges.containsKey(uiIdx) ? m_oneEdges.get(uiIdx).size() : 0;
+            int number = m_oneEdges.containsKey(uiIdx) ? m_oneEdges.get(uiIdx).size() * 5 : 0;
 
             while(zeroEdges.size() < number) {
                 String ujId = m_uIds.get((int) (Math.random() * m_uIds.size()));
@@ -347,28 +347,6 @@ public class UserEmbeddingBaseline {
     public double calcAffinity(int i, int j){
         return Utils.dotProduct(m_usersInput[i], m_usersInput[j]);
     }
-
-//    // if no zero edges are loaded, user all zero edges for udpate
-//    public double updateUserVectorsWithAllZeroEdges(){
-//        double fValue = 0, gTermOne, affinity, ui[], uj[];
-//        for(int i=0; i<m_uIds.size(); i++){
-//            ui = m_usersInput[i];
-//            // collect zero edges first
-//            for(int j=i+1; j<m_uIds.size(); j++){
-//                if(m_oneEdges.containsKey(i) && m_oneEdges.get(i).contains(j)) continue;
-//                uj = m_usersInput[j];
-//                affinity = calcAffinity(i, j);
-//                fValue += Math.log(sigmod(-affinity));
-//                gTermOne = sigmod(affinity);
-//                // each dimension of user vectors ui and uj
-//                for(int g=0; g<m_dim; g++){
-//                    m_inputG[i][g] -= gTermOne * calcUserGradientTermTwo(g, uj);
-//                    m_inputG[j][g] -= gTermOne * calcUserGradientTermTwo(g, ui);
-//                }
-//            }
-//        }
-//        return fValue;
-//    }
 
     // if sampled zero edges are load, user sampled zero edges for update
     public double updateUserVectorsWithSampledZeroEdges(){
@@ -530,7 +508,10 @@ public class UserEmbeddingBaseline {
                 if(strs.length <= 2){
                     continue;
                 } else{
-                    circleIndexes.add(m_circles.getOrDefault(Integer.valueOf(strs[0]), -1));
+                    if(m_circles.containsKey(Integer.valueOf(strs[0])))
+                        circleIndexes.add(m_circles.get(Integer.valueOf(strs[0])));
+                    else
+                        circleIndexes.add(-1);
                 }
             }
             System.out.format("%d users's circles are collected!", circleIndexes.size());
@@ -548,9 +529,10 @@ public class UserEmbeddingBaseline {
     //The main function for general link pred
     public static void main(String[] args){
 
-        String dataset = "FB"; // "release-youtube"
+        String dataset = "YelpNew"; // "release-youtube"
+        int fold = 0, nuIter = 500;
 
-        int fold = 0, m = 10, nuIter = 200;
+        for(int m: new int[]{300, 500}){
         String userFile = String.format("./data/RoleEmbedding/%sUserIds.txt", dataset);
         String oneEdgeFile = String.format("./data/RoleEmbedding/%sCVIndex4Interaction_fold_%d_train.txt", dataset, fold);
         String zeroEdgeFile = String.format("./data/RoleEmbedding/%sCVIndex4NonInteractions_fold_%d_train_2.txt", dataset, fold);
@@ -567,16 +549,15 @@ public class UserEmbeddingBaseline {
         base.loadUsers(userFile);
         base.loadEdges(oneEdgeFile, 1); // load one edges
 //        base.generate2ndConnections();
-//        base.generate3rdConnections();
         base.loadEdges(zeroEdgeFile, 0); // load zero edges
 
 //        base.sampleZeroEdges();
 //        base.saveZeroEdges(zeroEdgeFile);
 //
-//        base.train();
-//        base.printUserEmbedding(userEmbeddingFile);
+        base.train();
+        base.printUserEmbedding(userEmbeddingFile);
 
-        base.loadCircles(circleFile);
-        base.assignCircleIndex(userEmbeddingFile, userCircleIndexFile);
-    }
+//        base.loadCircles(circleFile);
+//        base.assignCircleIndex(userEmbeddingFile, userCircleIndexFile);
+    }}
 }

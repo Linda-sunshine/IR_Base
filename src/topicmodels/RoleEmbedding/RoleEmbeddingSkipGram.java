@@ -229,7 +229,7 @@ public class RoleEmbeddingSkipGram extends RoleEmbeddingBaseline {
     //The main function for general link pred
     public static void main(String[] args){
 
-        String dataset = "YelpNew"; // "release-youtube"
+        String dataset = "FB"; // "release-youtube"
         int fold = 0, dim = 10, nuOfRoles = 10, nuIter = 100;
 
         String userFile = String.format("./data/RoleEmbedding/%sUserIds.txt", dataset);
@@ -238,7 +238,7 @@ public class RoleEmbeddingSkipGram extends RoleEmbeddingBaseline {
         String roleSourceEmbeddingFile = String.format("/Users/lin/DataWWW2019/UserEmbedding/%s_role_source_embedding_#roles_%d_dim_%d_fold_%d.txt", dataset, nuOfRoles, dim, fold);
         String roleTargetEmbeddingFile = String.format("/Users/lin/DataWWW2019/UserEmbedding/%s_role_target_embedding_#roles_%d_dim_%d_fold_%d.txt", dataset, nuOfRoles, dim, fold);
 
-        double converge = 1e-6, alpha = 1, beta = 0.5, gamma = 0.5, stepSize = 0.001;
+        double converge = 1e-6, alpha = 0.5, beta = 0.5, gamma = 0.5, stepSize = 0.001;
         RoleEmbeddingSkipGram roleSkipGram = new RoleEmbeddingSkipGram(dim, nuOfRoles, nuIter, converge, alpha, beta, gamma, stepSize);
 
         roleSkipGram.loadUsers(userFile);

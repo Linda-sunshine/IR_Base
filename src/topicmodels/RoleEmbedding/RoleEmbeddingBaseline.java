@@ -137,18 +137,6 @@ public class RoleEmbeddingBaseline extends UserEmbeddingBaseline{
         return fValue;
     }
 
-//    public double updateRoleVectorsWithAllZeroEdgesByMatrix(double[][] gTermTwo){
-//        // updates of gradient from zero edges
-//        double fValueZero = 0;
-//        for(int i=0; i<m_uIds.size(); i++){
-//            for(int j=i+1; j<m_uIds.size(); j++){
-//                if(m_oneEdges.containsKey(i) && m_oneEdges.get(i).contains(j)) continue;
-//                fValueZero += calcRoleGradientWithZeroEdge(gTermTwo, i, j, m_usersInput[i], m_usersInput[j]);
-//            }
-//        }
-//        return fValueZero;
-//    }
-
     public double updateRoleVectorsWithSampledZeroEdgesByMatrix(double[][] gTermTwo){
         // updates of gradient from zero edges
         double fValueZero = 0;
@@ -214,26 +202,6 @@ public class RoleEmbeddingBaseline extends UserEmbeddingBaseline{
         return fValue;
     }
 
-//    public double updateRoleVectorsWithAllZeroEdgesByElement(){
-//        double affinity, gTermOne, fValueZero = 0;
-//        for(int i=0; i<m_uIds.size(); i++){
-//            for(int j=i+1; j<m_uIds.size(); j++){
-//                if(m_oneEdges.containsKey(i) && m_oneEdges.get(i).contains(j)) continue;
-//                affinity = calcAffinity(i, j);
-//                fValueZero += Math.log(sigmod(-affinity));
-//                gTermOne = sigmod(affinity);
-//                // each element of role embedding B_{gh}
-//                for(int g=0; g<m_nuOfRoles; g++){
-//                    for(int h=0; h<m_dim; h++){
-//                        m_rolesG[g][h] -= gTermOne * calcRoleGradientTermTwo(g, h, m_usersInput[i], m_usersInput[j]);
-//                    }
-//                }
-//            }
-//        }
-//        return fValueZero;
-//
-//    }
-
     public double updateRoleVectorsWithSampledZeroEdgesByElement(){
         double affinity, gTermOne, fValueZero = 0;
         // updates of gradient from zero edges
@@ -253,29 +221,6 @@ public class RoleEmbeddingBaseline extends UserEmbeddingBaseline{
         }
         return fValueZero;
     }
-
-//    // if no zero edges are loaded, user all zero edges for udpate
-//    public double updateRoleVectorsWithAllZeroEdges(){
-//        double fValue = 0, gTermOne, affinity, ui[], uj[];
-//        for(int i=0; i<m_uIds.size(); i++){
-//            ui = m_usersInput[i];
-//            // collect zero edges first
-//            for(int j=i+1; j<m_uIds.size(); j++){
-//                if(m_oneEdges.containsKey(i) && m_oneEdges.get(i).contains(j)) continue;
-//                uj = m_usersInput[j];
-//                affinity = calcAffinity(i, j);
-//                fValue += Math.log(sigmod(-affinity));
-//                gTermOne = sigmod(affinity);
-//                // each dimension of user vectors ui and uj
-//                for(int g=0; g<m_nuOfRoles; g++){
-//                    for(int h=0; h<m_dim; h++){
-//                        m_rolesG[g][h] -= gTermOne * calcRoleGradientTermTwo(g, h, m_usersInput[i], m_usersInput[j]);
-//                    }
-//                }
-//            }
-//        }
-//        return fValue;
-//    }
 
     // calculate the second part of the gradient for user vector
     public double calcRoleGradientTermTwo(int g, int h, double[] ui, double[] uj){
@@ -351,8 +296,8 @@ public class RoleEmbeddingBaseline extends UserEmbeddingBaseline{
     //The main function for general link pred
     public static void main(String[] args){
 
-        String dataset = "FB"; // "release-youtube"
-        int fold = 0, dim = 10, nuOfRoles = 10, nuIter = 100;
+        String dataset = "FB"; //
+        int fold = 0, dim = 10, nuOfRoles = 10, nuIter = 60;
 
         String userFile = String.format("./data/RoleEmbedding/%sUserIds.txt", dataset);
         String oneEdgeFile = String.format("./data/RoleEmbedding/%sCVIndex4Interaction_fold_%d_train.txt", dataset, fold);
@@ -360,17 +305,17 @@ public class RoleEmbeddingBaseline extends UserEmbeddingBaseline{
         String userEmbeddingFile = String.format("/Users/lin/DataWWW2019/UserEmbedding/%s_multirole_embedding_#roles_%d_dim_%d_fold_%d.txt", dataset, nuOfRoles, dim, fold);
         String roleEmbeddingFile = String.format("/Users/lin/DataWWW2019/UserEmbedding/%s_role_embedding_#roles_%d_dim_%d_fold_%d.txt", dataset, nuOfRoles, dim, fold);
 
-        double converge = 1e-6, alpha = 1, beta = 1, stepSize = 0.001;
+        double converge = 1e-6, alpha = 0.5, beta = 0.1, stepSize = 0.001;
         RoleEmbeddingBaseline roleBase = new RoleEmbeddingBaseline(dim, nuOfRoles, nuIter, converge, alpha, beta, stepSize);
 
         roleBase.loadUsers(userFile);
         roleBase.loadEdges(oneEdgeFile, 1); // load one edges
-        roleBase.generate2ndConnections();
+//        roleBase.generate2ndConnections();
+        roleBase.loadEdges(zeroEdgeFile, 0); // load zero edges
 
 //        roleBase.sampleZeroEdges();
 //        roleBase.saveZeroEdges(zeroEdgeFile);
 
-        roleBase.loadEdges(zeroEdgeFile, 0); // load zero edges
         roleBase.train();
         roleBase.printUserEmbedding(userEmbeddingFile);
         roleBase.printRoleEmbedding(roleEmbeddingFile, roleBase.getRoleEmbeddings());

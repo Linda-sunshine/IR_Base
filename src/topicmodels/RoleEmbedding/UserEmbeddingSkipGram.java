@@ -106,29 +106,6 @@ public class UserEmbeddingSkipGram extends UserEmbeddingBaseline {
         return fValue;
     }
 
-//    @Override
-//    // if no zero edges are loaded, user all zero edges for udpate
-//    public double updateUserVectorsWithAllZeroEdges(){
-//        double fValue = 0, gTermOne, affinity, vi[], vj[], ui[], uj[];
-//        for(int i=0; i<m_uIds.size(); i++){
-//            vi = m_usersInput[i];
-//            ui = m_usersOutput[i];
-//            // collect zero edges first
-//            for(int j=i+1; j<m_uIds.size(); j++){
-//                if(m_oneEdges.containsKey(i) && m_oneEdges.get(i).contains(j)) continue;
-//                vj = m_usersInput[j];
-//                uj = m_usersOutput[j];
-//                affinity = Utils.dotProduct(vi, uj);
-//                fValue += Math.log(sigmod(-affinity));
-//                gTermOne = sigmod(affinity);
-//                // each dimension of user vectors ui and uj
-//                updateGradients(i, j, gTermOne, ui, uj, vi, vj);
-//
-//            }
-//        }
-//        return fValue;
-//    }
-
     @Override
     // if sampled zero edges are load, user sampled zero edges for update
     public double updateUserVectorsWithSampledZeroEdges(){
@@ -189,16 +166,15 @@ public class UserEmbeddingSkipGram extends UserEmbeddingBaseline {
 
         String dataset = "YelpNew"; // "release-youtube"
         String model = "user_skipgram";
-
-        int fold = 0, m = 50, nuIter = 200;
+        for(int m: new int[]{20, 50, 100, 200, 300, 500}){
+        int fold = 0, nuIter = 500;
         String userFile = String.format("./data/RoleEmbedding/%sUserIds.txt", dataset);
         String oneEdgeFile = String.format("./data/RoleEmbedding/%sCVIndex4Interaction_fold_%d_train.txt", dataset, fold);
-        String zeroEdgeFile = String.format("./data/RoleEmbedding/%sCVIndex4NonInteractions_fold_%d_train.txt", dataset, fold);
+        String zeroEdgeFile = String.format("./data/RoleEmbedding/%sCVIndex4NonInteractions_fold_%d_train_2.txt", dataset, fold);
         String userEmbeddingInputFile = String.format("/Users/lin/DataWWW2019/UserEmbedding/%s_%s_input_embedding_dim_%d_fold_%d.txt", dataset, model, m, fold);
         String userEmbeddingOutputFile = String.format("/Users/lin/DataWWW2019/UserEmbedding/%s_%s_output_embedding_dim_%d_fold_%d.txt", dataset, model, m, fold);
 
-
-        double converge = 1e-6, alpha = 0.5, eta = 0.5, stepSize = 0.001;
+        double converge = 1e-6, alpha = 1, eta = 1, stepSize = 0.001;
         UserEmbeddingSkipGram skipGram = new UserEmbeddingSkipGram(m, nuIter, converge, alpha, eta, stepSize);
 
         skipGram.loadUsers(userFile);
@@ -208,5 +184,5 @@ public class UserEmbeddingSkipGram extends UserEmbeddingBaseline {
         skipGram.train();
         skipGram.printUserEmbedding(userEmbeddingInputFile);
         skipGram.printUserEmbeddingOutput(userEmbeddingOutputFile);
-    }
+    }}
 }

@@ -8,7 +8,7 @@ public class RoleParameter {
 
     public int m_fold = 0;
     public int m_dim = 10;
-    public int m_iter = 100;
+    public int m_iter = 150;
     public int m_nuOfRoles = 10;
 
     public double m_converge = 1e-6;
@@ -17,6 +17,9 @@ public class RoleParameter {
     public double m_beta = 0.5;
     public double m_gamma = 0.5;
     public double m_stepSize = 0.001;
+
+    // whether we model the second order connections
+    public boolean m_2ndOrder = false;
 
     public RoleParameter(String argv[]) {
 
@@ -52,6 +55,8 @@ public class RoleParameter {
                 m_gamma = Double.valueOf(argv[i]);
             else if(argv[i - 1].equals("-stepSize"))
                 m_stepSize = Double.valueOf(argv[i]);
+            else if(argv[i - 1].equals("-2nd"))
+                m_2ndOrder = Boolean.valueOf(argv[i]);
 
         }
     }

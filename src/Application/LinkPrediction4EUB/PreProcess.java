@@ -16,7 +16,7 @@ public class PreProcess {
 
     int m_userSize = 0;
     HashMap<String, HashSet<String>> m_networkMap = new HashMap<>();
-    ArrayList<String> m_userIds = new ArrayList<>();
+    ArrayList<String> m_userIds = new ArrayList<String>();
     HashMap<String, Integer> m_idIndexMap = new HashMap<>();
 
     // load user ids for later use
@@ -48,7 +48,7 @@ public class PreProcess {
 
             // load the interactions first
             while ((line = reader.readLine()) != null) {
-                String[] users = line.trim().split("\t");
+                String[] users = line.trim().split("\\s+");
                 String uid = users[0];
                 if (!m_idIndexMap.containsKey(users[0])) {
                     System.err.println("The user does not exist in user set!");
@@ -113,16 +113,16 @@ public class PreProcess {
             String line = reader.readLine();
             HashMap<String, String> embeddings = new HashMap<>();
             while ((line = reader.readLine()) != null) {
-                int index = line.indexOf(" ");
-                int id = Integer.valueOf(line.substring(0, index));
+                String[] strs = line.split("\\s+");
+                int id = Integer.valueOf(strs[0]);
                 String uid = m_userIds.get(id);
-                embeddings.put(uid, line.substring(index+1));
+                embeddings.put(uid, getEmbedding(strs));
                 count++;
             }
             reader.close();
             String empty = "";
             for(int i=0; i<dim; i++){
-                empty = empty + "0 ";
+                empty = empty + "0\t";
             }
             empty += "";
             writer.format("%d\t%d\n", m_userIds.size(), dim);
@@ -139,43 +139,47 @@ public class PreProcess {
             e.printStackTrace();
         }
     }
+
+    public String getEmbedding(String[] strs){
+        String str = "";
+        for(int i=1; i<strs.length; i++)
+            str += strs[i] + "\t";
+        return str;
+    }
     //In the main function, we want to input the data and do adaptation
     public static void main(String[] args) throws InvalidFormatException, FileNotFoundException, IOException {
 
 
-        int dim = 10;
-        String dataset = "YelpNew"; // "StackOverflow", "YelpNew"
-        String prefix = "./data/CoLinAdapt";
+        int k = 0;
+        String dataset = "FB"; // "StackOverflow", "YelpNew"
+        String prefix = "./data/RoleEmbedding";
+        String idPrefix = "/Users/lin"; // "/Users/lin", "/home/lin"
+        String idFile = String.format("%s/DataWWW2019/UserEmbedding/%s_userids.txt", idPrefix, dataset);
+
+        String cvIndexFile4Interaction = String.format("%s/%sCVIndex4Interaction_fold_%d_train.txt", prefix, dataset, k);
 
         // write out the data for deepwalk
-        for(int k: new int[]{0}) {//, 1, 2, 3, 4}) {
-            String idPrefix = "/Users/lin"; // "/Users/lin", "/home/lin"
+//        String dwTrainFile = String.format("%s/%s_LINE_fold_%d.txt", prefix, dataset, k);
+//        PreProcess p = new PreProcess();
+//        p.loadUserIds(idFile);
+//        p.loadInteractions(cvIndexFile4Interaction);
+//        p.writeInteractions4DeepWalk(dwTrainFile);
 
-            String idFile = String.format("%s/DataWWW2019/UserEmbedding/%s_userids.txt", idPrefix, dataset);
-            String cvIndexFile4Interaction = String.format("%s/%s/%sCVIndex4Interaction_fold_%d_train.txt", prefix,
-                    dataset, dataset, k);
-            String dwTrainFile = String.format("./data/deepwalk-master/%s_DW_fold_%d.txt", dataset, k);
+        for(String model: new String[]{"DW_len_8" }){
+            for(int dim: new int[]{10}) {
+                PreProcess p = new PreProcess();
+                p.loadUserIds(idFile);
+                p.loadInteractions(cvIndexFile4Interaction);
 
-            PreProcess p = new PreProcess();
-            p.loadUserIds(idFile);
-//            p.loadInteractions(cvIndexFile4Interaction);
-//            p.writeInteractions4DeepWalk(dwTrainFile);
-
-//            // transfer the output of deepwalk for embedding
-//            String input = String.format("%s/Documents/Lin\'sWorkSpace/deepwalk-master/output/%s_DW_embedding_dim_%d_fold_%d.txt",
-//                    idPrefix, dataset, dim, k);
-//            String output = String.format("%s/DataWWW2019/UserEmbedding/%s_DW_embedding_dim_%d_fold_%d.txt", idPrefix,
-//                    dataset, dim, k);
-//            p.transferDWEmbedding(input, output, dim);
-
-             // transfer the output of deepwalk for embedding
-            String input = String.format("%s/Documents/Lin\'sWorkSpace/IR_Base/data/%s_LINE_embedding_dim_%d_fold_%d.txt",
-                    idPrefix, dataset, dim, k);
-            String output = String.format("%s/DataWWW2019/UserEmbedding/%s_LINE_embedding_dim_%d_fold_%d.txt", idPrefix,
-                    dataset, dim, k);
-            p.transferDWEmbedding(input, output, dim);
-
+                // transfer the output of deepwalk/line for embedding
+//                String input = String.format("%s/Dropbox/output/%s_%s_user_embedding_dim_%d_fold_%d.txt", idPrefix,
+//                        dataset, model, dim, k);
+                String input = String.format("%s/Documents/Lin\'sWorkSpace/deepwalk-master/data/%s_%s_dim_%d_fold_%d.txt", idPrefix,
+                        dataset, model, dim, k);
+                String output = String.format("%s/DataWWW2019/UserEmbedding/%s_%s_embedding_dim_%d_fold_%d.txt",
+                        idPrefix, dataset, model, dim, k);
+                p.transferDWEmbedding(input, output, dim);
+            }
         }
-
     }
 }
