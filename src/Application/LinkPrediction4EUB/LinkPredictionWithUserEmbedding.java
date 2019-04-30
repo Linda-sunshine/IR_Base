@@ -594,18 +594,18 @@ public class LinkPredictionWithUserEmbedding {
 
         String data = "YelpNew";
         String prefix = "/Users/lin";// "/home/lin"
-        String setting = "3";//1: only one edges; 2: one edges + sampled zero edges; 3: 2nd order one edges
-//        int dim = 200;
-        int folds = 0;
-        int nuOfRoles = 10;
+
+        //"": 1st-order one edges + zero edges; "2": 2nd-order one edges + zero edges; "3": 3rd-order one edges + zero edges
+        int order = 2, folds = 0, nuOfRoles = 10;
 
         String idFile = String.format("%s/DataWWW2019/UserEmbedding/%s_userids.txt", prefix, data);
         String[] models = new String[]{"user"};
 
         LinkPredictionWithUserEmbedding link = null;
 //        HashMap<String, double[][][]> allFoldsPerf = new HashMap<String, double[][][]>();
+
         for (String model : models) {
-            for(int dim: new int[]{10, 50, 100}){
+            for(int dim: new int[]{10}){
                 int[] times = new int[]{2};
 
                 if (model.equals("LDA") || model.equals("HFT") || model.equals("BOW") || model.equals("CTR"))
@@ -624,19 +624,22 @@ public class LinkPredictionWithUserEmbedding {
                             link = new LinkPredictionWithUserEmbeddingBOW();
                         else link = new LinkPredictionWithUserEmbedding();
 
-                        String embedFile = String.format("%s/DataWWW2019/UserEmbedding%s/%s_%s_embedding_dim_%d_fold_%d.txt", prefix, setting, data, model, dim, fold);
+                        String embedFile = String.format("%s/DataWWW2019/UserEmbedding%d/%s_%s_embedding_order_%d_dim_%d_fold_%d.txt", prefix, order, data, model, order, dim, fold);
                         if (model.equals("BOW")) {
-                            embedFile = String.format("%s/DataWWW2019/UserEmbedding%s/%s_%s.txt", prefix, setting, data, model);
+                            embedFile = String.format("%s/DataWWW2019/UserEmbedding%d/%s_%s.txt", prefix, order, data, model);
 
                         } else if(model.equals("multirole")){
-                            embedFile = String.format("%s/DataWWW2019/UserEmbedding%s/%s_%s_embedding_#roles_%d_dim_%d_fold_%d.txt", prefix, setting, data, model, nuOfRoles, dim, fold);
-                            String roleFile = String.format("%s/DataWWW2019/UserEmbedding%d/%s_role_embedding_#roles_%d_dim_%d_fold_%d.txt", prefix, setting, data, nuOfRoles, dim, fold);
+                            embedFile = String.format("%s/DataWWW2019/UserEmbedding%d/%s_%s_embedding_order_%d_nuOfRoles_%d_dim_%d_fold_%d.txt", prefix, order, data, model, order, nuOfRoles, dim, fold);
+                            String roleFile = String.format("%s/DataWWW2019/UserEmbedding%d/%s_role_embedding_order_%d_nuOfRoles_%d_dim_%d_fold_%d.txt", prefix, order, data, order, nuOfRoles, dim, fold);
                             link.setRoles(link.loadRoleEmbedding(roleFile));
-
+                        } else if(model.equals("multirole_sanity")){
+                            embedFile = String.format("%s/DataWWW2019/UserEmbedding%d/%s_%s_embedding_order_%d_nuOfRoles_%d_dim_%d_fold_%d.txt", prefix, order, data, model, order, nuOfRoles, dim, fold);
+                            String roleFile = String.format("%s/DataWWW2019/UserEmbedding%d/%s_role_embedding_sanity_order_%d_nuOfRoles_%d_dim_%d_fold_%d.txt", prefix, order, data, order, nuOfRoles, dim, fold);
+                            link.setRoles(link.loadRoleEmbedding(roleFile));
                         } else if(model.equals("multirole_skipgram")){
-                            embedFile = String.format("%s/DataWWW2019/UserEmbedding%s/%s_%s_embedding_#roles_%d_dim_%d_fold_%d.txt", prefix, setting, data, model, nuOfRoles, dim, fold);
-                            String roleFile = String.format("%s/DataWWW2019/UserEmbedding%s/%s_role_source_embedding_#roles_%d_dim_%d_fold_%d.txt", prefix, setting, data, nuOfRoles, dim, fold);
-                            String roleContextFile = String.format("%s/DataWWW2019/UserEmbedding%s/%s_role_target_embedding_#roles_%d_dim_%d_fold_%d.txt", prefix, setting, data, nuOfRoles, dim, fold);
+                            embedFile = String.format("%s/DataWWW2019/UserEmbedding%d/%s_%s_embedding_order_%d_nuOfRoles_%d_dim_%d_fold_%d.txt", prefix, order, data, model, order, nuOfRoles, dim, fold);
+                            String roleFile = String.format("%s/DataWWW2019/UserEmbedding%d/%s_role_source_embedding_order_%d_nuOfRoles_%d_dim_%d_fold_%d.txt", prefix, order, data, order, nuOfRoles, dim, fold);
+                            String roleContextFile = String.format("%s/DataWWW2019/UserEmbedding%d/%s_role_target_embedding_order_%d_nuOfRoles_%d_dim_%d_fold_%d.txt", prefix, order, data, order, nuOfRoles, dim, fold);
                             link.setRoles(link.loadRoleEmbedding(roleFile));
                             link.setRolesContext(link.loadRoleEmbedding(roleContextFile));
                         }

@@ -230,21 +230,27 @@ public class RoleEmbeddingSkipGram extends RoleEmbeddingBaseline {
     public static void main(String[] args){
 
         String dataset = "FB"; // "release-youtube"
-        int fold = 0, dim = 10, nuOfRoles = 10, nuIter = 100;
+        int fold = 0, dim = 10, nuOfRoles = 10, nuIter = 100, order = 1;
 
         String userFile = String.format("./data/RoleEmbedding/%sUserIds.txt", dataset);
         String oneEdgeFile = String.format("./data/RoleEmbedding/%sCVIndex4Interaction_fold_%d_train.txt", dataset, fold);
-        String userEmbeddingFile = String.format("/Users/lin/DataWWW2019/UserEmbedding/%s_multirole_skipgram_embedding_#roles_%d_dim_%d_fold_%d.txt", dataset, nuOfRoles, dim, fold);
-        String roleSourceEmbeddingFile = String.format("/Users/lin/DataWWW2019/UserEmbedding/%s_role_source_embedding_#roles_%d_dim_%d_fold_%d.txt", dataset, nuOfRoles, dim, fold);
-        String roleTargetEmbeddingFile = String.format("/Users/lin/DataWWW2019/UserEmbedding/%s_role_target_embedding_#roles_%d_dim_%d_fold_%d.txt", dataset, nuOfRoles, dim, fold);
+        String zeroEdgeFile = String.format("./data/RoleEmbedding/%sCVIndex4NonInteractions_fold_%d_train_2.txt", dataset, fold);
+        String userEmbeddingFile = String.format("/Users/lin/DataWWW2019/UserEmbedding%d/%s_multirole_skipgram_embedding_order_%d_nuOfRoles_%d_dim_%d_fold_%d.txt", order, dataset, order, nuOfRoles, dim, fold);
+        String roleSourceEmbeddingFile = String.format("/Users/lin/DataWWW2019/UserEmbedding%d/%s_role_source_embedding_order_%d_nuOfRoles_%d_dim_%d_fold_%d.txt", order, dataset, order, nuOfRoles, dim, fold);
+        String roleTargetEmbeddingFile = String.format("/Users/lin/DataWWW2019/UserEmbedding%d/%s_role_target_embedding_order_%d_nuOfRoles_%d_dim_%d_fold_%d.txt", order, dataset, order, nuOfRoles, dim, fold);
 
         double converge = 1e-6, alpha = 0.5, beta = 0.5, gamma = 0.5, stepSize = 0.001;
         RoleEmbeddingSkipGram roleSkipGram = new RoleEmbeddingSkipGram(dim, nuOfRoles, nuIter, converge, alpha, beta, gamma, stepSize);
 
         roleSkipGram.loadUsers(userFile);
-        roleSkipGram.loadEdges(oneEdgeFile, 1); // load one edges
+        if(order >= 1)
+            roleSkipGram.loadEdges(oneEdgeFile, 1);
+        if(order >= 2)
+            roleSkipGram.generate2ndConnections();
+        if(order >= 3)
+            roleSkipGram.generate3rdConnections();
+        roleSkipGram.loadEdges(zeroEdgeFile, 0); // load zero edges
 
-//      roleSkipGram.loadEdges(zeroEdgeFile, 0); // load zero edges
         roleSkipGram.train();
         roleSkipGram.printUserEmbedding(userEmbeddingFile);
         roleSkipGram.printRoleEmbedding(roleSourceEmbeddingFile, roleSkipGram.getRoleEmbeddings());

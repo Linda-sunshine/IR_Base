@@ -166,23 +166,30 @@ public class UserEmbeddingSkipGram extends UserEmbeddingBaseline {
 
         String dataset = "YelpNew"; // "release-youtube"
         String model = "user_skipgram";
+        int fold = 0, nuIter = 500, order = 1;
+
         for(int m: new int[]{20, 50, 100, 200, 300, 500}){
-        int fold = 0, nuIter = 500;
-        String userFile = String.format("./data/RoleEmbedding/%sUserIds.txt", dataset);
-        String oneEdgeFile = String.format("./data/RoleEmbedding/%sCVIndex4Interaction_fold_%d_train.txt", dataset, fold);
-        String zeroEdgeFile = String.format("./data/RoleEmbedding/%sCVIndex4NonInteractions_fold_%d_train_2.txt", dataset, fold);
-        String userEmbeddingInputFile = String.format("/Users/lin/DataWWW2019/UserEmbedding/%s_%s_input_embedding_dim_%d_fold_%d.txt", dataset, model, m, fold);
-        String userEmbeddingOutputFile = String.format("/Users/lin/DataWWW2019/UserEmbedding/%s_%s_output_embedding_dim_%d_fold_%d.txt", dataset, model, m, fold);
+            String userFile = String.format("./data/RoleEmbedding/%sUserIds.txt", dataset);
+            String oneEdgeFile = String.format("./data/RoleEmbedding/%sCVIndex4Interaction_fold_%d_train.txt", dataset, fold);
+            String zeroEdgeFile = String.format("./data/RoleEmbedding/%sCVIndex4NonInteractions_fold_%d_train_2.txt", dataset, fold);
+            String userEmbeddingInputFile = String.format("/Users/lin/DataWWW2019/UserEmbedding%d/%s_%s_input_embedding_order_%d_dim_%d_fold_%d.txt", order, dataset, model, order, m, fold);
+            String userEmbeddingOutputFile = String.format("/Users/lin/DataWWW2019/UserEmbedding%d/%s_%s_output_embedding_order_%d_dim_%d_fold_%d.txt", order, dataset, model, order, m, fold);
 
-        double converge = 1e-6, alpha = 1, eta = 1, stepSize = 0.001;
-        UserEmbeddingSkipGram skipGram = new UserEmbeddingSkipGram(m, nuIter, converge, alpha, eta, stepSize);
+            double converge = 1e-6, alpha = 1, eta = 1, stepSize = 0.001;
+            UserEmbeddingSkipGram skipGram = new UserEmbeddingSkipGram(m, nuIter, converge, alpha, eta, stepSize);
 
-        skipGram.loadUsers(userFile);
-        skipGram.loadEdges(oneEdgeFile, 1); // load one edges
-        skipGram.loadEdges(zeroEdgeFile, 0); // load zero edges
+            skipGram.loadUsers(userFile);
+            if(order >= 1)
+                skipGram.loadEdges(oneEdgeFile, 1);
+            if(order >= 2)
+                skipGram.generate2ndConnections();
+            if(order >= 3)
+                skipGram.generate3rdConnections();
+            skipGram.loadEdges(zeroEdgeFile, 0); // load zero edges
 
-        skipGram.train();
-        skipGram.printUserEmbedding(userEmbeddingInputFile);
-        skipGram.printUserEmbeddingOutput(userEmbeddingOutputFile);
-    }}
+            skipGram.train();
+            skipGram.printUserEmbedding(userEmbeddingInputFile);
+            skipGram.printUserEmbeddingOutput(userEmbeddingOutputFile);
+        }
+    }
 }

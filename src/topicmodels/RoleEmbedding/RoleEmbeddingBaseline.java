@@ -192,7 +192,7 @@ public class RoleEmbeddingBaseline extends UserEmbeddingBaseline{
             // update the role vectors based on the gradients
             for(int l=0; l<m_roles.length; l++){
                 for(int m=0; m<m_dim; m++){
-                    m_roles[l][m] += m_stepSize * 0.01 * m_rolesG[l][m];
+                    m_roles[l][m] += m_stepSize * 0.001 * m_rolesG[l][m];
                 }
             }
             diff = fValue - lastFValue;
@@ -296,21 +296,25 @@ public class RoleEmbeddingBaseline extends UserEmbeddingBaseline{
     //The main function for general link pred
     public static void main(String[] args){
 
-        String dataset = "FB"; //
-        int fold = 0, dim = 10, nuOfRoles = 10, nuIter = 60;
+        String dataset = "YelpNew"; //
+        int fold = 0, dim = 10, nuOfRoles = 10, nuIter = 100, order = 1;
 
         String userFile = String.format("./data/RoleEmbedding/%sUserIds.txt", dataset);
         String oneEdgeFile = String.format("./data/RoleEmbedding/%sCVIndex4Interaction_fold_%d_train.txt", dataset, fold);
         String zeroEdgeFile = String.format("./data/RoleEmbedding/%sCVIndex4NonInteractions_fold_%d_train_2.txt", dataset, fold);
-        String userEmbeddingFile = String.format("/Users/lin/DataWWW2019/UserEmbedding/%s_multirole_embedding_#roles_%d_dim_%d_fold_%d.txt", dataset, nuOfRoles, dim, fold);
-        String roleEmbeddingFile = String.format("/Users/lin/DataWWW2019/UserEmbedding/%s_role_embedding_#roles_%d_dim_%d_fold_%d.txt", dataset, nuOfRoles, dim, fold);
+        String userEmbeddingFile = String.format("/Users/lin/DataWWW2019/UserEmbedding%d/%s_multirole_embedding_order_%d_nuOfRoles_%d_dim_%d_fold_%d.txt", order, dataset, order, nuOfRoles, dim, fold);
+        String roleEmbeddingFile = String.format("/Users/lin/DataWWW2019/UserEmbedding%d/%s_role_embedding_order_%d_nuOfRoles_%d_dim_%d_fold_%d.txt", order, dataset, order, nuOfRoles, dim, fold);
 
-        double converge = 1e-6, alpha = 0.5, beta = 0.1, stepSize = 0.001;
+        double converge = 1e-6, alpha = 0.5, beta = 0.5, stepSize = 0.002;
         RoleEmbeddingBaseline roleBase = new RoleEmbeddingBaseline(dim, nuOfRoles, nuIter, converge, alpha, beta, stepSize);
 
         roleBase.loadUsers(userFile);
-        roleBase.loadEdges(oneEdgeFile, 1); // load one edges
-//        roleBase.generate2ndConnections();
+        if(order >= 1)
+            roleBase.loadEdges(oneEdgeFile, 1);
+        if(order >= 2)
+            roleBase.generate2ndConnections();
+        if(order >= 3)
+            roleBase.generate3rdConnections();
         roleBase.loadEdges(zeroEdgeFile, 0); // load zero edges
 
 //        roleBase.sampleZeroEdges();

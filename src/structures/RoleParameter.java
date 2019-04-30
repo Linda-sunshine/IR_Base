@@ -19,7 +19,7 @@ public class RoleParameter {
     public double m_stepSize = 0.001;
 
     // whether we model the second order connections
-    public boolean m_2ndOrder = false;
+    public int m_order = 1;
 
     public RoleParameter(String argv[]) {
 
@@ -55,8 +55,8 @@ public class RoleParameter {
                 m_gamma = Double.valueOf(argv[i]);
             else if(argv[i - 1].equals("-stepSize"))
                 m_stepSize = Double.valueOf(argv[i]);
-            else if(argv[i - 1].equals("-2nd"))
-                m_2ndOrder = Boolean.valueOf(argv[i]);
+            else if(argv[i - 1].equals("-order"))
+                m_order = Integer.valueOf(argv[i]);
 
         }
     }

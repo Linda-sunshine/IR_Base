@@ -530,34 +530,40 @@ public class UserEmbeddingBaseline {
     public static void main(String[] args){
 
         String dataset = "YelpNew"; // "release-youtube"
-        int fold = 0, nuIter = 500;
+        int fold = 0, nuIter = 100, order = 2;
 
-        for(int m: new int[]{300, 500}){
-        String userFile = String.format("./data/RoleEmbedding/%sUserIds.txt", dataset);
-        String oneEdgeFile = String.format("./data/RoleEmbedding/%sCVIndex4Interaction_fold_%d_train.txt", dataset, fold);
-        String zeroEdgeFile = String.format("./data/RoleEmbedding/%sCVIndex4NonInteractions_fold_%d_train_2.txt", dataset, fold);
-        String userEmbeddingFile = String.format("/Users/lin/DataWWW2019/UserEmbedding/%s_user_embedding_dim_%d_fold_%d.txt", dataset, m, fold);
+        for(int m: new int[]{10}){
+            String userFile = String.format("./data/RoleEmbedding/%sUserIds.txt", dataset);
+            String oneEdgeFile = String.format("./data/RoleEmbedding/%sCVIndex4Interaction_fold_%d_train.txt", dataset, fold);
+            String zeroEdgeFile = String.format("./data/RoleEmbedding/%sCVIndex4NonInteractions_fold_%d_train_2.txt", dataset, fold);
+            String userEmbeddingFile = String.format("/Users/lin/DataWWW2019/UserEmbedding%d/%s_user_embedding_order_%d_dim_%d_fold_%d.txt", order, dataset, order, m, fold);
 
-        double converge = 1e-6, alpha = 1, stepSize = 0.001;
-        UserEmbeddingBaseline base = new UserEmbeddingBaseline(m, nuIter, converge, alpha, stepSize);
-        String circleFile = String.format("./data/RoleEmbedding/%sCircles.txt", dataset);
-        String userCircleIndexFile = String.format("/Users/lin/DataWWW2019/UserEmbedding/%s_user_circle_index.txt", dataset);
+            double converge = 1e-6, alpha = 1, stepSize = 0.005;
+            UserEmbeddingBaseline base = new UserEmbeddingBaseline(m, nuIter, converge, alpha, stepSize);
+            String circleFile = String.format("./data/RoleEmbedding/%sCircles.txt", dataset);
+            String userCircleIndexFile = String.format("/Users/lin/DataWWW2019/UserEmbedding/%s_user_circle_index.txt", dataset);
 
-//        base.loadCircles(circleFile);
-//        base.writeUserIds(oneEdgeFile, userFile);
+//          base.loadCircles(circleFile);
+//          base.writeUserIds(oneEdgeFile, userFile);
 
-        base.loadUsers(userFile);
-        base.loadEdges(oneEdgeFile, 1); // load one edges
-//        base.generate2ndConnections();
-        base.loadEdges(zeroEdgeFile, 0); // load zero edges
+            base.loadUsers(userFile);
+            if(order >= 1)
+                base.loadEdges(oneEdgeFile, 1);
+            if(order >= 2)
+                base.generate2ndConnections();
+            if(order >= 3)
+                base.generate3rdConnections();
 
-//        base.sampleZeroEdges();
-//        base.saveZeroEdges(zeroEdgeFile);
+            base.loadEdges(zeroEdgeFile, 0); // load zero edges
+
+//          base.sampleZeroEdges();
+//          base.saveZeroEdges(zeroEdgeFile);
 //
-        base.train();
-        base.printUserEmbedding(userEmbeddingFile);
+            base.train();
+            base.printUserEmbedding(userEmbeddingFile);
 
-//        base.loadCircles(circleFile);
-//        base.assignCircleIndex(userEmbeddingFile, userCircleIndexFile);
-    }}
+//          base.loadCircles(circleFile);
+//          base.assignCircleIndex(userEmbeddingFile, userCircleIndexFile);
+        }
+    }
 }
