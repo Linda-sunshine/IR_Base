@@ -596,10 +596,10 @@ public class LinkPredictionWithUserEmbedding {
         String prefix = "/Users/lin";// "/home/lin"
 
         //"": 1st-order one edges + zero edges; "2": 2nd-order one edges + zero edges; "3": 3rd-order one edges + zero edges
-        int order = 2, folds = 0, nuOfRoles = 10;
+        int order = 1, folds = 0, nuOfRoles = 10;
 
         String idFile = String.format("%s/DataWWW2019/UserEmbedding/%s_userids.txt", prefix, data);
-        String[] models = new String[]{"user"};
+        String[] models = new String[]{"multirole_fixU"};
 
         LinkPredictionWithUserEmbedding link = null;
 //        HashMap<String, double[][][]> allFoldsPerf = new HashMap<String, double[][][]>();
@@ -632,9 +632,17 @@ public class LinkPredictionWithUserEmbedding {
                             embedFile = String.format("%s/DataWWW2019/UserEmbedding%d/%s_%s_embedding_order_%d_nuOfRoles_%d_dim_%d_fold_%d.txt", prefix, order, data, model, order, nuOfRoles, dim, fold);
                             String roleFile = String.format("%s/DataWWW2019/UserEmbedding%d/%s_role_embedding_order_%d_nuOfRoles_%d_dim_%d_fold_%d.txt", prefix, order, data, order, nuOfRoles, dim, fold);
                             link.setRoles(link.loadRoleEmbedding(roleFile));
-                        } else if(model.equals("multirole_sanity")){
+                        } else if(model.equals("multirole_fixB")) {
                             embedFile = String.format("%s/DataWWW2019/UserEmbedding%d/%s_%s_embedding_order_%d_nuOfRoles_%d_dim_%d_fold_%d.txt", prefix, order, data, model, order, nuOfRoles, dim, fold);
-                            String roleFile = String.format("%s/DataWWW2019/UserEmbedding%d/%s_role_embedding_sanity_order_%d_nuOfRoles_%d_dim_%d_fold_%d.txt", prefix, order, data, order, nuOfRoles, dim, fold);
+                            String roleFile = String.format("%s/DataWWW2019/UserEmbedding%d/%s_role_embedding_fixB_order_%d_nuOfRoles_%d_dim_%d_fold_%d.txt", prefix, order, data, order, nuOfRoles, dim, fold);
+                            link.setRoles(link.loadRoleEmbedding(roleFile));
+                        } else if(model.equals("multirole_fixU")){
+                            embedFile = String.format("%s/DataWWW2019/UserEmbedding%d/%s_user_embedding_order_%d_dim_%d_fold_%d_init.txt", prefix, order, data, order, dim, fold);
+                            String roleFile = String.format("%s/DataWWW2019/UserEmbedding%d/%s_role_embedding_fixU_order_%d_nuOfRoles_%d_dim_%d_fold_%d.txt", prefix, order, data, order, nuOfRoles, dim, fold);
+                            link.setRoles(link.loadRoleEmbedding(roleFile));
+                        } else if(model.equals("multirole_maxD")){
+                            embedFile = String.format("%s/DataWWW2019/UserEmbedding%d/%s_user_embedding_order_%d_dim_%d_fold_%d_init.txt", prefix, order, data, order, dim, fold);
+                            String roleFile = String.format("%s/DataWWW2019/UserEmbedding%d/%s_role_embedding_maxD_order_%d_nuOfRoles_%d_dim_%d_fold_%d.txt", prefix, order, data, order, nuOfRoles, dim, fold);
                             link.setRoles(link.loadRoleEmbedding(roleFile));
                         } else if(model.equals("multirole_skipgram")){
                             embedFile = String.format("%s/DataWWW2019/UserEmbedding%d/%s_%s_embedding_order_%d_nuOfRoles_%d_dim_%d_fold_%d.txt", prefix, order, data, model, order, nuOfRoles, dim, fold);

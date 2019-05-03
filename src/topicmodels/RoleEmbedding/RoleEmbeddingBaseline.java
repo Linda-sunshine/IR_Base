@@ -20,7 +20,6 @@ public class RoleEmbeddingBaseline extends UserEmbeddingBaseline{
     protected int m_nuOfRoles;
     protected double[][] m_roles, m_rolesG; // L*M, i.e., B in the derivation
 
-
     public RoleEmbeddingBaseline(int m, int L, int nuIter, double converge, double alpha, double beta, double stepSize){
         super(m, nuIter, converge, alpha, stepSize);
         m_nuOfRoles = L;
@@ -275,6 +274,12 @@ public class RoleEmbeddingBaseline extends UserEmbeddingBaseline{
 
     public void printRoleEmbedding(String filename, double[][] roles) {
         try {
+            double[][] tmp = new double[m_nuOfRoles][m_nuOfRoles];
+            for(int l=0; l<m_roles.length; l++){
+                for(int m=0; m<m_roles.length; m++){
+                    tmp[m][l] = Utils.dotProduct(getOneColumn(m_roles, l), getOneColumn(m_roles, m));
+                }
+            }
             PrintWriter writer = new PrintWriter(new File(filename));
             writer.format("%d\t%d\n", roles.length, m_dim);
             for (int i = 0; i < roles.length; i++) {
@@ -297,17 +302,19 @@ public class RoleEmbeddingBaseline extends UserEmbeddingBaseline{
     public static void main(String[] args){
 
         String dataset = "YelpNew"; //
-        int fold = 0, dim = 10, nuOfRoles = 10, nuIter = 100, order = 1;
+        int fold = 0, dim = 100, nuOfRoles = 5, nuIter = 100, order = 1;
 
         String userFile = String.format("./data/RoleEmbedding/%sUserIds.txt", dataset);
         String oneEdgeFile = String.format("./data/RoleEmbedding/%sCVIndex4Interaction_fold_%d_train.txt", dataset, fold);
+
         String zeroEdgeFile = String.format("./data/RoleEmbedding/%sCVIndex4NonInteractions_fold_%d_train_2.txt", dataset, fold);
         String userEmbeddingFile = String.format("/Users/lin/DataWWW2019/UserEmbedding%d/%s_multirole_embedding_order_%d_nuOfRoles_%d_dim_%d_fold_%d.txt", order, dataset, order, nuOfRoles, dim, fold);
         String roleEmbeddingFile = String.format("/Users/lin/DataWWW2019/UserEmbedding%d/%s_role_embedding_order_%d_nuOfRoles_%d_dim_%d_fold_%d.txt", order, dataset, order, nuOfRoles, dim, fold);
 
-        double converge = 1e-6, alpha = 0.5, beta = 0.5, stepSize = 0.002;
+        double converge = 1e-6, alpha = 1, beta = 0.5, stepSize = 0.0015;
         RoleEmbeddingBaseline roleBase = new RoleEmbeddingBaseline(dim, nuOfRoles, nuIter, converge, alpha, beta, stepSize);
 
+        roleBase.setL1Regularization(true);
         roleBase.loadUsers(userFile);
         if(order >= 1)
             roleBase.loadEdges(oneEdgeFile, 1);
@@ -321,6 +328,7 @@ public class RoleEmbeddingBaseline extends UserEmbeddingBaseline{
 //        roleBase.saveZeroEdges(zeroEdgeFile);
 
         roleBase.train();
+//        roleBase.test();
         roleBase.printUserEmbedding(userEmbeddingFile);
         roleBase.printRoleEmbedding(roleEmbeddingFile, roleBase.getRoleEmbeddings());
     }

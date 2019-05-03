@@ -119,13 +119,13 @@ public class RoleEmbeddingFixB extends RoleEmbeddingBaseline {
     public static void main(String[] args) {
 
         String dataset = "YelpNew"; //
-        int fold = 0, dim = 10, nuOfRoles = 10, nuIter = 100, order = 2;
+        int fold = 0, dim = 10, nuOfRoles = 10, nuIter = 100, order = 1;
 
         String userFile = String.format("./data/RoleEmbedding/%sUserIds.txt", dataset);
         String oneEdgeFile = String.format("./data/RoleEmbedding/%sCVIndex4Interaction_fold_%d_train.txt", dataset, fold);
         String zeroEdgeFile = String.format("./data/RoleEmbedding/%sCVIndex4NonInteractions_fold_%d_train_2.txt", dataset, fold);
-        String userEmbeddingFile = String.format("/Users/lin/DataWWW2019/UserEmbedding%d/%s_multirole_sanity_embedding_order_%d_nuOfRoles_%d_dim_%d_fold_%d.txt", order, dataset, order, nuOfRoles, dim, fold);
-        String roleEmbeddingFile = String.format("/Users/lin/DataWWW2019/UserEmbedding%d/%s_role_embedding_sanity_order_%d_nuOfRoles_%d_dim_%d_fold_%d.txt", order, dataset, order, nuOfRoles, dim, fold);
+        String userEmbeddingFile = String.format("/Users/lin/DataWWW2019/UserEmbedding%d/%s_multirole_fixB_embedding_order_%d_nuOfRoles_%d_dim_%d_fold_%d.txt", order, dataset, order, nuOfRoles, dim, fold);
+        String roleEmbeddingFile = String.format("/Users/lin/DataWWW2019/UserEmbedding%d/%s_role_embedding_fixB_order_%d_nuOfRoles_%d_dim_%d_fold_%d.txt", order, dataset, order, nuOfRoles, dim, fold);
 
         double converge = 1e-6, alpha = 1, beta = 0.5, stepSize = 0.02;
         RoleEmbeddingFixB roleBase = new RoleEmbeddingFixB(dim, nuOfRoles, nuIter, converge, alpha, beta, stepSize);
