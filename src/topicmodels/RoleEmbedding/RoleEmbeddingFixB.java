@@ -1,5 +1,6 @@
 package topicmodels.RoleEmbedding;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 
 public class RoleEmbeddingFixB extends RoleEmbeddingBaseline {
@@ -29,7 +30,7 @@ public class RoleEmbeddingFixB extends RoleEmbeddingBaseline {
         double[] ui = m_usersInput[i];
         double[] uj = m_usersInput[j];
         for(int p=0; p<m_dim; p++){
-            res += ui[p] * uj[p];
+            res += ui[p] * m_roles[p][p] * uj[p];
         }
         return res;
     }
@@ -62,6 +63,102 @@ public class RoleEmbeddingFixB extends RoleEmbeddingBaseline {
 
         } while (iter < m_numberOfIteration && converge > m_converge);
     }
+
+
+    // update user vectors;
+    public double updateUserVectors(){
+
+        System.out.println("Start optimizing user vectors...");
+        double affinity, gTermOne, fValue;
+        double lastFValue = 1.0, converge = 1e-6, diff, iterMax = 3, iter = 0;
+        double[] ui, uj;
+
+        double testLoss = 0;
+        ArrayList<Double> testLossArray = new ArrayList<>();
+
+        do{
+            fValue = 0;
+            testLoss = 0;
+            for(double[] g: m_inputG){
+                Arrays.fill(g, 0);
+            }
+            // updates based on one edges
+            for(int uiIdx: m_oneEdges.keySet()){
+                for(int ujIdx: m_oneEdges.get(uiIdx)){
+                    if(ujIdx <= uiIdx) continue;
+                    // for each edge
+                    ui = m_usersInput[uiIdx];
+                    uj = m_usersInput[ujIdx];
+                    affinity = calcAffinity(uiIdx, ujIdx);
+                    fValue += Math.log(sigmod(affinity));
+                    gTermOne = sigmod(-affinity);
+                    // each dimension of user vectors ui and uj
+                    for(int g=0; g<m_dim; g++){
+                        m_inputG[uiIdx][g] += gTermOne * calcUserGradientTermTwo(g, uj);
+                        m_inputG[ujIdx][g] += gTermOne * calcUserGradientTermTwo(g, ui);
+                    }
+                }
+            }
+            // updates based on zero edges
+            if(m_zeroEdges.size() != 0){
+                fValue += updateUserVectorsWithSampledZeroEdges();
+            }
+
+            // add the gradient from regularization
+            for(int i=0; i<m_usersInput.length; i++){
+                for(int m=0; m<m_dim; m++){
+                    if(m_L1){
+                        if(m_usersInput[i][m] > 0)
+                            m_inputG[i][m] += m_alpha;
+                        else if(m_usersInput[i][m] < 0)
+                            m_inputG[i][m] -= m_alpha;
+                        else
+                            System.err.println("[error]Zero point reached in L1!!");
+                    }
+                    else
+                        m_inputG[i][m] -= m_alpha * 2 * m_usersInput[i][m];
+                }
+            }
+            // update the user vectors based on the gradients
+            for(int i=0; i<m_usersInput.length; i++){
+                for(int j=0; j<m_dim; j++){
+                    if(m_L1)
+                        fValue -= m_alpha * Math.abs(m_usersInput[i][j]);
+                    else
+                        fValue -= m_alpha * m_usersInput[i][j] * m_usersInput[i][j];
+                    m_usersInput[i][j] += m_stepSize * m_inputG[i][j];
+                }
+            }
+
+            for (int uiIdx : m_oneEdgesTest.keySet()) {
+                for (int ujIdx : m_oneEdgesTest.get(uiIdx)) {
+                    if (ujIdx <= uiIdx) continue;
+                    affinity = calcAffinity(uiIdx, ujIdx);
+                    testLoss += Math.log(sigmod(affinity));
+                }
+            }
+            // calculate the loss on testing non-links
+            for (int uiIdx : m_zeroEdgesTest.keySet()) {
+                for(int ujIdx: m_zeroEdgesTest.get(uiIdx)){
+                    if(ujIdx <= uiIdx) continue;
+                    affinity = calcAffinity(uiIdx, ujIdx);
+                    testLoss += Math.log(sigmod(-affinity));
+                }
+            }
+            for(int m=0; m<m_dim; m++){
+                testLoss -= m_beta * m_roles[m][m] * m_roles[m][m];
+            }
+            testLossArray.add(testLoss);
+            diff = (lastFValue - fValue) / lastFValue;
+            lastFValue = fValue;
+            System.out.format("Function value: %.1f\n", fValue);
+        } while(iter++ < iterMax && Math.abs(diff) > converge);
+        System.out.println("-------Loss on testing links--------");
+        for(double v: testLossArray)
+            System.out.println(v);
+        return fValue;
+    }
+
 
     // update role vectors;
     public double updateRoleVectors(){
@@ -124,6 +221,9 @@ public class RoleEmbeddingFixB extends RoleEmbeddingBaseline {
         String userFile = String.format("./data/RoleEmbedding/%sUserIds.txt", dataset);
         String oneEdgeFile = String.format("./data/RoleEmbedding/%sCVIndex4Interaction_fold_%d_train.txt", dataset, fold);
         String zeroEdgeFile = String.format("./data/RoleEmbedding/%sCVIndex4NonInteractions_fold_%d_train_2.txt", dataset, fold);
+        String oneEdgeTestFile = String.format("./data/RoleEmbedding/%sCVIndex4Interaction_fold_%d_test.txt", dataset, fold);
+        String zeroEdgeTestFile = String.format("./data/RoleEmbedding/%sCVIndex4NonInteractions_fold_%d_test.txt", dataset, fold);
+
         String userEmbeddingFile = String.format("/Users/lin/DataWWW2019/UserEmbedding%d/%s_multirole_fixB_embedding_order_%d_nuOfRoles_%d_dim_%d_fold_%d.txt", order, dataset, order, nuOfRoles, dim, fold);
         String roleEmbeddingFile = String.format("/Users/lin/DataWWW2019/UserEmbedding%d/%s_role_embedding_fixB_order_%d_nuOfRoles_%d_dim_%d_fold_%d.txt", order, dataset, order, nuOfRoles, dim, fold);
 
@@ -138,6 +238,8 @@ public class RoleEmbeddingFixB extends RoleEmbeddingBaseline {
         if (order >= 3)
             roleBase.generate3rdConnections();
         roleBase.loadEdges(zeroEdgeFile, 0); // load zero edges
+        roleBase.loadEdges(oneEdgeTestFile, -1);
+        roleBase.loadEdges(zeroEdgeTestFile, -2);
 
 //        roleBase.sampleZeroEdges();
 //        roleBase.saveZeroEdges(zeroEdgeFile);
@@ -146,5 +248,4 @@ public class RoleEmbeddingFixB extends RoleEmbeddingBaseline {
         roleBase.printUserEmbedding(userEmbeddingFile);
         roleBase.printRoleEmbedding(roleEmbeddingFile, roleBase.getRoleEmbeddings());
     }
-
 }

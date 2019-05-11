@@ -1,5 +1,7 @@
 package topicmodels.RoleEmbedding;
 
+import utils.Utils;
+
 import java.io.*;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -12,7 +14,12 @@ public class RoleEmbeddingFixU extends RoleEmbeddingBaseline {
 
     public void init(String filename){
 
+        m_usersInput = new double[m_uIds.size()][m_dim];
+        m_inputG = new double[m_uIds.size()][m_dim];
         loadUserEmbedding(filename);
+//        for(double[] user: m_usersInput){
+//            initOneVector(user);
+//        }
 
         m_roles = new double[m_nuOfRoles][m_dim];
         m_rolesG = new double[m_nuOfRoles][m_dim];
@@ -98,27 +105,23 @@ public class RoleEmbeddingFixU extends RoleEmbeddingBaseline {
                     if(ujIdx <= uiIdx) continue;
                     affinity = calcAffinity(uiIdx, ujIdx);
                     testLoss += Math.log(sigmod(-affinity));
+
                 }
-            }
-
-            testLossArray.add(testLoss);
-
-            // updates based on zero edges
-            if(m_zeroEdges.size() != 0){
-                fValue += updateRoleVectorsWithSampledZeroEdgesByElement();
             }
 
             for(int l=0; l<m_nuOfRoles; l++){
                 for(int m=0; m<m_dim; m++){
                     m_rolesG[l][m] -= 2 * m_beta * m_roles[l][m];
                     fValue -= m_beta * m_roles[l][m] * m_roles[l][m];
+                    testLoss -= m_beta * m_roles[l][m] * m_roles[l][m];
                 }
             }
+            testLossArray.add(testLoss);
 
             // update the role vectors based on the gradients
             for(int l=0; l<m_roles.length; l++){
                 for(int m=0; m<m_dim; m++){
-                    m_roles[l][m] += m_stepSize * 0.001 * m_rolesG[l][m];
+                    m_roles[l][m] += m_stepSize * 0.01 * m_rolesG[l][m];
                 }
             }
             diff = fValue - lastFValue;
@@ -165,20 +168,14 @@ public class RoleEmbeddingFixU extends RoleEmbeddingBaseline {
         System.out.println("Start optimizing user vectors...");
         double affinity, gTermOne, fValue;
         double lastFValue = 1.0, converge = 1e-6, diff, iterMax = 3, iter = 0;
-        double[] ui, uj;
 
         do{
             fValue = 0;
-//            for(double[] g: m_inputG){
-//                Arrays.fill(g, 0);
-//            }
+
             // updates based on one edges
             for(int uiIdx: m_oneEdges.keySet()){
                 for(int ujIdx: m_oneEdges.get(uiIdx)){
                     if(ujIdx <= uiIdx) continue;
-                    // for each edge
-                    ui = m_usersInput[uiIdx];
-                    uj = m_usersInput[ujIdx];
                     affinity = calcAffinity(uiIdx, ujIdx);
                     fValue += Math.log(sigmod(affinity));
 
@@ -225,9 +222,11 @@ public class RoleEmbeddingFixU extends RoleEmbeddingBaseline {
         String zeroEdgeTestFile = String.format("./data/RoleEmbedding/%sCVIndex4NonInteractions_fold_%d_test.txt", dataset, fold);
 
         String userEmbeddingFile = String.format("/Users/lin/DataWWW2019/UserEmbedding%d/%s_user_embedding_order_%d_dim_%d_fold_%d_init.txt", order, dataset, order, dim, fold);
+        String userEmbeddingOutputFile = String.format("/Users/lin/DataWWW2019/UserEmbedding%d/%s_user_embedding_order_%d_dim_%d_fold_%d.txt", order, dataset, order, dim, fold);
+
         String roleEmbeddingFile = String.format("/Users/lin/DataWWW2019/UserEmbedding%d/%s_role_embedding_fixU_order_%d_nuOfRoles_%d_dim_%d_fold_%d.txt", order, dataset, order, nuOfRoles, dim, fold);
 
-        double converge = 1e-6, alpha = 1, beta = 1, stepSize = 0.001;
+        double converge = 1e-6, alpha = 1, beta = 1, stepSize = 0.0001;
         RoleEmbeddingFixU roleBase = new RoleEmbeddingFixU(dim, nuOfRoles, nuIter, converge, alpha, beta, stepSize);
 
         roleBase.loadUsers(userFile);
@@ -245,6 +244,7 @@ public class RoleEmbeddingFixU extends RoleEmbeddingBaseline {
         roleBase.loadEdges(zeroEdgeTestFile, -2);
 
         roleBase.train();
+//        roleBase.printUserEmbedding(userEmbeddingOutputFile);
         roleBase.printRoleEmbedding(roleEmbeddingFile, roleBase.getRoleEmbeddings());
     }
 }

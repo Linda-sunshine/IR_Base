@@ -355,8 +355,18 @@ public class UserEmbeddingBaseline {
             // add the gradient from regularization
             for(int i=0; i<m_usersInput.length; i++){
                 for(int m=0; m<m_dim; m++){
-                    if(m_L1)
-                        m_inputG[i][m] -= m_alpha * Math.abs(m_usersInput[i][m]);
+                    if(m_L1){
+                        if(m_usersInput[i][m] > 0)
+                            m_inputG[i][m] += m_alpha;
+                        else if(m_usersInput[i][m] < 0)
+                            m_inputG[i][m] -= m_alpha;
+                        else {
+                            // if it is 0, map it to one value in the range [-1,1]
+                            // Math.random * 2 - 1
+                            m_inputG[i][m] -= m_alpha * (Math.random() * 2 - 1);
+                            System.err.println("[error]Zero point reached in L1!!");
+                        }
+                    }
                     else
                         m_inputG[i][m] -= m_alpha * 2 * m_usersInput[i][m];
                 }
@@ -584,7 +594,7 @@ public class UserEmbeddingBaseline {
     public static void main(String[] args){
 
         String dataset = "YelpNew"; // "release-youtube"
-        int fold = 0, nuIter = 300, order = 1;
+        int fold = 0, nuIter = 500, order = 1;
 
         for(int m: new int[]{10}){
             String userFile = String.format("./data/RoleEmbedding/%sUserIds.txt", dataset);
@@ -612,12 +622,13 @@ public class UserEmbeddingBaseline {
                 base.generate3rdConnections();
 
             base.loadEdges(zeroEdgeFile, 0); // load zero edges
-            base.loadEdges(oneEdgeTestFile, -1);
-            base.loadEdges(zeroEdgeTestFile, -2);
+//            base.loadEdges(oneEdgeTestFile, -1);
+//            base.loadEdges(zeroEdgeTestFile, -2);
 
 //          base.sampleZeroEdges();
 //          base.saveZeroEdges(zeroEdgeFile);
 //
+//            base.setL1Regularization(true);
             base.train();
             base.printUserEmbedding(userEmbeddingFile);
 
