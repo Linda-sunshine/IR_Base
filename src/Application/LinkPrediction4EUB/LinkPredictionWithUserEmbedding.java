@@ -260,6 +260,7 @@ public class LinkPredictionWithUserEmbedding {
                 _Object4Link ui = new _Object4Link(strs[0], index);
                 m_testMap.put(uid, ui);
                 m_testIds.add(uid);
+
                 for (int j = 1; j < strs.length; j++) {
                     String ujId = strs[j];
                     int ujIdx = m_idIndexMap.get(ujId);
@@ -279,15 +280,24 @@ public class LinkPredictionWithUserEmbedding {
     public void loadTestZeroEdges(String filename) {
         int labelZero = 0, count = 0;
         try {
+//            m_testMap.clear();
+//            m_testIds.clear();
             File file = new File(filename);
             BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(file), "UTF-8"));
             String line;
             while ((line = reader.readLine()) != null) {
                 String[] strs = line.trim().split("\t");
                 String uid = strs[0];
+
+//                int index = m_idIndexMap.get(uid);
+//                _Object4Link ui = new _Object4Link(strs[0], index);
+//                m_testMap.put(uid, ui);
+//                m_testIds.add(uid);
+
                 if (!m_testMap.containsKey(uid))
                     continue;
                 _Object4Link ui = m_testMap.get(uid);
+
                 for (int j = 1; j < strs.length; j++) {
                     String ujId = strs[j];
                     int ujIdx = m_idIndexMap.get(ujId);
@@ -388,9 +398,7 @@ public class LinkPredictionWithUserEmbedding {
             loadTestOneEdges(testInterFile);
             loadTestZeroEdges(testNonInterFile);
         }
-
     }
-
 
     // The function for calculating all NDCGs and MAPs.
     public void calculateAllNDCGMAP() {
@@ -464,6 +472,17 @@ public class LinkPredictionWithUserEmbedding {
 //        }
 //    }
 
+
+    public void swapEdges4EachUser(_Object4Link ui){
+        ArrayList<_Edge4Link> edges = ui.getEdges();
+        int size = edges.size();
+        for(int i=0; i<(size/2); i++){
+            _Edge4Link tmp = edges.get(i);
+            edges.set(i, edges.get(size - 1 - i));
+            edges.set(size - 1 - i, tmp);
+        }
+    }
+
     // calculate NDCG and MAP for one user
     public double[] calculateNDCGMAP(_Object4Link user) {
 
@@ -478,6 +497,8 @@ public class LinkPredictionWithUserEmbedding {
             iDCG += (Math.pow(2, candidates.get(i).getLabel()) - 1) / (Math.log(i + 2));
         }
 
+        // swap the edges first to make the sorting fair enough
+        Collections.shuffle(user.m_edges);
         // Sort the candidates and calculate the DCG, nDCG = DCG/iDCG.
         Collections.sort(candidates, new Comparator<_Edge4Link>() {
             @Override
@@ -599,7 +620,7 @@ public class LinkPredictionWithUserEmbedding {
         int order = 1, folds = 0, nuOfRoles = 10;
 
         String idFile = String.format("%s/DataWWW2019/UserEmbedding/%s_userids.txt", prefix, data);
-        String[] models = new String[]{"multirole_fixU"};
+        String[] models = new String[]{"multirole_l1"};
 
         LinkPredictionWithUserEmbedding link = null;
 //        HashMap<String, double[][][]> allFoldsPerf = new HashMap<String, double[][][]>();
@@ -631,6 +652,10 @@ public class LinkPredictionWithUserEmbedding {
                         } else if(model.equals("multirole")){
                             embedFile = String.format("%s/DataWWW2019/UserEmbedding%d/%s_%s_embedding_order_%d_nuOfRoles_%d_dim_%d_fold_%d.txt", prefix, order, data, model, order, nuOfRoles, dim, fold);
                             String roleFile = String.format("%s/DataWWW2019/UserEmbedding%d/%s_role_embedding_order_%d_nuOfRoles_%d_dim_%d_fold_%d.txt", prefix, order, data, order, nuOfRoles, dim, fold);
+                            link.setRoles(link.loadRoleEmbedding(roleFile));
+                        } else if(model.equals("multirole_l1")){
+                            embedFile = String.format("%s/DataWWW2019/UserEmbedding%d/%s_%s_embedding_order_%d_nuOfRoles_%d_dim_%d_fold_%d.txt", prefix, order, data, model, order, nuOfRoles, dim, fold);
+                            String roleFile = String.format("%s/DataWWW2019/UserEmbedding%d/%s_role_l1_embedding_order_%d_nuOfRoles_%d_dim_%d_fold_%d.txt", prefix, order, data, order, nuOfRoles, dim, fold);
                             link.setRoles(link.loadRoleEmbedding(roleFile));
                         } else if(model.equals("multirole_fixB")) {
                             embedFile = String.format("%s/DataWWW2019/UserEmbedding%d/%s_%s_embedding_order_%d_nuOfRoles_%d_dim_%d_fold_%d.txt", prefix, order, data, model, order, nuOfRoles, dim, fold);

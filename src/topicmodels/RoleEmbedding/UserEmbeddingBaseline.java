@@ -321,12 +321,8 @@ public class UserEmbeddingBaseline {
         double lastFValue = 1.0, converge = 1e-6, diff, iterMax = 3, iter = 0;
         double[] ui, uj;
 
-//        double testLoss = 0;
-//        ArrayList<Double> testLossArray = new ArrayList<>();
-
         do{
             fValue = 0;
-//            testLoss = 0;
             for(double[] g: m_inputG){
                 Arrays.fill(g, 0);
             }
@@ -338,12 +334,12 @@ public class UserEmbeddingBaseline {
                     ui = m_usersInput[uiIdx];
                     uj = m_usersInput[ujIdx];
                     affinity = calcAffinity(uiIdx, ujIdx);
-                    fValue += Math.log(sigmod(affinity));
+                    fValue -= Math.log(sigmod(affinity));
                     gTermOne = sigmod(-affinity);
                     // each dimension of user vectors ui and uj
                     for(int g=0; g<m_dim; g++){
-                        m_inputG[uiIdx][g] += gTermOne * calcUserGradientTermTwo(g, uj);
-                        m_inputG[ujIdx][g] += gTermOne * calcUserGradientTermTwo(g, ui);
+                        m_inputG[uiIdx][g] -= gTermOne * calcUserGradientTermTwo(g, uj);
+                        m_inputG[ujIdx][g] -= gTermOne * calcUserGradientTermTwo(g, ui);
                     }
                 }
             }
@@ -355,30 +351,24 @@ public class UserEmbeddingBaseline {
             // add the gradient from regularization
             for(int i=0; i<m_usersInput.length; i++){
                 for(int m=0; m<m_dim; m++){
-                    if(m_L1){
-                        if(m_usersInput[i][m] > 0)
-                            m_inputG[i][m] += m_alpha;
-                        else if(m_usersInput[i][m] < 0)
-                            m_inputG[i][m] -= m_alpha;
-                        else {
-                            // if it is 0, map it to one value in the range [-1,1]
-                            // Math.random * 2 - 1
-                            m_inputG[i][m] -= m_alpha * (Math.random() * 2 - 1);
-                            System.err.println("[error]Zero point reached in L1!!");
-                        }
+                    // the default one is L2 regularization
+                    if(!m_L1){
+                        m_inputG[i][m] += m_alpha * 2 * m_usersInput[i][m];
                     }
-                    else
-                        m_inputG[i][m] -= m_alpha * 2 * m_usersInput[i][m];
                 }
             }
             // update the user vectors based on the gradients
             for(int i=0; i<m_usersInput.length; i++){
                 for(int j=0; j<m_dim; j++){
-                    if(m_L1)
-                        fValue -= m_alpha * Math.abs(m_usersInput[i][j]);
-                    else
-                        fValue -= m_alpha * m_usersInput[i][j] * m_usersInput[i][j];
-                    m_usersInput[i][j] += m_stepSize * m_inputG[i][j];
+                    if(m_L1){
+                        fValue += m_alpha * Math.abs(m_usersInput[i][j]);
+                        m_usersInput[i][j] = calcProx( m_usersInput[i][j] - m_stepSize * m_inputG[i][j]);
+
+                    } else{
+                        fValue += m_alpha * m_usersInput[i][j] * m_usersInput[i][j];
+                        m_usersInput[i][j] -= m_stepSize * m_inputG[i][j];
+
+                    }
                 }
             }
 
@@ -402,10 +392,17 @@ public class UserEmbeddingBaseline {
             lastFValue = fValue;
             System.out.format("Function value: %.1f\n", fValue);
         } while(iter++ < iterMax && Math.abs(diff) > converge);
-//        System.out.println("-------Loss on testing links--------");
-//        for(double v: testLossArray)
-//            System.out.println(v);
         return fValue;
+    }
+
+    // calculate the proximal gradient descent
+    public double calcProx(double v){
+        if(v < -m_alpha)
+            return v + m_alpha;
+        else if (v < m_alpha)
+            return 0;
+        else
+            return v - m_alpha;
     }
 
     public double calcAffinity(int i, int j){
@@ -422,12 +419,12 @@ public class UserEmbeddingBaseline {
                 ui = m_usersInput[uiIdx];
                 uj = m_usersInput[ujIdx];
                 affinity = calcAffinity(uiIdx, ujIdx);
-                fValue += Math.log(sigmod(-affinity));
+                fValue -= Math.log(sigmod(-affinity));
                 gTermOne = sigmod(affinity);
                 // each dimension of user vectors ui and uj
                 for(int g=0; g<m_dim; g++){
-                    m_inputG[uiIdx][g] -= gTermOne * calcUserGradientTermTwo(g, uj);
-                    m_inputG[ujIdx][g] -= gTermOne * calcUserGradientTermTwo(g, ui);
+                    m_inputG[uiIdx][g] += gTermOne * calcUserGradientTermTwo(g, uj);
+                    m_inputG[ujIdx][g] += gTermOne * calcUserGradientTermTwo(g, ui);
                 }
             }
         }
@@ -594,7 +591,7 @@ public class UserEmbeddingBaseline {
     public static void main(String[] args){
 
         String dataset = "YelpNew"; // "release-youtube"
-        int fold = 0, nuIter = 500, order = 1;
+        int fold = 0, nuIter = 200, order = 1;
 
         for(int m: new int[]{10}){
             String userFile = String.format("./data/RoleEmbedding/%sUserIds.txt", dataset);
@@ -603,9 +600,9 @@ public class UserEmbeddingBaseline {
             String oneEdgeTestFile = String.format("./data/RoleEmbedding/%sCVIndex4Interaction_fold_%d_test.txt", dataset, fold);
             String zeroEdgeTestFile = String.format("./data/RoleEmbedding/%sCVIndex4NonInteractions_fold_%d_test.txt", dataset, fold);
 
-            String userEmbeddingFile = String.format("/Users/lin/DataWWW2019/UserEmbedding%d/%s_user_embedding_order_%d_dim_%d_fold_%d.txt", order, dataset, order, m, fold);
+            String userEmbeddingFile = String.format("/Users/lin/DataWWW2019/UserEmbedding%d/%s_user_l2_embedding_order_%d_dim_%d_fold_%d.txt", order, dataset, order, m, fold);
 
-            double converge = 1e-6, alpha = 1, stepSize = 0.001;
+            double converge = 1e-6, alpha = 0.001, stepSize = 0.001;
             UserEmbeddingBaseline base = new UserEmbeddingBaseline(m, nuIter, converge, alpha, stepSize);
             String circleFile = String.format("./data/RoleEmbedding/%sCircles.txt", dataset);
             String userCircleIndexFile = String.format("/Users/lin/DataWWW2019/UserEmbedding/%s_user_circle_index.txt", dataset);
@@ -622,13 +619,15 @@ public class UserEmbeddingBaseline {
                 base.generate3rdConnections();
 
             base.loadEdges(zeroEdgeFile, 0); // load zero edges
-//            base.loadEdges(oneEdgeTestFile, -1);
-//            base.loadEdges(zeroEdgeTestFile, -2);
+            base.loadEdges(oneEdgeTestFile, -1);
+            base.loadEdges(zeroEdgeTestFile, -2);
 
 //          base.sampleZeroEdges();
 //          base.saveZeroEdges(zeroEdgeFile);
 //
-//            base.setL1Regularization(true);
+            base.setL1Regularization(true);
+            userEmbeddingFile = String.format("/Users/lin/DataWWW2019/UserEmbedding%d/%s_user_l1_embedding_order_%d_dim_%d_fold_%d.txt", order, dataset, order, m, fold);
+
             base.train();
             base.printUserEmbedding(userEmbeddingFile);
 
