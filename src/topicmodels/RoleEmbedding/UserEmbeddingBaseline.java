@@ -591,7 +591,7 @@ public class UserEmbeddingBaseline {
     public static void main(String[] args){
 
         String dataset = "YelpNew"; // "release-youtube"
-        int fold = 0, nuIter = 200, order = 1;
+        int fold = 0, nuIter = 500, order = 1;
 
         for(int m: new int[]{10}){
             String userFile = String.format("./data/RoleEmbedding/%sUserIds.txt", dataset);
@@ -600,9 +600,8 @@ public class UserEmbeddingBaseline {
             String oneEdgeTestFile = String.format("./data/RoleEmbedding/%sCVIndex4Interaction_fold_%d_test.txt", dataset, fold);
             String zeroEdgeTestFile = String.format("./data/RoleEmbedding/%sCVIndex4NonInteractions_fold_%d_test.txt", dataset, fold);
 
-            String userEmbeddingFile = String.format("/Users/lin/DataWWW2019/UserEmbedding%d/%s_user_l2_embedding_order_%d_dim_%d_fold_%d.txt", order, dataset, order, m, fold);
 
-            double converge = 1e-6, alpha = 0.001, stepSize = 0.001;
+            double converge = 1e-6, alpha = 0.005, stepSize = 0.001;
             UserEmbeddingBaseline base = new UserEmbeddingBaseline(m, nuIter, converge, alpha, stepSize);
             String circleFile = String.format("./data/RoleEmbedding/%sCircles.txt", dataset);
             String userCircleIndexFile = String.format("/Users/lin/DataWWW2019/UserEmbedding/%s_user_circle_index.txt", dataset);
@@ -624,9 +623,13 @@ public class UserEmbeddingBaseline {
 
 //          base.sampleZeroEdges();
 //          base.saveZeroEdges(zeroEdgeFile);
-//
-            base.setL1Regularization(true);
-            userEmbeddingFile = String.format("/Users/lin/DataWWW2019/UserEmbedding%d/%s_user_l1_embedding_order_%d_dim_%d_fold_%d.txt", order, dataset, order, m, fold);
+
+            String userEmbeddingFile = String.format("/Users/lin/DataWWW2019/UserEmbedding%d/%s_user_l2_embedding_alpha_%.4f_step_size_%.4f_iter_%d_order_%d_dim_%d_fold_%d.txt", order, dataset, alpha, stepSize, nuIter, order, m, fold);
+
+            boolean l1 = true;
+            base.setL1Regularization(l1);
+            if(l1)
+                userEmbeddingFile = String.format("/Users/lin/DataWWW2019/UserEmbedding%d/%s_user_l1_embedding_alpha_%.4f_step_size_%.4f_iter_%d_order_%d_dim_%d_fold_%d.txt", order, dataset, alpha, stepSize, nuIter, order, m, fold);
 
             base.train();
             base.printUserEmbedding(userEmbeddingFile);

@@ -1029,4 +1029,11 @@ public class Utils {
 			a[i] /= sum;
 		}
 	}
+
+	public static double L1Norm(double[] arr){
+		double val = 0;
+		for(double v: arr)
+			val += Math.abs(v);
+		return val;
+	}
 }

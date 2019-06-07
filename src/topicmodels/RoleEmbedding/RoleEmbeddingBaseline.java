@@ -251,6 +251,9 @@ public class RoleEmbeddingBaseline extends UserEmbeddingBaseline{
 
                 }
             }
+            for(int i=0; i<m_usersInput.length; i++){
+                testLoss -= m_alpha * Utils.L1Norm(m_usersInput[i]);
+            }
             testLossArray.add(testLoss);
 
             // update the role vectors based on the gradients
@@ -369,8 +372,11 @@ public class RoleEmbeddingBaseline extends UserEmbeddingBaseline{
     //The main function for general link pred
     public static void main(String[] args){
 
-        String dataset = "YelpNew", model = "multirole"; //
-        int fold = 0, dim = 10, nuOfRoles = 10, nuIter = 150, order = 1;
+        String dataset = "YelpNew", model = "multirole";
+        boolean l1 = true;
+
+        int fold = 0, dim = 10, nuOfRoles = 10, nuIter = 100, order = 1;
+        double converge = 1e-6, alpha = 0.00001, beta = 1, stepSize = 0.001;
 
         String userFile = String.format("./data/RoleEmbedding/%sUserIds.txt", dataset);
         String oneEdgeFile = String.format("./data/RoleEmbedding/%sCVIndex4Interaction_fold_%d_train.txt", dataset, fold);
@@ -378,10 +384,9 @@ public class RoleEmbeddingBaseline extends UserEmbeddingBaseline{
         String oneEdgeTestFile = String.format("./data/RoleEmbedding/%sCVIndex4Interaction_fold_%d_test.txt", dataset, fold);
         String zeroEdgeTestFile = String.format("./data/RoleEmbedding/%sCVIndex4NonInteractions_fold_%d_test.txt", dataset, fold);
 
-        String userEmbeddingFile = String.format("/Users/lin/DataWWW2019/UserEmbedding%d/%s_%s_embedding_order_%d_nuOfRoles_%d_dim_%d_fold_%d.txt", order, dataset, model, order, nuOfRoles, dim, fold);
-        String roleEmbeddingFile = String.format("/Users/lin/DataWWW2019/UserEmbedding%d/%s_role_embedding_order_%d_nuOfRoles_%d_dim_%d_fold_%d.txt", order, dataset, order, nuOfRoles, dim, fold);
+        String userEmbeddingFile = String.format("/Users/lin/DataWWW2019/UserEmbedding%d/%s_%s_l2_embedding_alpha_%.4f_step_size_%.4f_iter_%d_order_%d_nuOfRoles_%d_dim_%d_fold_%d.txt", order, dataset, model, alpha, stepSize, nuIter, order, nuOfRoles, dim, fold);
+        String roleEmbeddingFile = String.format("/Users/lin/DataWWW2019/UserEmbedding%d/%s_role_l2_embedding_alpha_%.4f_step_size_%.4f_iter_%d_order_%d_nuOfRoles_%d_dim_%d_fold_%d.txt", order, dataset, alpha, stepSize, nuIter, order, nuOfRoles, dim, fold);
 
-        double converge = 1e-6, alpha = 0.001, beta = 1, stepSize = 0.002;
         RoleEmbeddingBaseline roleBase = new RoleEmbeddingBaseline(dim, nuOfRoles, nuIter, converge, alpha, beta, stepSize);
 
         roleBase.loadUsers(userFile);
@@ -396,15 +401,18 @@ public class RoleEmbeddingBaseline extends UserEmbeddingBaseline{
 //        roleBase.init(userEmbeddingInitFile);
 
         roleBase.loadEdges(zeroEdgeFile, 0); // load zero edges
-        roleBase.loadEdges(oneEdgeTestFile, -1); // one edges for testing
-        roleBase.loadEdges(zeroEdgeTestFile, -2);
+//        roleBase.loadEdges(oneEdgeTestFile, -1); // one edges for testing
+//        roleBase.loadEdges(zeroEdgeTestFile, -2);
 
 //        roleBase.sampleZeroEdges();
 //        roleBase.saveZeroEdges(zeroEdgeFile);
 
-        roleBase.setL1Regularization(true);
-        userEmbeddingFile = String.format("/Users/lin/DataWWW2019/UserEmbedding%d/%s_%s_l1_embedding_order_%d_nuOfRoles_%d_dim_%d_fold_%d.txt", order, dataset, model, order, nuOfRoles, dim, fold);
-        roleEmbeddingFile = String.format("/Users/lin/DataWWW2019/UserEmbedding%d/%s_role_l1_embedding_order_%d_nuOfRoles_%d_dim_%d_fold_%d.txt", order, dataset, order, nuOfRoles, dim, fold);
+        roleBase.setL1Regularization(l1);
+
+        if(l1){
+            userEmbeddingFile = String.format("/Users/lin/DataWWW2019/UserEmbedding%d/%s_%s_l1_embedding_alpha_%.4f_step_size_%.4f_iter_%d_order_%d_nuOfRoles_%d_dim_%d_fold_%d.txt", order, dataset, model, alpha, stepSize, nuIter, order, nuOfRoles, dim, fold);
+            roleEmbeddingFile = String.format("/Users/lin/DataWWW2019/UserEmbedding%d/%s_role_l1_embedding_alpha_%.4f_step_size_%.4f_iter_%d_order_%d_nuOfRoles_%d_dim_%d_fold_%d.txt", order, dataset, alpha, stepSize, nuIter, order, nuOfRoles, dim, fold);
+        }
 
         roleBase.train();
         roleBase.printUserEmbedding(userEmbeddingFile);

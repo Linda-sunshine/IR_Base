@@ -83,6 +83,8 @@ public class MyMMBMain {
 		
 		mmb.setJointSampling(jointAll);
 		mmb.loadLMFeatures(analyzer.getLMFeatures());
+		analyzer.clearReviews();
+
 		mmb.loadUsers(analyzer.getUsers());
 		mmb.setDisplayLv(displayLv);
 		long start = System.currentTimeMillis();

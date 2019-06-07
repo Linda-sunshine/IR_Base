@@ -50,10 +50,10 @@ public class _AdaptStruct {
 					m_adaptEndPos = i;
 				}
 			}
-		
+
 			if (m_adaptEndPos!=-1)
 				m_adaptEndPos ++;//point to the next testing data or the end of reviews
-		
+
 			resetAdaptPtr();
 		}
 	}
