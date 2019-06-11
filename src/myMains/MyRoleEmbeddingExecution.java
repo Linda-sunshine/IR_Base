@@ -20,10 +20,13 @@ public class MyRoleEmbeddingExecution {
         String oneEdgeFile = String.format("%s/RoleEmbedding/%sCVIndex4Interaction_fold_%d_train.txt", param.m_prefix, param.m_data, param.m_fold);
         String zeroEdgeFile = String.format("%s/RoleEmbedding/%sCVIndex4NonInteractions_fold_%d_train_2.txt", param.m_prefix, param.m_data, param.m_fold);
         String baseEmbeddingFile = String.format("%s/UserEmbedding%d/%s_%s_embedding_order_%d_dim_%d_fold_%d.txt", param.m_prefix, param.m_order, param.m_data, param.m_model, param.m_order, param.m_dim, param.m_fold);
-        String userEmbeddingFile = String.format("%s/UserEmbedding%d/%s_%s_embedding_order_%d_nuOfRoles_%d_dim_%d_fold_%d.txt", param.m_prefix, param.m_order, param.m_data, param.m_model, param.m_order, param.m_nuOfRoles, param.m_dim, param.m_fold);
+
+        String userEmbeddingFile = String.format("%s/UserEmbedding%d/%s_%s_l2_embedding_alpha_%.4f_step_size_%.4f_iter_%d_order_%d_nuOfRoles_%d_dim_%d_fold_%d.txt", param.m_prefix, param.m_order, param.m_data, param.m_model, param.m_alpha, param.m_stepSize, param.m_iter, param.m_order, param.m_nuOfRoles, param.m_dim, param.m_fold);
+        String roleEmbeddingFile = String.format("%s/UserEmbedding%d/%s_role_l2_embedding_alpha_%.4f_step_size_%.4f_iter_%d_order_%d_nuOfRoles_%d_dim_%d_fold_%d.txt", param.m_prefix, param.m_order, param.m_data, param.m_alpha, param.m_stepSize, param.m_iter, param.m_order, param.m_nuOfRoles, param.m_dim, param.m_fold);
+
         String userEmbeddingInputFile = String.format("%s/UserEmbedding%d/%s_%s_input_embedding_order_%d_dim_%d_fold_%d.txt", param.m_prefix, param.m_order, param.m_data, param.m_model, param.m_order, param.m_dim, param.m_fold);
         String userEmbeddingOutputFile = String.format("%s/UserEmbedding%d/%s_%s_output_embedding_order_%d_dim_%d_fold_%d.txt", param.m_prefix, param.m_order, param.m_data, param.m_model, param.m_order, param.m_dim, param.m_fold);
-        String roleEmbeddingFile = String.format("%s/UserEmbedding%d/%s_role_embedding_order_%d_nuOfRoles_%d_dim_%d_fold_%d.txt", param.m_prefix, param.m_order, param.m_data, param.m_order, param.m_nuOfRoles, param.m_dim, param.m_fold);
+
         String roleTargetEmbeddingFile = String.format("%s/UserEmbedding%d/%s_role_target_embedding_order_%d_nuOfRoles_%d_dim_%d_fold_%d.txt", param.m_prefix, param.m_order, param.m_data, param.m_order, param.m_nuOfRoles, param.m_dim, param.m_fold);
         String roleSourceEmbeddingFile = String.format("%s/UserEmbedding%d/%s_role_source_embedding_order_%d_nuOfRoles_%d_dim_%d_fold_%d.txt", param.m_prefix, param.m_order, param.m_data, param.m_order, param.m_nuOfRoles, param.m_dim, param.m_fold);
 
@@ -49,6 +52,11 @@ public class MyRoleEmbeddingExecution {
             model.generate3rdConnections();
         model.loadEdges(zeroEdgeFile, 0); // load zero edges
 
+        model.setL1Regularization(param.m_L1);
+        if(param.m_L1){
+            userEmbeddingFile = String.format("%s/UserEmbedding%d/%s_%s_l1_embedding_alpha_%.4f_step_size_%.4f_iter_%d_order_%d_nuOfRoles_%d_dim_%d_fold_%d.txt", param.m_prefix, param.m_order, param.m_data, param.m_model, param.m_alpha, param.m_stepSize, param.m_iter , param.m_order, param.m_nuOfRoles, param.m_dim, param.m_fold);
+            roleEmbeddingFile = String.format("%s/UserEmbedding%d/%s_role_l1_embedding_alpha_%.4f_step_size_%.4f_iter_%d_order_%d_nuOfRoles_%d_dim_%d_fold_%d.txt", param.m_prefix, param.m_order, param.m_data, param.m_alpha, param.m_stepSize, param.m_iter, param.m_order, param.m_nuOfRoles, param.m_dim, param.m_fold);
+        }
         model.train();
         if (param.m_model.equals("user")) {
             model.printUserEmbedding(baseEmbeddingFile);

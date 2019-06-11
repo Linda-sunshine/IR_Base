@@ -150,8 +150,8 @@ public class PreProcess {
     public static void main(String[] args) throws InvalidFormatException, FileNotFoundException, IOException {
 
 
-        int k = 0;
-        String dataset = "FB"; // "StackOverflow", "YelpNew"
+        int k = 0, nuWalks = 20, walkLen = 50;
+        String dataset = "YelpNew"; // "StackOverflow", "YelpNew"
         String prefix = "./data/RoleEmbedding";
         String idPrefix = "/Users/lin"; // "/Users/lin", "/home/lin"
         String idFile = String.format("%s/DataWWW2019/UserEmbedding/%s_userids.txt", idPrefix, dataset);
@@ -165,21 +165,20 @@ public class PreProcess {
 //        p.loadInteractions(cvIndexFile4Interaction);
 //        p.writeInteractions4DeepWalk(dwTrainFile);
 
-        for(String model: new String[]{"DW_len_8" }){
-            for(int dim: new int[]{10}) {
-                PreProcess p = new PreProcess();
-                p.loadUserIds(idFile);
-                p.loadInteractions(cvIndexFile4Interaction);
+        String model = String.format("DW_len=%d_nu=%d", walkLen, nuWalks);
+        for(int dim: new int[]{10}) {
+            PreProcess p = new PreProcess();
+            p.loadUserIds(idFile);
+            p.loadInteractions(cvIndexFile4Interaction);
 
-                // transfer the output of deepwalk/line for embedding
+            // transfer the output of deepwalk/line for embedding
 //                String input = String.format("%s/Dropbox/output/%s_%s_user_embedding_dim_%d_fold_%d.txt", idPrefix,
 //                        dataset, model, dim, k);
-                String input = String.format("%s/Documents/Lin\'sWorkSpace/deepwalk-master/data/%s_%s_dim_%d_fold_%d.txt", idPrefix,
-                        dataset, model, dim, k);
-                String output = String.format("%s/DataWWW2019/UserEmbedding/%s_%s_embedding_dim_%d_fold_%d.txt",
-                        idPrefix, dataset, model, dim, k);
-                p.transferDWEmbedding(input, output, dim);
-            }
+            String input = String.format("%s/Documents/Lin\'sWorkSpace/deepwalk-master-lin-refined/output/%s_%s_embedding_dim_%d_fold_%d.txt", idPrefix,
+                    dataset, model, dim, k);
+            String output = String.format("%s/DataWWW2019/UserEmbedding/%s_%s_embedding_dim_%d_fold_%d.txt",
+                    idPrefix, dataset, model, dim, k);
+            p.transferDWEmbedding(input, output, dim);
         }
     }
 }

@@ -532,6 +532,8 @@ public class UserEmbeddingBaseline {
             m_circles = new HashMap<>();
             // load beta for the whole corpus first
             HashSet<Integer> uids = new HashSet<>();
+            HashMap<Integer, Integer> userCircleCount = new HashMap<>();
+
             File file = new File(filename);
             BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(file),
                     "UTF-8"));
@@ -546,12 +548,31 @@ public class UserEmbeddingBaseline {
                     continue;
                 }
                 for(int i=1; i<strs.length; i++){
+                    int uid = Integer.valueOf(strs[i]);
+                    uids.add(uid);
+                    if(!userCircleCount.containsKey(uid))
+                        userCircleCount.put(uid, 1);
+                    else
+                        userCircleCount.put(uid, userCircleCount.get(uid)+1);
+
                     m_circles.put(Integer.valueOf(strs[i]), nuOfCircles);
                 }
                 nuOfCircles++;
             }
             reader.close();
-            System.out.format("Finish loading %d circles and %d user ids!!", nuOfCircles, uids.size());
+            System.out.format("Finish loading %d circles and %d user ids!!\n", nuOfCircles, uids.size());
+            double avg = 0;
+            int min = 10, max = 0;
+            for(int uid: userCircleCount.keySet()){
+                int circleCount = userCircleCount.get(uid);
+                if(circleCount > max)
+                    max = circleCount;
+                if(circleCount < min)
+                    min = circleCount;
+                avg += userCircleCount.get(uid);
+            }
+            avg /= userCircleCount.size();
+            System.out.format("[circle size]min: %d, max: %d, avg: %.2f\n", min, max, avg);
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -590,7 +611,7 @@ public class UserEmbeddingBaseline {
     //The main function for general link pred
     public static void main(String[] args){
 
-        String dataset = "YelpNew"; // "release-youtube"
+        String dataset = "FB"; // "release-youtube"
         int fold = 0, nuIter = 500, order = 1;
 
         for(int m: new int[]{10}){
@@ -603,36 +624,41 @@ public class UserEmbeddingBaseline {
 
             double converge = 1e-6, alpha = 0.005, stepSize = 0.001;
             UserEmbeddingBaseline base = new UserEmbeddingBaseline(m, nuIter, converge, alpha, stepSize);
-            String circleFile = String.format("./data/RoleEmbedding/%sCircles.txt", dataset);
+//            String circleFile = String.format("./data/RoleEmbedding/%sCircles.txt", dataset);
             String userCircleIndexFile = String.format("/Users/lin/DataWWW2019/UserEmbedding/%s_user_circle_index.txt", dataset);
 
-//          base.loadCircles(circleFile);
+            int[] index = new int[]{0, 107, 348, 414, 686, 698};
+            for(int idx: index) {
+                System.out.format("--------------circle: %d------------------------------------\n", idx);
+                String circleFile = String.format("./data/RoleEmbedding/%s.circles", idx);
+                base.loadCircles(circleFile);
+            }
 //          base.writeUserIds(oneEdgeFile, userFile);
 
-            base.loadUsers(userFile);
-            if(order >= 1)
-                base.loadEdges(oneEdgeFile, 1);
-            if(order >= 2)
-                base.generate2ndConnections();
-            if(order >= 3)
-                base.generate3rdConnections();
-
-            base.loadEdges(zeroEdgeFile, 0); // load zero edges
-            base.loadEdges(oneEdgeTestFile, -1);
-            base.loadEdges(zeroEdgeTestFile, -2);
-
-//          base.sampleZeroEdges();
-//          base.saveZeroEdges(zeroEdgeFile);
-
-            String userEmbeddingFile = String.format("/Users/lin/DataWWW2019/UserEmbedding%d/%s_user_l2_embedding_alpha_%.4f_step_size_%.4f_iter_%d_order_%d_dim_%d_fold_%d.txt", order, dataset, alpha, stepSize, nuIter, order, m, fold);
-
-            boolean l1 = true;
-            base.setL1Regularization(l1);
-            if(l1)
-                userEmbeddingFile = String.format("/Users/lin/DataWWW2019/UserEmbedding%d/%s_user_l1_embedding_alpha_%.4f_step_size_%.4f_iter_%d_order_%d_dim_%d_fold_%d.txt", order, dataset, alpha, stepSize, nuIter, order, m, fold);
-
-            base.train();
-            base.printUserEmbedding(userEmbeddingFile);
+//            base.loadUsers(userFile);
+//            if(order >= 1)
+//                base.loadEdges(oneEdgeFile, 1);
+//            if(order >= 2)
+//                base.generate2ndConnections();
+//            if(order >= 3)
+//                base.generate3rdConnections();
+//
+//            base.loadEdges(zeroEdgeFile, 0); // load zero edges
+//            base.loadEdges(oneEdgeTestFile, -1);
+//            base.loadEdges(zeroEdgeTestFile, -2);
+//
+////          base.sampleZeroEdges();
+////          base.saveZeroEdges(zeroEdgeFile);
+//
+//            String userEmbeddingFile = String.format("/Users/lin/DataWWW2019/UserEmbedding%d/%s_user_l2_embedding_alpha_%.4f_step_size_%.4f_iter_%d_order_%d_dim_%d_fold_%d.txt", order, dataset, alpha, stepSize, nuIter, order, m, fold);
+//
+//            boolean l1 = true;
+//            base.setL1Regularization(l1);
+//            if(l1)
+//                userEmbeddingFile = String.format("/Users/lin/DataWWW2019/UserEmbedding%d/%s_user_l1_embedding_alpha_%.4f_step_size_%.4f_iter_%d_order_%d_dim_%d_fold_%d.txt", order, dataset, alpha, stepSize, nuIter, order, m, fold);
+//
+//            base.train();
+//            base.printUserEmbedding(userEmbeddingFile);
 
 //          base.loadCircles(circleFile);
 //          base.assignCircleIndex(userEmbeddingFile, userCircleIndexFile);

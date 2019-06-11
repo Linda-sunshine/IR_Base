@@ -336,6 +336,7 @@ public class LinkPredictionWithUserEmbedding {
                     m_similarity[i][j] = Utils.dotProduct(projection2Roles(m_embeddings[i], m_roles), projection2Roles(m_embeddings[j], m_roles));
                 } else{
                     m_similarity[i][j] = Utils.dotProduct(m_embeddings[i], m_embeddings[j]);
+//                    m_similarity[i][j] = -Utils.euclideanDistance(m_embeddings[i], m_embeddings[j]);
                 }
             }
         }
@@ -622,7 +623,11 @@ public class LinkPredictionWithUserEmbedding {
         double alpha = 0.00001, stepSize = 0.001;
 
         String idFile = String.format("%s/DataWWW2019/UserEmbedding/%s_userids.txt", prefix, data);
-        String[] models = new String[]{"multirole_l1"};
+
+        int nuWalks = 20, walkLen = 50;
+        String DWModel = String.format("DW_len=%d_nu=%d", walkLen, nuWalks);
+        String LINEModel = "LINE1ST";
+        String[] models = new String[]{LINEModel};
 
         LinkPredictionWithUserEmbedding link = null;
 //        HashMap<String, double[][][]> allFoldsPerf = new HashMap<String, double[][][]>();
@@ -647,9 +652,11 @@ public class LinkPredictionWithUserEmbedding {
                             link = new LinkPredictionWithUserEmbeddingBOW();
                         else link = new LinkPredictionWithUserEmbedding();
 
-//                        String embedFile = String.format("%s/DataWWW2019/UserEmbedding/YelpNew_LINE1st_embedding_dim_10_fold_0.txt", prefix);
 
-                        String embedFile = String.format("%s/DataWWW2019/UserEmbedding%d/%s_%s_embedding_alpha_%.4f_step_size_%.4f_iter_%d_order_%d_dim_%d_fold_%d.txt", prefix, order, data, model, alpha, stepSize, nuIter, order, dim, fold);
+                        // deepwalk embedding: "YelpNew_DW_poor_embedding_dim_10_fold_0.txt"
+                        String embedFile = String.format("%s/DataWWW2019/UserEmbedding/YelpNew_%s_embedding_dim_10_fold_0.txt", prefix, model);
+
+//                        String embedFile = String.format("%s/DataWWW2019/UserEmbedding%d/%s_%s_embedding_alpha_%.4f_step_size_%.4f_iter_%d_order_%d_dim_%d_fold_%d.txt", prefix, order, data, model, alpha, stepSize, nuIter, order, dim, fold);
                         if (model.equals("BOW")) {
                             embedFile = String.format("%s/DataWWW2019/UserEmbedding%d/%s_%s.txt", prefix, order, data, model);
 
