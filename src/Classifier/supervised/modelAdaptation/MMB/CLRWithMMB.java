@@ -1244,8 +1244,11 @@ public class CLRWithMMB extends CLRWithHDP {
 		String zerofile = filename.substring(0, idx-1)+"_0.txt";
 		String onefile = filename.substring(0, idx-1)+"_1.txt";
 
+		String bothfile = filename.substring(0, idx-1)+"_both.txt";
+
 		int[] eij;
 		int[][][] B = new int[m_kBar][m_kBar][2];
+		double[][] affinity = new double[m_kBar][m_kBar];
 		_HDPThetaStar theta1;
 		int index1 = 0, index2 = 0;
 		for(int i=0; i<m_kBar; i++){
@@ -1257,35 +1260,51 @@ public class CLRWithMMB extends CLRWithHDP {
 				eij = connectionMap.get(theta2).getEdge();
 				B[index1][index2][0] = eij[0];
 				B[index1][index2][1] = eij[1];
+				affinity[index1][index2] = eij[0] + eij[1];
 
 			}
 		}
 		try{
 			// print out the zero edges in B matrix
-			PrintWriter writer = new PrintWriter(new File(zerofile), "UTF-8");
-			for(int i=0; i<B.length; i++){
-				int[][] row = B[i];
-				for(int j=0; j<row.length; j++){
-					writer.write(String.format("%d", B[i][j][0]));
-					if(j != row.length - 1){
-						writer.write("\t");
-					}
+			PrintWriter writer = new PrintWriter(new File(bothfile), "UTF-8");
+			for(int i=0; i<affinity.length; i++){
+				double sum = Utils.sumOfArray(affinity[i]);
+				for(int j=0; j<affinity[i].length; j++){
+					affinity[i][j] /= sum;
+				}
+			}
+			writer.format("%d\t%d\n", m_kBar, m_kBar);
+			for(int i=0; i<affinity.length; i++){
+				for(int j=0; j<affinity[i].length; j++) {
+					writer.format("%.4f\t", affinity[i][j]);
 				}
 				writer.write("\n");
 			}
-			writer.close();
-			// print out the one edges in B matrix
-			writer = new PrintWriter(new File(onefile), "UTF-8");
-			for(int i=0; i<B.length; i++){
-				int[][] row = B[i];
-				for(int j=0; j<row.length; j++){
-					writer.write(String.format("%d", B[i][j][1]));
-					if(j != row.length - 1){
-						writer.write("\t");
-					}
-				}
-				writer.write("\n");
-			}
+//			// print out the zero edges in B matrix
+//			PrintWriter writer = new PrintWriter(new File(zerofile), "UTF-8");
+//			for(int i=0; i<B.length; i++){
+//				int[][] row = B[i];
+//				for(int j=0; j<row.length; j++){
+//					writer.write(String.format("%d", B[i][j][0]));
+//					if(j != row.length - 1){
+//						writer.write("\t");
+//					}
+//				}
+//				writer.write("\n");
+//			}
+//			writer.close();
+//			// print out the one edges in B matrix
+//			writer = new PrintWriter(new File(onefile), "UTF-8");
+//			for(int i=0; i<B.length; i++){
+//				int[][] row = B[i];
+//				for(int j=0; j<row.length; j++){
+//					writer.write(String.format("%d", B[i][j][1]));
+//					if(j != row.length - 1){
+//						writer.write("\t");
+//					}
+//				}
+//				writer.write("\n");
+
 			writer.close();
 		} catch(IOException e){
 			e.printStackTrace();
@@ -1325,6 +1344,41 @@ public class CLRWithMMB extends CLRWithHDP {
 				}
 			}
 			writer.close();
+		} catch(IOException e){
+			e.printStackTrace();
+		}
+	}
+
+	public void calcUserMixture(String filename){
+
+		double[][] userMixtures = new double[m_userList.size()][m_kBar];
+		int eij, index1, index2;
+		_MMBAdaptStruct ui;
+		HashMap<_HDPAdaptStruct, _MMBNeighbor> neighbors;
+		try{
+			PrintWriter writer = new PrintWriter(new File(filename));
+			for(int i=0; i<m_userList.size(); i++){
+				double[] mixture = new double[m_kBar];
+				ui = (_MMBAdaptStruct) m_userList.get(i);
+				neighbors = ui.getNeighbors();
+				for(_HDPAdaptStruct nei: neighbors.keySet()){
+					eij = ui.getNeighbors().get(nei).getEdge();
+					index1 = neighbors.get(nei).getHDPThetaStarIndex();
+					mixture[index1]++;
+				}
+				Utils.L1Normalization(mixture);
+				userMixtures[i] = mixture;
+			}
+			writer.format("%d\t%d\n", m_userList.size(), m_kBar);
+			for(int i=0; i<m_userList.size(); i++) {
+				writer.write(m_userList.get(i).getUserID()+"\t");
+				for(double v: userMixtures[i]){
+					writer.format("%.4f\t",v);
+				}
+				writer.write("\n");
+			}
+			writer.close();
+			System.out.format("Finish writing %d users mixtures!!\n", m_userList.size());
 		} catch(IOException e){
 			e.printStackTrace();
 		}

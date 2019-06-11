@@ -616,7 +616,7 @@ public class LinkPredictionWithUserEmbedding {
     public static void main(String[] args) {
 
         String data = "YelpNew";
-        String prefix = "/Users/lin";// "/home/lin"
+        String prefix = "/home/lin";// "/home/lin"
 
         //"": 1st-order one edges + zero edges; "2": 2nd-order one edges + zero edges; "3": 3rd-order one edges + zero edges
         int order = 1, folds = 0, nuOfRoles = 10, nuIter = 100;
@@ -627,7 +627,7 @@ public class LinkPredictionWithUserEmbedding {
         int nuWalks = 20, walkLen = 50;
         String DWModel = String.format("DW_len=%d_nu=%d", walkLen, nuWalks);
         String LINEModel = "LINE1ST";
-        String[] models = new String[]{LINEModel};
+        String[] models = new String[]{"mmb"};
 
         LinkPredictionWithUserEmbedding link = null;
 //        HashMap<String, double[][][]> allFoldsPerf = new HashMap<String, double[][][]>();

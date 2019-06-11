@@ -410,7 +410,8 @@ public class CLRWithHDP extends CLRWithDP {
         sampleGamma(); // why for loop BETA_K times?
 
         //Step 2: Optimize logistic regression parameters with lbfgs.
-        return estPhi();
+//        return estPhi();
+        return 0;
     }
 
     //Sample how many local groups inside user reviews.

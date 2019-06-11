@@ -36,7 +36,7 @@ public class MyMMBMain {
 //		String prefix = "/zf8/lg5bt/DataSigir";
 
 		String providedCV = String.format("%s/%s/SelectedVocab.csv", prefix, dataset); // CV.
-		String userFolder = String.format("%s/%s/Users_1000", prefix, dataset);
+		String userFolder = String.format("%s/%s/Users", prefix, dataset);
 		String featureGroupFile = String.format("%s/%s/CrossGroups_%d.txt", prefix, dataset, fvGroupSize);
 		String featureGroupFileSup = String.format("%s/%s/CrossGroups_%d.txt", prefix, dataset, fvGroupSizeSup);
 		String globalModel = String.format("%s/%s/GlobalWeights.txt", prefix, dataset);
@@ -46,7 +46,7 @@ public class MyMMBMain {
 		if(fvGroupSizeSup == 5000 || fvGroupSizeSup == 3071) featureGroupFileSup = null;
 		if(lmTopK == 5000 || lmTopK == 3071) lmFvFile = null;
 		
-		String friendFile = String.format("%s/%s/%sFriends_1000.txt", prefix, dataset, dataset);
+		String friendFile = String.format("%s/%s/%sFriends_fold_0.txt", prefix, dataset, dataset);
 		MultiThreadedLMAnalyzer analyzer = new MultiThreadedLMAnalyzer(tokenModel, classNumber, providedCV, lmFvFile, Ngram, lengthThreshold, numberOfCores, false);
 		analyzer.config(trainRatio, adaptRatio, enforceAdapt);
 		analyzer.loadUserDir(userFolder);
@@ -56,7 +56,7 @@ public class MyMMBMain {
 //		HashMap<String, ArrayList<String>> frds = analyzer.filterFriends(analyzer.loadFriendFile(friendFile));
 //		analyzer.writeFriends(friendFile+".filter", frds);
 		
-		analyzer.setFeatureValues("TFIDF-sublinear", 0);
+//		analyzer.setFeatureValues("TFIDF-sublinear", 0);
 		HashMap<String, Integer> featureMap = analyzer.getFeatureMap();
 
 		// best parameter for yelp so far.
@@ -74,7 +74,7 @@ public class MyMMBMain {
 		mmb.setConcentrationParams(alpha, eta, beta);
 		
 		double rho = 0.01;
-		int burnin = 1, iter = 30, thin = 3;
+		int burnin = 1, iter = 20, thin = 3;
 		boolean jointAll = false;
 		mmb.setRho(rho);
 		mmb.setBurnIn(burnin);
@@ -89,7 +89,7 @@ public class MyMMBMain {
 		mmb.setDisplayLv(displayLv);
 		long start = System.currentTimeMillis();
 
-		boolean trace = true; 
+		boolean trace = false;
 		if(trace){
 			iter = 200; thin = 1; burnin = 0;
 			mmb.setNumberOfIterations(iter);
@@ -98,7 +98,9 @@ public class MyMMBMain {
 			mmb.trainTrace(dataset, start);
 		} else{
 			mmb.train();
-			mmb.test(); 
+			mmb.test();
+			mmb.calcUserMixture("./data/mmb_user_embedding.txt");
+			mmb.printBMatrix("./data/mmb.txt");
 		}
 		long end = System.currentTimeMillis();
 		System.out.println("\n[Info]Start time: " + start);
