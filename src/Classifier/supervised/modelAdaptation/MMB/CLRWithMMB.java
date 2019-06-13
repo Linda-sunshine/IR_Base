@@ -1243,11 +1243,9 @@ public class CLRWithMMB extends CLRWithHDP {
 		int idx = filename.indexOf("txt");
 		String zeroFile = filename.substring(0, idx-1)+"_0.txt";
 		String oneFile = filename.substring(0, idx-1)+"_1.txt";
-		String affinityFile = filename.substring(0, idx-1)+"_role_affinity.txt";
 
 		int[] eij;
 		int[][][] B = new int[m_kBar][m_kBar][2];
-		double[][] affinity = new double[m_kBar][m_kBar];
 		_HDPThetaStar theta1;
 		int index1 = 0, index2 = 0;
 		for(int i=0; i<m_kBar; i++){
@@ -1259,28 +1257,12 @@ public class CLRWithMMB extends CLRWithHDP {
 				eij = connectionMap.get(theta2).getEdge();
 				B[index1][index2][0] = eij[0];
 				B[index1][index2][1] = eij[1];
-				affinity[index1][index2] = eij[1];
-
 			}
 		}
 		try{
-			// print out the affinity matrix
-			PrintWriter writer = new PrintWriter(new File(affinityFile), "UTF-8");
-			for(int i=0; i<affinity.length; i++){
-				double sum = Utils.sumOfArray(affinity[i]);
-				for(int j=0; j<affinity[i].length; j++){
-					affinity[i][j] /= sum;
-				}
-			}
-			writer.format("%d\t%d\n", m_kBar, m_kBar);
-			for(int i=0; i<affinity.length; i++){
-				for(int j=0; j<affinity[i].length; j++) {
-					writer.format("%.4f\t", affinity[i][j]);
-				}
-				writer.write("\n");
-			}
 			// print out the zero edges in B matrix
-			writer = new PrintWriter(new File(zeroFile), "UTF-8");
+			PrintWriter writer = new PrintWriter(new File(zeroFile), "UTF-8");
+			writer.format("%d\t%d\n", m_kBar, m_kBar);
 			for(int i=0; i<B.length; i++){
 				int[][] row = B[i];
 				for(int j=0; j<row.length; j++){
@@ -1294,6 +1276,7 @@ public class CLRWithMMB extends CLRWithHDP {
 			writer.close();
 			// print out the one edges in B matrix
 			writer = new PrintWriter(new File(oneFile), "UTF-8");
+			writer.format("%d\t%d\n", m_kBar, m_kBar);
 			for(int i=0; i<B.length; i++) {
 				int[][] row = B[i];
 				for (int j = 0; j < row.length; j++) {

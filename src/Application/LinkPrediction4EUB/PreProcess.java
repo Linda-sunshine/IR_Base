@@ -17,6 +17,7 @@ public class PreProcess {
     int m_userSize = 0;
     HashMap<String, HashSet<String>> m_networkMap = new HashMap<>();
     ArrayList<String> m_userIds = new ArrayList<String>();
+    // key: user_id, value: index
     HashMap<String, Integer> m_idIndexMap = new HashMap<>();
 
     // load user ids for later use
@@ -50,7 +51,7 @@ public class PreProcess {
             while ((line = reader.readLine()) != null) {
                 String[] users = line.trim().split("\\s+");
                 String uid = users[0];
-                if (!m_idIndexMap.containsKey(users[0])) {
+                if (!m_idIndexMap.containsKey(uid)) {
                     System.err.println("The user does not exist in user set!");
                     continue;
                 }
@@ -69,6 +70,7 @@ public class PreProcess {
                 }
             }
 
+            // sanity checks for missing links
             int missing = 0;
             for (String ui : m_networkMap.keySet()) {
                 for (String frd : m_networkMap.get(ui)) {
@@ -86,6 +88,7 @@ public class PreProcess {
         }
     }
 
+    // we write out the interactions in the form of their index defined in the userid file.
     public void writeInteractions4DeepWalk(String filename){
         try{
             PrintWriter writer = new PrintWriter(new File(filename));
@@ -102,6 +105,36 @@ public class PreProcess {
             e.printStackTrace();
         }
     }
+
+    // splitter cannot tolerate random index set, thus we need to transfer the user id into continuous index range
+    HashMap<String, Integer> m_idIndexMap4Splitter = new HashMap<>();
+    public void writeInteractions4SPLITTER(String interactionFile, String idFile){
+        try{
+            int index = 0;
+            for(String uid: m_networkMap.keySet()){
+                m_idIndexMap4Splitter.put(uid, index++);
+            }
+            PrintWriter writer = new PrintWriter(new File(interactionFile));
+            for(String ui: m_networkMap.keySet()) {
+                int uiIdx = m_idIndexMap4Splitter.get(ui);
+                for (String uj : m_networkMap.get(ui)) {
+                    int ujIdx = m_idIndexMap4Splitter.get(uj);
+                    writer.format("%d,%d\n", uiIdx, ujIdx);
+                }
+            }
+            writer.close();
+            System.out.format("Finish writing %d users interactions for SPLITTER into %s.\n", m_networkMap.size(), interactionFile);
+            writer = new PrintWriter(new File(idFile));
+            for(String ui: m_networkMap.keySet()){
+                writer.write(ui+"\n");
+            }
+            writer.close();
+            System.out.format("Finish writing %d users ids for SPLITTER into %s.\n", m_networkMap.size(), idFile);
+        } catch(IOException e){
+            e.printStackTrace();
+        }
+    }
+
 
     public void transferDWEmbedding(String input, String output, int dim){
         try {
@@ -150,7 +183,7 @@ public class PreProcess {
     public static void main(String[] args) throws InvalidFormatException, FileNotFoundException, IOException {
 
 
-        int k = 0, nuWalks = 20, walkLen = 50;
+        int k = 0, dim = 10, nuWalks = 20, walkLen = 50;
         String dataset = "YelpNew"; // "StackOverflow", "YelpNew"
         String prefix = "./data/RoleEmbedding";
         String idPrefix = "/Users/lin"; // "/Users/lin", "/home/lin"
@@ -158,27 +191,37 @@ public class PreProcess {
 
         String cvIndexFile4Interaction = String.format("%s/%sCVIndex4Interaction_fold_%d_train.txt", prefix, dataset, k);
 
-        // write out the data for deepwalk
-//        String dwTrainFile = String.format("%s/%s_LINE_fold_%d.txt", prefix, dataset, k);
+//        // ****** write out the data for deepwalk *****
+//        String dwTrainFile = String.format("%s/%s_DW_fold_%d.txt", prefix, dataset, k);
 //        PreProcess p = new PreProcess();
 //        p.loadUserIds(idFile);
 //        p.loadInteractions(cvIndexFile4Interaction);
 //        p.writeInteractions4DeepWalk(dwTrainFile);
 
-        String model = String.format("DW_len=%d_nu=%d", walkLen, nuWalks);
-        for(int dim: new int[]{10}) {
-            PreProcess p = new PreProcess();
-            p.loadUserIds(idFile);
-            p.loadInteractions(cvIndexFile4Interaction);
+//        //****** write out the data for splitter *****
+//        PreProcess p = new PreProcess();
+//        p.loadUserIds(idFile);
+//        p.loadInteractions(cvIndexFile4Interaction);
+        String splitterInteractionFile = String.format("./data/SPLITTER/%s_SPLITTER_fold_%d.txt", dataset, k);
+        String splitterIdFile = String.format("./data/SPLITTER/%s_SPLITTER_index_fold_%d.txt", dataset, k);
+//        p.writeInteractions4SPLITTER(splitterInteractionFile, splitterIdFile);
 
-            // transfer the output of deepwalk/line for embedding
-//                String input = String.format("%s/Dropbox/output/%s_%s_user_embedding_dim_%d_fold_%d.txt", idPrefix,
-//                        dataset, model, dim, k);
-            String input = String.format("%s/Documents/Lin\'sWorkSpace/deepwalk-master-lin-refined/output/%s_%s_embedding_dim_%d_fold_%d.txt", idPrefix,
-                    dataset, model, dim, k);
-            String output = String.format("%s/DataWWW2019/UserEmbedding/%s_%s_embedding_dim_%d_fold_%d.txt",
-                    idPrefix, dataset, model, dim, k);
-            p.transferDWEmbedding(input, output, dim);
-        }
+//        // ***** transfer the output of deepwalk/line for embedding *****
+//        // since the learned user embeddings are indexed with number, we need to transfer them to user_ids for link prediction
+//        String dwModel = String.format("DW_len=%d_nu=%d", walkLen, nuWalks);
+//        PreProcess p = new PreProcess();
+//        p.loadUserIds(idFile);
+//        p.loadInteractions(cvIndexFile4Interaction);
+//        String input = String.format("%s/Documents/Lin\'sWorkSpace/deepwalk-master-lin-refined/output/%s_%s_embedding_dim_%d_fold_%d.txt", idPrefix,dataset, dwModel, dim, k);
+//        String output = String.format("%s/DataWWW2019/UserEmbedding/%s_%s_embedding_dim_%d_fold_%d.txt", idPrefix, dataset, dwModel, dim, k);
+//        p.transferDWEmbedding(input, output, dim);
+
+        // ***** transfer the output of splitter for embedding *****
+        PreProcess p = new PreProcess();
+        p.loadUserIds(splitterIdFile);
+        String input = String.format("./data/SPLITTER/");
+        String output = String.format("");
+
+
     }
 }

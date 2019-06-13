@@ -99,8 +99,8 @@ public class MyMMBMain {
 		} else{
 			mmb.train();
 			mmb.test();
-			mmb.calcUserMixture("./data/mmb_user_embedding.txt");
-			mmb.printBMatrix("./data/mmb.txt");
+			mmb.calcUserMixture(String.format("./data/%d_mmb_embedding.txt", dataset));
+			mmb.printBMatrix(String.format("./data/%s_mmb.txt", dataset));
 		}
 		long end = System.currentTimeMillis();
 		System.out.println("\n[Info]Start time: " + start);
