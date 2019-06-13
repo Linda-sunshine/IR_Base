@@ -61,7 +61,7 @@ public class MyMMBMain {
 
 		// best parameter for yelp so far.
 		double[] globalLM = analyzer.estimateGlobalLM();
-		double alpha = 0.1, eta = 0.05, beta = 0.01;
+		double alpha = 0.02, eta = 0.05, beta = 0.01;
 		double sdA = 0.0425, sdB = 0.0425;
 
 		MTCLinAdaptWithMMB mmb = new MTCLinAdaptWithMMB(classNumber, analyzer.getFeatureSize(), featureMap, globalModel, featureGroupFile, featureGroupFileSup, globalLM);
@@ -73,8 +73,8 @@ public class MyMMBMain {
 		mmb.setR1TradeOffs(eta1, eta2);
 		mmb.setConcentrationParams(alpha, eta, beta);
 		
-		double rho = 0.01;
-		int burnin = 1, iter = 20, thin = 3;
+		double rho = 0.001;
+		int burnin = 1, iter = 30, thin = 3;
 		boolean jointAll = false;
 		mmb.setRho(rho);
 		mmb.setBurnIn(burnin);
