@@ -61,7 +61,7 @@ public class MyMMBMain {
 
 		// best parameter for yelp so far.
 		double[] globalLM = analyzer.estimateGlobalLM();
-		double alpha = 0.02, eta = 0.05, beta = 0.01;
+		double alpha = 0.05, eta = 0.05, beta = 0.01;
 		double sdA = 0.0425, sdB = 0.0425;
 
 		MTCLinAdaptWithMMB mmb = new MTCLinAdaptWithMMB(classNumber, analyzer.getFeatureSize(), featureMap, globalModel, featureGroupFile, featureGroupFileSup, globalLM);
@@ -99,7 +99,7 @@ public class MyMMBMain {
 		} else{
 			mmb.train();
 			mmb.test();
-			mmb.calcUserMixture(String.format("./data/%d_mmb_embedding.txt", dataset));
+			mmb.calcUserMixture(String.format("./data/%s_mmb_embedding.txt", dataset));
 			mmb.printBMatrix(String.format("./data/%s_mmb.txt", dataset));
 		}
 		long end = System.currentTimeMillis();
