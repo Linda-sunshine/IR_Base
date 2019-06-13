@@ -672,8 +672,8 @@ public class LinkPredictionWithUserEmbedding {
         String prefix = "/Users/lin";// "/home/lin"
 
         //"": 1st-order one edges + zero edges; "2": 2nd-order one edges + zero edges; "3": 3rd-order one edges + zero edges
-        int order = 1, folds = 0, nuOfRoles = 10, nuIter = 100;
-        double alpha = 0.00001, stepSize = 0.001;
+        int order = 1, folds = 0, nuOfRoles = 10, nuIter = 50;
+        double alpha = 0.01, stepSize = 0.1;
 
         String idFile = String.format("%s/DataWWW2019/UserEmbedding/%s_userids.txt", prefix, data);
 
@@ -720,10 +720,14 @@ public class LinkPredictionWithUserEmbedding {
                         } else if(model.equals("multirole_l1")) {
                             embedFile = String.format("%s/DataWWW2019/UserEmbedding%d/%s_%s_embedding_alpha_%.4f_step_size_%.4f_iter_%d_order_%d_nuOfRoles_%d_dim_%d_fold_%d.txt", prefix, order, data, model, alpha, stepSize, nuIter, order, nuOfRoles, dim, fold);
                             String roleFile = String.format("%s/DataWWW2019/UserEmbedding%d/%s_role_l1_embedding_alpha_%.4f_step_size_%.4f_iter_%d_order_%d_nuOfRoles_%d_dim_%d_fold_%d.txt", prefix, order, data, alpha, stepSize, nuIter, order, nuOfRoles, dim, fold);
+//                            link.setRoles(link.loadRoleEmbedding(roleFile));
+                        } else if(model.equals("multirole_non_neg_l1")){
+                            embedFile = String.format("%s/DataWWW2019/UserEmbedding%d/%s_%s_embedding_alpha_%.4f_step_size_%.4f_iter_%d_order_%d_nuOfRoles_%d_dim_%d_fold_%d.txt", prefix, order, data, model, alpha, stepSize, nuIter, order, nuOfRoles, dim, fold);
+                            String roleFile = String.format("%s/DataWWW2019/UserEmbedding%d/%s_%s_role_embedding_alpha_%.4f_step_size_%.4f_iter_%d_order_%d_nuOfRoles_%d_dim_%d_fold_%d.txt", prefix, order, data, model, alpha, stepSize, nuIter, order, nuOfRoles, dim, fold);
                             link.setRoles(link.loadRoleEmbedding(roleFile));
                         }else if(model.equals("mmb")){
-                            embedFile = String.format("%s/DataWWW2019/UserEmbedding/%s_%s_embedding_alpha=0.01.txt", prefix, data, model);
-                            String roleAffinityFile = String.format("%s/DataWWW2019/UserEmbedding/%s_%s_role_affinity_alpha=0.01.txt", prefix, data, model);
+                            embedFile = String.format("%s/DataWWW2019/UserEmbedding/%s_%s_embedding_alpha=0.1.txt", prefix, data, model);
+                            String roleAffinityFile = String.format("%s/DataWWW2019/UserEmbedding/%s_%s_role_affinity_alpha=0.1.txt", prefix, data, model);
                             link.setRoleAffinity(link.loadRoleAffinity(roleAffinityFile));
                         } else if(model.equals("multirole_fixB")) {
                             embedFile = String.format("%s/DataWWW2019/UserEmbedding%d/%s_%s_embedding_order_%d_nuOfRoles_%d_dim_%d_fold_%d.txt", prefix, order, data, model, order, nuOfRoles, dim, fold);

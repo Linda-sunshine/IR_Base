@@ -195,11 +195,12 @@ public class RoleEmbeddingBaseline extends UserEmbeddingBaseline{
         System.out.println("Start optimizing role vectors...");
         double fValue, affinity, gTermOne, lastFValue = 1.0, converge = 1e-6, diff, iterMax = 5, iter = 0;
 
-        double testLoss;
-        ArrayList<Double> testLossArray = new ArrayList<>();
+//        double testLoss;
+//        ArrayList<Double> testLossArray = new ArrayList<>();
 
         do {
-            fValue = 0; testLoss = 0;
+            fValue = 0;
+//            testLoss = 0;
             for (double[] g : m_rolesG) {
                 Arrays.fill(g, 0);
             }
@@ -230,7 +231,7 @@ public class RoleEmbeddingBaseline extends UserEmbeddingBaseline{
                 for (int ujIdx : m_oneEdgesTest.get(uiIdx)) {
                     if (ujIdx <= uiIdx) continue;
                     affinity = calcAffinity(uiIdx, ujIdx);
-                    testLoss += Math.log(sigmod(affinity));
+//                    testLoss += Math.log(sigmod(affinity));
                 }
             }
             // calculate the loss on testing non-links
@@ -238,7 +239,7 @@ public class RoleEmbeddingBaseline extends UserEmbeddingBaseline{
                 for(int ujIdx: m_zeroEdgesTest.get(uiIdx)){
                     if(ujIdx <= uiIdx) continue;
                     affinity = calcAffinity(uiIdx, ujIdx);
-                    testLoss += Math.log(sigmod(-affinity));
+//                    testLoss += Math.log(sigmod(-affinity));
 
                 }
             }
@@ -247,28 +248,28 @@ public class RoleEmbeddingBaseline extends UserEmbeddingBaseline{
                 for(int m=0; m<m_dim; m++){
                     m_rolesG[l][m] += 2 * m_beta * m_roles[l][m];
                     fValue += m_beta * m_roles[l][m] * m_roles[l][m];
-                    testLoss -= m_beta * m_roles[l][m] * m_roles[l][m];
+//                    testLoss -= m_beta * m_roles[l][m] * m_roles[l][m];
 
                 }
             }
-            for(int i=0; i<m_usersInput.length; i++){
-                testLoss -= m_alpha * Utils.L1Norm(m_usersInput[i]);
-            }
-            testLossArray.add(testLoss);
+//            for(int i=0; i<m_usersInput.length; i++){
+//                testLoss -= m_alpha * Utils.L1Norm(m_usersInput[i]);
+//            }
+//            testLossArray.add(testLoss);
 
             // update the role vectors based on the gradients
             for(int l=0; l<m_roles.length; l++){
                 for(int m=0; m<m_dim; m++){
-                    m_roles[l][m] -= m_stepSize * 0.01 * m_rolesG[l][m];
+                    m_roles[l][m] -= m_stepSize * 0.001 * m_rolesG[l][m];
                 }
             }
             diff = fValue - lastFValue;
             lastFValue = fValue;
             System.out.format("Function value: %.1f\n", fValue);
         } while(iter++ < iterMax && Math.abs(diff) > converge);
-        System.out.println("-------Loss on testing links--------");
-        for(double v: testLossArray)
-            System.out.println(v);
+//        System.out.println("-------Loss on testing links--------");
+//        for(double v: testLossArray)
+//            System.out.println(v);
         return fValue;
     }
 
