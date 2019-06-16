@@ -1,6 +1,7 @@
 package Application.LinkPrediction4EUB;
 
 import Analyzer.MultiThreadedNetworkAnalyzer;
+import jdk.nashorn.internal.parser.JSONParser;
 import opennlp.tools.util.InvalidFormatException;
 
 import java.io.*;
@@ -8,6 +9,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
+import org.json.*;
 
 /**
  * @author Lin Gong (lg5bt@virginia.edu)
@@ -19,6 +21,12 @@ public class PreProcess {
     ArrayList<String> m_userIds = new ArrayList<String>();
     // key: user_id, value: index
     HashMap<String, Integer> m_idIndexMap = new HashMap<>();
+
+    // splitter cannot tolerate random index set, thus we need to transfer the user id into continuous index range
+    HashMap<String, Integer> m_idIndexMap4Splitter = new HashMap<>();
+
+    // key: index used in splitter, value: user_id
+    HashMap<Integer, String> m_indexIdMap4Splitter = new HashMap<>();
 
     // load user ids for later use
     public void loadUserIds(String idFile) {
@@ -35,6 +43,26 @@ public class PreProcess {
             }
             m_userSize = m_userIds.size();
             System.out.format("Finish loading %d user ids from %s.\n", m_userIds.size(), idFile);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    // load user ids for later use
+    public void loadSplitterUserIds(String filename) {
+        try {
+            File file = new File(filename);
+            BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(file), "UTF-8"));
+            String line;
+
+            int count = 0;
+            while ((line = reader.readLine()) != null) {
+                String uid = line.trim();
+                m_indexIdMap4Splitter.put(count, uid);
+                m_idIndexMap4Splitter.put(uid, count);
+                count++;
+            }
+            System.out.format("Finish loading %d user ids for splitter from %s.\n", count, filename);
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -106,8 +134,7 @@ public class PreProcess {
         }
     }
 
-    // splitter cannot tolerate random index set, thus we need to transfer the user id into continuous index range
-    HashMap<String, Integer> m_idIndexMap4Splitter = new HashMap<>();
+
     public void writeInteractions4SPLITTER(String interactionFile, String idFile){
         try{
             int index = 0;
@@ -134,7 +161,6 @@ public class PreProcess {
             e.printStackTrace();
         }
     }
-
 
     public void transferDWEmbedding(String input, String output, int dim){
         try {
@@ -179,11 +205,69 @@ public class PreProcess {
             str += strs[i] + "\t";
         return str;
     }
+
+    HashMap<Integer, HashSet<Integer>> m_user2Persona = new HashMap<>();
+    HashMap<Integer, Integer> m_persona2User = new HashMap<>();
+    public void loadPersonas(String filename){
+
+        try {
+
+            BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(filename),
+                    "UTF-8"));
+            // first line: num of user * dim
+            String line = reader.readLine();
+            JSONObject obj = new JSONObject(line);
+            int size = obj.length();
+            for(int i=0; i<size; i++){
+                int personaIndex = i;
+                String key = String.format("%d", i);
+                int userIndex = obj.getInt(key);
+
+                if(!m_user2Persona.containsKey(userIndex)){
+                    m_user2Persona.put(userIndex, new HashSet<>());
+                }
+                m_user2Persona.get(userIndex).add(personaIndex);
+                m_persona2User.put(personaIndex, userIndex);
+            }
+            System.out.format("Finish loading %d mapping pairs from %s.\n", size, filename);
+        } catch (IOException e)  {
+            e.printStackTrace();
+        }
+    }
+
+    public void transferSPLITTEREmbeddings(String input, String output, int dim){
+        try {
+            PrintWriter writer = new PrintWriter(new File(output));
+            writer.format("%d\t%d\n", m_userIds.size(), dim);
+            BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(input),
+                    "UTF-8"));
+            // first line: num of user * dim
+            String line = reader.readLine();
+            int count = 0;
+            while ((line = reader.readLine()) != null) {
+                String[] strs = line.split(",");
+                // the persona index of the embedding
+                int personaIndex = Double.valueOf(strs[0]).intValue();
+                // the user index in trainning splitter
+                int userIndex = m_persona2User.get(personaIndex);
+                String userId = m_indexIdMap4Splitter.get(userIndex);
+                writer.format("%s\t%s\n", userId, getEmbedding(strs));
+                count++;
+            }
+            reader.close();
+            writer.close();
+            System.out.format("Finish transferring %d user embeddings from %s to %s.\n", count, input, output);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+
     //In the main function, we want to input the data and do adaptation
     public static void main(String[] args) throws InvalidFormatException, FileNotFoundException, IOException {
 
 
-        int k = 0, dim = 10, nuWalks = 20, walkLen = 50;
+        int k = 0, dim = 10, nuWalks = 10, walkLen = 40;
         String dataset = "YelpNew"; // "StackOverflow", "YelpNew"
         String prefix = "./data/RoleEmbedding";
         String idPrefix = "/Users/lin"; // "/Users/lin", "/home/lin"
@@ -216,12 +300,16 @@ public class PreProcess {
 //        String output = String.format("%s/DataWWW2019/UserEmbedding/%s_%s_embedding_dim_%d_fold_%d.txt", idPrefix, dataset, dwModel, dim, k);
 //        p.transferDWEmbedding(input, output, dim);
 
+
         // ***** transfer the output of splitter for embedding *****
         PreProcess p = new PreProcess();
-        p.loadUserIds(splitterIdFile);
-        String input = String.format("./data/SPLITTER/");
-        String output = String.format("");
+        p.loadUserIds(idFile);
+        p.loadSplitterUserIds(splitterIdFile);
+        String embeddingFile = String.format("./data/SPLITTER/YelpNew_SPLITTER_embedding_dim_10_fold_0.txt");
+        String personaFile = String.format("./data/SPLITTER/YelpNew_SPLITTER_personas_dim_10_fold_0.json");
 
-
+        String output = String.format("%s/DataWWW2019/UserEmbedding/%s_SPLITTER_embedding_dim_%d_fold_%d.txt", idPrefix, dataset, dim, k);
+        p.loadPersonas(personaFile);
+        p.transferSPLITTEREmbeddings(embeddingFile, output, dim);
     }
 }
