@@ -753,7 +753,7 @@ public class CLRWithDP extends LinAdapt {
 			lastLikelihood = calculate_M_step();
 		}
 		try{
-			String traceFile = String.format("%s_iter_%d_burnin_%d_thin_%d_%d.txt", data, m_numberOfIterations, m_burnIn, m_thinning, start); 
+			String traceFile = String.format("./data/%s_iter_%d_burnin_%d_thin_%d_%d.txt", data, m_numberOfIterations, m_burnIn, m_thinning, start);
 			PrintWriter writer = new PrintWriter(new File(traceFile));
 			// EM iteration.
 			for(int i=0; i<m_numberOfIterations; i++){

@@ -138,8 +138,17 @@ public class MyMMBExecution {
 			adaptation.loadUsers(analyzer.getUsers());
 			adaptation.setDisplayLv(displayLv);
 
-			adaptation.train();
-			adaptation.test();
+			if(param.m_trace){
+				adaptation.setNumberOfIterations(50);
+				adaptation.setThinning(1);
+				adaptation.setBurnIn(0);
+				long start = System.currentTimeMillis();
+				adaptation.trainTrace(param.m_data, start);
+			} else{
+				adaptation.train();
+				adaptation.test();
+
+			}
 		}
 	}
 }

@@ -249,15 +249,14 @@ public class UserAnalyzer extends DocAnalyzer {
 		return m_users;
 	}
 
-	public void clearReviews(){
-		for(_User u: m_users)
+	public void clearReviews() {
+		for (_User u : m_users)
 			u.getReviews().clear();
 		int count = 0;
-		for(_User u: m_users){
+		for (_User u : m_users) {
 			count += u.getReviewSize();
 		}
-		System.out.println("The total number of reviews is:" + count);
-
+		System.out.println("[Info]Clear text for pure network model, total number of reviews is: " + count);
 	}
 
 	// Added by Lin: Load the svd file to get the low dim representation of users.

@@ -460,6 +460,9 @@ public class CLRWithMMB extends CLRWithHDP {
 		// add the friends one by one.
 		for(int i=0; i< m_userList.size(); i++){
 			ui = (_MMBAdaptStruct) m_userList.get(i);
+			ArrayList<Integer> friendIndexes = new ArrayList<>();
+
+			// sample the zero edges first to avoid empty theta stars
 			for(int j=i+1; j<m_userList.size(); j++){
 				// print out the process of sampling edges
 				if (++sampleSize%100000==0) {
@@ -529,7 +532,13 @@ public class CLRWithMMB extends CLRWithHDP {
 	private void randomSampleEdge(int i,int j, int e){
 		_MMBAdaptStruct ui = (_MMBAdaptStruct) m_userList.get(i);
 		_MMBAdaptStruct uj = (_MMBAdaptStruct) m_userList.get(j);
-		
+
+		if(m_kBar == 0){
+			sampleNewCluster4Edge();// shall we consider the current edge?? posterior sampling??
+			System.out.print("ei*");
+			m_newCluster4Edge++;
+		}
+
 		// Random sample one cluster.
 		int k = (int) (Math.random() * m_kBar);
 		
@@ -585,9 +594,9 @@ public class CLRWithMMB extends CLRWithHDP {
 	}
 	
 	protected void sampleEdge(int i, int j, int e){
-		int k = 0;
+		int k;
 		_HDPThetaStar theta_s, theta_h = m_indicator[j][i];
-		double likelihood, logNew, gamma_k, logSum = 0;
+		double likelihood, logNew, gamma_k, logSum = Double.NEGATIVE_INFINITY;
 		_MMBAdaptStruct ui = (_MMBAdaptStruct) m_userList.get(i);
 		_MMBAdaptStruct uj = (_MMBAdaptStruct) m_userList.get(j);
 
@@ -1015,7 +1024,7 @@ public class CLRWithMMB extends CLRWithHDP {
 	}
 	
 	public void printClusterInfo(long start, long end){
-		System.out.format("[Cluster]Sampling (docs/edges generaly/edges jointly) generates (%d, %d, %d) new clusters.\n", m_newCluster4Doc, m_newCluster4Edge, m_newCluster4EdgeJoint);
+		System.out.format("[Cluster]Sampling (docs/edges generally/edges jointly) generates (%d, %d, %d) new clusters.\n", m_newCluster4Doc, m_newCluster4Edge, m_newCluster4EdgeJoint);
 		System.out.println("[Time]The sampling iteration took " + (end-start)/1000 + " secs.");
 	}
 	

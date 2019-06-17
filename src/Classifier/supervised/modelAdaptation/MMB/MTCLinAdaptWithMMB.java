@@ -329,7 +329,7 @@ public class MTCLinAdaptWithMMB extends CLinAdaptWithMMB {
 		}
 		
 		try{
-			String traceFile = String.format("%s_iter_%d_burnin_%d_thin_%d_%b_%d.txt", data, m_numberOfIterations, m_burnIn, m_thinning, m_jointAll, time); 
+			String traceFile = String.format("./data/%s_iter_%d_burnin_%d_thin_%d_%b_%d.txt", data, m_numberOfIterations, m_burnIn, m_thinning, m_jointAll, time);
 			PrintWriter writer = new PrintWriter(new File(traceFile));
 			// EM iteration.
 			for(int i=0; i<m_numberOfIterations; i++){
@@ -371,13 +371,13 @@ public class MTCLinAdaptWithMMB extends CLinAdaptWithMMB {
 				// record the expectation of all the predictions too for comparison
 				m_perfMap.get("exp").add(new Double[]{m_perf[0], m_perf[1]});
 				m_perfMap.get("exp_all").add(new Double[]{m_microStat.getF1(0), m_microStat.getF1(1)});
-				writer.write(String.format("%.5f\t%.5f\t%.5f\t%.5f\t%d\t%.5f\t%.5f\n", likelihoodY, likelihoodX, likelihoodE, delta, m_kBar, m_perf[0], m_perf[1]));
+				writer.write(String.format("%.5f\t%.5f\t%.5f\t%.5f\t%d\n", likelihoodY, likelihoodX, likelihoodE, delta, m_kBar));
 				System.out.print(String.format("\n[Info]Step %d: likelihood: %.4f, Delta_likelihood: %.3f\n", i, curLikelihood, delta));
 				if(Math.abs(delta) < m_converge)
 					break;
 				lastLikelihood = curLikelihood;
 			}
-			saveDetailPerformance(data, time);
+//			saveDetailPerformance(data, time);
 			writer.close();
 		} catch(IOException e){
 			e.printStackTrace();
