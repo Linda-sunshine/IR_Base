@@ -25,7 +25,7 @@ public class LinkPredictionWithSVM extends LinkPredictionWithMMB{
 	@Override
 	public void linkPrediction(){
 		initLinkPred();
-		calculateMixturePerUser();
+//		calculateMixturePerUser();
 
 		trainSVM();
 		_MMBAdaptStruct ui;

@@ -61,6 +61,8 @@ public class DPParameter {
 	
 	// time*friend is used as non-friend in link prediction
 	public int m_time = 3;
+
+	public boolean m_networkOnly = false;
 	
 	public DPParameter(String argv[]){
 		
@@ -147,7 +149,9 @@ public class DPParameter {
 				m_multipleE = Integer.valueOf(argv[i]);
 			} else if(argv[i-1].equals("-t")){
 				m_time = Integer.valueOf(argv[i]);
-			} else
+			} else if(argv[i-1].equals("-network")){
+				m_networkOnly = Boolean.valueOf(argv[i]);}
+			else
 				exit_with_help();
 		}
 	}

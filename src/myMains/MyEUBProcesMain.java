@@ -63,16 +63,16 @@ public class MyEUBProcesMain {
 //        analyzer.saveNetwork(friendFile);
 
             /****save cv index for interactions before-hand****/
-//        analyzer.loadUserDir(userFolder);
-//        analyzer.constructUserIDIndex();
-//        analyzer.loadCVIndex(cvIndexFile, kFold);
-//        analyzer.loadInteractions(friendFile);
-//        analyzer.assignCVIndex4Network(kFold, time);
-//        analyzer.sanityCheck4CVIndex4Network(true);
-//        analyzer.sanityCheck4CVIndex4Network(false);
-//        if(time == 2)
-//            analyzer.saveCVIndex4Network(cvIndexFile4Interaction, true);
-//        analyzer.saveCVIndex4Network(cvIndexFile4NonInteraction, false);
+        analyzer.loadUserDir(userFolder);
+        analyzer.constructUserIDIndex();
+        analyzer.loadCVIndex(cvIndexFile, kFold);
+        analyzer.loadInteractions(friendFile);
+        analyzer.assignCVIndex4Network(kFold, time);
+        analyzer.sanityCheck4CVIndex4Network(true);
+        analyzer.sanityCheck4CVIndex4Network(false);
+        if(time == 2)
+            analyzer.saveCVIndex4Network(cvIndexFile4Interaction, true);
+        analyzer.saveCVIndex4Network(cvIndexFile4NonInteraction, false);
 
 
             /***Date processing for related experiments of EUB****/

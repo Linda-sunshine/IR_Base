@@ -126,13 +126,13 @@ public class LinkPredictionWithMMB {
 			}
 		}
 	}
-	
+
 	// The main link prediction function
 	public void linkPrediction(){
 		initLinkPred();
 		
 		m_B = m_mmbModel.MLEB();
-		calculateMixturePerUser();
+		m_mmbModel.calculateMixturePerUser();
 			
 		_MMBAdaptStruct ui;
 		// for each training user, rank their neighbors.

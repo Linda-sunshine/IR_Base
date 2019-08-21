@@ -88,36 +88,36 @@ public class CLRWithMMB extends CLRWithHDP {
 		return likelihoodE;
 	}
 	
-	// traverse all the clusters to get the decomposed likelihood
-	// 0: m*log(rho*zBz); 1: n*log(1-rho*zBz); 2:n*log(rho(1-zBz))
-	protected double[] accumulateDecomposedLikelihoodEMMB(){
-		double likelihoodE[] = new double[4];
-		_Connection connection;
-		int e_0, e_1;
-		double logRho = Math.log(m_rho), log_zBz = 0, zBz = 0;
-		_HDPThetaStar theta_g, theta_h;
-		for(int g=0; g<m_kBar; g++){
-			theta_g = m_hdpThetaStars[g];
-			for(int h=g; h<m_kBar; h++){
-				theta_h = m_hdpThetaStars[h];
-				if(!theta_g.hasConnection(theta_h)) continue;
-				connection = theta_g.getConnection(theta_h);
-				e_1 = connection.getEdge()[1];
-				e_0 = connection.getEdge()[0];
-				log_zBz = Math.log(m_abcd[0]+e_1) - Math.log(m_abcd[0]+m_abcd[1]+e_0+e_1);
-				zBz = (m_abcd[0] + e_1)/(m_abcd[0]+m_abcd[1]+e_0+e_1);
-				likelihoodE[0] += e_1*(logRho + log_zBz);
-				likelihoodE[1] += e_0*(Math.log(1-m_rho * zBz));
-				likelihoodE[2] += e_0*(logRho + Math.log(1-zBz));
-				//likelihoodE: m*log(rho*(a+e_1))/(a+b+e_0+e_1))+n*log(rho*(b+e_0))/(a+b+e_0+e_1))
-//				likelihoodE += (e_0+e_1)*Math.log(m_rho)+e_1*Math.log(m_abcd[0]+e_1)+
-//						e_0*Math.log(m_abcd[1]+e_0)-(e_0+e_1)*Math.log(m_abcd[0]+m_abcd[1]+e_0+e_1);
-//				likelihoodE += e_1*Math.log(m_abcd[0]+e_1)+e_0*Math.log(m_abcd[1]+e_0)
-//						-(e_0+e_1)*Math.log(m_abcd[0]+m_abcd[1]+e_0+e_1);
-			}
-		}
-		return likelihoodE;
-	}
+//	// traverse all the clusters to get the decomposed likelihood
+//	// 0: m*log(rho*zBz); 1: n*log(1-rho*zBz); 2:n*log(rho(1-zBz))
+//	protected double[] accumulateDecomposedLikelihoodEMMB(){
+//		double likelihoodE[] = new double[4];
+//		_Connection connection;
+//		int e_0, e_1;
+//		double logRho = Math.log(m_rho), log_zBz = 0, zBz = 0;
+//		_HDPThetaStar theta_g, theta_h;
+//		for(int g=0; g<m_kBar; g++){
+//			theta_g = m_hdpThetaStars[g];
+//			for(int h=g; h<m_kBar; h++){
+//				theta_h = m_hdpThetaStars[h];
+//				if(!theta_g.hasConnection(theta_h)) continue;
+//				connection = theta_g.getConnection(theta_h);
+//				e_1 = connection.getEdge()[1];
+//				e_0 = connection.getEdge()[0];
+//				log_zBz = Math.log(m_abcd[0]+e_1) - Math.log(m_abcd[0]+m_abcd[1]+e_0+e_1);
+//				zBz = (m_abcd[0] + e_1)/(m_abcd[0]+m_abcd[1]+e_0+e_1);
+//				likelihoodE[0] += e_1*(logRho + log_zBz);
+//				likelihoodE[1] += e_0*(Math.log(1-m_rho * zBz));
+//				likelihoodE[2] += e_0*(logRho + Math.log(1-zBz));
+//				//likelihoodE: m*log(rho*(a+e_1))/(a+b+e_0+e_1))+n*log(rho*(b+e_0))/(a+b+e_0+e_1))
+////				likelihoodE += (e_0+e_1)*Math.log(m_rho)+e_1*Math.log(m_abcd[0]+e_1)+
+////						e_0*Math.log(m_abcd[1]+e_0)-(e_0+e_1)*Math.log(m_abcd[0]+m_abcd[1]+e_0+e_1);
+////				likelihoodE += e_1*Math.log(m_abcd[0]+e_1)+e_0*Math.log(m_abcd[1]+e_0)
+////						-(e_0+e_1)*Math.log(m_abcd[0]+m_abcd[1]+e_0+e_1);
+//			}
+//		}
+//		return likelihoodE;
+//	}
 	
 	// calculate the probability for generating new clusters in sampling edges.
 	protected void calcProbNew(){
@@ -184,6 +184,21 @@ public class CLRWithMMB extends CLRWithHDP {
 			calculate_E_step_Edge_joint_bk();
 	}
 
+    // calculate the global mixture of each user:
+    // we calculate the mixture of each user based on their review assignment and edge assignment
+    // train users only have training reviews; test users only have testing reviews.
+    public void calculateMixturePerUser(){
+        for(int i=0; i<m_userList.size(); i++){
+            _MMBAdaptStruct user = (_MMBAdaptStruct) m_userList.get(i);
+            // if it is train user
+            if(user.getTestSize() == 0){
+                calcMix4UsersWithAdaptReviews(user);
+                // if it is test user
+            } else{
+                calcMix4UsersNoAdaptReviews(user);
+            }
+        }
+    }
 	// calculate the mixture for train user based on review assignment and edge assignment
 	public void calcMix4UsersWithAdaptReviews(_MMBAdaptStruct user){
 		double sum = 0;
@@ -1246,36 +1261,18 @@ public class CLRWithMMB extends CLRWithHDP {
 			m_kBar --;
 		}
 	}
-	
-	public void printBMatrix(String filename){
-		// Get the B matrix
-		int idx = filename.indexOf("txt");
-		String zeroFile = filename.substring(0, idx-1)+"_0.txt";
-		String oneFile = filename.substring(0, idx-1)+"_1.txt";
 
-		int[] eij;
-		int[][][] B = new int[m_kBar][m_kBar][2];
-		_HDPThetaStar theta1;
-		int index1 = 0, index2 = 0;
-		for(int i=0; i<m_kBar; i++){
-			theta1 = m_hdpThetaStars[i];
-			index1 = theta1.getIndex();
-			HashMap<_HDPThetaStar, _Connection> connectionMap = theta1.getConnectionMap();
-			for(_HDPThetaStar theta2: connectionMap.keySet()){
-				index2 = theta2.getIndex();
-				eij = connectionMap.get(theta2).getEdge();
-				B[index1][index2][0] = eij[0];
-				B[index1][index2][1] = eij[1];
-			}
-		}
+	// print out the MLE B matrix
+	public void printBMatrix(double[][] B, String filename){
+
 		try{
 			// print out the zero edges in B matrix
-			PrintWriter writer = new PrintWriter(new File(zeroFile), "UTF-8");
+			PrintWriter writer = new PrintWriter(new File(filename), "UTF-8");
 			writer.format("%d\t%d\n", m_kBar, m_kBar);
 			for(int i=0; i<B.length; i++){
-				int[][] row = B[i];
+				double[] row = B[i];
 				for(int j=0; j<row.length; j++){
-					writer.write(String.format("%d", B[i][j][0]));
+					writer.write(String.format("%.4f", B[i][j]));
 					if(j != row.length - 1){
 						writer.write("\t");
 					}
@@ -1283,20 +1280,7 @@ public class CLRWithMMB extends CLRWithHDP {
 				writer.write("\n");
 			}
 			writer.close();
-			// print out the one edges in B matrix
-			writer = new PrintWriter(new File(oneFile), "UTF-8");
-			writer.format("%d\t%d\n", m_kBar, m_kBar);
-			for(int i=0; i<B.length; i++) {
-				int[][] row = B[i];
-				for (int j = 0; j < row.length; j++) {
-					writer.write(String.format("%d", B[i][j][1]));
-					if (j != row.length - 1) {
-						writer.write("\t");
-					}
-				}
-				writer.write("\n");
-			}
-			writer.close();
+			System.out.println("Finish writing B-role affiniyt matrix!");
 		} catch(IOException e){
 			e.printStackTrace();
 		}
@@ -1340,42 +1324,28 @@ public class CLRWithMMB extends CLRWithHDP {
 		}
 	}
 
-	public void calcUserMixture(String filename){
+    public void printUserEmbedding(String filename){
+        try {
+            PrintWriter writer = new PrintWriter(new File(filename));
+            writer.format("%d\t%d\n", m_userList.size(), m_kBar);
 
-		double[][] userMixtures = new double[m_userList.size()][m_kBar];
-		int eij, index1;
-		_MMBAdaptStruct ui;
-		HashMap<_HDPAdaptStruct, _MMBNeighbor> neighbors;
-		try{
-			PrintWriter writer = new PrintWriter(new File(filename));
-			for(int i=0; i<m_userList.size(); i++){
-				double[] mixture = new double[m_kBar];
-				ui = (_MMBAdaptStruct) m_userList.get(i);
-				neighbors = ui.getNeighbors();
-				for(_HDPAdaptStruct nei: neighbors.keySet()){
-					eij = ui.getNeighbors().get(nei).getEdge();
-					index1 = neighbors.get(nei).getHDPThetaStarIndex();
-					if(eij == 1)
-						mixture[index1]++;
-				}
-				Utils.L1Normalization(mixture);
-				userMixtures[i] = mixture;
-			}
-			writer.format("%d\t%d\n", m_userList.size(), m_kBar);
-			for(int i=0; i<m_userList.size(); i++) {
-				writer.write(m_userList.get(i).getUserID()+"\t");
-				for(double v: userMixtures[i]){
+            for (int i = 0; i < m_userList.size(); i++) {
+                _MMBAdaptStruct user = (_MMBAdaptStruct) m_userList.get(i);
+                double[] mixture = user.getMixture();
+                writer.write(String.format("%s\t", m_userList.get(i).getUserID()));
+                for(double v: mixture){
 					writer.format("%.4f\t",v);
 				}
 				writer.write("\n");
-			}
-			writer.close();
-			System.out.format("Finish writing %d users mixtures!!\n", m_userList.size());
-		} catch(IOException e){
-			e.printStackTrace();
-		}
-	}
-	
+            }
+            writer.close();
+            System.out.format("Finish writing %d users mixtures!!\n", m_userList.size());
+        } catch (IOException e){
+            e.printStackTrace();
+        }
+    }
+
+
 	public void printStat(String filename){
 		try{
 			PrintWriter writer = new PrintWriter(new File(filename));
@@ -1387,7 +1357,7 @@ public class CLRWithMMB extends CLRWithHDP {
 				writer.write("\n");
 			}
 			writer.close();
-		} catch(IOException e){
+        } catch(IOException e){
 			e.printStackTrace();
 		}
 	}

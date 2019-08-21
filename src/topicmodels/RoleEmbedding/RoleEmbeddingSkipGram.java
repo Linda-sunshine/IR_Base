@@ -13,12 +13,14 @@ public class RoleEmbeddingSkipGram extends RoleEmbeddingBaseline {
         m_gamma = gamma;
     }
 
+
     @Override
     public String toString() {
         return String.format("MultiRoleEmbedding_SkipGram[dim:%d, #Roles:%d, alpha:%.4f, beta:%.4f, gamma:%.4f, #Iter:%d]", m_dim,
                 m_nuOfRoles, m_alpha, m_beta, m_gamma, m_numberOfIteration);
 
     }
+
 
     public void init(){
         super.init();
@@ -28,6 +30,7 @@ public class RoleEmbeddingSkipGram extends RoleEmbeddingBaseline {
             initOneVector(role);
         }
     }
+
 
     // u_i^T B^T B u_j
     @Override
@@ -45,6 +48,7 @@ public class RoleEmbeddingSkipGram extends RoleEmbeddingBaseline {
         }
         return res;
     }
+
 
     // update user vectors;
     public double updateUserVectors(){
@@ -103,6 +107,7 @@ public class RoleEmbeddingSkipGram extends RoleEmbeddingBaseline {
         return fValue;
     }
 
+
     // calculate the second part of the gradient for user vector
     public double calcUserGradientTermTwoSource(int g, double[] uj){
         double val = 0;
@@ -114,6 +119,7 @@ public class RoleEmbeddingSkipGram extends RoleEmbeddingBaseline {
         return val;
     }
 
+
     // calculate the second part of the gradient for user vector
     public double calcUserGradientTermTwoTarget(int g, double[] ui){
         double val = 0;
@@ -124,6 +130,7 @@ public class RoleEmbeddingSkipGram extends RoleEmbeddingBaseline {
         }
         return val;
     }
+
 
     @Override
     public double updateRoleVectors() {
@@ -184,6 +191,7 @@ public class RoleEmbeddingSkipGram extends RoleEmbeddingBaseline {
         return fValue;
     }
 
+
     public double updateRoleVectorsWithSampledZeroEdges(){
         double affinity, gTermOne, fValueZero = 0;
         // updates of gradient from zero edges
@@ -205,6 +213,7 @@ public class RoleEmbeddingSkipGram extends RoleEmbeddingBaseline {
         return fValueZero;
     }
 
+
     // calculate the second part of the gradient for user vector
     public double calcRoleGradientTermTwoTarget(int g, int h, double[] ui, double[] uj){
         double val = 0;
@@ -213,6 +222,7 @@ public class RoleEmbeddingSkipGram extends RoleEmbeddingBaseline {
         }
         return val;
     }
+
 
     public double calcRoleGradientTermTwoSource(int g, int h, double[] ui, double[] uj){
         double val = 0;
@@ -226,6 +236,8 @@ public class RoleEmbeddingSkipGram extends RoleEmbeddingBaseline {
     public double[][] getContextRoleEmbeddings(){
         return m_rolesContext;
     }
+
+
     //The main function for general link pred
     public static void main(String[] args){
 

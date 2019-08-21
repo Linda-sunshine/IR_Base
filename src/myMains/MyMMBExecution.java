@@ -42,13 +42,15 @@ public class MyMMBExecution {
 		if (param.m_fvSup == 5000 || param.m_fv == 3071) featureGroupFileSup = null;
 		if (param.m_lmTopK == 5000 || param.m_lmTopK == 3071) lmFvFile = null;
 
-		String friendFile = String.format("%s/%s/%sFriends.txt", param.m_prefix, param.m_data, param.m_data);
+		String friendFile = String.format("%s/%s/%sCVIndex4Interaction_fold_0_train.txt", param.m_prefix, param.m_data, param.m_data);
 		MultiThreadedLMAnalyzer analyzer = new MultiThreadedLMAnalyzer(tokenModel, classNumber, providedCV, lmFvFile, Ngram, lengthThreshold, numberOfCores, false);
 		analyzer.config(trainRatio, param.m_adaptRatio, enforceAdapt);
 		analyzer.loadUserDir(userFolder);
 		analyzer.buildTrainFriendship(friendFile);
 		analyzer.setFeatureValues("TFIDF-sublinear", 0);
 		HashMap<String, Integer> featureMap = analyzer.getFeatureMap();
+		if(param.m_networkOnly)
+            analyzer.clearReviews();
 
 		double[] globalLM = analyzer.estimateGlobalLM();
 		if (param.m_fv == 5000 || param.m_fv == 3071) featureGroupFile = null;
@@ -114,7 +116,7 @@ public class MyMMBExecution {
 				((MTCLinAdaptWithHDP) adaptation).setsdB(param.m_sdB);
 				((MTCLinAdaptWithHDP) adaptation).setR2TradeOffs(param.m_eta3, param.m_eta4);
 
-			} else if (param.m_model.equals("hub")) {
+			} else if (param.m_model.equals("mtclinmmb")) {
 				adaptation = new MTCLinAdaptWithMMB(classNumber, analyzer.getFeatureSize(), featureMap, globalModel, featureGroupFile, featureGroupFileSup, globalLM);
 				((MTCLinAdaptWithMMB) adaptation).loadLMFeatures(analyzer.getLMFeatures());
 				((MTCLinAdaptWithMMB) adaptation).setConcentrationParams(param.m_alpha, param.m_eta, param.m_beta);
@@ -138,17 +140,25 @@ public class MyMMBExecution {
 			adaptation.loadUsers(analyzer.getUsers());
 			adaptation.setDisplayLv(displayLv);
 
-			if(param.m_trace){
-				adaptation.setNumberOfIterations(50);
-				adaptation.setThinning(1);
-				adaptation.setBurnIn(0);
-				long start = System.currentTimeMillis();
-				adaptation.trainTrace(param.m_data, start);
-			} else{
-				adaptation.train();
-				adaptation.test();
-
-			}
+			if(param.m_model.equals("mtclinmmb")){
+                if(param.m_trace){
+                    adaptation.setNumberOfIterations(50);
+                    adaptation.setThinning(1);
+                    adaptation.setBurnIn(0);
+                    long start = System.currentTimeMillis();
+                    adaptation.trainTrace(param.m_data, start);
+                } else{
+                    adaptation.train();
+                }
+                String embeddingFile = String.format("./data/%s_mmb_networkonly_%b_embedding.txt", param.m_data, param.m_networkOnly);
+                String BFile = String.format("./data/%s_mmb_networkonly_%b_role_affinity.txt", param.m_data, param.m_networkOnly);
+                ((MTCLinAdaptWithMMB) adaptation).calculateMixturePerUser();
+                ((MTCLinAdaptWithMMB) adaptation).printUserEmbedding(embeddingFile);
+                ((MTCLinAdaptWithMMB) adaptation).printBMatrix(((MTCLinAdaptWithMMB) adaptation).MLEB(), BFile);
+            } else{
+			    adaptation.train();
+			    adaptation.test();
+            }
 		}
 	}
 }

@@ -287,7 +287,7 @@ public class MTCLinAdaptWithMMB extends CLinAdaptWithMMB {
 		
 		printStat(statFile);
 		printEdgeAssignment(edgeFile);
-		printBMatrix(BFile);
+		printBMatrix(MLEB(), BFile);
 		printUserPerformance(perfFile);
 	}
 	

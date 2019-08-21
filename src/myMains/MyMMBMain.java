@@ -56,12 +56,13 @@ public class MyMMBMain {
 //		HashMap<String, ArrayList<String>> frds = analyzer.filterFriends(analyzer.loadFriendFile(friendFile));
 //		analyzer.writeFriends(friendFile+".filter", frds);
 		
-//		analyzer.setFeatureValues("TFIDF-sublinear", 0);
+		analyzer.setFeatureValues("TFIDF-sublinear", 0);
 		HashMap<String, Integer> featureMap = analyzer.getFeatureMap();
+		analyzer.clearReviews();
 
 		// best parameter for yelp so far.
 		double[] globalLM = analyzer.estimateGlobalLM();
-		double alpha = 0.005, eta = 0.05, beta = 0.01;
+		double alpha = 0.1, eta = 0.05, beta = 0.01;
 		double sdA = 0.0425, sdB = 0.0425;
 
 		MTCLinAdaptWithMMB mmb = new MTCLinAdaptWithMMB(classNumber, analyzer.getFeatureSize(), featureMap, globalModel, featureGroupFile, featureGroupFileSup, globalLM);
@@ -83,12 +84,13 @@ public class MyMMBMain {
 		
 		mmb.setJointSampling(jointAll);
 		mmb.loadLMFeatures(analyzer.getLMFeatures());
-		analyzer.clearReviews();
 
 		mmb.loadUsers(analyzer.getUsers());
 		mmb.setDisplayLv(displayLv);
 		long start = System.currentTimeMillis();
 
+		String embeddingFile = String.format("./data/%s_mmb_network_only_embedding.txt", dataset);
+		String BFile = String.format("./data/%s_mmb_network_only_role_affinity.txt", dataset);
 		boolean trace = true;
 		if(trace){
 			iter = 30; thin = 1; burnin = 0;
@@ -98,9 +100,9 @@ public class MyMMBMain {
 			mmb.trainTrace(dataset, start);
 		} else{
 			mmb.train();
-			mmb.test();
-			mmb.calcUserMixture(String.format("./data/%s_mmb_embedding.txt", dataset));
-			mmb.printBMatrix(String.format("./data/%s_mmb.txt", dataset));
+			mmb.calculateMixturePerUser();
+			mmb.printUserEmbedding(embeddingFile);
+			mmb.printBMatrix(mmb.MLEB(), BFile);
 		}
 		long end = System.currentTimeMillis();
 		System.out.println("\n[Info]Start time: " + start);

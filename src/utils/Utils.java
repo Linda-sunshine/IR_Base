@@ -1030,6 +1030,18 @@ public class Utils {
 		}
 	}
 
+	public static void normalizeByWeight(double[] a, double weight){
+		double sum = 0;
+		for(int i=0; i<a.length; i++){
+			if(a[i] < 0)
+				a[i] = -a[i];
+			sum += a[i];
+		}
+		for(int i=0; i<a.length; i++) {
+			a[i] /= (sum * weight);
+		}
+	}
+
 	public static double L1Norm(double[] arr){
 		double val = 0;
 		for(double v: arr)

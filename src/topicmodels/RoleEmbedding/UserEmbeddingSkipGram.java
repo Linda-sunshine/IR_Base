@@ -25,10 +25,12 @@ public class UserEmbeddingSkipGram extends UserEmbeddingBaseline {
         m_eta = eta;
     }
 
+
     @Override
     public String toString() {
         return String.format("UserEmbedding_SkipGram[dim:%d, alpha:%.4f, #Iter:%d]", m_dim, m_alpha, m_numberOfIteration);
     }
+
 
     @Override
     public void init(){
@@ -40,6 +42,7 @@ public class UserEmbeddingSkipGram extends UserEmbeddingBaseline {
             initOneVector(user);
         }
     }
+
 
     // update user vectors;
     public double updateUserVectors(){
@@ -106,6 +109,7 @@ public class UserEmbeddingSkipGram extends UserEmbeddingBaseline {
         return fValue;
     }
 
+
     @Override
     // if sampled zero edges are load, user sampled zero edges for update
     public double updateUserVectorsWithSampledZeroEdges(){
@@ -128,10 +132,12 @@ public class UserEmbeddingSkipGram extends UserEmbeddingBaseline {
         return fValue;
     }
 
+
     // uj^T * vi
     public double calcAffinity(int i, int j){
         return Utils.dotProduct(m_usersInput[i], m_usersOutput[j]);
     }
+
 
     public void updateGradients(int i, int j, double gTermOne, double[] ui, double[] uj, double[] vi, double[] vj){
         for(int g=0; g<m_dim; g++){
@@ -141,6 +147,7 @@ public class UserEmbeddingSkipGram extends UserEmbeddingBaseline {
             m_outputG[j][g] -= gTermOne * calcUserGradientTermTwo(g, vi);
         }
     }
+
 
     // print out learned user embedding-output representation
     public void printUserEmbeddingOutput(String filename) {
@@ -161,6 +168,7 @@ public class UserEmbeddingSkipGram extends UserEmbeddingBaseline {
             e.printStackTrace();
         }
     }
+
 
     public static void main(String[] args){
 
