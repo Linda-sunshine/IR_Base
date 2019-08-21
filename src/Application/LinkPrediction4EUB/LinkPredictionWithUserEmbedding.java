@@ -70,12 +70,17 @@ public class LinkPredictionWithUserEmbedding {
     protected HashMap<String, _Object4Link> m_testMap;
     protected Object m_NDCGMAPLock = null;
 
+    double[][] m_roles;
+    double[][] m_rolesContext;
+    double[][] m_roleAffinity;
+
     public LinkPredictionWithUserEmbedding() {
         m_idIndexMap = new HashMap<>();
         m_testMap = new HashMap<>();
         m_NDCGMAPLock = new Object();
         m_testIds = new ArrayList<>();
     }
+
 
     // load user ids for later use
     public void loadUserIds(String idFile) {
@@ -97,6 +102,7 @@ public class LinkPredictionWithUserEmbedding {
         }
     }
 
+
     // load each user's embedding
     public void loadUserEmbedding(String filename) {
         try {
@@ -113,10 +119,7 @@ public class LinkPredictionWithUserEmbedding {
             int userSize = Integer.valueOf(strs[0]);
             m_dim = Integer.valueOf(strs[1]);
             m_embeddings = new double[m_userIds.size()][m_dim];
-//            if (userSize > m_userIds.size()) {
-//                System.out.println("[error]The file is not correct!! Double check user embedding file!");
-//                return;
-//            }
+
             // read each user's embedding one by one
             int count = 0;
             while ((line = reader.readLine()) != null) {
@@ -147,9 +150,6 @@ public class LinkPredictionWithUserEmbedding {
         }
     }
 
-    double[][] m_roles;
-    double[][] m_rolesContext;
-    double[][] m_roleAffinity;
 
     public double[][] getRoles(){
         return m_roles;
@@ -158,14 +158,19 @@ public class LinkPredictionWithUserEmbedding {
         return m_rolesContext;
     }
 
+
     public void setRoles(double[][] roles){
         m_roles = roles;
     }
+
+
     public void setRoleAffinity(double[][] mtx){m_roleAffinity = mtx; };
+
 
     public void setRolesContext(double[][] rolesContext){
         m_rolesContext = rolesContext;
     }
+
 
     public double[][] loadRoleEmbedding(String filename) {
         try {
@@ -205,6 +210,7 @@ public class LinkPredictionWithUserEmbedding {
         return null;
     }
 
+
     public double[][] loadRoleAffinity(String filename) {
         try {
             File file = new File(filename);
@@ -242,6 +248,7 @@ public class LinkPredictionWithUserEmbedding {
         }
         return null;
     }
+
 
     // load edges (interactions + non-interactions) for all the users
     public void loadTestOneZeroEdges(String filename) {
@@ -286,6 +293,7 @@ public class LinkPredictionWithUserEmbedding {
         }
     }
 
+
     // load interactions for all the users
     public void loadTestOneEdges(String filename) {
         int labelOne = 1, count = 0;
@@ -318,6 +326,7 @@ public class LinkPredictionWithUserEmbedding {
         }
     }
 
+
     // load non-interactions from file for all the users
     public void loadTestZeroEdges(String filename) {
         int labelZero = 0, count = 0;
@@ -348,6 +357,7 @@ public class LinkPredictionWithUserEmbedding {
         }
     }
 
+
     public double getSimilarity(int i, int j) {
         if (i == j) {
             System.out.println("[bug]Same i and j for similarity!!");
@@ -357,6 +367,7 @@ public class LinkPredictionWithUserEmbedding {
         else
             return m_similarity[j][i];
     }
+
 
     public void calcSimilarity() {
 
@@ -382,6 +393,7 @@ public class LinkPredictionWithUserEmbedding {
         System.out.println("Finish calculating similarity.");
     }
 
+
     public double calcSim4MMBUser(double[] ui, double[] uj){
         double sim = 0;
         for(int m=0; m<m_roleAffinity.length; m++){
@@ -392,6 +404,7 @@ public class LinkPredictionWithUserEmbedding {
         return sim;
     }
 
+
     public double[] projection2Roles(double[] user, double[][] roles) {
         double[] mixture = new double[roles.length];
         for (int l = 0; l < roles.length; l++) {
@@ -399,6 +412,7 @@ public class LinkPredictionWithUserEmbedding {
         }
         return mixture;
     }
+
 
     public void saveUserIds(String embedFile, String idFile) {
         try {
@@ -434,6 +448,7 @@ public class LinkPredictionWithUserEmbedding {
         }
     }
 
+
     public void initLinkPred(String idFile, String embedFile, String testInterFile, String testNonInterFile) {
         loadUserIds(idFile);
         loadUserEmbedding(embedFile);
@@ -448,6 +463,7 @@ public class LinkPredictionWithUserEmbedding {
             loadTestZeroEdges(testNonInterFile);
         }
     }
+
 
     // The function for calculating all NDCGs and MAPs.
     public void calculateAllNDCGMAP() {
@@ -502,6 +518,7 @@ public class LinkPredictionWithUserEmbedding {
         }
     }
 
+
 //    // The function for calculating all NDCGs and MAPs.
 //    public void calculateAllNDCGMAP(){
 //        m_NDCGs = new double[m_testIds.size()];
@@ -531,6 +548,7 @@ public class LinkPredictionWithUserEmbedding {
             edges.set(size - 1 - i, tmp);
         }
     }
+
 
     // calculate NDCG and MAP for one user
     public double[] calculateNDCGMAP(_Object4Link user) {
@@ -578,6 +596,7 @@ public class LinkPredictionWithUserEmbedding {
         return new double[]{DCG / iDCG, AP / count};
     }
 
+
     public double[] calculateAvgNDCGMAP() {
         double avgNDCG = 0, avgMAP = 0;
         int valid = 0;
@@ -594,6 +613,7 @@ public class LinkPredictionWithUserEmbedding {
         return new double[]{avgNDCG, avgMAP};
     }
 
+
     public void addTwoArrays(double[][] a, double[][] b) {
         for (int i = 0; i < a.length; i++) {
             for (int j = 0; j < a[0].length; j++) {
@@ -601,6 +621,7 @@ public class LinkPredictionWithUserEmbedding {
             }
         }
     }
+
 
     public void calcMeanStd(HashMap<String, double[][][]> map) {
         HashMap<String, double[][]> meanMap = new HashMap<>();
@@ -643,6 +664,7 @@ public class LinkPredictionWithUserEmbedding {
         printMeanStd(meanMap, stdMap);
     }
 
+
     public void printMeanStd(HashMap<String, double[][]> meanMap, HashMap<String, double[][]> stdMap) {
         System.out.print("\tNDCG\tMAP\tNDCG\tMAP\tNDCG\tMAP\tNDCG\tMAP\n");
         for (String model : meanMap.keySet()) {
@@ -656,10 +678,11 @@ public class LinkPredictionWithUserEmbedding {
         }
     }
 
+
     //The main function for general link pred
     public static void main(String[] args) {
 
-        String data = "Simulation";
+        String data = "YelpNew";
         String prefix = "/Users/lin";// "/home/lin"
 
         //"": 1st-order one edges + zero edges; "2": 2nd-order one edges + zero edges; "3": 3rd-order one edges + zero edges
@@ -683,11 +706,9 @@ public class LinkPredictionWithUserEmbedding {
                     folds = 0;
 
                 for (int fold = 0; fold <= folds; fold++) {
-//                    String testInterFile = String.format("./data/DataEUB/CV4Edges/%sCVIndex4Interaction_fold_%d_test.txt", data, fold);
-//                    String testNonInterFile = String.format("./data/DataEUB/CV4Edges/%sCVIndex4NonInteraction_time_%d_fold_%d.txt", data, time, fold);
 
-                    String testInterFile = String.format("./data/RoleEmbedding/Simulation/%sCVIndex4Interaction_fold_%d_test.txt", data, fold);
-                    String testNonInterFile = String.format("./data/RoleEmbedding/Simulation/%sCVIndex4NonInteraction_fold_%d_test.txt", data, fold);
+                    String testInterFile = String.format("./data/RoleEmbedding/%sCVIndex4Interaction_fold_%d_test.txt", data, fold);
+                    String testNonInterFile = String.format("./data/RoleEmbedding/%sCVIndex4NonInteraction_fold_%d_test.txt", data, fold);
 
                     System.out.format("-----current model-%s-time-%d-dim-%d------\n", model, time, dim);
 
@@ -697,9 +718,6 @@ public class LinkPredictionWithUserEmbedding {
                         link = new LinkPredictionWithUserEmbeddingSPLITTER();
                     else
                         link = new LinkPredictionWithUserEmbedding();
-
-                    // deepwalk embedding: "YelpNew_DW_poor_embedding_dim_10_fold_0.txt"
-//                    String embedFile = String.format("%s/DataWWW2019/UserEmbedding1/%s_%s_embedding_dim_%d_fold_0.txt", prefix, data, model, dim);
 
                     String embedFile = String.format("%s/DataWWW2019/UserEmbedding%d/%s_%s_embedding_dim_%d_fold_%d.txt", prefix, order, data, model, dim, fold);
                     if (model.equals("BOW")) {
